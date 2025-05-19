@@ -1,0 +1,685 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab&display=swap');
+.home-body {
+  font-family: "Inter", sans-serif;
+  background-color: white;
+  color: black;
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  width: 99vw;     /* full viewport width */
+  height: 100vh; 
+}
+
+@media (min-width: 640px) {
+  .hero-section {
+    height: 400px;
+  }
+}
+@media (min-width: 768px) {
+  .hero-section {
+    height: 480px;
+  }
+}
+@media (min-width: 1024px) {
+  .hero-section {
+    height: 520px;
+  }
+}
+@media (min-width: 1280px) {
+  .hero-section {
+    height: 600px;
+  }
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .hero-overlay {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+@media (min-width: 768px) {
+  .hero-overlay {
+    padding-left: 5rem;
+    padding-right: 5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .hero-overlay {
+    padding-left: 7rem;
+    padding-right: 7rem;
+  }
+}
+@media (min-width: 1280px) {
+  .hero-overlay {
+    padding-left: 10rem;
+    padding-right: 10rem;
+  }
+}
+
+.hero-title {
+  color: white;
+  font-weight: 600;
+  max-width: 26rem;
+  line-height: 1.2;
+  font-size: 18px;
+}
+
+@media (min-width: 640px) {
+  .hero-title {
+    font-size: 22px;
+  }
+}
+@media (min-width: 768px) {
+  .hero-title {
+    font-size: 28px;
+  }
+}
+@media (min-width: 1024px) {
+  .hero-title {
+    font-size: 32px;
+  }
+}
+@media (min-width: 1280px) {
+  .hero-title {
+    font-size: 36px;
+  }
+}
+
+.hero-subtitle {
+  margin-top: 0.25rem;
+  max-width: 40rem;
+  line-height: 1.3;
+  color: white;
+  font-size: 10px;
+}
+
+@media (min-width: 640px) {
+  .hero-subtitle {
+    font-size: 12px;
+  }
+}
+@media (min-width: 768px) {
+  .hero-subtitle {
+    font-size: 14px;
+  }
+}
+@media (min-width: 1024px) {
+  .hero-subtitle {
+    font-size: 15px;
+  }
+}
+@media (min-width: 1280px) {
+  .hero-subtitle {
+    font-size: 16px;
+  }
+}
+
+.hero-button {
+    margin-top: 1rem;
+    background: rgba(209, 168, 106, 0.2);
+    color: #d1a86a;
+    font-weight: 700;
+    padding: 0.6rem 1.5rem;
+    border-radius: 9999px;
+    border: 2px solid #d1a86a;
+    cursor: pointer;
+    width: fit-content;
+    font-size: 14px;
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(209, 168, 106, 0.4);
+  }
+  
+  .hero-button:hover {
+    background: rgba(209, 168, 106, 0.4);
+    color: white;
+    box-shadow: 0 6px 25px rgba(209, 168, 106, 0.8);
+    transform: scale(1.05);
+  }
+  
+  .hero-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 3px 8px rgba(209, 168, 106, 0.7);
+  }
+  
+
+@media (min-width: 768px) {
+  .hero-button {
+    font-size: 15px;
+  }
+}
+
+/* Projects Section */
+.projects-section {
+  max-width: 1280px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+  text-align: center;
+}
+
+.projects-title {
+  font-weight: 600;
+  font-size: 18px;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+  .projects-title {
+    font-size: 22px;
+  }
+}
+@media (min-width: 768px) {
+  .projects-title {
+    font-size: 24px;
+  }
+}
+
+/* Projects Grid */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  .projects-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+}
+
+/* Each Project Item */
+.project-item {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.project-image {
+  width: 280px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 0.25rem;
+}
+
+.project-name {
+  margin-top: 0.5rem;
+  font-weight: 600;
+  font-size: 14px;
+  color: #4a4a4a;
+  text-transform: uppercase;
+}
+.project-button {
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.8rem; /* giảm padding ngang */
+    font-weight: 600;
+    font-size: 14px;
+    color: #fff;
+    background: linear-gradient(45deg, #d1a86a, #b07e3b);
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+  }
+  
+  .project-button:hover {
+    background: linear-gradient(45deg, #b07e3b, #d1a86a);
+    transform: scale(1.05);
+  }
+  
+/* Info Section */
+.info-section {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  margin-top: 4rem;
+}
+
+@media (min-width: 640px) {
+  .info-section {
+    height: 400px;
+  }
+}
+@media (min-width: 768px) {
+  .info-section {
+    height: 480px;
+  }
+}
+@media (min-width: 1024px) {
+  .info-section {
+    height: 520px;
+  }
+}
+@media (min-width: 1280px) {
+  .info-section {
+    height: 600px;
+  }
+}
+
+.info-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.info-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 1rem;
+}
+
+.info-content {
+  max-width: 1280px;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  color: white;
+}
+
+.info-stats {
+  display: flex;
+  gap: 2rem;
+  flex: 1 1 50%;
+  min-width: 250px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.info-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 120px;
+}
+
+.stat-number {
+  font-weight: 600;
+  font-size: 30px;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 12px;
+  line-height: 1.2;
+  text-align: center;
+  margin-top: 0.25rem;
+  max-width: 120px;
+}
+
+.info-description {
+  flex: 1 1 40%;
+  min-width: 260px;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .info-description {
+    margin-top: 0;
+    text-align: left;
+  }
+}
+
+.info-title {
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .info-title {
+    font-size: 28px;
+  }
+}
+
+.info-text {
+  font-size: 14px;
+  line-height: 1.4;
+  max-width: 380px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .info-text {
+    margin: 0;
+  }
+}
+
+/* Apartments Section */
+/* Apartments Section */
+/* General Section Styling */
+.apartments-section {
+    max-width: 1300px; /* Tăng nhẹ max-width */
+    margin: 3rem auto;
+    padding: 0 2rem; /* Tăng padding ngang */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Font chữ */
+    color: #333; /* Màu chữ chung */
+    background: #ffffff; /* Nền trắng */
+    padding-bottom: 4rem; /* Tăng padding dưới */
+    padding-top: 4rem; /* Tăng padding trên */
+}
+
+/* Section Title Styling */
+.apartments-title {
+    font-weight: 700;
+    font-size: 32px; /* Kích thước tiêu đề lớn hơn */
+    margin-bottom: 3rem; /* Tăng khoảng cách dưới tiêu đề */
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #222; /* Màu tiêu đề rất tối */
+    text-align: left; /* Căn trái tiêu đề */
+    padding-left: 0; /* Bỏ padding-left nếu đã có padding trên section */
+    border-bottom: 2px solid #eee; /* Thêm đường gạch dưới nhẹ */
+    padding-bottom: 1rem; /* Khoảng cách giữa text và đường gạch */
+}
+
+/* Responsive Title Size */
+@media (min-width: 768px) {
+    .apartments-title {
+        font-size: 38px;
+        letter-spacing: 1.5px;
+    }
+}
+
+/* Apartments Grid Styling */
+.apartments-grid {
+    display: grid;
+    /* Tự động điều chỉnh cột: min 280px, max 1fr, khoảng cách 2rem */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem; /* Khoảng cách giữa các card */
+    justify-items: center; /* Căn giữa item trong grid cell */
+}
+
+/* Apartment Card Styling */
+.apartment-card {
+    background: white;
+    border-radius: 10px; /* Bo góc thẻ vừa phải */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1); /* Đổ bóng mềm mại hơn */
+    overflow: hidden;
+    width: 100%;
+    max-width: 350px; /* Giới hạn chiều rộng tối đa */
+    position: relative; /* Để chứa nội dung overlay */
+    display: flex;
+    flex-direction: column;
+    cursor: pointer; /* Thêm cursor pointer để thể hiện có thể click */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.apartment-card:hover {
+    transform: translateY(-8px); /* Hiệu ứng bay lên rõ hơn khi hover */
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15); /* Đổ bóng mạnh và lan tỏa hơn khi hover */
+}
+
+/* Container for Image and Overlays */
+.apartment-content-overlay {
+    position: relative;
+    width: 100%;
+    /* Sử dụng padding-top hack để giữ tỷ lệ khung hình cho ảnh */
+    /* Tỷ lệ 3:4 hoặc 4:5 có thể phù hợp với ảnh chân dung */
+    padding-top: 135%; /* Ví dụ: Tỷ lệ khoảng 3:4 ( (4/3) * 100% ), điều chỉnh nếu cần */
+    overflow: hidden;
+}
+
+/* Apartment Image Styling */
+/* Sử dụng làm nền và thêm lớp phủ gradient */
+.apartment-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    /* Áp dụng gradient overlay cho ảnh */
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%); /* Gradient đậm hơn ở dưới */
+}
+
+/* Apartment Labels Overlay Styling */
+.apartment-label {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.7); /* Nền tối đục hơn cho nhãn */
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 10px; /* Tăng padding nhãn */
+    border-radius: 5px; /* Bo góc nhãn vừa phải */
+    z-index: 10;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Specific Label Positioning (Adjust as needed) */
+/* Ví dụ: Nhãn bed-label mặc định ở top-right */
+.apartment-label.bed {
+     top: 12px;
+     right: 12px;
+}
+/* Thêm các class cho nhãn khác nếu có (available, full-noi-that) */
+/*
+.apartment-label.available {
+    top: 12px;
+    left: 12px;
+}
+.apartment-label.full-noi-that {
+    top: 12px;
+    right: 12px; // Nếu có 2 nhãn ở top-right, cần điều chỉnh vị trí
+    margin-right: 80px; // Ví dụ: nếu nhãn bed cũng ở top-right
+}
+*/
+
+
+/* Apartment Info Overlay Styling (Title, Price, Button) */
+.apartment-info-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 1.8rem; /* Tăng padding bên trong overlay */
+    color: white;
+    z-index: 5;
+    text-align: left;
+    /* Sử dụng Flexbox để căn giữa nút dễ dàng */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Căn trái các item theo mặc định */
+}
+
+/* Apartment Title Overlay Styling */
+.apartment-title-overlay {
+    font-size: 20px; /* Kích thước tiêu đề lớn hơn */
+    font-weight: 700;
+    color: white;
+    margin-top: 0;
+    margin-bottom: 0.6rem; /* Khoảng cách với giá */
+    line-height: 1.3; /* Tăng line-height cho dễ đọc */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* Thêm text-shadow nhẹ */
+}
+
+/* Apartment Price Overlay Styling */
+.apartment-price-overlay {
+    font-size: 17px; /* Kích thước giá lớn hơn */
+    color: rgba(255, 255, 255, 0.9); /* Màu trắng hơi mờ */
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 2rem; /* Khoảng cách lớn hơn với nút */
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.3); /* Thêm text-shadow nhẹ */
+}
+
+/* Detail Button Overlay Styling */
+.detail-button-overlay {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.7rem 1.5rem; /* Tăng padding nút */
+    font-weight: 600;
+    font-size: 15px; /* Kích thước font nút lớn hơn */
+    color: white;
+    /* Nền vàng cam trong suốt đẹp hơn */
+    background-color: rgba(245, 166, 35, 0.85); /* Màu vàng cam đục hơn */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Thêm border trắng hơi mờ */
+    border-radius: 9999px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    /* Để căn giữa nút nếu cần, bỏ align-items: flex-start; trên apartment-info-overlay và dùng text-align: center; hoặc align-self: center; */
+    /* Ví dụ căn giữa nút: */
+     align-self: center; /* Sử dụng khi apartment-info-overlay là flex container theo column */
+}
+
+.detail-button-overlay:hover {
+     background-color: #f5a623; /* Màu vàng cam đầy đủ khi hover */
+     transform: scale(1.07); /* Hiệu ứng scale rõ hơn */
+     box-shadow: 0 5px 15px rgba(245, 166, 35, 0.5); /* Thêm box-shadow khi hover */
+     border-color: rgba(255, 255, 255, 0.6); /* Border sáng hơn khi hover */
+}
+
+.detail-button-overlay:active {
+     transform: scale(0.98);
+     background-color: #e0951c; /* Màu vàng cam đậm hơn khi active */
+     box-shadow: 0 2px 8px rgba(245, 166, 35, 0.4);
+}
+
+/* Line next to Button Text */
+.detail-button-overlay .button-line {
+    display: inline-block;
+    width: 18px; /* Chiều dài đường gạch dài hơn */
+    height: 2px;
+    background-color: white;
+    margin-left: 10px; /* Khoảng cách giữa text và đường gạch */
+    vertical-align: middle;
+    transition: width 0.3s ease; /* Thêm transition cho hiệu ứng khi hover */
+}
+
+/* Effect on line when button is hovered */
+.detail-button-overlay:hover .button-line {
+    width: 25px; /* Chiều dài đường gạch tăng khi hover */
+}
+/*bando*/
+
+
+
+
+
+
+/*Footer*/
+.footer {
+    background-color: #f7fafc;
+    color: #4a5568;
+    padding: 3rem 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: inset 0 1px 5px rgba(0,0,0,0.05);
+  }
+  
+  .footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    padding: 0 1rem;
+  }
+  
+  @media (min-width: 640px) {
+    .footer-container {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  
+  .footer h4 {
+    font-weight: 700;
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    border-bottom: 2px solid #d1a86a;
+    padding-bottom: 0.5rem;
+  }
+  
+  .footer ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .footer ul li {
+    margin-bottom: 0.6rem;
+  }
+  
+  .footer ul li a {
+    text-decoration: none;
+    color: #4a5568;
+    transition: color 0.3s ease, transform 0.2s ease;
+    font-size: 0.95rem;
+    display: inline-block;
+  }
+  
+  .footer ul li a:hover {
+    color: #d1a86a;
+    transform: translateX(5px);
+  }
+  
+  .social-icons {
+    margin-top: 1rem;
+  }
+  
+  .social-icons a {
+    margin-right: 1.2rem;
+    color: #4a5568;
+    font-size: 1.5rem;
+    transition: color 0.3s ease, transform 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .social-icons a:hover {
+    color: #d1a86a;
+    transform: scale(1.2);
+  }
+  
+  /* Optional: Footer bottom text */
+  .footer-bottom {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #a0aec0;
+    margin-top: 2rem;
+    letter-spacing: 0.05em;
+  }
+  
