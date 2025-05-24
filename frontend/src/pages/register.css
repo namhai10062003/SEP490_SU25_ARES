@@ -27,7 +27,7 @@ html, body {
 /* Khối chứa chính */
 .container {
   display: flex;
-  background: rgba(0, 0, 0, 0.75); /* Tối nhẹ */
+  /* background: rgba(0, 0, 0, 0.75); Tối nhẹ */
   width: 85%;
   max-width: 900px;
   border-radius: 10px;

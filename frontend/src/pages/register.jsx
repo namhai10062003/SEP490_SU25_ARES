@@ -7,13 +7,14 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify"; // import toast
-import "react-toastify/dist/ReactToastify.css"; // import css toastify
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./Register.css";
 
 const Register = () => {
   const [formData, setFormData] = useState({
     firstName: "",
+    phone: "", // 👈 Thêm state cho số điện thoại
     email: "",
     password: "",
     confirmPassword: "",
@@ -44,6 +45,7 @@ const Register = () => {
         },
         body: JSON.stringify({
           name: formData.firstName,
+          phone: formData.phone, // 👈 Gửi số điện thoại lên server
           email: formData.email,
           password: formData.password,
         }),
@@ -56,7 +58,7 @@ const Register = () => {
         console.log("Server response:", data);
         setTimeout(() => {
           navigate("/login");
-        }, 1500); // delay để toast hiện rồi chuyển trang
+        }, 1500);
       } else {
         toast.error(`Error: ${data.message || "Registration failed"}`);
       }
@@ -81,6 +83,14 @@ const Register = () => {
               name="firstName"
               placeholder="First Name"
               value={formData.firstName}
+              onChange={handleChange}
+              required
+            />
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Phone Number"
+              value={formData.phone}
               onChange={handleChange}
               required
             />
@@ -124,8 +134,6 @@ const Register = () => {
           </div>
         </div>
       </div>
-
-     
     </div>
   );
 };
