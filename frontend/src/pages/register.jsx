@@ -1,9 +1,7 @@
-// Register.js
-
 import {
-  faFacebookF,
-  faGoogle,
+  faGoogle
 } from "@fortawesome/free-brands-svg-icons";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"; // Thêm icon mắt
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -14,11 +12,15 @@ import "./Register.css";
 const Register = () => {
   const [formData, setFormData] = useState({
     firstName: "",
-    phone: "", // 👈 Thêm state cho số điện thoại
+    phone: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
+
+  // Trạng thái show/hide password
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
 
@@ -28,6 +30,9 @@ const Register = () => {
       [e.target.name]: e.target.value,
     }));
   };
+
+  const toggleShowPassword = () => setShowPassword((prev) => !prev);
+  const toggleShowConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,7 +50,7 @@ const Register = () => {
         },
         body: JSON.stringify({
           name: formData.firstName,
-          phone: formData.phone, // 👈 Gửi số điện thoại lên server
+          phone: formData.phone,
           email: formData.email,
           password: formData.password,
         }),
@@ -72,11 +77,11 @@ const Register = () => {
     <div className="register-page">
       <div className="container">
         <div className="left-panel">
-          <h1>OFFICIAL</h1>
-          <p>Lorem Ipsum Dolor Sit Amet. Consectetur Adipiscing Elit.</p>
+          <h1>ARES-FPTCITY</h1>
+          <p>Giải pháp tối ưu, kiến tạo tương lai tại FPT City Đà Nẵng.</p>
         </div>
         <div className="right-panel">
-          <h2>Official Signup Form</h2>
+          <h2>Đăng ký tại đây!!!</h2>
           <form onSubmit={handleSubmit}>
             <input
               type="text"
@@ -102,33 +107,42 @@ const Register = () => {
               onChange={handleChange}
               required
             />
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-            />
+            {/* Password input với icon mắt */}
+            <div className="password-wrapper">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+              <span className="password-toggle" onClick={toggleShowPassword} aria-label="Toggle password visibility">
+                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+              </span>
+            </div>
+            {/* Confirm Password input với icon mắt */}
+            <div className="password-wrapper">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+              <span className="password-toggle" onClick={toggleShowConfirmPassword} aria-label="Toggle confirm password visibility">
+                <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
+              </span>
+            </div>
             <button type="submit">Register</button>
           </form>
-
-          <div className="social-text">
-            Fast Signup With Your Favourite Social Profile
+          <div className="already-account">
+            <span>Bạn đã có tài khoản? </span>
+            <a href="/login" className="login-link">Đăng nhập ngay</a>
           </div>
           <div className="social-icons">
-            <a href="#" className="square">
-              <FontAwesomeIcon icon={faFacebookF} />
-            </a>
-            <a href="#" className="square">
+            <a href="#" className="square" aria-label="Google">
               <FontAwesomeIcon icon={faGoogle} />
             </a>
           </div>

@@ -1,4 +1,4 @@
-import { faFacebookF, faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -63,11 +63,11 @@ const Login = () => {
     <div className="login-page">
       <div className="container">
         <div className="left-panel">
-          <h1>OFFICIAL</h1>
-          <p>Lorem Ipsum Dolor Sit Amet. Consectetur Adipiscing Elit.</p>
+        <h1>ARES-FPTCITY</h1>
+        <p>Giải pháp tối ưu, kiến tạo tương lai tại FPT City Đà Nẵng.</p>
         </div>
         <div className="right-panel">
-          <h2>Official Login Form</h2>
+          <h2>Đăng nhập tại đây!!!</h2>
           <form onSubmit={handleSubmit} noValidate>
             <input
               type="email"
@@ -105,9 +105,6 @@ const Login = () => {
             Đăng nhập nhanh với tài khoản mạng xã hội
           </div>
           <div className="social-icons">
-            <a href="#" className="square" aria-label="Facebook">
-              <FontAwesomeIcon icon={faFacebookF} />
-            </a>
             <a href="#" className="square" aria-label="Google">
               <FontAwesomeIcon icon={faGoogle} />
             </a>
