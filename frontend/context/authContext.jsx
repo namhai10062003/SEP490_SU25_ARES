@@ -28,7 +28,7 @@ const AuthProvider = ({ children }) => {
 
       try {
         const verifyResponse = await axios.post(
-          "http://localhost:4000/api/auth/verify",
+          "http://localhost:4000/api/auth/verify-otp",
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
