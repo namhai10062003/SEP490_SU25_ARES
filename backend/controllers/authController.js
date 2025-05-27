@@ -29,7 +29,99 @@ const sendOTP = async (email, otp) => {
     console.error("❌ Lỗi gửi OTP:", error.message);
     throw new Error("Lỗi gửi OTP!");
   }
-};//
+};
+//forgotpassword
+const forgotPassword = async (req, res) => {
+  try {
+    if (!req.body || typeof req.body !== 'object') {
+      return res.status(400).json({ success: false, error: "Dữ liệu không hợp lệ!" });
+    }
+
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, error: "Vui lòng nhập email!" });
+    }
+
+    const user = await User.findOne({ email: email.trim() });
+    if (!user) {
+      return res.status(400).json({ success: false, error: "Email không tồn tại!" });
+    }
+
+    // Tạo OTP và lưu vào DB
+    const otp = crypto.randomInt(100000, 999999).toString();
+    user.otp = otp;
+    user.otpExpires = Date.now() + 5 * 60 * 1000; // OTP hết hạn sau 5 phút
+    await user.save();
+
+    // Gửi OTP qua email
+    try {
+      await sendOTP(email, otp);
+    } catch (emailError) {
+      console.error("❌ Lỗi khi gửi email OTP:", emailError.message || emailError);
+      return res.status(500).json({ success: false, error: "Không thể gửi email OTP. Vui lòng thử lại sau!" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP đã được gửi đến email của bạn.",
+    });
+
+  } catch (error) {
+    console.error("❌ Lỗi server khi xử lý quên mật khẩu:", error.message || error);
+    return res.status(500).json({ success: false, error: "Đã xảy ra lỗi phía server." });
+  }
+};
+//reset password
+const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    // Kiểm tra đủ thông tin
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ success: false, error: "Thiếu thông tin cần thiết!" });
+    }
+
+    // Tìm user theo email
+    const user = await User.findOne({ email: email.trim() });
+    if (!user) {
+      return res.status(400).json({ success: false, error: "Email không tồn tại!" });
+    }
+
+    // Kiểm tra OTP và hạn sử dụng
+    if (!user.otp || !user.otpExpires) {
+      return res.status(400).json({ success: false, error: "OTP không hợp lệ!" });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ success: false, error: "Mã OTP không đúng!" });
+    }
+
+    if (user.otpExpires < Date.now()) {
+      return res.status(400).json({ success: false, error: "Mã OTP đã hết hạn!" });
+    }
+
+    // Hash mật khẩu mới
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Cập nhật user
+    user.password = hashedPassword;
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Mật khẩu đã được cập nhật thành công!",
+    });
+
+  } catch (error) {
+    console.error("❌ Lỗi đặt lại mật khẩu:", error.message || error);
+    return res.status(500).json({ success: false, error: "Lỗi đặt lại mật khẩu!" });
+  }
+};
+
+//login
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -96,7 +188,7 @@ const verify = async (req, res) => {
 
     user.verified = true;
     user.otp = undefined;
-user.otpExpires = undefined;
+    user.otpExpires = undefined;
     await user.save();
 
     const token = jwt.sign(
@@ -201,5 +293,7 @@ newUser.otpExpires = otpExpires;
     return res.status(500).json({ success: false, error: "Lỗi đăng ký tài khoản!" });
   }
 };
+  
 
-export {login, register,verifynormal, verify};
+export { forgotPassword, login, register, resetPassword, verify, verifynormal };
+
