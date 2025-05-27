@@ -29,6 +29,7 @@ const sendOTP = async (email, otp) => {
     console.error("❌ Lỗi gửi OTP:", error.message);
     throw new Error("Lỗi gửi OTP!");
   }
+
 };
 //forgotpassword
 const forgotPassword = async (req, res) => {
@@ -157,6 +158,7 @@ const login = async (req, res) => {
     return res.status(500).json({ success: false, error: "Lỗi đăng nhập!" });
   }
 };
+
 // verify email 
 const verify = async (req, res) => {
   try {
@@ -171,6 +173,7 @@ const verify = async (req, res) => {
     if (!user) {
       return res.status(400).json({ success: false, error: "Email không tồn tại!" });
     }
+
 
     if (user.verified) {
       return res.status(400).json({ success: false, error: "Tài khoản đã xác thực!" });
@@ -189,6 +192,7 @@ const verify = async (req, res) => {
     user.verified = true;
     user.otp = undefined;
     user.otpExpires = undefined;
+
     await user.save();
 
     const token = jwt.sign(
@@ -282,6 +286,7 @@ newUser.otpExpires = otpExpires;
       return res.status(500).json({ success: false, error: "Lỗi gửi OTP!" });
     }
 
+
     return res.status(201).json({
       success: true,
       message: "Đăng ký thành công! OTP đã được gửi đến email.",
@@ -296,4 +301,3 @@ newUser.otpExpires = otpExpires;
   
 
 export { forgotPassword, login, register, resetPassword, verify, verifynormal };
-
