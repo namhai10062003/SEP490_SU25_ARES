@@ -6,12 +6,13 @@ import "react-toastify/dist/ReactToastify.css";
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { default as AuthProvider, default as useAuth } from "../context/authContext";
-import VerifyEmail from "./pages/verify-otp.jsx";
 import Home from "./home/home";
+import VerifyEmail from "./pages/verify-otp.jsx";
 // import Dashboard from "./pages/dashboard.jsx"; // Giả sử đây là trang chỉ dành cho admin
+import ForgotPassword from "./pages/forgotpassword";
 import Login from "./pages/login.jsx";
 import Register from "./pages/register.jsx";
-
+import ResetPassword from "./pages/resetpassword";
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 function ProtectedRoute({ element, allowedRoles }) {
   const { user } = useAuth();
@@ -32,6 +33,9 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/verify-otp" element={<VerifyEmail />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+
           {/* Route được bảo vệ (chỉ admin mới vào được) */}
           {/* <Route
             path="/dashboard"

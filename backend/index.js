@@ -23,7 +23,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-
+app.use(express.urlencoded({ extended: true }));
 // Route kiểm tra
 app.get("/", (req, res) => res.send("API working"));
 

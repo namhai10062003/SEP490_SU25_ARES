@@ -163,4 +163,19 @@
   .register-link .highlight-link:hover {
     text-decoration: underline;
   }
+  .forgot-password {
+    text-align: right;
+    margin: 8px 0 16px 0;
+  }
+  
+  .forgot-link {
+    font-size: 0.9rem;
+    color: #007bff;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+  .forgot-link:hover {
+    text-decoration: underline;
+  }
   

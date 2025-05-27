@@ -49,7 +49,9 @@ const Login = () => {
 
         navigate("/"); // 👉 Điều hướng ngay lập tức
       } else {
-        toast.error(data.message || "Đăng nhập thất bại.Vui lòng kiểm tra lại email or password!");
+        toast.error(
+          data.message || "Đăng nhập thất bại.Vui lòng kiểm tra lại email or password!"
+        );
       }
     } catch (error) {
       console.error("Lỗi khi đăng nhập:", error);
@@ -63,8 +65,8 @@ const Login = () => {
     <div className="login-page">
       <div className="container">
         <div className="left-panel">
-        <h1>ARES-FPTCITY</h1>
-        <p>Giải pháp tối ưu, kiến tạo tương lai tại FPT City Đà Nẵng.</p>
+          <h1>ARES-FPTCITY</h1>
+          <p>Giải pháp tối ưu, kiến tạo tương lai tại FPT City Đà Nẵng.</p>
         </div>
         <div className="right-panel">
           <h2>Đăng nhập tại đây!!!</h2>
@@ -87,6 +89,14 @@ const Login = () => {
               disabled={loading}
               required
             />
+
+            {/* Thêm phần Forgot Password */}
+            <div className="forgot-password">
+              <Link to="/forgot-password" className="forgot-link">
+                Quên mật khẩu?
+              </Link>
+            </div>
+
             <button type="submit" disabled={loading}>
               {loading ? "Đang đăng nhập..." : "Login"}
             </button>
