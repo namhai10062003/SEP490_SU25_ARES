@@ -7,18 +7,16 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: ["admin", "customer", "staff"],
-        default: "customer", // Mặc định là "customer" nếu không nhập
+        default: "customer",
     },
     profileImage: { type: String },
     phone: { type: String },
-    createAT: { type: Date, default: Date.now },
-    updateAT: { type: Date, default: Date.now },
     isOnline: { type: Boolean, default: false },
     lastMessageTime: { type: Date, default: null },
-    verified: { type: Boolean, default: false }, // Trạng thái xác thực email
-    otp: { type: String }, // Mã OTP tạm thời
-    otpExpires: { type: Date }, // Thời gian hết hạn OTP
-})
+    verified: { type: Boolean, default: false },
+    otp: { type: String },
+    otpExpires: { type: Date },
+}, { timestamps: true }); // Tự động thêm createdAt và updatedAt
 
-const User = mongoose.model("User", userSchema)
+const User = mongoose.model("User", userSchema);
 export default User;
