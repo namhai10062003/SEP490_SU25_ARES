@@ -60,9 +60,9 @@ const Register = () => {
 
       if (response.ok) {
         toast.success("Registered successfully!");
-        console.log("Server response:", data);
+        localStorage.setItem("emailForVerify", formData.email); // 👉 Lưu email
         setTimeout(() => {
-          navigate("/login");
+          navigate("/verify-otp");
         }, 1500);
       } else {
         toast.error(`Error: ${data.message || "Registration failed"}`);
@@ -99,7 +99,7 @@ const Register = () => {
               onChange={handleChange}
               required
             />
-            <input
+<input
               type="email"
               name="email"
               placeholder="mail@example.com"

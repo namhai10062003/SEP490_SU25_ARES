@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 // import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { default as AuthProvider, default as useAuth } from "../context/authContext";
-
+import VerifyEmail from "./pages/verify-otp.jsx";
 import Home from "./home/home";
 // import Dashboard from "./pages/dashboard.jsx"; // Giả sử đây là trang chỉ dành cho admin
 import Login from "./pages/login.jsx";
@@ -31,7 +31,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-
+          <Route path="/verify-otp" element={<VerifyEmail />} />
           {/* Route được bảo vệ (chỉ admin mới vào được) */}
           {/* <Route
             path="/dashboard"

@@ -14,7 +14,10 @@ const userSchema = new mongoose.Schema({
     createAT: { type: Date, default: Date.now },
     updateAT: { type: Date, default: Date.now },
     isOnline: { type: Boolean, default: false },
-    lastMessageTime: { type: Date, default: null }
+    lastMessageTime: { type: Date, default: null },
+    verified: { type: Boolean, default: false }, // Trạng thái xác thực email
+    otp: { type: String }, // Mã OTP tạm thời
+    otpExpires: { type: Date }, // Thời gian hết hạn OTP
 })
 
 const User = mongoose.model("User", userSchema)
