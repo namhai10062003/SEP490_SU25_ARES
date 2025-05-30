@@ -16,9 +16,6 @@ const userSchema = new mongoose.Schema({
     verified: { type: Boolean, default: false },
     otp: { type: String },
     otpExpires: { type: Date },
-    //Google OAuth fields
-    googleId: { type: String, unique: true, sparse: true },
-    picture: { type: String },
 }, { timestamps: true }); // Tự động thêm createdAt và updatedAt
 
 const User = mongoose.model("User", userSchema);
