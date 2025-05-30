@@ -3,11 +3,17 @@ import {
 } from "@fortawesome/free-brands-svg-icons";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"; // Thêm icon mắt
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuth } from "../../context/authContext";
 import "./Register.css";
+// Import Firebase
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../libs/firebase";
+const googleProvider = new GoogleAuthProvider();
+
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -18,11 +24,13 @@ const Register = () => {
     confirmPassword: "",
   });
 
+
   // Trạng thái show/hide password
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+  const [googleLoading, setGoogleLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -34,6 +42,37 @@ const Register = () => {
   const toggleShowPassword = () => setShowPassword((prev) => !prev);
   const toggleShowConfirmPassword = () => setShowConfirmPassword((prev) => !prev);
 
+  // Replace the existing Google sign-in with Firebase Google auth
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const idToken = await user.getIdToken();
+      // Send the token to your backend
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: idToken })
+      });
+      console.log("Google sign-in response:", response);
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        login(data.user, data.token);
+        toast.success("🎉 Google login successful!");
+        navigate("/");
+      } else {
+        toast.error(data.error || "Google login failed");
+      }
+    } catch (error) {
+      console.error("Firebase Google Auth Error:", error);
+      toast.error("Đăng nhập với Google thất bại");
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -43,10 +82,21 @@ const Register = () => {
     }
 
     try {
+
+      // Firebase email/password authentication
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+      const user = userCredential.user;
+      // Get token from Firebase user
+      const idToken = await user.getIdToken();
       const response = await fetch("http://localhost:4000/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${idToken}`,
         },
         body: JSON.stringify({
           name: formData.firstName,
@@ -99,7 +149,7 @@ const Register = () => {
               onChange={handleChange}
               required
             />
-<input
+            <input
               type="email"
               name="email"
               placeholder="mail@example.com"
@@ -141,10 +191,25 @@ const Register = () => {
             <span>Bạn đã có tài khoản? </span>
             <a href="/login" className="login-link">Đăng nhập ngay</a>
           </div>
+          <div className="social-text">
+            Đăng nhập nhanh với tài khoản mạng xã hội
+          </div>
           <div className="social-icons">
-            <a href="#" className="square" aria-label="Google">
-              <FontAwesomeIcon icon={faGoogle} />
-            </a>
+            <div className="social-icons">
+              <button
+                onClick={handleGoogleSignIn}
+                disabled={googleLoading}
+                className="google-sign-in-button"
+                type="button"
+              >
+                {googleLoading ? (
+                  <span className="spinner"></span>
+                ) : (
+                  <FontAwesomeIcon icon={faGoogle} />
+                )}
+                <span>Đăng nhập với Google</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
