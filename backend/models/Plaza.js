@@ -20,9 +20,15 @@ const plazaSchema = new Schema({
   description: {
     type: String,
     trim: true
+  },
+  created_at: {
+    type: Date,
+    default: Date.now
+  },
+  updated_at: {
+    type: Date,
+    default: Date.now
   }
-}, {
-  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } // Đổi tên theo yêu cầu
 });
 
 module.exports = mongoose.model('Plaza', plazaSchema);

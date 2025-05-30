@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const ParkingRegistrationSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  plazaId: { type: Schema.Types.ObjectId, ref: 'Plaza', required: true },
-  apartmentId: { type: Schema.Types.ObjectId, ref: 'Apartment', required: true },
-  serviceID: { type: Schema.Types.ObjectId, ref: 'Service', required: true },
+  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },          // Người đăng ký
+  plazaId: { type: Schema.Types.ObjectId, ref: 'Plaza', required: true },        // Chung cư
+  apartmentId: { type: Schema.Types.ObjectId, ref: 'Apartment', required: true },// Căn hộ
+  serviceID:{type: Schema.Types.ObjectId, ref: 'Service', required: true },
 
   slotInfo: {
     location: { type: String, required: true },
@@ -39,10 +39,9 @@ const ParkingRegistrationSchema = new Schema({
     type: String,
     enum: ['pending', 'approved', 'expired', 'rejected', 'active'],
     default: 'pending'
-  }
+  },
 
-}, {
-  timestamps: true // Tự động thêm và cập nhật createdAt & updatedAt
+  createdAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('ParkingRegistration', ParkingRegistrationSchema);

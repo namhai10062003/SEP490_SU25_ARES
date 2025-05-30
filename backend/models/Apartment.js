@@ -43,9 +43,15 @@ const apartmentSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User',
     default: null
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
-}, {
-  timestamps: true // Tự động thêm và cập nhật createdAt & updatedAt
 });
 
 module.exports = mongoose.model('Apartment', apartmentSchema);
