@@ -10,6 +10,7 @@ import Home from "./home/home";
 import VerifyEmail from "./pages/verify-otp.jsx";
 // import Dashboard from "./pages/dashboard.jsx"; // Giả sử đây là trang chỉ dành cho admin
 import ForgotPassword from "./pages/forgotpassword";
+import GoogleCallback from "./pages/google-callback.jsx";
 import Login from "./pages/login.jsx";
 import Register from "./pages/register.jsx";
 import ResetPassword from "./pages/resetpassword";
@@ -35,7 +36,7 @@ function App() {
           <Route path="/verify-otp" element={<VerifyEmail />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-
+          <Route path="/google/callback" element={<GoogleCallback />} />
           {/* Route được bảo vệ (chỉ admin mới vào được) */}
           {/* <Route
             path="/dashboard"

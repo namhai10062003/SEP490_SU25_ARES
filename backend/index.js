@@ -19,11 +19,20 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-// Middleware
+// Middleware (ORDER MATTERS!)
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
+
+// Log Every Request - MOVE THIS BEFORE ROUTES
+app.use((req, res, next) => {
+  console.log(`📨 ${req.method} ${req.url} - ${new Date().toISOString()}`)
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log('📝 Request body:', req.body)
+  }
+  next()
+})
+
 // Route kiểm tra
 app.get("/", (req, res) => res.send("API working"));
 

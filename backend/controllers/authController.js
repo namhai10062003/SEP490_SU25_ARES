@@ -1,12 +1,14 @@
 import bcrypt from 'bcrypt';
 import crypto from "crypto";
 import dotenv from "dotenv";
+import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
 import nodemailer from "nodemailer";
 import User from '../models/User.js';
 
 dotenv.config();
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 // Cấu hình gửi email
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -160,82 +162,74 @@ const login = async (req, res) => {
 };
 
 // verify email 
-const verify = async (req, res) => {
+const verifyUser = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    if (!email || !otp) {
-      return res.status(400).json({ success: false, error: "Thiếu email hoặc OTP!" });
+    // Trường hợp xác thực qua OTP (đăng ký/đăng nhập bước 2)
+    if (otp && email) {
+      const user = await User.findOne({ email: email.trim() });
+
+      if (!user) {
+        return res.status(400).json({ success: false, error: "Email không tồn tại!" });
+      }
+
+      if (user.verified) {
+        return res.status(400).json({ success: false, error: "Tài khoản đã xác thực!" });
+      }
+
+      console.log("📨 OTP nhập:", otp);
+      console.log("🧾 OTP lưu:", user.otp);
+      console.log("⏰ Hết hạn:", new Date(user.otpExpires), "Hiện tại:", new Date());
+
+      if (user.otp !== otp.trim() || Date.now() > user.otpExpires) {
+        return res.status(400).json({ success: false, error: "OTP không hợp lệ hoặc đã hết hạn!" });
+      }
+
+      user.verified = true;
+      user.otp = undefined;
+      user.otpExpires = undefined;
+      await user.save();
+
+      const token = jwt.sign(
+        { _id: user._id, role: user.role, email: user.email, name: user.name },
+        process.env.JWT_SECRET,
+        { expiresIn: "10d" }
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Xác thực OTP thành công!",
+        token,
+        user: {
+          _id: user._id,
+          name: user.name,
+          role: user.role,
+          email: user.email,
+        },
+      });
     }
 
-    const user = await User.findOne({ email: email.trim() });
+    // Trường hợp xác thực token thông thường (đã đăng nhập)
+    if (req.user) {
+      const user = req.user;
 
-    if (!user) {
-      return res.status(400).json({ success: false, error: "Email không tồn tại!" });
+      return res.status(200).json({
+        success: true,
+        message: "Token hợp lệ!",
+        user: {
+          _id: user._id,
+          name: user.name,
+          role: user.role,
+          email: user.email,
+        },
+      });
     }
 
-
-    if (user.verified) {
-      return res.status(400).json({ success: false, error: "Tài khoản đã xác thực!" });
-    }
-
-    // Log để debug
-    console.log("📨 OTP nhập:", otp);
-    console.log("🧾 OTP lưu:", user.otp);
-    console.log("⏰ Hết hạn:", new Date(user.otpExpires), "Hiện tại:", new Date());
-
-    // Kiểm tra OTP hợp lệ
-    if (user.otp !== otp.trim() || Date.now() > user.otpExpires) {
-      return res.status(400).json({ success: false, error: "OTP không hợp lệ hoặc đã hết hạn!" });
-    }
-
-    user.verified = true;
-    user.otp = undefined;
-    user.otpExpires = undefined;
-
-    await user.save();
-
-    const token = jwt.sign(
-      { _id: user._id, role: user.role, email: user.email, name: user.name },
-      process.env.JWT_SECRET,
-      { expiresIn: "10d" }
-    );
-
-    return res.status(200).json({
-      success: true,
-      message: "Xác thực thành công!",
-      token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        role: user.role,
-        email: user.email
-      },
-    });
+    return res.status(400).json({ success: false, error: "Thiếu dữ liệu xác thực!" });
   } catch (error) {
-    console.error("❌ Lỗi xác thực OTP:", error.message);
-    return res.status(500).json({ success: false, error: "Lỗi xác thực OTP!" });
-  }
-};
-//verify normal
-const verifynormal = async (req, res) => {
-  try {
-    // Lấy user từ middleware
-    const user = req.user; 
-
-    if (!user) {
-      return res.status(401).json({ success: false, error: "Không tìm thấy người dùng!" });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: "Token hợp lệ!",
-      user: { _id: user._id, name: user.name, role: user.role, email: user.email },
-    });
-
-  } catch (error) {
-    console.error("❌ Lỗi xác minh token:", error);
-    return res.status(500).json({ success: false, error: "Lỗi xác minh token!" });
+    console.error("❌ Lỗi xác thực:", error);
+    return res.status(500).json({ success: false, error: "Lỗi xác thực!" });
   }
 };
 // register
@@ -298,6 +292,145 @@ newUser.otpExpires = otpExpires;
     return res.status(500).json({ success: false, error: "Lỗi đăng ký tài khoản!" });
   }
 };
-  
+// login with gooogle
+const googleAuth = async (req, res) => {
+  try {
+    const { token } = req.body
 
-export { forgotPassword, login, register, resetPassword, verify, verifynormal };
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        error: "Google token is required",
+      })
+    }
+
+    // Verify the Google token
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    })
+
+    const payload = ticket.getPayload()
+    const { sub: googleId, email, name, picture } = payload
+
+    // Check if user already exists with this Google ID
+    let user = await User.findOne({ googleId })
+
+    if (user) {
+      // User exists with Google ID, just log them in
+      user.isOnline = true
+      await user.save()
+    } else {
+      // Check if user exists with this email (from regular registration)
+      user = await User.findOne({ email })
+
+      if (user) {
+        // User exists with email, link Google account
+        user.googleId = googleId
+        user.picture = picture
+        user.isOnline = true
+        await user.save()
+      } else {
+        // Create new user with Google account
+        // Generate a random password since it's required in your schema
+        const randomPassword = Math.random().toString(36).slice(-8)
+        const hashedPassword = await bcrypt.hash(randomPassword, 10)
+
+        user = new User({
+          name,
+          email,
+          password: hashedPassword, // Required field, but won't be used for Google users
+          googleId,
+          picture,
+          role: "customer",
+          isOnline: true,
+        })
+
+        await user.save()
+      }
+    }
+
+    // Generate JWT token (same format as your login function)
+    const jwtToken = jwt.sign({ _id: user._id, role: user.role, name: user.name }, process.env.JWT_SECRET, {
+      expiresIn: "10d",
+    })
+
+    // Send response in same format as your login function
+    return res.status(200).json({
+      success: true,
+      token: jwtToken,
+      user: { _id: user._id, name: user.name, role: user.role },
+      isOnline: user.isOnline,
+    })
+  } catch (error) {
+    console.error("Google Auth Error:", error.message)
+    return res.status(500).json({ success: false, error: error.message })
+  }
+}
+
+
+const googleCallback = async (req, res) => {
+  try {
+    const { code } = req.body
+
+    // Exchange authorization code for tokens
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        code,
+        grant_type: 'authorization_code',
+        redirect_uri: `${process.env.CLIENT_URL}/auth/google/callback`,
+      }),
+    })
+
+    const tokens = await tokenResponse.json()
+
+    // Get user info from Google
+    const userResponse = await fetch(`https://www.googleapis.com/oauth2/v2/userinfo?access_token=${tokens.access_token}`)
+    const googleUser = await userResponse.json()
+
+    // Use your existing logic to create/find user
+    let user = await User.findOne({ googleId: googleUser.id })
+
+    if (!user) {
+      user = await User.findOne({ email: googleUser.email })
+      if (user) {
+        user.googleId = googleUser.id
+        await user.save()
+      } else {
+        const randomPassword = Math.random().toString(36).slice(-8)
+        const hashedPassword = await bcrypt.hash(randomPassword, 10)
+
+        user = new User({
+          name: googleUser.name,
+          email: googleUser.email,
+          password: hashedPassword,
+          googleId: googleUser.id,
+          role: "customer",
+          isOnline: true,
+        })
+        await user.save()
+      }
+    }
+
+    const jwtToken = jwt.sign({ _id: user._id, role: user.role, name: user.name }, process.env.JWT_SECRET, {
+      expiresIn: "10d",
+    })
+
+    return res.status(200).json({
+      success: true,
+      token: jwtToken,
+      user: { _id: user._id, name: user.name, role: user.role },
+      isOnline: user.isOnline,
+    })
+  } catch (error) {
+    console.error("Google callback error:", error)
+    return res.status(500).json({ success: false, error: error.message })
+  }
+}
+
+export { forgotPassword, googleAuth, googleCallback, login, register, resetPassword, verifyUser };
+
