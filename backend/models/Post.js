@@ -1,6 +1,4 @@
-// models/Post.js
 const mongoose = require('mongoose');
-
 const { Schema } = mongoose;
 
 const PostSchema = new Schema({
@@ -58,16 +56,9 @@ const PostSchema = new Schema({
     type: String,
     enum: ['active', 'pending', 'hidden'],
     default: 'pending',
-  },
-
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
-
-// Tự động cập nhật updatedAt khi save
-PostSchema.pre('save', function (next) {
-  this.updatedAt = new Date();
-  next();
+  }
+}, {
+  timestamps: true // Tự động thêm createdAt và updatedAt
 });
 
 module.exports = mongoose.model('Post', PostSchema);

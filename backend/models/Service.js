@@ -37,15 +37,9 @@ const serviceSchema = new Schema({
   endDate: {
     type: Date,
     required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
   }
+}, {
+  timestamps: true // Tự động thêm createdAt và updatedAt
 });
 
 module.exports = mongoose.model('Service', serviceSchema);

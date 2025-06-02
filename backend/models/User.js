@@ -7,10 +7,11 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: ["admin", "customer", "staff"],
-        default: "customer", // Mặc định là "customer" nếu không nhập
+        default: "customer",
     },
     profileImage: { type: String },
     phone: { type: String },
+
     // Use timestamps to automatically manage createdAt and updatedAt fields, createAt not createdAT(sai chinh tả)
     // createAT: { type: Date, default: Date.now },
     // updateAT: { type: Date, default: Date.now },
@@ -32,6 +33,5 @@ const userSchema = new mongoose.Schema({
 }, {
     timestamps: true    // Automatically manage createdAt and updatedAt fields
 })
-
-const User = mongoose.model("User", userSchema)
+const User = mongoose.model("User", userSchema);
 export default User;
