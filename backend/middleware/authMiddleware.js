@@ -1,13 +1,13 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
-const verifyUser = async (req, res, next) => {
+const verifysUser = async (req, res, next) => {
     try {
         // Extract token from headers
         const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
-        
+
         if (!token) {
-            
+
             return res.status(400).json({ success: false, error: "Token not provided" });
         }
 
@@ -39,4 +39,4 @@ const verifyUser = async (req, res, next) => {
     }
 };
 
-export default verifyUser;
+export default verifysUser;

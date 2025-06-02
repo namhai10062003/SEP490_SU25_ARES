@@ -11,13 +11,26 @@ const userSchema = new mongoose.Schema({
     },
     profileImage: { type: String },
     phone: { type: String },
-    createAT: { type: Date, default: Date.now },
-    updateAT: { type: Date, default: Date.now },
-    isOnline: { type: Boolean, default: false },
+    // Use timestamps to automatically manage createdAt and updatedAt fields, createAt not createdAT(sai chinh tả)
+    // createAT: { type: Date, default: Date.now },
+    // updateAT: { type: Date, default: Date.now },
     lastMessageTime: { type: Date, default: null },
     verified: { type: Boolean, default: false }, // Trạng thái xác thực email
     otp: { type: String }, // Mã OTP tạm thời
     otpExpires: { type: Date }, // Thời gian hết hạn OTP
+    isOnline: { type: Boolean, default: false },
+    // NEW FIELDS for google authentication
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true, // Allows multiple null values
+    },
+    picture: {
+        type: String, // Google profile picture URL
+    },
+    // NEW FIELDS END
+}, {
+    timestamps: true    // Automatically manage createdAt and updatedAt fields
 })
 
 const User = mongoose.model("User", userSchema)

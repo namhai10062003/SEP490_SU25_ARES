@@ -12,170 +12,200 @@
     overflow: hidden;
   }
    */
-  /* Trang đăng ký toàn màn hình */
-  .login-page {
-    background: url('../images/banner_login.jpg') no-repeat center center fixed;
-    background-size: cover;
-    width: 100vw;         /* Chiếm toàn bộ chiều rộng màn hình */
-    height: 100vh;        /* Chiếm toàn bộ chiều cao màn hình */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #fff;
-  }
-  
-  /* Khối chứa chính */
-  .container {
-    display: flex;
-    background: rgba(0, 0, 0, 0.75); /* Tối nhẹ */
-    width: 85%;
-    max-width: 900px;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.6);
-  }
-  
-  /* Bên trái */
-  .left-panel {
-    width: 50%;
-    background: url('../images/content_login.jpeg') no-repeat center center;
-    background-size: cover;
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    color: #fff;
-  }
-  
-  .left-panel h1 {
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin-bottom: 10px;
-  }
-  
-  .left-panel p {
-    font-size: 1rem;
-    line-height: 1.5;
-  }
-  
-  /* Bên phải */
-  .right-panel {
-    width: 50%;
-    background: #1c1c1c;
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  
-  .right-panel h2 {
-    font-size: 2.4rem;
-    text-align: center;
-    margin-bottom: 30px;
-    font-weight: 800;
-    background: linear-gradient(to right, #00c6ff, #0072ff); /* 👈 Gradient xanh nổi bật */
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4); /* 👈 Đổ bóng nhẹ */
-    letter-spacing: 1.2px;
-  }
-  
-  
-  form input {
-    width: 100%;
-    margin-bottom: 20px;
-    padding: 12px;
-    border: none;
-    border-bottom: 2px solid #555;
-    background: transparent;
-    color: #fff;
-    font-size: 1rem;
-    outline: none;
-    transition: border-color 0.3s;
-  }
-  
-  form input:focus {
-    border-color: #00bfff;
-  }
-  
-  /* Nút */
-  button {
-    width: 100%;
-    padding: 12px;
-    background: #2d8cf0;
-    color: #fff;
-    border: none;
-    font-size: 1rem;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-  
-  button:hover {
-    background: #1b6dc1;
-  }
-  
-  /* Text mô tả */
-  .social-text {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 0.9rem;
-    color: #ccc;
-  }
-  
-  /* Icon mạng xã hội */
-  .social-icons {
-    text-align: center;
-    margin-top: 15px;
-  }
-  
-  .social-icons a {
-    width: 50px;
-    height: 50px;
-    margin: 0 10px;
-    display: inline-flex;/* Canh giữa icon */
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    border: 1px solid #fff;
-    border-radius: 10px;/* Bo góc nhẹ cho hình vuông */
-    transition: 0.3s;
-    font-size: 20px;/* Tăng kích thước icon */
-  }
-  
-  .social-icons a:hover {
-    background: #fff;
-    color: #1c1c1c;
-  }
-  
-  .register-link {
-    margin-top: 15px;
-    font-size: 14px;
-    text-align: center;
-  }
-  
-  .register-link .highlight-link {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
-  }
-  
-  .register-link .highlight-link:hover {
-    text-decoration: underline;
-  }
-  .forgot-password {
-    text-align: right;
-    margin: 8px 0 16px 0;
-  }
-  
-  .forgot-link {
-    font-size: 0.9rem;
-    color: #007bff;
-    text-decoration: none;
-    cursor: pointer;
-  }
-  
-  .forgot-link:hover {
-    text-decoration: underline;
-  }
-  
+/* Trang đăng ký toàn màn hình */
+.login-page {
+  background: url('../images/banner_login.jpg') no-repeat center center fixed;
+  background-size: cover;
+  width: 100vw;
+  /* Chiếm toàn bộ chiều rộng màn hình */
+  height: 100vh;
+  /* Chiếm toàn bộ chiều cao màn hình */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #ccc;
+}
+
+.divider span {
+  padding: 0 12px;
+  color: #888;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+
+/* Khối chứa chính */
+.container {
+  display: flex;
+  background: rgba(0, 0, 0, 0.75);
+  /* Tối nhẹ */
+  width: 85%;
+  max-width: 900px;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.6);
+}
+
+/* Bên trái */
+.left-panel {
+  width: 50%;
+  background: url('../images/content_login.jpeg') no-repeat center center;
+  background-size: cover;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #fff;
+}
+
+.left-panel h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.left-panel p {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Bên phải */
+.right-panel {
+  width: 50%;
+  background: #1c1c1c;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.right-panel h2 {
+  font-size: 2.4rem;
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: 800;
+  background: linear-gradient(to right, #00c6ff, #0072ff);
+  /* 👈 Gradient xanh nổi bật */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+  /* 👈 Đổ bóng nhẹ */
+  letter-spacing: 1.2px;
+}
+
+
+form input {
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 12px;
+  border: none;
+  border-bottom: 2px solid #555;
+  background: transparent;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+form input:focus {
+  border-color: #00bfff;
+}
+
+/* Nút */
+button {
+  width: 100%;
+  padding: 12px;
+  background: #2d8cf0;
+  color: #fff;
+  border: none;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #1b6dc1;
+}
+
+/* Text mô tả */
+.social-text {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+/* Icon mạng xã hội */
+.social-icons {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.social-icons a {
+  width: 50px;
+  height: 50px;
+  margin: 0 10px;
+  display: inline-flex;
+  /* Canh giữa icon */
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  border: 1px solid #fff;
+  border-radius: 10px;
+  /* Bo góc nhẹ cho hình vuông */
+  transition: 0.3s;
+  font-size: 20px;
+  /* Tăng kích thước icon */
+}
+
+.social-icons a:hover {
+  background: #fff;
+  color: #1c1c1c;
+}
+
+.register-link {
+  margin-top: 15px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.register-link .highlight-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.register-link .highlight-link:hover {
+  text-decoration: underline;
+}
+
+.forgot-password {
+  text-align: right;
+  margin: 8px 0 16px 0;
+}
+
+.forgot-link {
+  font-size: 0.9rem;
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}

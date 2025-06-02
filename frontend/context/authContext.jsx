@@ -14,12 +14,12 @@ const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
+  // Xác minh token từ localStorage khi app load
   useEffect(() => {
     const verifyUser = async () => {
-      setLoading(true);
       const token = localStorage.getItem("token");
-      console.log("🔹 Token từ localStorage:", token);
-
       if (!token) {
         setUser(null);
         setLoading(false);
@@ -27,24 +27,24 @@ const AuthProvider = ({ children }) => {
       }
 
       try {
-        const verifyResponse = await axios.post(
-          "http://localhost:4000/api/auth/verify-otp",
+        const response = await axios.post(
+          `${apiUrl}/api/auth/verify`, // ✅ đổi tên endpoint nếu cần
           {},
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
 
-        console.log("✅ User verified:", verifyResponse.data.user);
-        setUser(verifyResponse.data.user);
-      } catch (error) {
-        console.error("❌ Lỗi khi xác minh token:", error);
-
-        if (error.response && error.response.status === 401) {
-          console.log("❌ Token hết hạn! Xóa khỏi localStorage.");
-          localStorage.removeItem("token");
+        if (response.data && response.data.user) {
+          setUser(response.data.user);
+        } else {
+          throw new Error("Không tìm thấy thông tin người dùng.");
         }
-
+      } catch (err) {
+        console.error("❌ Lỗi xác minh token:", err);
+        localStorage.removeItem("token");
         setUser(null);
-        setError("Session expired. Please log in again.");
+        setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
       } finally {
         setLoading(false);
       }
@@ -53,20 +53,23 @@ const AuthProvider = ({ children }) => {
     verifyUser();
   }, []);
 
+  // Hàm login
   const login = (userData, token) => {
     localStorage.setItem("token", token);
     setUser(userData);
+    setError(null); // xoá lỗi cũ nếu có
   };
 
+  // Hàm logout
   const logout = () => {
-    console.log("🔹 Đăng xuất, xóa token khỏi localStorage.");
     localStorage.removeItem("token");
     setUser(null);
+    setError(null);
   };
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading, error }}>
-      {!loading ? children : <div>Đang tải...</div>}
+      {loading ? <div>Đang kiểm tra đăng nhập...</div> : children}
     </AuthContext.Provider>
   );
 };
