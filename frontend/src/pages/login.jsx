@@ -53,7 +53,11 @@ const Login = () => {
       if (result.ok && data.success) {
         login(data.user, data.token)
         toast.success("🎉 Google login successful!")
-        navigate("/")
+        if (data.user.role === "admin") {
+          navigate("/admin-dashboard")
+        } else {
+          navigate("/")
+        }
       } else {
         toast.error(data.error || "Google login failed")
       }
@@ -93,7 +97,11 @@ const Login = () => {
       if (response.ok && data.token && data.user) {
         login(data.user, data.token)
         toast.success("🎉 Đăng nhập thành công!")
-        navigate("/")
+        if (data.user.role === "admin") {
+          navigate("/admin-dashboard")
+        } else {
+          navigate("/")
+        }
       } else {
         toast.error(data.error || "Login failed!")
       }
