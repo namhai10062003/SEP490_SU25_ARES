@@ -9,7 +9,6 @@ import AuthProvider, { useAuth } from "../context/authContext";
 import Home from "./home/home";
 import VerifyEmail from "./pages/verify-otp.jsx";
 // import Dashboard from "./pages/dashboard.jsx"; // Giả sử đây là trang chỉ dành cho admin
-import ManageStaff from "./pages/manage-staff.jsx";
 import AdminDashboard from "./pages/adminDashboard.jsx";
 import ForgotPassword from "./pages/forgotpassword";
 import GoogleCallback from "./pages/google-callback.jsx";
@@ -39,22 +38,12 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/google/callback" element={<GoogleCallback />} />
-
           {/* Route được bảo vệ (chỉ admin mới vào được) */}
           {<Route
             path="/admin-dashboard"
             element={
               <ProtectedRoute
                 element={<AdminDashboard />}
-                allowedRoles={["admin"]}
-              />
-            }
-          />}
-          {<Route
-            path="/admin-dashboard/manage-staff"
-            element={
-              <ProtectedRoute
-                element={<ManageStaff />}
                 allowedRoles={["admin"]}
               />
             }
