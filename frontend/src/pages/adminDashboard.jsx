@@ -1,16 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./adminDashboard.css";
-
-const stats = [
-  { title: "Doanh thu hôm nay", value: "$65.4K", change: "▲ So với trước" },
-  { title: "Tỉ lệ tăng trưởng", value: "78.4%", change: "▲ So với trước" },
-  { title: "Người dùng đang hoạt động", value: "42.5K", change: "▲ So với trước" },
-  { title: "Tổng số người dùng", value: "97.4K", change: "▼ So với trước" },
-  { title: "Tổng lượt click", value: "82.7K", change: "▲ So với trước" },
-];
-
-export default function AdminDashboard() {
+// import StatisticsDashboard from "./statisticDashboard.jsx"; 
+export default function AdminDashboard({ children }) {
   return (
     <div className="d-flex" style={{ minHeight: "100vh" }}>
       {/* Sidebar */}
@@ -23,26 +15,14 @@ export default function AdminDashboard() {
           <li><Link to="/admin/revenue" className="text-white text-decoration-none d-block py-1">• Phân tích doanh thu</Link></li>
           <li><Link to="/admin/notifications" className="text-white text-decoration-none d-block py-1">• Gửi thông báo</Link></li>
           <li><Link to="/admin/users" className="text-white text-decoration-none d-block py-1">• Quản lí User</Link></li>
-          <li><Link to="/admin/staff" className="text-white text-decoration-none d-block py-1">• Quản lí Staff</Link></li>
+          <li><Link to="/admin-dashboard/manage-staff" className="text-white text-decoration-none d-block py-1">• Quản lí Staff</Link></li>
         </ul>
       </div>
 
       {/* Main content */}
-      <div className="flex-grow-1 p-5 bg-light">
-        <h2 className="fw-bold mb-4">Dashboard tổng hợp</h2>
-        <div className="row g-4">
-          {stats.map((item, index) => (
-            <div key={index} className="col-md-4">
-              <div className="card shadow-sm">
-                <div className="card-body">
-                  <h6 className="card-title fw-bold">{item.title}</h6>
-                  <h4 className="text-primary">{item.value}</h4>
-                  <small className="text-muted">{item.change}</small>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="flex-grow-1 p-3 bg-light">
+        {children}
+        {/* <StatisticsDashboard/> */}
       </div>
     </div>
   );

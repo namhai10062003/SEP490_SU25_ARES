@@ -29,6 +29,7 @@ const userSchema = new mongoose.Schema({
     picture: {
         type: String, // Google profile picture URL
     },
+    status: { type: Number, enum: [0, 1], default: 1 }, // 1: active, 0: blocked
     // NEW FIELDS END
 }, {
     timestamps: true    // Automatically manage createdAt and updatedAt fields
