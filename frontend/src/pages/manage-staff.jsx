@@ -9,7 +9,7 @@ const ManageStaff = () => {
     const [showModal, setShowModal] = useState(false);
     const [isUpdate, setIsUpdate] = useState(false);
     const [selectedStaff, setSelectedStaff] = useState(null);
-    const [form, setForm] = useState({ username: "", password: "" });
+    const [form, setForm] = useState({ username: "", password: "", email: "" });
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -30,7 +30,7 @@ const ManageStaff = () => {
 
     const openAdd = () => {
         setIsUpdate(false);
-        setForm({ username: "", password: "" });
+        setForm({ username: "", password: "", email: "" });
         setSelectedStaff(null);
         setShowModal(true);
         setShowPassword(false);
@@ -38,7 +38,7 @@ const ManageStaff = () => {
 
     const openUpdate = (staff) => {
         setIsUpdate(true);
-        setForm({ username: staff.name, password: staff.password });
+        setForm({ username: staff.name, password: staff.password, email: staff.email });
         setSelectedStaff(staff);
         setShowModal(true);
         setShowPassword(false);
@@ -60,6 +60,7 @@ const ManageStaff = () => {
                     body: JSON.stringify({
                         name: form.username,
                         password: form.password,
+                        email: form.email,
                     }),
                 });
                 if (res.ok) {
@@ -77,7 +78,8 @@ const ManageStaff = () => {
                     body: JSON.stringify({
                         name: form.username,
                         password: form.password,
-                        email: `${form.username}@ARES.com`, // Or ask for email in form
+                        email: form.email,
+                        verified: true
                     }),
                 });
                 if (res.ok) {
@@ -130,7 +132,8 @@ const ManageStaff = () => {
                                 <tr>
                                     <th>STT</th>
                                     <th>Tên Tài khoản</th>
-                                    <th>Mật khẩu</th>
+                                    <th>Email</th>
+                                    {/* <th>Mật khẩu</th> */}
                                     <th>Trạng thái</th>
                                     <th>Hành Động</th>
                                 </tr>
@@ -140,7 +143,8 @@ const ManageStaff = () => {
                                     <tr key={staff._id}>
                                         <td>{idx + 1}</td>
                                         <td>{staff.name}</td>
-                                        <td>
+                                        <td>{staff.email}</td>
+                                        {/* <td>
                                             <span style={{ userSelect: "none" }}>
                                                 {showPassword && selectedStaff?._id === staff._id
                                                     ? staff.password
@@ -161,7 +165,7 @@ const ManageStaff = () => {
                                             >
                                                 <FontAwesomeIcon icon={showPassword && selectedStaff?._id === staff._id ? faEyeSlash : faEye} />
                                             </button>
-                                        </td>
+                                        </td> */}
                                         <td>
                                             <span className={`badge ${staff.status ? "badge-success" : "badge-secondary"}`}>
                                                 {staff.status ? "Active" : "Blocked"}
@@ -185,7 +189,7 @@ const ManageStaff = () => {
                                 ))}
                                 {staffList.length === 0 && (
                                     <tr>
-                                        <td colSpan="5" className="text-center text-muted py-4">
+                                        <td colSpan="6" className="text-center text-muted py-4">
                                             Không có staff nào.
                                         </td>
                                     </tr>
@@ -225,6 +229,17 @@ const ManageStaff = () => {
                                                 className="form-control"
                                                 name="username"
                                                 value={form.username}
+                                                onChange={handleChange}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Email</label>
+                                            <input
+                                                type="email"
+                                                className="form-control"
+                                                name="email"
+                                                value={form.email}
                                                 onChange={handleChange}
                                                 required
                                             />

@@ -1,4 +1,6 @@
 import User from '../models/User.js';
+import bcrypt from 'bcrypt';
+import crypto from "crypto";
 
 // Lấy tất cả staff
 const getAllStaff = async (req, res) => {
@@ -31,11 +33,15 @@ const createStaff = async (req, res) => {
         const exists = await User.findOne({ email });
         if (exists) return res.status(400).json({ error: "Email đã tồn tại" });
 
+        // Hash password before saving
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         const staff = new User({
             name,
             email,
-            password, // Nên hash password ở production!
+            password: hashedPassword,
             role: "staff",
+            verified: true,
             status: 1,
         });
         await staff.save();
