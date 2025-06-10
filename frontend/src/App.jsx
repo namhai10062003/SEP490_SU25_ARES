@@ -13,8 +13,10 @@ import AdminDashboard from "./pages/adminDashboard.jsx";
 import ForgotPassword from "./pages/forgotpassword";
 import GoogleCallback from "./pages/google-callback.jsx";
 import Login from "./pages/login.jsx";
+import ManageStaff from "./pages/manage-staff.jsx";
 import Register from "./pages/register.jsx";
 import ResetPassword from "./pages/resetpassword";
+import StaffDashboard from "./pages/staff/staffDashboard";
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 function ProtectedRoute({ element, allowedRoles }) {
   const { user } = useAuth();
@@ -38,12 +40,42 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/google/callback" element={<GoogleCallback />} />
+
           {/* Route được bảo vệ (chỉ admin mới vào được) */}
           {<Route
             path="/admin-dashboard"
             element={
               <ProtectedRoute
                 element={<AdminDashboard />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />}
+          {<Route
+            path="/admin-dashboard/manage-staff"
+            element={
+              <ProtectedRoute
+                element={<ManageStaff />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />}
+          
+            {/* Route được bảo vệ staff mới được vào */}
+            {<Route
+            path="/staff-dashboard"
+            element={
+              <ProtectedRoute
+                element={<StaffDashboard />}
+                allowedRoles={["staff"]}
+              />
+            }
+          />}
+          {<Route
+            path="/admin-dashboard/manage-staff"
+            element={
+              <ProtectedRoute
+                element={<ManageStaff />}
                 allowedRoles={["admin"]}
               />
             }

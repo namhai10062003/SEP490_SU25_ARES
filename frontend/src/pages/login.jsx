@@ -1,27 +1,41 @@
+// ... import giữ nguyên
+import { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { useEffect, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { toast } from "react-toastify"
-import { useAuth } from "../../context/authContext"
-import "./login.css"
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useAuth } from "../../context/authContext";
+import "./login.css";
 
 const Login = () => {
-  const [formData, setFormData] = useState({ email: "", password: "" })
-  const [loading, setLoading] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
-  const navigate = useNavigate()
-  const { login } = useAuth()
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  // 👉 điều hướng theo role
+  const redirectByRole = (role) => {
+    switch (role) {
+      case "admin":
+        navigate("/admin-dashboard");
+        break;
+      case "staff":
+        navigate("/staff-dashboard");
+        break;
+      default:
+        navigate("/");
+    }
+  };
 
   useEffect(() => {
     const loadGoogleScript = () => {
-      const script = document.createElement("script")
-      script.src = "https://accounts.google.com/gsi/client"
-      script.async = true
-      script.defer = true
-      script.onload = initializeGoogle
-      document.head.appendChild(script)
-    }
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      script.onload = initializeGoogle;
+      document.head.appendChild(script);
+    };
 
     const initializeGoogle = () => {
       if (window.google) {
@@ -33,116 +47,108 @@ const Login = () => {
           auto_select: false,
           cancel_on_tap_outside: true,
           use_fedcm_for_prompt: false,
-        })
+        });
       }
-    }
+    };
 
-    loadGoogleScript()
-  }, [])
+    loadGoogleScript();
+  }, []);
 
   const handleGoogleResponse = async (response) => {
-    setGoogleLoading(true)
+    setGoogleLoading(true);
     try {
       const result = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: response.credential }),
-      })
+      });
 
-      const data = await result.json()
+      const data = await result.json();
       if (result.ok && data.success) {
-        login(data.user, data.token)
-        toast.success("🎉 Google login successful!")
-        if (data.user.role === "admin") {
-          navigate("/admin-dashboard")
-        } else {
-          navigate("/")
-        }
+        login(data.user, data.token);
+        toast.success("🎉 Google login successful!");
+        redirectByRole(data.user.role);
       } else {
-        toast.error(data.error || "Google login failed")
+        toast.error(data.error || "Google login failed");
       }
     } catch (error) {
-      console.error("Backend error:", error)
-      toast.error("Network error during Google login")
+      console.error("Backend error:", error);
+      toast.error("Network error during Google login");
     } finally {
-      setGoogleLoading(false)
+      setGoogleLoading(false);
     }
-  }
+  };
 
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
-    }))
-  }
+    }));
+  };
 
-  const validateEmail = (email) => /\S+@\S+\.\S+/.test(email)
+  const validateEmail = (email) => /\S+@\S+\.\S+/.test(email);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!validateEmail(formData.email)) {
-      toast.error("Email không hợp lệ.")
-      return
+      toast.error("Email không hợp lệ.");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await fetch("http://localhost:4000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
       if (response.ok && data.token && data.user) {
-        login(data.user, data.token)
-        toast.success("🎉 Đăng nhập thành công!")
-        if (data.user.role === "admin") {
-          navigate("/admin-dashboard")
-        } else {
-          navigate("/")
-        }
+        login(data.user, data.token);
+        toast.success("🎉 Đăng nhập thành công!");
+        redirectByRole(data.user.role);
       } else {
-        toast.error(data.error || "Login failed!")
+        toast.error(data.error || "Login failed!");
       }
     } catch (error) {
-      console.error("Login error:", error)
-      toast.error("Network error.")
+      console.error("Login error:", error);
+      toast.error("Network error.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleGoogleLogin = () => {
     if (!window.google) {
-      toast.error("Google services not loaded")
-      return
+      toast.error("Google services not loaded");
+      return;
     }
 
-    setGoogleLoading(true)
+    setGoogleLoading(true);
 
     window.google.accounts.id.prompt((notification) => {
       if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        setGoogleLoading(false)
-        const hiddenDiv = document.createElement("div")
-        hiddenDiv.style.display = "none"
-        document.body.appendChild(hiddenDiv)
+        setGoogleLoading(false);
+        const hiddenDiv = document.createElement("div");
+        hiddenDiv.style.display = "none";
+        document.body.appendChild(hiddenDiv);
 
         window.google.accounts.id.renderButton(hiddenDiv, {
           theme: "outline",
           size: "large",
-        })
+        });
 
         setTimeout(() => {
-          const googleBtn = hiddenDiv.querySelector('div[role="button"]')
+          const googleBtn = hiddenDiv.querySelector('div[role="button"]');
           if (googleBtn) {
-            googleBtn.click()
+            googleBtn.click();
           }
-          document.body.removeChild(hiddenDiv)
-        }, 100)
+          document.body.removeChild(hiddenDiv);
+        }, 100);
       }
-    })
-  }
+    });
+  };
 
   return (
     <div className="login-page">
@@ -180,7 +186,7 @@ const Login = () => {
                   required
                 />
               </div>
-              {/* 🔒 Link Quên mật khẩu */}
+
               <div className="forgot-password">
                 <Link to="/forgot-password" className="highlight-link">
                   Quên mật khẩu?
@@ -209,13 +215,12 @@ const Login = () => {
             </div>
 
             <div className="divider">
-              <span >hoặc</span>
+              <span>hoặc</span>
             </div>
 
             <div className="social-login">
               <div className="social-text">Đăng nhập nhanh với tài khoản mạng xã hội</div>
               <div className="social-icons">
-                {/* ✅ Google với logo đẹp */}
                 <button
                   onClick={handleGoogleLogin}
                   disabled={googleLoading}
@@ -238,7 +243,7 @@ const Login = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;
