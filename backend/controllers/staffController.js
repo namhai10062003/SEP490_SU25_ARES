@@ -1,7 +1,5 @@
-import User from '../models/User.js';
 import bcrypt from 'bcrypt';
-import crypto from "crypto";
-
+import User from '../models/User.js';
 // Lấy tất cả staff
 const getAllStaff = async (req, res) => {
     try {
@@ -100,10 +98,6 @@ const deleteStaff = async (req, res) => {
     }
 };
 export {
-    getAllStaff,
-    getStaffById,
-    createStaff,
-    updateStaff,
-    changeStaffStatus,
-    deleteStaff
+    changeStaffStatus, createStaff, deleteStaff, getAllStaff,
+    getStaffById, updateStaff
 };

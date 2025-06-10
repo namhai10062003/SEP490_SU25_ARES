@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
-import AdminDashboard from "./adminDashboard.jsx";
-import { toast } from "react-toastify";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import AdminDashboard from "./adminDashboard.jsx";
 
 const ManageStaff = () => {
     const [staffList, setStaffList] = useState([]);

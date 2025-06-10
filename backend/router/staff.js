@@ -1,11 +1,11 @@
 import express from 'express';
 import {
+    changeStaffStatus,
+    createStaff,
+    deleteStaff,
     getAllStaff,
     getStaffById,
-    createStaff,
-    updateStaff,
-    changeStaffStatus,
-    deleteStaff
+    updateStaff
 } from '../controllers/staffController.js';
 
 const router = express.Router();
