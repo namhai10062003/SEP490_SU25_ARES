@@ -10,6 +10,9 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [showBlockedModal, setShowBlockedModal] = useState(false);
+  const [blockedMsg, setBlockedMsg] = useState("");
+
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -104,6 +107,11 @@ const Login = () => {
       });
 
       const data = await response.json();
+      if (response.status === 403 && data.error) {
+        setBlockedMsg(data.error);
+        setShowBlockedModal(true);
+        return;
+      }
       if (response.ok && data.token && data.user) {
         login(data.user, data.token);
         toast.success("🎉 Đăng nhập thành công!");
@@ -241,6 +249,53 @@ const Login = () => {
             </div>
           </div>
         </div>
+        {showBlockedModal && (
+          <div
+            className="modal fade show"
+            style={{ display: "block", background: "rgba(0,0,0,0.3)" }}
+            onClick={() => setShowBlockedModal(false)} // Close on backdrop click
+          >
+            <div
+              className="modal-dialog"
+              onClick={e => e.stopPropagation()} // Prevent closing when clicking inside modal
+            >
+              <div className="modal-content">
+                <div className="modal-header" style={{ justifyContent: "space-between", alignItems: "center" }}>
+                  <h5
+                    className="modal-title"
+                    style={{
+                      color: "#dc3545",
+                      fontSize: 21,
+                      margin: 0,
+                      flex: 1,
+                      textAlign: "center"
+                    }}
+                  >
+                    {blockedMsg.includes("xóa")
+                      ? "Tài khoản bị xóa"
+                      : "Tài khoản bị khóa"}
+                  </h5>
+                  <button
+                    type="button"
+                    className="close"
+                    onClick={() => setShowBlockedModal(false)}
+                    style={{ marginLeft: "auto" }}
+                  >
+                    <span>&times;</span>
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <p style={{ color: "#222", fontSize: 16, margin: 0 }}>{blockedMsg}</p>
+                </div>
+                <div className="modal-footer" style={{ display: "flex", justifyContent: "center" }}>
+                  <button className="btn btn-secondary" onClick={() => setShowBlockedModal(false)}>
+                    Đóng
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import express from "express";
 import connectToDatabase from "./db/db.js";
 import authRouter from "./router/auth.js";
 import staffRouter from "./router/staff.js";
+import userRouter from "./router/user.js";
 
 dotenv.config(); // Load biến môi trường từ .env
 
@@ -40,6 +41,7 @@ app.get("/", (req, res) => res.send("API working"));
 // Routes chính
 app.use("/api/auth", authRouter);
 app.use("/api/staff", staffRouter);
+app.use("/api/users", userRouter);
 
 // Kết nối DB và khởi chạy server
 const startServer = async () => {

@@ -13,6 +13,7 @@ import AdminDashboard from "./pages/adminDashboard.jsx";
 import ForgotPassword from "./pages/forgotpassword";
 import GoogleCallback from "./pages/google-callback.jsx";
 import Login from "./pages/login.jsx";
+import ManageUser from "./pages/manage-user.jsx";
 import ManageStaff from "./pages/manage-staff.jsx";
 import Register from "./pages/register.jsx";
 import ResetPassword from "./pages/resetpassword";
@@ -60,9 +61,17 @@ function App() {
               />
             }
           />}
-          
-            {/* Route được bảo vệ staff mới được vào */}
-            {<Route
+          {<Route
+            path="/admin-dashboard/manage-user"
+            element={
+              <ProtectedRoute
+                element={<ManageUser />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />}
+          {/* Route được bảo vệ staff mới được vào */}
+          {<Route
             path="/staff-dashboard"
             element={
               <ProtectedRoute

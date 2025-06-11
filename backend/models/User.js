@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
     },
     status: { type: Number, enum: [0, 1], default: 1 }, // 1: active, 0: blocked
     // NEW FIELDS END
+    deletedAt: { type: Date, default: null }, // Soft delete
 }, {
     timestamps: true    // Automatically manage createdAt and updatedAt fields
 })
