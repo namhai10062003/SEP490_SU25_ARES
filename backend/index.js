@@ -5,9 +5,9 @@ import dotenv from "dotenv";
 import express from "express";
 import connectToDatabase from "./db/db.js";
 import authRouter from "./router/auth.js";
+import ParkingRegistration from "./router/parkingRegistration.js";
 import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
-
 dotenv.config(); // Load biến môi trường từ .env
 
 const app = express();
@@ -23,7 +23,8 @@ const corsOptions = {
 
 // Middleware (ORDER MATTERS!)
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Log Every Request - MOVE THIS BEFORE ROUTES
@@ -42,7 +43,7 @@ app.get("/", (req, res) => res.send("API working"));
 app.use("/api/auth", authRouter);
 app.use("/api/staff", staffRouter);
 app.use("/api/users", userRouter);
-
+app.use("/api/parkinglot", ParkingRegistration);
 // Kết nối DB và khởi chạy server
 const startServer = async () => {
   try {

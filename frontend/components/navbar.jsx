@@ -33,7 +33,7 @@ const Navbar = (role) => {
             <ul className="dropdown-menu">
               <li><Link to="/dich-vu/don-dep">Dọn dẹp</Link></li>
               <li><Link to="/dich-vu/sua-chua">Sửa chữa</Link></li>
-              <li><Link to="/dich-vu/bao-tri">Bảo trì</Link></li>
+              <li><Link to="/dichvu/baidoxe">Dịch vụ đăng ký bãi đỗ xe</Link></li>
             </ul>
           )}
         </li>

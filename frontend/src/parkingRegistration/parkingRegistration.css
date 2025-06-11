@@ -1,0 +1,100 @@
+
+.parking-form-wrapper {
+    width: 900px;
+    min-height: 100vh;
+    margin-left: 500px;
+    margin-right: 500px;
+    padding: 20px;
+  }
+  
+  .parking-form-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    border-left: 4px solid #007bff;
+    padding-left: 10px;
+  }
+  
+  .parking-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .form-group label {
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  
+  .form-group input,
+  .form-group select {
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  
+  .double-select {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .double-select select {
+    flex: 1;
+  }
+  
+  .image-upload-boxes {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .image-upload-box {
+    flex: 1;
+    height: 100px;
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    text-align: center;
+    padding-top: 15px;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .image-upload-box input {
+    display: none;
+  }
+  
+  .form-group.wide {
+    grid-column: span 2;
+  }
+  
+  .form-group.full {
+    grid-column: span 2;
+  }
+  
+  .center {
+    display: flex;
+    justify-content: center;
+  }
+  
+  button[type="submit"] {
+    background-color: #007bff;
+    color: #fff;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    width: 100%;
+    cursor: pointer;
+  }
+  
+  button[type="submit"]:hover {
+    background-color: #0056b3;
+  }
+  
