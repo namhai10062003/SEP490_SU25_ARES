@@ -18,7 +18,11 @@ import ManageUser from "./pages/manage-user.jsx";
 import Register from "./pages/register.jsx";
 import ResetPassword from "./pages/resetpassword";
 import StaffDashboard from "./pages/staff/staffDashboard";
+
 import ParkingRegistration from "./parkingRegistration/parkingRegistration";
+import ResidentVerification from "./pages/staff/residentVerification.jsx";
+
+
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 function ProtectedRoute({ element, allowedRoles }) {
   const { user } = useAuth();
@@ -82,6 +86,17 @@ function App() {
               />
             }
           />}
+          <Route
+            path="/residentVerification"
+            element={
+              <ProtectedRoute
+                element={<ResidentVerification />}
+                allowedRoles={["staff"]}
+              />
+            }
+          />
+
+
           {<Route
             path="/admin-dashboard/manage-staff"
             element={

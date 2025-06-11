@@ -2,50 +2,69 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const apartmentSchema = new Schema({
-  apartmentName: {
+  apartmentCode: {
     type: String,
     required: true,
+    unique: true,
     trim: true
   },
   floor: {
     type: Number,
     required: true
   },
-  location: {
+  area: {
+    type: Number,
+    required: true
+  },
+  bedrooms: {
+    type: Number,
+    required: true
+  },
+  furniture: {
+    type: String,
+    enum: ['Đầy đủ', 'Cơ bản', 'Không có'],
+    default: 'Không có'
+  },
+  status: {
+    type: String,
+    enum: ['đang ở', 'đang cho thuê', 'chưa có chủ sở hữu'],
+    default: 'chưa có chủ sở hữu'
+  },
+  direction: {
+    type: String,
+    enum: ['Đông', 'Tây', 'Nam', 'Bắc'],
+    required: true
+  },
+  building: {
+    type: String,
+    enum: ['Plaza 1', 'Plaza 2'],
+    required: true
+  },
+  legalDocuments: {
+    type: String,
+    enum: ['sổ hồng', 'chưa có sổ'],
+    required: true
+  },
+  ownerName: {
     type: String,
     required: true,
     trim: true
   },
-  price: {
-    type: Number,
-    required: true
-  },
-  status: {
+  ownerPhone: {
     type: String,
-    enum: ['available', 'rented'],
-    default: 'available'
+    required: true,
+    trim: true
   },
-  amenities: {
-    type: [String],
-    default: []
-  },
-  plazaId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Plaza',
-    required: true
-  },
-  staffId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Staff',
-    required: true
+  slug: {
+    type: String,
+    unique: true,
+    trim: true
   },
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
     default: null
-  }
+  }  
 }, {
-  timestamps: true // Tự động thêm và cập nhật createdAt & updatedAt
+  timestamps: true // Tự động thêm createdAt và updatedAt
 });
-
-module.exports = mongoose.model('Apartment', apartmentSchema);

@@ -42,7 +42,7 @@ const StaffDashboard = () => {
             <li><Link to="/real-estate">Quản lý bất động sản</Link></li>
             <li><Link to="/vehicles">Quản lý bài đồ xe</Link></li>
             <li><Link to="/expenses">Quản lý chi phí</Link></li>
-            <li><Link to="/users">Quản lý người dùng</Link></li>
+            <li><Link to="/residentVerification">Quản lý người dùng</Link></li>
             <li><Link to="/revenue">Quản lý doanh thu</Link></li>
             <li><Link to="/login">Đăng Xuất</Link></li>
           </ul>
