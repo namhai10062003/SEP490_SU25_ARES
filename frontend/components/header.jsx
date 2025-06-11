@@ -52,7 +52,7 @@ const Header = ({ user, name, logout }) => {
 
   return (
     <header className="header">
-      <div className="logo">C A R E S</div>
+      <div className="logo"> A R E S</div>
       <Navbar />
       <div className="header-right">
         {user ? (
