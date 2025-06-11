@@ -1,9 +1,11 @@
+/* Container navbar */
 .navbar {
   font-family: sans-serif;
   background-color: white;
   padding: 0 30px;
 }
 
+/* Danh sách item trong navbar */
 .nav-list {
   display: flex;
   list-style: none;
@@ -13,6 +15,7 @@
   align-items: center;
 }
 
+/* Mỗi mục trong navbar */
 .nav-item {
   position: relative;
   cursor: pointer;
@@ -20,26 +23,33 @@
   transition: color 0.2s ease;
 }
 
+/* Link mặc định */
 .nav-item a {
   text-decoration: none;
   color: black;
 }
 
+/* Link hover */
 .nav-item a:hover {
   color: #f2b98e;
 }
 
+/* Mục active */
 .nav-item.active a {
   color: #f2b98e;
   font-weight: bold;
 }
 
-/* DROPDOWN xổ dọc */
+/* --- Dropdown --- */
+
+/* Menu xổ xuống */
 .dropdown-menu {
   position: absolute;
   top: 100%;
   left: 0;
-  display: flex;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
   flex-direction: column;
   background-color: white;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -51,6 +61,7 @@
   border-radius: 4px;
 }
 
+/* Các mục trong menu dropdown */
 .dropdown-menu li {
   padding: 10px 16px;
   white-space: nowrap;
@@ -58,12 +69,14 @@
   transition: background 0.2s ease;
 }
 
+/* Link trong dropdown */
 .dropdown-menu li a {
   text-decoration: none;
   color: black;
   display: block;
 }
 
+/* Hover mục dropdown */
 .dropdown-menu li:hover {
   background-color: #f2b98e;
 }
