@@ -18,7 +18,7 @@ import ManageUser from "./pages/manage-user.jsx";
 import Register from "./pages/register.jsx";
 import ResetPassword from "./pages/resetpassword";
 import StaffDashboard from "./pages/staff/staffDashboard";
-
+import ManageApartment from "./pages/manage-apartment.jsx";
 import ParkingRegistration from "./parkingRegistration/parkingRegistration";
 import ResidentVerification from "./pages/staff/residentVerification.jsx";
 
@@ -76,6 +76,15 @@ function App() {
               />
             }
           />}
+          <Route
+            path="/admin-dashboard/manage-apartment"
+            element={
+              <ProtectedRoute
+                element={<ManageApartment />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />
           {/* Route được bảo vệ staff mới được vào */}
           {<Route
             path="/staff-dashboard"
