@@ -46,7 +46,7 @@ const forgotPassword = async (req, res) => {
       return res.status(400).json({ success: false, error: "Vui lòng nhập email!" });
     }
 
-    const user = await User.findOne({ email: email.trim() });
+    const user = await User.findOne({ email: email.trim(), deletedAt: null });
     if (!user) {
       return res.status(400).json({ success: false, error: "Email không tồn tại!" });
     }
@@ -86,7 +86,7 @@ const resetPassword = async (req, res) => {
     }
 
     // Tìm user theo email
-    const user = await User.findOne({ email: email.trim() });
+    const user = await User.findOne({ email: email.trim(), deletedAt: null });
     if (!user) {
       return res.status(400).json({ success: false, error: "Email không tồn tại!" });
     }
@@ -138,6 +138,22 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, error: "Tài khoản chưa xác thực email!" });
     }
 
+    // Deleted user check
+    if (user.deletedAt !== null) {
+      return res.status(403).json({
+        success: false,
+        error: "Tài khoản của bạn đã bị xóa. Vui lòng liên hệ admin@gmail.com để biết thêm chi tiết."
+      });
+    }
+
+    // Blocked user check
+    if (user.status === 0) {
+      return res.status(403).json({
+        success: false,
+        error: "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin@gmail.com để biết thêm chi tiết."
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, error: "Sai mật khẩu!" });
@@ -145,7 +161,7 @@ const login = async (req, res) => {
     user.isOnline = true;
     await user.save();
     const token = jwt.sign(
-      { _id: user._id, role: user.role , name: user.name},
+      { _id: user._id, role: user.role, name: user.name },
       process.env.JWT_SECRET,
       { expiresIn: "10d" }
     );
@@ -168,7 +184,7 @@ const verifyUser = async (req, res) => {
 
     // Trường hợp xác thực qua OTP (đăng ký/đăng nhập bước 2)
     if (otp && email) {
-      const user = await User.findOne({ email: email.trim() });
+      const user = await User.findOne({ email: email.trim(), deletedAt: null });
 
       if (!user) {
         return res.status(400).json({ success: false, error: "Email không tồn tại!" });
@@ -237,8 +253,8 @@ const register = async (req, res) => {
   try {
     const { name, email, password, phone, role } = req.body;
 
-    // Kiểm tra email đã tồn tại chưa
-    const existingUser = await User.findOne({ email });
+    // Kiểm tra email đã tồn tại chưa,  không bị xóa
+    const existingUser = await User.findOne({ email, deletedAt: null });
     if (existingUser) {
       return res.status(400).json({ success: false, error: "Email đã tồn tại!" });
     }
@@ -267,8 +283,8 @@ const register = async (req, res) => {
     });
     // Gán chính xác:
     // Gán chính xác:
-newUser.otp = otp;
-newUser.otpExpires = otpExpires;
+    newUser.otp = otp;
+    newUser.otpExpires = otpExpires;
 
     await newUser.save();
 
@@ -314,7 +330,7 @@ const googleAuth = async (req, res) => {
     const { sub: googleId, email, name, picture } = payload
 
     // Check if user already exists with this Google ID
-    let user = await User.findOne({ googleId })
+    let user = await User.findOne({ googleId, deletedAt: null });
 
     if (user) {
       // User exists with Google ID, just log them in
@@ -322,7 +338,7 @@ const googleAuth = async (req, res) => {
       await user.save()
     } else {
       // Check if user exists with this email (from regular registration)
-      user = await User.findOne({ email })
+      user = await User.findOne({ email, deletedAt: null });
 
       if (user) {
         // User exists with email, link Google account
@@ -393,10 +409,10 @@ const googleCallback = async (req, res) => {
     const googleUser = await userResponse.json()
 
     // Use your existing logic to create/find user
-    let user = await User.findOne({ googleId: googleUser.id })
+    let user = await User.findOne({ googleId: googleUser.id, deletedAt: null });
 
     if (!user) {
-      user = await User.findOne({ email: googleUser.email })
+      user = await User.findOne({ email: googleUser.email, deletedAt: null });
       if (user) {
         user.googleId = googleUser.id
         await user.save()
