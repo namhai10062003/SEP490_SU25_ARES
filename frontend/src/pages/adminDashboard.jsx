@@ -16,6 +16,7 @@ export default function AdminDashboard({ children }) {
           <li><Link to="/admin/notifications" className="text-white text-decoration-none d-block py-1">• Gửi thông báo</Link></li>
           <li><Link to="/admin-dashboard/manage-user" className="text-white text-decoration-none d-block py-1">• Quản lí User</Link></li>
           <li><Link to="/admin-dashboard/manage-staff" className="text-white text-decoration-none d-block py-1">• Quản lí Staff</Link></li>
+          <li><Link to="/admin-dashboard/manage-apartment" className="text-white text-decoration-none d-block py-1">• Quản lí Căn hộ</Link></li>
         </ul>
       </div>
 

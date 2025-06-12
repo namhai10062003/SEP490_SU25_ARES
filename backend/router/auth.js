@@ -11,4 +11,5 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/google", googleAuth)
 router.post("/google/callback", googleCallback)
+
 export default router;

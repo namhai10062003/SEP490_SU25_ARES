@@ -1,5 +1,6 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+import mongoose from 'mongoose';
+
+const { Schema } = mongoose; // ✅ Sửa lỗi này
 
 const apartmentSchema = new Schema({
   apartmentCode: {
@@ -64,7 +65,10 @@ const apartmentSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User',
     default: null
-  }  
+  }
 }, {
-  timestamps: true // Tự động thêm createdAt và updatedAt
+  timestamps: true
 });
+
+const Apartment = mongoose.model('Apartment', apartmentSchema);
+export default Apartment;

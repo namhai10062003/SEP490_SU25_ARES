@@ -8,6 +8,7 @@ import authRouter from "./router/auth.js";
 import ParkingRegistration from "./router/parkingRegistration.js";
 import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
+import apartmentRouter from "./router/apartmentRoutes.js";
 dotenv.config(); // Load biến môi trường từ .env
 
 const app = express();
@@ -42,8 +43,9 @@ app.get("/", (req, res) => res.send("API working"));
 // Routes chính
 app.use("/api/auth", authRouter);
 app.use("/api/staff", staffRouter);
-app.use("/api/users", userRouter);
+app.use("/api/users", userRouter);  
 app.use("/api/parkinglot", ParkingRegistration);
+app.use("/api/apartments", apartmentRouter);
 // Kết nối DB và khởi chạy server
 const startServer = async () => {
   try {
