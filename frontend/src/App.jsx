@@ -20,7 +20,7 @@ import ResetPassword from "./pages/resetpassword";
 import StaffDashboard from "./pages/staff/staffDashboard";
 import ManageApartment from "./pages/manage-apartment.jsx";
 import ParkingRegistration from "./parkingRegistration/parkingRegistration";
-import ResidentVerification from "./pages/staff/residentVerification.jsx";
+import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm.jsx";
 
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
@@ -99,7 +99,7 @@ function App() {
             path="/residentVerification"
             element={
               <ProtectedRoute
-                element={<ResidentVerification />}
+                element={<ResidentVerificationForm />}
                 allowedRoles={["staff"]}
               />
             }

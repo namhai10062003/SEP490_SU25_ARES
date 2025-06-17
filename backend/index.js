@@ -9,6 +9,7 @@ import ParkingRegistration from "./router/parkingRegistration.js";
 import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
 import apartmentRouter from "./router/apartmentRoutes.js";
+import residentVerificationRouter from "./router/residentVerificationRoutes.js"
 dotenv.config(); // Load biến môi trường từ .env
 
 const app = express();
@@ -46,6 +47,7 @@ app.use("/api/staff", staffRouter);
 app.use("/api/users", userRouter);  
 app.use("/api/parkinglot", ParkingRegistration);
 app.use("/api/apartments", apartmentRouter);
+app.use("/api/resident-verification", residentVerificationRouter);
 // Kết nối DB và khởi chạy server
 const startServer = async () => {
   try {
