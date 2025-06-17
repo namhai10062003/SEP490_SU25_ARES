@@ -9,10 +9,18 @@ import ParkingRegistration from "./router/parkingRegistration.js";
 import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
 import apartmentRouter from "./router/apartmentRoutes.js";
+
+import { createServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
+
+
 dotenv.config(); // Load biến môi trường từ .env
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const server = createServer(app);
+const io = new SocketIOServer(server, { cors: { origin: '*' } });
+global._io = io; // Make io accessible globally
 
 // Cấu hình CORS
 const corsOptions = {
@@ -24,7 +32,7 @@ const corsOptions = {
 
 // Middleware (ORDER MATTERS!)
 app.use(cors(corsOptions));
-app.use(express.json()); 
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -43,14 +51,23 @@ app.get("/", (req, res) => res.send("API working"));
 // Routes chính
 app.use("/api/auth", authRouter);
 app.use("/api/staff", staffRouter);
-app.use("/api/users", userRouter);  
+app.use("/api/users", userRouter);
 app.use("/api/parkinglot", ParkingRegistration);
 app.use("/api/apartments", apartmentRouter);
+
+// Socket.IO setup
+io.on('connection', (socket) => {
+  // Save userId to socket mapping if needed
+  socket.on('register', (userId) => {
+    socket.userId = userId;
+  });
+});
+
 // Kết nối DB và khởi chạy server
 const startServer = async () => {
   try {
     await connectToDatabase();
-    app.listen(PORT, () => {
+    server.listen(PORT, () => {
       console.log(`🚀 Server is running at http://localhost:${PORT}`);
     });
   } catch (err) {
