@@ -63,8 +63,7 @@ const apartmentSchema = new Schema({
   },
   userId: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
-    default: null
+    ref: 'User'
   }
 }, {
   timestamps: true

@@ -1,20 +1,41 @@
-// app.js
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import http from "http";
+import { Server } from "socket.io";
+
 import connectToDatabase from "./db/db.js";
+import apartmentRouter from "./router/apartmentRoutes.js";
 import authRouter from "./router/auth.js";
 import ParkingRegistration from "./router/parkingRegistration.js";
+import residentRouter from "./router/residentRoutes.js";
 import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
-import apartmentRouter from "./router/apartmentRoutes.js";
-dotenv.config(); // Load biến môi trường từ .env
+import { initSocket } from "./socket.js"; // 🆕 import file socket.js
+
+// Load env
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Cấu hình CORS
+// Tạo HTTP server để dùng được với Socket.IO
+const server = http.createServer(app);
+
+// Khởi tạo Socket.IO server
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    credentials: true,
+  },
+});
+
+// Khởi tạo socket toàn cục
+initSocket(io); // 🆕 truyền io để router khác có thể dùng
+
+// CORS config
 const corsOptions = {
   origin: "http://localhost:5173",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
@@ -22,39 +43,55 @@ const corsOptions = {
   allowedHeaders: ["Content-Type", "Authorization"],
 };
 
-// Middleware (ORDER MATTERS!)
+// Middleware
 app.use(cors(corsOptions));
-app.use(express.json()); 
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Log Every Request - MOVE THIS BEFORE ROUTES
+// Logging
 app.use((req, res, next) => {
-  console.log(`📨 ${req.method} ${req.url} - ${new Date().toISOString()}`)
+  console.log(`📨 ${req.method} ${req.url} - ${new Date().toISOString()}`);
   if (req.body && Object.keys(req.body).length > 0) {
-    console.log('📝 Request body:', req.body)
+    console.log("📝 Request body:", req.body);
   }
-  next()
-})
+  next();
+});
 
-// Route kiểm tra
-app.get("/", (req, res) => res.send("API working"));
+// Test route
+app.get("/", (req, res) => res.send("API working with Socket.IO 🔥"));
 
-// Routes chính
+// Routes
 app.use("/api/auth", authRouter);
 app.use("/api/staff", staffRouter);
-app.use("/api/users", userRouter);  
+app.use("/api/users", userRouter);
 app.use("/api/parkinglot", ParkingRegistration);
 app.use("/api/apartments", apartmentRouter);
-// Kết nối DB và khởi chạy server
+app.use("/api/residents", residentRouter);
+
+// Socket.IO event listeners
+io.on("connection", (socket) => {
+  console.log("🟢 Socket connected:", socket.id);
+
+  socket.on("message", (data) => {
+    console.log("📩 Received message:", data);
+    io.emit("message", data); // broadcast to all
+  });
+
+  socket.on("disconnect", () => {
+    console.log("🔴 Socket disconnected:", socket.id);
+  });
+});
+
+// Start server
 const startServer = async () => {
   try {
     await connectToDatabase();
-    app.listen(PORT, () => {
-      console.log(`🚀 Server is running at http://localhost:${PORT}`);
+    server.listen(PORT, () => {
+      console.log(`🚀 Server running at http://localhost:${PORT}`);
     });
   } catch (err) {
-    console.error("❌ Error starting server:", err);
+    console.error("❌ Server error:", err);
     process.exit(1);
   }
 };

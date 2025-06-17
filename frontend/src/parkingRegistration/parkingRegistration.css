@@ -1,100 +1,141 @@
+/* Toàn trang */
+.parking-list-page {
+  background: #f4f6f9;
+  min-height: 100vh;
+  width: 1900px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-.parking-form-wrapper {
-    width: 900px;
-    min-height: 100vh;
-    margin-left: 500px;
-    margin-right: 500px;
-    padding: 20px;
-  }
-  
-  .parking-form-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 20px;
-    border-left: 4px solid #007bff;
-    padding-left: 10px;
-  }
-  
-  .parking-form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-  }
-  
-  .form-group {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .form-group label {
-    margin-bottom: 6px;
-    font-size: 14px;
-    font-weight: 500;
-  }
-  
-  .form-group input,
-  .form-group select {
-    padding: 10px 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 14px;
-  }
-  
-  .double-select {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .double-select select {
-    flex: 1;
-  }
-  
-  .image-upload-boxes {
-    display: flex;
-    gap: 20px;
-  }
-  
-  .image-upload-box {
-    flex: 1;
-    height: 100px;
-    border: 2px dashed #ccc;
-    border-radius: 10px;
-    text-align: center;
-    padding-top: 15px;
-    font-size: 14px;
-    color: #666;
-  }
-  
-  .image-upload-box input {
-    display: none;
-  }
-  
-  .form-group.wide {
-    grid-column: span 2;
-  }
-  
-  .form-group.full {
-    grid-column: span 2;
-  }
-  
-  .center {
-    display: flex;
-    justify-content: center;
-  }
-  
-  button[type="submit"] {
-    background-color: #007bff;
-    color: #fff;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    width: 100%;
-    cursor: pointer;
-  }
-  
-  button[type="submit"]:hover {
-    background-color: #0056b3;
-  }
-  
+/* Container */
+.parking-list-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Tiêu đề chính */
+.parking-list-title {
+  font-size: 26px;
+  text-align: center;
+  color: #333;
+  margin-bottom: 2rem;
+  font-weight: 600;
+}
+
+/* Mỗi phần bảng */
+.parking-section {
+  margin-bottom: 3rem;
+}
+
+.parking-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #007bff;
+}
+
+/* Bảng */
+.parking-list-table-wrapper {
+  overflow-x: auto;
+}
+
+.parking-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 800px;
+}
+
+.parking-list-table thead {
+  background-color: #007bff;
+  color: white;
+}
+
+.parking-list-table th,
+.parking-list-table td {
+  padding: 12px 15px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.parking-list-table tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.parking-list-table tbody tr:hover {
+  background-color: #eaf4ff;
+  transition: 0.2s ease-in-out;
+}
+
+/* Nút */
+.parking-list-view-btn {
+  display: inline-block;
+  text-decoration: none;
+  background-color: #28a745;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.parking-list-view-btn:hover {
+  background-color: #1e7e34;
+}
+
+.parking-list-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.parking-register-btn {
+  background-color: #007bff;
+  color: #fff;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.parking-register-btn:hover {
+  background-color: #0056b3;
+}
+
+
+
+.status {
+  font-weight: bold;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.status.approved {
+  color: green;
+  font-weight: bold;
+}
+
+.status.rejected {
+  color: red;
+  font-weight: bold;
+}
+
+.status.pending {
+  color: orange;
+  font-weight: bold;
+}
+
+
+/* Footer */
+.parking-list-footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 14px;
+  color: #888;
+  margin-top: 2rem;
+}

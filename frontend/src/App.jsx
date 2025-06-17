@@ -13,16 +13,18 @@ import AdminDashboard from "./pages/adminDashboard.jsx";
 import ForgotPassword from "./pages/forgotpassword";
 import GoogleCallback from "./pages/google-callback.jsx";
 import Login from "./pages/login.jsx";
+import ManageApartment from "./pages/manage-apartment.jsx";
 import ManageStaff from "./pages/manage-staff.jsx";
 import ManageUser from "./pages/manage-user.jsx";
 import Register from "./pages/register.jsx";
 import ResetPassword from "./pages/resetpassword";
-import StaffDashboard from "./pages/staff/staffDashboard";
-import ManageApartment from "./pages/manage-apartment.jsx";
-import ParkingRegistration from "./parkingRegistration/parkingRegistration";
+import ManageParkingLot from "./pages/staff/manageParkingLot/manageParkinglot";
+import ParkingLotList from "./pages/staff/manageParkingLot/parkinglot-list";
 import ResidentVerification from "./pages/staff/residentVerification.jsx";
-
-
+import StaffDashboard from "./pages/staff/staffDashboard";
+import FormParkingRegistration from "./parkingRegistration/formParkingRegistation";
+import ParkingRegistrationDetails from "./parkingRegistration/parkingRegistartionDetail";
+import ParkingRegistration from "./parkingRegistration/parkingRegistration";
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 function ProtectedRoute({ element, allowedRoles }) {
   const { user } = useAuth();
@@ -47,7 +49,8 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/google/callback" element={<GoogleCallback />} />
           <Route path="/dichvu/baidoxe" element={<ParkingRegistration />} />
-
+          <Route path="/dichvu/dangkybaidoxe" element={<FormParkingRegistration />} />
+          <Route path="/parkinglot/detail-parkinglot/:id" element={<ParkingRegistrationDetails />} />
           {/* Route được bảo vệ (chỉ admin mới vào được) */}
           {<Route
             path="/admin-dashboard"
@@ -104,7 +107,24 @@ function App() {
               />
             }
           />
-
+         <Route
+            path="/manage-parkinglot"
+            element={
+              <ProtectedRoute
+                element={<ManageParkingLot />}
+                allowedRoles={["staff"]}
+              />
+            }
+          />
+          <Route
+            path="/parkinglot-list"
+            element={
+              <ProtectedRoute
+                element={<ParkingLotList />}
+                allowedRoles={["staff"]}
+              />
+            }
+          />
 
           {<Route
             path="/admin-dashboard/manage-staff"
@@ -115,6 +135,7 @@ function App() {
               />
             }
           />}
+          
         </Routes>
 
         {/* ✅ Thêm ToastContainer để bật thông báo realtime */}
