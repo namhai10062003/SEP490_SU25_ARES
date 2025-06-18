@@ -9,7 +9,6 @@ import AuthProvider, { useAuth } from "../context/authContext";
 import Home from "./home/home";
 import VerifyEmail from "./pages/verify-otp.jsx";
 // import Dashboard from "./pages/dashboard.jsx"; // Giả sử đây là trang chỉ dành cho admin
-import AdminDashboard from "./pages/adminDashboard.jsx";
 import ForgotPassword from "./pages/forgotpassword";
 import GoogleCallback from "./pages/google-callback.jsx";
 import Login from "./pages/login.jsx";
@@ -21,6 +20,7 @@ import StaffDashboard from "./pages/staff/staffDashboard";
 import ManageApartment from "./pages/manage-apartment.jsx";
 import ParkingRegistration from "./parkingRegistration/parkingRegistration";
 import ResidentVerification from "./pages/staff/residentVerification.jsx";
+import DashboardHome from "./pages/DashboardHome.jsx";
 
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
@@ -53,8 +53,8 @@ function App() {
             path="/admin-dashboard"
             element={
               <ProtectedRoute
-                element={<AdminDashboard />}
-                allowedRoles={["admin"]}
+                element={<DashboardHome />}
+                allowedRoles={["admin"]}  
               />
             }
           />}
@@ -85,6 +85,8 @@ function App() {
               />
             }
           />
+
+
           {/* Route được bảo vệ staff mới được vào */}
           {<Route
             path="/staff-dashboard"
@@ -106,7 +108,7 @@ function App() {
           />
 
 
-          {<Route
+          {/* {<Route
             path="/admin-dashboard/manage-staff"
             element={
               <ProtectedRoute
@@ -114,7 +116,7 @@ function App() {
                 allowedRoles={["admin"]}
               />
             }
-          />}
+          />} */}
         </Routes>
 
         {/* ✅ Thêm ToastContainer để bật thông báo realtime */}
