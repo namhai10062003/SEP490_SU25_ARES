@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
+import "./ResidentVerificationForm.css";
 
 export default function ResidentVerificationForm() {
-  // Form dữ liệu
   const [formData, setFormData] = useState({
     documentType: "",
     apartmentCode: "",
@@ -10,13 +11,18 @@ export default function ResidentVerificationForm() {
     contractEnd: "",
     documentImage: null,
   });
-
-  // Dữ liệu người dùng & căn hộ
+  const fileInputRef = useRef(null);
+  const [previewImage, setPreviewImage] = useState(null);
   const [query, setQuery] = useState("");
   const [user, setUser] = useState(null);
   const [apartments, setApartments] = useState([]);
+  const [stats, setStats] = useState({
+    posts: 128,
+    realEstate: 56,
+    vehicles: 78,
+    expenses: 45,
+  });
 
-  // Load danh sách căn hộ
   useEffect(() => {
     const fetchApartments = async () => {
       try {
@@ -33,11 +39,12 @@ export default function ResidentVerificationForm() {
     fetchApartments();
   }, []);
 
-  // Tìm người dùng theo tên/email
   const handleSearch = async () => {
     if (!query) return;
     try {
-      const res = await axios.get(`http://localhost:4000/api/resident-verification/search-user?keyword=${query}`);
+      const res = await axios.get(
+        `http://localhost:4000/api/resident-verification/search-user?keyword=${query}`
+      );
       setUser(res.data);
     } catch (err) {
       setUser(null);
@@ -45,16 +52,19 @@ export default function ResidentVerificationForm() {
     }
   };
 
-  // Xử lý input form
   const handleChange = (e) => {
     const { name, value, files } = e.target;
+
+    if (files && files[0] && name === "documentImage") {
+      setPreviewImage(URL.createObjectURL(files[0]));
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: files ? files[0] : value,
     }));
   };
 
-  // Gửi xác thực
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (
@@ -77,11 +87,36 @@ export default function ResidentVerificationForm() {
     data.append("apartmentCode", formData.apartmentCode);
     data.append("contractStart", formData.contractStart);
     data.append("contractEnd", formData.contractEnd);
-    if (formData.documentImage) data.append("documentImage", formData.documentImage);
+    if (formData.documentImage)
+      data.append("documentImage", formData.documentImage);
 
     try {
-      await axios.post("http://localhost:4000/api/resident-verification/verify", data);
+      const res = await axios.post(
+        "http://localhost:4000/api/resident-verification/verification",
+        data, // FormData chứa cả ảnh
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       alert("Gửi yêu cầu xác thực thành công!");
+      setFormData({
+        documentType: "",
+        apartmentCode: "",
+        contractStart: "",
+        contractEnd: "",
+        documentImage: null,
+      });
+      setPreviewImage(null);
+
+      // Reset ô chọn ảnh (ẩn tên file)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = null;
+      }
+
+      setUser(null); // Quay lại bước tìm người dùng
+      setQuery(""); // Xoá từ khoá tìm kiếm
     } catch (err) {
       console.error("Gửi thất bại:", err);
       alert("Gửi thất bại! Vui lòng kiểm tra lại.");
@@ -89,109 +124,167 @@ export default function ResidentVerificationForm() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-white shadow rounded">
-      <h2 className="text-xl font-semibold mb-4">Tìm kiếm người dùng</h2>
-      <div className="flex gap-4 items-center mb-6">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Tên người dùng hoặc Email"
-          className="flex-1 border rounded p-2"
-        />
-        <button
-          onClick={handleSearch}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Tìm kiếm
-        </button>
-      </div>
+    <div className="resident-form-container">
+      <aside className="sidebar">
+        <h2 className="sidebar-title">BẢN QUẢN LÝ</h2>
+        <nav className="sidebar-menu">
+          <ul>
+            <li>
+              <Link to="/">Dashboard</Link>
+            </li>
+            <li>
+              <Link to="/posts">Quản lý bài post</Link>
+            </li>
+            <li>
+              <Link to="/real-estate">Quản lý bất động sản</Link>
+            </li>
+            <li>
+              <Link to="/vehicles">Quản lý bài đồ xe</Link>
+            </li>
+            <li>
+              <Link to="/expenses">Quản lý chi phí</Link>
+            </li>
+            <li>
+              <Link to="/residentVerification">Quản lý người dùng</Link>
+            </li>
+            <li>
+              <Link to="/revenue">Quản lý doanh thu</Link>
+            </li>
+            <li>
+              <Link to="/login">Đăng Xuất</Link>
+            </li>
+          </ul>
+        </nav>
+      </aside>
 
-      {user && (
-        <form onSubmit={handleSubmit}>
-          <h3 className="text-lg font-medium mb-4">Nhập thông tin xác thực cư dân</h3>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <input
-              type="text"
-              value={user.name || ""}
-              disabled
-              placeholder="Họ và tên"
-              className="border p-2 rounded bg-gray-100"
-            />
-            <input
-              type="email"
-              value={user.email || ""}
-              disabled
-              placeholder="Email"
-              className="border p-2 rounded bg-gray-100"
-            />
-            <input
-              type="text"
-              value={user.phone || ""}
-              disabled
-              placeholder="Số điện thoại"
-              className="border p-2 rounded bg-gray-100"
-            />
-            <select
-              name="apartmentCode"
-              value={formData.apartmentCode}
-              onChange={handleChange}
-              className="border p-2 rounded"
-              required
-            >
-              <option value="">-- Chọn căn hộ --</option>
-              {apartments.map((ap) => (
-                <option key={ap._id} value={ap.apartmentCode}>
-                  {ap.apartmentCode}
-                </option>
-              ))}
-            </select>
-            <select
-              name="documentType"
-              value={formData.documentType}
-              onChange={handleChange}
-              className="border p-2 rounded"
-              required
-            >
-              <option value="">-- Loại hợp đồng --</option>
-              <option value="rental">Hợp đồng thuê</option>
-              <option value="ownership">Giấy chủ quyền</option>
-              <option value="other">Khác</option>
-            </select>
-            <input
-              type="file"
-              name="documentImage"
-              accept="image/*"
-              onChange={handleChange}
-              className="border p-2 rounded"
-              required
-            />
-            <input
-              type="date"
-              name="contractStart"
-              value={formData.contractStart}
-              onChange={handleChange}
-              className="border p-2 rounded"
-              required
-            />
-            <input
-              type="date"
-              name="contractEnd"
-              value={formData.contractEnd}
-              onChange={handleChange}
-              className="border p-2 rounded"
-              required
-            />
+      <main className="main-content">
+        {!user && (
+          <div className="search-section">
+            <h2 className="section-title">Tìm kiếm người dùng</h2>
+            <div className="search-row">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Tên người dùng hoặc Email"
+                className="search-input"
+              />
+              <button onClick={handleSearch} className="btn btn-search">
+                Tìm kiếm
+              </button>
+            </div>
           </div>
+        )}
 
-          <button
-            type="submit"
-            className="bg-green-600 text-white px-6 py-2 rounded"
-          >
-            Gửi xác thực
-          </button>
-        </form>
-      )}
+        {user && (
+          <div className="form-section">
+            <form onSubmit={handleSubmit}>
+              <h3 className="form-title">Nhập thông tin xác thực cư dân</h3>
+              <div className="form-grid">
+                <input
+                  type="text"
+                  value={user.name || ""}
+                  disabled
+                  placeholder="Họ và tên"
+                  className="input-field input-disabled"
+                />
+                <input
+                  type="email"
+                  value={user.email || ""}
+                  disabled
+                  placeholder="Email"
+                  className="input-field input-disabled"
+                />
+                <input
+                  type="text"
+                  value={user.phone || ""}
+                  disabled
+                  placeholder="Số điện thoại"
+                  className="input-field input-disabled"
+                />
+                <select
+                  name="apartmentCode"
+                  value={formData.apartmentCode}
+                  onChange={handleChange}
+                  className="input-field"
+                  required
+                >
+                  <option value="">-- Chọn căn hộ --</option>
+                  {apartments.map((ap) => (
+                    <option key={ap._id} value={ap.apartmentCode}>
+                      {ap.apartmentCode}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  name="documentType"
+                  value={formData.documentType}
+                  onChange={handleChange}
+                  className="input-field"
+                  required
+                >
+                  <option value="">-- Loại hợp đồng --</option>
+                  <option value="rental">Hợp đồng thuê</option>
+                  <option value="ownership">Giấy chủ quyền</option>
+                  <option value="other">Khác</option>
+                </select>
+                <input
+                  type="file"
+                  name="documentImage"
+                  accept="image/*"
+                  onChange={handleChange}
+                  className="input-field"
+                  ref={fileInputRef}
+                  required
+                />
+
+                <div className="form-group">
+                  <label htmlFor="contractStart">Ngày bắt đầu hợp đồng</label>
+                  <input
+                    type="date"
+                    name="contractStart"
+                    value={formData.contractStart}
+                    onChange={handleChange}
+                    className="input-field"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="contractEnd">Ngày kết thúc hợp đồng</label>
+                  <input
+                    type="date"
+                    id="contractEnd"
+                    name="contractEnd"
+                    value={formData.contractEnd}
+                    onChange={handleChange}
+                    className="input-field"
+                    required
+                  />
+                </div>
+
+                {previewImage && (
+                  <div className="image-preview-container">
+                    <div>
+                      <span className="preview-label">
+                        Ảnh hợp đồng đã chọn:
+                      </span>
+                      <img
+                        src={previewImage}
+                        alt="Ảnh hợp đồng"
+                        className="preview-image"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+              <button type="submit" className="btn btn-submit">
+                Gửi xác thực
+              </button>
+            </form>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

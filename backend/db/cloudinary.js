@@ -31,6 +31,23 @@ const storage = new CloudinaryStorage({
     },
 });
 
+
+const storage2 = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: "contract-photo", // Lưu vào thư mục "avatar"
+        format: async (req, file) => {
+            const allowedFormats = ["jpg", "png", "jpeg", "gif"];
+            const ext = file.mimetype.split("/")[1]; // Lấy phần mở rộng file từ mimetype
+            if (allowedFormats.includes(ext)) return ext;
+            throw new Error("Invalid file format. Only JPG, PNG, and GIF are allowed!");
+        },
+        public_id: (req, file) => {
+            return `contract-photo${Date.now()}`; // Đặt tên file duy nhất
+        },
+    },
+});
+
 // Middleware upload ảnh với kiểm tra định dạng file
 const upload = multer({
     storage: storage,
@@ -45,5 +62,18 @@ const upload = multer({
     limits: { fileSize: 2 * 1024 * 1024 }, // Giới hạn file 2MB
 });
 
-export { cloudinary, upload };
+const upload2 = multer({
+    storage: storage2,
+    fileFilter: (req, file, cb) => {
+        const allowedFormats = ["image/jpeg", "image/png", "image/gif"];
+        if (file && allowedFormats.includes(file.mimetype)) {
+            cb(null, true); // Accept the file
+        } else {
+            cb(new Error("Invalid file format. Only JPG, PNG, and GIF are allowed!"), false);
+        }
+    },
+    limits: { fileSize: 2 * 1024 * 1024 }, // Giới hạn file 2MB
+});
+
+export { cloudinary, upload,upload2 };
 

@@ -12,7 +12,7 @@ export const searchUser = async (req, res) => {
 
     const user = await User.findOne({
       $or: [
-        { name: { $regex: keyword, $options: "i" } }, // tìm gần đúng theo tên
+        { phone: { $regex: keyword, $options: "i" } },  // tìm gần đúng số điện thoại
         { email: { $regex: keyword, $options: "i" } } // tìm gần đúng theo email
       ]
     });
@@ -40,9 +40,31 @@ export const getApartments = async (req, res) => {
 
 export const submitVerification = async (req, res) => {
   try {
-    const newVerification = new ResidentVerification(req.body);
+    console.log(req.body);
+    const data = req.body
+    const imageUrls = req.file?.path;
+    console.log(imageUrls);
+
+    const newVerification = new ResidentVerification({
+      userId: data.userId,
+      fullName: data.fullName,
+      email: data.email,
+      phone: data.phone,
+      apartmentCode: data.apartmentCode,
+      documentType: data.documentType,
+      contractStart: data.contractStart,
+      contractEnd: data.contractEnd,
+      documentImage: imageUrls
+    });
     await newVerification.save();
-    res.status(201).json({ message: "Verification request created" });
+    console.log(newVerification);
+
+    res.status(201).json({
+      message: "Verification request created",
+      success: true,
+      error: false,
+      data: newVerification,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
