@@ -1,5 +1,5 @@
 import User from '../models/User.js';
-
+import Notification from '../models/Notification.js';
 // GET /api/users?page=1&limit=10&role=staff&status=1
 const getUsers = async (req, res) => {
     try {
@@ -43,6 +43,20 @@ const changeUserStatus = async (req, res) => {
             { new: true }
         ).select('-password -otp -otpExpires');
         if (!user) return res.status(404).json({ error: "User not found" });
+        // --- SOCKET.IO NOTIFICATION ---
+        if (status === 0 && global._io) {
+            global._io.sockets.sockets.forEach((socket) => {
+                if (socket.userId === user._id.toString()) {
+                    socket.emit('blocked', { message: 'Tài khoản của bạn đã bị khóa bởi admin. Xin vui lòng liên lạc với bộ phận hỗ trợ.' });
+                }
+            });
+        }
+        // Save notification to DB
+        await Notification.create({
+            userId: user._id,
+            message: 'Tài khoản của bạn đã bị khóa bởi admin. Xin vui lòng liên lạc với bộ phận hỗ trợ.'
+        });
+        // --- END SOCKET.IO NOTIFICATION ---
         res.json(user);
     } catch (err) {
         res.status(500).json({ error: "Server error" });

@@ -12,13 +12,21 @@ import ParkingRegistration from "./router/parkingRegistration.js";
 import residentRouter from "./router/residentRoutes.js";
 import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
-import { initSocket } from "./socket.js"; // 🆕 import file socket.js
 
-// Load env
-dotenv.config();
+import { initSocket } from "./socket.js"; // 🆕 import file socket.js
+import apartmentRouter from "./router/apartmentRoutes.js";
+import adminDashboardRoutes from "./router/adminDashboardRoutes.js";
+import ResidentVerificationRouter from "./router/residentVerificationRoutes.js";
+import { createServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
+dotenv.config(); // Load biến môi trường từ .env
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const server = createServer(app);
+const io = new SocketIOServer(server, { cors: { origin: '*' } });
+global._io = io; // Make io accessible globally
 
 // Tạo HTTP server để dùng được với Socket.IO
 const server = http.createServer(app);
@@ -67,6 +75,7 @@ app.use("/api/staff", staffRouter);
 app.use("/api/users", userRouter);
 app.use("/api/parkinglot", ParkingRegistration);
 app.use("/api/apartments", apartmentRouter);
+
 app.use("/api/residents", residentRouter);
 
 // Socket.IO event listeners
@@ -84,16 +93,29 @@ io.on("connection", (socket) => {
 });
 
 // Start server
+
+app.use("/api/admin-dashboard", adminDashboardRoutes);
+app.use("/api/resident-verifications", ResidentVerificationRouter);
+// Socket.IO setup
+io.on('connection', (socket) => {
+  // Save userId to socket mapping if needed
+  socket.on('register', (userId) => {
+    socket.userId = userId;
+  });
+});
+// Kết nối DB và khởi chạy server
+
 const startServer = async () => {
   try {
     await connectToDatabase();
     server.listen(PORT, () => {
-      console.log(`🚀 Server running at http://localhost:${PORT}`);
+      console.log(`🚀 Server is running at http://localhost:${PORT}`);
     });
   } catch (err) {
     console.error("❌ Server error:", err);
     process.exit(1);
   }
+
 };
 
 startServer();

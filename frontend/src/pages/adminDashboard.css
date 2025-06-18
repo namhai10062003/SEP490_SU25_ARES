@@ -1,6 +1,171 @@
-/* adminDashboard.css */
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
+/* Layout tổng thể */
+.adminx-layout {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Sidebar - 30% */
+.adminx-sidebar {
+  width: 15%;
+  background-color: #00bfff;
+  padding: 20px;
+  color: white;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.adminx-sidebar h5 {
+  font-weight: bold;
+  margin-bottom: 25px;
+  font-size: 18px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.adminx-sidebar ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.adminx-sidebar li {
+  margin-bottom: 10px;
+}
+
+.adminx-sidebar a {
+  color: white;
+  text-decoration: none;
+  display: block;
+  padding: 8px 12px;
+  border-left: 4px solid transparent;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+}
+
+.adminx-sidebar a:hover,
+.adminx-sidebar a.active {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-left: 4px solid white;
+  font-weight: 500;
+}
+
+/* Main content */
+.adminx-main {
+  flex: 1;
+  padding: 0;
+  background-color: #f5f6fa;
+  margin-left: auto; /* Độ rộng của sidebar */
+  min-height: auto;
+  overflow-x: auto;        /* ✅ xử lý tràn chiều ngang */
+  overflow-y: auto;
+  width: 178vh;
+}
+
+.adminx-main h3 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* Stats Cards */
+.adminx-stats {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.adminx-card {
+  background-color: #ffffff;
+  color: #2c3e50;
+  padding: 20px;
+  border-radius: 12px;
+  width: 30%;
+  min-width: 220px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.adminx-card:hover {
+  transform: translateY(-5px);
+}
+
+.adminx-stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* Dashboard Sections */
+.adminx-dashboard-sections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* Revenue Table */
+.adminx-revenue {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 20px;
+  color: #2c3e50;
+  flex: 1 1 500px;
+  min-width: 300px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.adminx-filter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.adminx-filter select {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* Pie Chart Section */
+.adminx-chart {
+  background-color: #ffffff;
+  border-radius: 10px;
+  padding: 20px;
+  color: #2c3e50;
+  flex: 1 1 400px;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .adminx-sidebar {
+    width: 100%;
+    position: static;
   }
-  
+
+  .adminx-main {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .adminx-stats,
+  .adminx-dashboard-sections {
+    flex-direction: column;
+  }
+
+  .adminx-card {
+    width: 100%;
+  }
+
+  .adminx-revenue,
+  .adminx-chart {
+    width: 100%;
+  }
+}
