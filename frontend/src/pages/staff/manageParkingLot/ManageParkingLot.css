@@ -1,0 +1,135 @@
+/* Toàn bộ layout */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f7f9fc;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background-color: #2f3542;
+  color: #ffffff;
+  padding: 20px;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+  text-transform: uppercase;
+  color: #ffa502;
+}
+
+.sidebar-menu ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar-menu ul li {
+  margin: 15px 0;
+}
+
+.sidebar-menu ul li a {
+  color: #dcdde1;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.sidebar-menu ul li a:hover {
+  color: #ffa502;
+  padding-left: 8px;
+}
+
+/* Nội dung chính */
+.dashboard-container {
+  flex: 1;
+  padding: 30px;
+}
+
+/* Phần quản lý gửi xe */
+.manage-parking-lot h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #2f3542;
+}
+
+.parking-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.parking-table thead {
+  background-color: #57606f;
+  color: white;
+}
+
+.parking-table th,
+.parking-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #f1f2f6;
+}
+
+.parking-table tbody tr:hover {
+  background-color: #f1f2f6;
+}
+
+/* Nút hành động */
+.approve-btn,
+.reject-btn {
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.approve-btn {
+  background-color: #2ed573;
+  color: white;
+  /* margin-right: 8px; */
+}
+
+.reject-btn {
+  background-color: #ff4757;
+  color: white;
+}
+
+.approve-btn:hover {
+  background-color: #20bf6b;
+}
+
+.reject-btn:hover {
+  background-color: #e84118;
+}
+
+.has-submenu {
+  position: relative;
+  cursor: pointer;
+}
+
+.has-submenu > .submenu {
+  display: none;
+  list-style: none;
+  padding-left: 20px;
+  margin: 5px 0;
+}
+
+.has-submenu:hover > .submenu {
+  display: block;
+}
+
+.submenu li {
+  margin: 5px 0;
+}

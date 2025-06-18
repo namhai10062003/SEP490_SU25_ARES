@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
-
 const ResidentVerificationSchema = new Schema({
     staff: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false }, // optional if not always present
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },  // optional if not always present
@@ -19,3 +18,4 @@ const ResidentVerificationSchema = new Schema({
 
 const ResidentVerification = mongoose.model('ResidentVerification', ResidentVerificationSchema);
 export default ResidentVerification;
+
