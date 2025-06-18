@@ -21,10 +21,10 @@ export default function AdminDashboard({ children }) {
           <li><Link to="/admin-dashboard/manage-user" className="adminx-nav-link">• Quản lí User</Link></li>
           <li><Link to="/admin-dashboard/manage-staff" className="adminx-nav-link">• Quản lí Staff</Link></li>
           <li><Link to="/admin-dashboard/manage-apartment" className="adminx-nav-link">• Quản lí Căn hộ</Link></li>
+          <li><Link to="/admin-dashboard/manage-resident-verification" className="text-white text-decoration-none d-block py-1">• Quản lý xác nhận cư dân</Link></li>
           <li><Link to="/login" className="adminx-nav-link">Đăng xuất</Link></li>
         </ul>
       </aside>
-
       {/* Main content chiếm 70% */}
       <main className="adminx-main">
         {children}

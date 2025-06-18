@@ -10,6 +10,7 @@ import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
 import apartmentRouter from "./router/apartmentRoutes.js";
 import adminDashboardRoutes from "./router/adminDashboardRoutes.js";
+import ResidentVerificationRouter from "./router/residentVerificationRoutes.js";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 dotenv.config(); // Load biến môi trường từ .env
@@ -53,6 +54,7 @@ app.use("/api/users", userRouter);
 app.use("/api/parkinglot", ParkingRegistration);
 app.use("/api/apartments", apartmentRouter);
 app.use("/api/admin-dashboard", adminDashboardRoutes);
+app.use("/api/resident-verifications", ResidentVerificationRouter);
 // Socket.IO setup
 io.on('connection', (socket) => {
   // Save userId to socket mapping if needed
