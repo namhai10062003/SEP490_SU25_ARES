@@ -193,7 +193,6 @@ const verifyUser = async (req, res) => {
       if (user.verified) {
         return res.status(400).json({ success: false, error: "Tài khoản đã xác thực!" });
       }
-
       console.log("📨 OTP nhập:", otp);
       console.log("🧾 OTP lưu:", user.otp);
       console.log("⏰ Hết hạn:", new Date(user.otpExpires), "Hiện tại:", new Date());
@@ -228,7 +227,18 @@ const verifyUser = async (req, res) => {
 
     // Trường hợp xác thực token thông thường (đã đăng nhập)
     if (req.user) {
-      const user = req.user;
+      // Always fetch the latest user data from DB
+      const user = await User.findById(req.user._id);
+
+      if (!user) {
+        return res.status(401).json({ success: false, error: "Người dùng không tồn tại!" });
+      }
+      if (user.deletedAt !== null) {
+        return res.status(403).json({ success: false, error: "Tài khoản đã bị xóa." });
+      }
+      if (user.status === 0) {
+        return res.status(403).json({ success: false, error: "Tài khoản đã bị khóa." });
+      }
 
       return res.status(200).json({
         success: true,
