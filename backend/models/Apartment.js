@@ -65,7 +65,9 @@ const apartmentSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User',
     default: null
-  }
+  },
+  isOwner: { type: Boolean, default: false }, //true là chủ nhà
+  isRenter: { type: Boolean, default: false }, //true là người thuê
 }, {
   timestamps: true
 });

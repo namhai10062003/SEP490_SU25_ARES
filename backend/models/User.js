@@ -2,15 +2,15 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    
+
     /* ---------- THÊM apartmentId ---------- */
     // Liên kết tới collection Apartment (hoặc đổi sang String tuỳ use‑case)
     apartmentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Apartment",
-        default: null, // ← bỏ nếu bạn muốn bắt buộc
-      },
-      /* -------------------------------------- */
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Apartment",
+      default: null, // ← bỏ nếu bạn muốn bắt buộc
+    },
+    /* -------------------------------------- */
     name: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
@@ -23,7 +23,6 @@ const userSchema = new mongoose.Schema(
 
     profileImage: { type: String },
     phone: { type: String },
-
 
     lastMessageTime: { type: Date, default: null },
     verified: { type: Boolean, default: false },

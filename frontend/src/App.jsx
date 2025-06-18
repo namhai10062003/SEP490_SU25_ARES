@@ -24,6 +24,7 @@ import ManageApartment from "./pages/manage-apartment.jsx";
 import ParkingRegistration from "./parkingRegistration/parkingRegistration";
 import ResidentVerification from "./pages/staff/residentVerification.jsx";
 import SocketListener from "../components/SocketListener.jsx";
+import ManageApplicationForm from "./pages/manage-application-form.jsx";
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 function ProtectedRoute({ element, allowedRoles }) {
@@ -107,8 +108,6 @@ function App() {
                 />
               }
             />
-
-
             {<Route
               path="/admin-dashboard/manage-staff"
               element={
@@ -118,6 +117,15 @@ function App() {
                 />
               }
             />}
+            <Route
+              path="/admin-dashboard/manage-resident-verification"
+              element={
+                <ProtectedRoute
+                  element={<ManageApplicationForm />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
           </Routes>
           <SocketListener />
           {/* ✅ Thêm ToastContainer để bật thông báo realtime */}
