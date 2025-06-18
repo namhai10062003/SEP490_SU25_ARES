@@ -11,7 +11,6 @@ import SocketProvider from "../context/socketContext";
 import Home from "./home/home";
 import VerifyEmail from "./pages/verify-otp.jsx";
 // import Dashboard from "./pages/dashboard.jsx"; // Giả sử đây là trang chỉ dành cho admin
-import AdminDashboard from "./pages/adminDashboard.jsx";
 import ForgotPassword from "./pages/forgotpassword";
 import GoogleCallback from "./pages/google-callback.jsx";
 import Login from "./pages/login.jsx";
@@ -24,6 +23,7 @@ import ManageApartment from "./pages/manage-apartment.jsx";
 import ParkingRegistration from "./parkingRegistration/parkingRegistration";
 import ResidentVerification from "./pages/staff/residentVerification.jsx";
 import SocketListener from "../components/SocketListener.jsx";
+import DashboardHome from "./pages/DashboardHome.jsx";
 import ManageApplicationForm from "./pages/manage-application-form.jsx";
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
@@ -57,7 +57,7 @@ function App() {
               path="/admin-dashboard"
               element={
                 <ProtectedRoute
-                  element={<AdminDashboard />}
+                  element={<DashboardHome />}
                   allowedRoles={["admin"]}
                 />
               }
