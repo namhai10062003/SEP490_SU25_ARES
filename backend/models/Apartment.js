@@ -48,13 +48,15 @@ const apartmentSchema = new Schema({
   },
   ownerName: {
     type: String,
-    required: true,
-    trim: true
+    trim: true,
+    required: false,
+    default :""
   },
   ownerPhone: {
     type: String,
-    required: true,
-    trim: true
+    trim: true,
+    required: false,
+    default :""
   },
   slug: {
     type: String,
@@ -63,7 +65,8 @@ const apartmentSchema = new Schema({
   },
   userId: {
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    default: null
   },
   isOwner: { type: Boolean, default: false }, //true là chủ nhà
   isRenter: { type: Boolean, default: false }, //true là người thuê
