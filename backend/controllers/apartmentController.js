@@ -15,9 +15,7 @@ export const createApartment = async (req, res) => {
 // Lấy tất cả căn hộ
 export const getAllApartments = async (req, res) => {
   try {
-    const apartments = await Apartment.find()
-      .populate('isOwner', 'name phone')
-      .populate('isRenter', 'name phone');
+    const apartments = await Apartment.find().populate('userId');
     res.json(apartments);
   } catch (err) {
     res.status(500).json({ error: err.message });
