@@ -15,12 +15,13 @@ import residentRouter from "./router/residentRoutes.js";
 import residentVerificationRouter from "./router/residentVerificationRoutes.js";
 import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
+import notificationRoutes from './router/notificationRoutes.js';
 
 import { initSocket } from "./socket.js";
 
 dotenv.config();
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 5000;
 
 /* --------- HTTP + Socket.IO --------- */
@@ -58,14 +59,15 @@ app.use((req, _res, next) => {
 /* --------- Routes --------- */
 app.get("/", (_req, res) => res.send("API working with Socket.IO 🔥"));
 
-app.use("/api/auth",                authRouter);
-app.use("/api/staff",               staffRouter);
-app.use("/api/users",               userRouter);
-app.use("/api/parkinglot",          parkingRouter);
-app.use("/api/apartments",          apartmentRouter);
-app.use("/api/residents",           residentRouter);
-app.use("/api/admin-dashboard",     adminDashboardRoutes);
+app.use("/api/auth", authRouter);
+app.use("/api/staff", staffRouter);
+app.use("/api/users", userRouter);
+app.use("/api/parkinglot", parkingRouter);
+app.use("/api/apartments", apartmentRouter);
+app.use("/api/residents", residentRouter);
+app.use("/api/admin-dashboard", adminDashboardRoutes);
 app.use("/api/resident-verifications", residentVerificationRouter);
+app.use("/api/notifications", notificationRoutes);
 
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {

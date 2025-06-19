@@ -8,7 +8,7 @@ const ResidentVerificationSchema = new Schema({
     phone: { type: String },
     apartment: { type: mongoose.Schema.Types.ObjectId, ref: 'Apartment', required: false },
     apartmentCode: { type: String, required: true },
-    documentType: { type: String, enum: ['Hợp đồng mua bán', 'Hợp đồng cho thuê'], required: true },
+    documentType: { type: String, enum: ['Hợp đồng mua bán', 'Hợp đồng cho thuê', 'rental', 'ownership'], required: true },
     contractStart: { type: Date },
     contractEnd: { type: Date },
     documentImage: { type: String }, // use this if your data uses documentImage
