@@ -61,12 +61,12 @@ const apartmentSchema = new Schema({
     unique: true,
     trim: true
   },
-  // userId: {
-  //   type: Schema.Types.ObjectId,
-  //   ref: 'User'
-  // },
-  isOwner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },   // userId of owner
-  isRenter: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },  // userId of renter
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  isOwner: { type: Boolean, default: false }, //true là chủ nhà
+  isRenter: { type: Boolean, default: false }, //true là người thuê
 }, {
   timestamps: true
 });
