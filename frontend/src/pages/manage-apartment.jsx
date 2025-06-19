@@ -194,9 +194,11 @@ const ManageApartment = () => {
                   <th>Tên Căn hộ</th>
                   <th>Tầng</th>
                   <th>Diện tích (m²)</th>
-                  <th>Trạng thái</th>
                   <th>Chủ sở hữu</th>
-                  <th>SĐT</th>
+                  <th>SĐT Chủ sở hữu</th>
+                  <th>Người thuê</th>
+                  <th>SĐT Người thuê</th>
+                  <th>Trạng thái</th>
                   <th>Hành Động</th>
                 </tr>
               </thead>
@@ -220,9 +222,19 @@ const ManageApartment = () => {
                       <td>{apt.apartmentCode || "Không rõ"}</td>
                       <td>{apt.floor}</td>
                       <td>{apt.area || "-"}</td>
+                      <td>
+                        {apt.isOwner?.name || apt.ownerName || "Chưa có"}
+                      </td>
+                      <td>
+                        {apt.isOwner?.phone || apt.ownerPhone || "-"}
+                      </td>
+                      <td>
+                        {apt.isRenter?.name || "Chưa có"}
+                      </td>
+                      <td>
+                        {apt.isRenter?.phone || "-"}
+                      </td>
                       <td>{apt.status || "Chưa xác định"}</td>
-                      <td>{apt.ownerName || "Chưa có"}</td>
-                      <td>{apt.ownerPhone || "-"}</td>
                       <td>
                         <div style={{ display: "flex", gap: "0.5rem", whiteSpace: "nowrap" }}>
                           <button

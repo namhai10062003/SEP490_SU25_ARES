@@ -4,13 +4,22 @@ import AdminDashboard from "./adminDashboard.jsx";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+const STATUS_OPTIONS = [
+    { value: "", label: "Tất cả" },
+    { value: "Chờ duyệt", label: "Chờ duyệt" },
+    { value: "Đã duyệt", label: "Đã duyệt" },
+    { value: "Đã từ chối", label: "Đã từ chối" },
+];
 
 const ManageApplicationForm = () => {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedStatus, setSelectedStatus] = useState("");
     const [selectedApp, setSelectedApp] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [showRejectModal, setShowRejectModal] = useState(false);
+    const [rejectReason, setRejectReason] = useState("");
 
     useEffect(() => {
         fetchApplications();
@@ -45,23 +54,37 @@ const ManageApplicationForm = () => {
         }
     };
 
-    const handleReject = async (id) => {
-        if (window.confirm("Xác nhận từ chối đơn này?")) {
-            try {
-                await axios.patch(`${import.meta.env.VITE_API_URL}/api/resident-verifications/${id}/reject`);
-                fetchApplications();
-                toast.success("Đã từ chối đơn!");
-            } catch (err) {
-                const msg = err?.response?.data?.error || "Từ chối đơn thất bại!";
-                toast.error(msg);
-            }
+    const handleReject = (app) => {
+        setSelectedApp(app);
+        setRejectReason("");
+        setShowRejectModal(true);
+    };
+    const submitReject = async () => {
+        if (!rejectReason.trim()) {
+            toast.error("Vui lòng nhập lý do từ chối!");
+            return;
+        }
+        try {
+            await axios.patch(
+                `${import.meta.env.VITE_API_URL}/api/resident-verifications/${selectedApp._id}/reject`,
+                { reason: rejectReason }
+            );
+            setShowRejectModal(false);
+            setSelectedApp(null);
+            fetchApplications();
+            toast.success("Đã từ chối đơn!");
+        } catch (err) {
+            const msg = err?.response?.data?.error || "Từ chối đơn thất bại!";
+            toast.error(msg);
         }
     };
-
+    // Filter by search and status
     const filteredApps = applications.filter(app =>
-        searchTerm.trim() === "" ||
-        (app.fullName && app.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (app.apartmentCode && app.apartmentCode.toLowerCase().includes(searchTerm.toLowerCase()))
+        (searchTerm.trim() === "" ||
+            (app.fullName && app.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (app.apartmentCode && app.apartmentCode.toLowerCase().includes(searchTerm.toLowerCase()))
+        ) &&
+        (selectedStatus === "" || app.status === selectedStatus)
     );
 
     return (
@@ -69,13 +92,24 @@ const ManageApplicationForm = () => {
             <div className="w-100">
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2 className="font-weight-bold">Quản lý đơn xác nhận cư dân</h2>
-                    <input
-                        type="text"
-                        placeholder="Tìm kiếm theo tên hoặc căn hộ..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ padding: "0.5rem", width: "250px" }}
-                    />
+                    <div style={{ display: "flex", gap: 12 }}>
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm theo tên hoặc căn hộ..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{ padding: "0.5rem", width: "250px" }}
+                        />
+                        <select
+                            value={selectedStatus}
+                            onChange={e => setSelectedStatus(e.target.value)}
+                            style={{ padding: "0.5rem", minWidth: 140 }}
+                        >
+                            {STATUS_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
                 <div className="card w-100">
                     <div className="card-body p-0">
@@ -126,14 +160,14 @@ const ManageApplicationForm = () => {
                                                     <button
                                                         className="btn btn-sm btn-success"
                                                         onClick={() => handleApprove(app._id)}
-                                                        disabled={app.status === "Đã duyệt"}
+                                                        disabled={app.status === "Đã duyệt" || app.status === "Đã từ chối"}
                                                     >
                                                         Duyệt
                                                     </button>
                                                     <button
                                                         className="btn btn-sm btn-danger"
-                                                        onClick={() => handleReject(app._id)}
-                                                        disabled={app.status === "Đã từ chối"}
+                                                        onClick={() => handleReject(app)}
+                                                        disabled={app.status === "Đã duyệt" || app.status === "Đã từ chối"}
                                                     >
                                                         Từ chối
                                                     </button>
@@ -143,10 +177,69 @@ const ManageApplicationForm = () => {
                                     ))
                                 )}
                             </tbody>
+
                         </table>
                     </div>
                 </div>
-
+                {/* Modal từ chối đơn */}
+                {showRejectModal && selectedApp && (
+                    <div
+                        className="modal fade show"
+                        style={{ display: "block", background: "rgba(0,0,0,0.3)" }}
+                        tabIndex="-1"
+                    >
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Từ chối đơn xác nhận cư dân</h5>
+                                    <button
+                                        type="button"
+                                        className="close"
+                                        onClick={() => setShowRejectModal(false)}
+                                    >
+                                        <span>×</span>
+                                    </button>
+                                </div>
+                                <div className="modal-body">
+                                    <p><b>Họ tên:</b> {selectedApp.fullName}</p>
+                                    <p><b>User ID:</b> {selectedApp.user?._id || selectedApp.user}</p>
+                                    <p><b>Tên người dùng:</b> {selectedApp.user?.name || "-"}</p>
+                                    <p><b>Email người dùng:</b> {selectedApp.user?.email || "-"}</p>
+                                    <p><b>Căn hộ:</b> {selectedApp.apartmentCode}</p>
+                                    <p><b>Loại giấy tờ:</b> {selectedApp.documentType}</p>
+                                    <p><b>Trạng thái hiện tại:</b> {selectedApp.status}</p>
+                                    <div className="form-group mt-3">
+                                        <label>Lý do từ chối</label>
+                                        <textarea
+                                            className="form-control"
+                                            rows={3}
+                                            value={rejectReason}
+                                            onChange={e => setRejectReason(e.target.value)}
+                                            placeholder="Nhập lý do từ chối..."
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="modal-footer">
+                                    <button
+                                        type="button"
+                                        className="btn btn-danger"
+                                        onClick={submitReject}
+                                    >
+                                        Xác nhận từ chối
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={() => setShowRejectModal(false)}
+                                    >
+                                        Hủy
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 {/* Modal xem chi tiết đơn */}
                 {showModal && selectedApp && (
                     <div
@@ -199,6 +292,7 @@ const ManageApplicationForm = () => {
                     </div>
                 )}
             </div>
+            <ToastContainer />
         </AdminDashboard>
     );
 };
