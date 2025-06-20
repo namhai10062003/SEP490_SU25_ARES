@@ -43,7 +43,7 @@ export default function ResidentVerificationForm() {
     if (!query) return;
     try {
       const res = await axios.get(
-        `http://localhost:4000/api/resident-verification/search-user?keyword=${query}`
+        `http://localhost:4000/api/resident-verifications/search-user?keyword=${query}`
       );
       setUser(res.data);
     } catch (err) {
@@ -66,62 +66,82 @@ export default function ResidentVerificationForm() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (
-      !user ||
-      !formData.documentType ||
-      !formData.apartmentCode ||
-      !formData.contractStart ||
-      !formData.contractEnd
-    ) {
-      alert("Vui lòng điền đủ thông tin bắt buộc.");
-      return;
-    }
+  e.preventDefault();
 
-    const data = new FormData();
-    data.append("userId", user._id);
-    data.append("fullName", user.name || "");
-    data.append("email", user.email || "");
-    data.append("phone", user.phone || "");
-    data.append("documentType", formData.documentType);
-    data.append("apartmentCode", formData.apartmentCode);
-    data.append("contractStart", formData.contractStart);
-    data.append("contractEnd", formData.contractEnd);
-    if (formData.documentImage)
-      data.append("documentImage", formData.documentImage);
+  if (
+    !user ||
+    !formData.documentType ||
+    !formData.apartmentCode ||
+    !formData.contractStart ||
+    !formData.contractEnd
+  ) {
+    alert("Vui lòng điền đủ thông tin bắt buộc.");
+    return;
+  }
 
-    try {
-      const res = await axios.post(
-        "http://localhost:4000/api/resident-verification/verification",
-        data, // FormData chứa cả ảnh
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      alert("Gửi yêu cầu xác thực thành công!");
-      setFormData({
-        documentType: "",
-        apartmentCode: "",
-        contractStart: "",
-        contractEnd: "",
-        documentImage: null,
-      });
-      setPreviewImage(null);
+  const data = new FormData();
 
-      // Reset ô chọn ảnh (ẩn tên file)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = null;
+  data.append("userId", user._id); // ✅ đúng như bạn yêu cầu
+  data.append("fullName", user.name || "");
+  data.append("email", user.email || "");
+  data.append("phone", user.phone || "");
+  data.append("documentType", formData.documentType);
+  data.append("apartmentCode", formData.apartmentCode);
+
+  // ✅ chuyển ngày về chuẩn ISO (nhiều backend yêu cầu)
+  data.append(
+    "contractStart",
+    new Date(formData.contractStart).toISOString()
+  );
+  data.append("contractEnd", new Date(formData.contractEnd).toISOString());
+
+  // ✅ kiểm tra loại file và chỉ append nếu hợp lệ
+  if (formData.documentImage && formData.documentImage instanceof File) {
+    data.append("documentImage", formData.documentImage);
+  } else {
+    alert("Ảnh hợp đồng không hợp lệ hoặc chưa được chọn.");
+    return;
+  }
+
+  // ✅ log toàn bộ dữ liệu FormData để kiểm tra
+  for (const [key, value] of data.entries()) {
+    console.log(`${key}:`, value);
+  }
+
+  try {
+    const res = await axios.post(
+      "http://localhost:4000/api/resident-verifications/verification",
+      data,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       }
+    );
 
-      setUser(null); // Quay lại bước tìm người dùng
-      setQuery(""); // Xoá từ khoá tìm kiếm
-    } catch (err) {
-      console.error("Gửi thất bại:", err);
-      alert("Gửi thất bại! Vui lòng kiểm tra lại.");
+    alert("Gửi yêu cầu xác thực thành công!");
+
+    setFormData({
+      documentType: "",
+      apartmentCode: "",
+      contractStart: "",
+      contractEnd: "",
+      documentImage: null,
+    });
+    setPreviewImage(null);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
     }
-  };
+
+    setUser(null);
+    setQuery("");
+  } catch (err) {
+    console.error("Gửi thất bại:", err?.response || err);
+    alert("Gửi thất bại! Vui lòng kiểm tra lại.");
+  }
+};
+
 
   return (
     <div className="resident-form-container">
@@ -228,17 +248,17 @@ export default function ResidentVerificationForm() {
                   ))}
                 </select>
                 <select
-                  name="documentType"
-                  value={formData.documentType}
-                  onChange={handleChange}
-                  className="input-field"
-                  required
-                >
-                  <option value="">-- Loại hợp đồng --</option>
-                  <option value="rental">Hợp đồng thuê</option>
-                  <option value="ownership">Giấy chủ quyền</option>
-                  <option value="other">Khác</option>
-                </select>
+  name="documentType"
+  value={formData.documentType}
+  onChange={handleChange}
+  className="input-field"
+  required
+>
+  <option value="">-- Loại hợp đồng --</option>
+  <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
+  <option value="Giấy chủ quyền">Giấy chủ quyền</option>
+  <option value="Khác">Khác</option>
+</select>
                 <input
                   type="file"
                   name="documentImage"

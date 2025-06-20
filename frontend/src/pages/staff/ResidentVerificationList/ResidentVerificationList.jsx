@@ -44,6 +44,7 @@ export default function ResidentVerificationList() {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
+    
     <div className="user-list-container">
       <aside className="sidebar">
         <h2 className="sidebar-title">BẢN QUẢN LÝ</h2>
@@ -110,6 +111,7 @@ export default function ResidentVerificationList() {
                 </thead>
                 <tbody>
                   {currentUsers.map((user, index) => (
+                    
                     <tr key={user._id}>
                       <td>{indexOfFirstUser + index + 1}</td>
                       <td>{user.name}</td>
