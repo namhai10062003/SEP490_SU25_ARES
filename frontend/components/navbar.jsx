@@ -34,6 +34,15 @@ const Navbar = (role) => {
               <li><Link to="/dich-vu/don-dep">Dọn dẹp</Link></li>
               <li><Link to="/dich-vu/sua-chua">Sửa chữa</Link></li>
               <li><Link to="/dichvu/baidoxe">Dịch vụ đăng ký bãi đỗ xe</Link></li>
+              <li>
+                <Link to="/dichvu/dangtin">Dịch vụ đăng tin</Link>
+              </li>
+              <li>
+                <Link to="/quanlipost">Quản lí tin</Link>
+              </li>
+               <li>
+                <Link to="/quanlipostcustomer">Quản lí tin Customer</Link>
+              </li>
             </ul>
           )}
         </li>
