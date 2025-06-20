@@ -50,26 +50,25 @@ const apartmentSchema = new Schema({
     type: String,
     trim: true,
     required: false,
-    default :""
+    default: ""
   },
   ownerPhone: {
     type: String,
     trim: true,
     required: false,
-    default :""
+    default: ""
   },
   slug: {
     type: String,
     unique: true,
     trim: true
   },
-  userId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    default: null
-  },
-  isOwner: { type: Boolean, default: false }, //true là chủ nhà
-  isRenter: { type: Boolean, default: false }, //true là người thuê
+  // userId: {
+  //   type: Schema.Types.ObjectId,
+  //   ref: 'User'
+  // },
+  isOwner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },   // userId of owner
+  isRenter: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },  // userId of renter
 }, {
   timestamps: true
 });

@@ -16,13 +16,15 @@ import userRouter from "./router/user.js";
 import postRouter from "./router/postRouter.js"
 import postPackage from "./router/postPackage.js"
 import paymentRouter from "./router/payment.js"
-import './cron/expirePostJob.js'; 
+import notificationRoutes from './router/notificationRoutes.js';
+import expenseRoutes from "./router/expenseRoutes.js";
+import './cron/expirePostJob.js';
 
 import { initSocket } from "./socket.js";
 
 dotenv.config();
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 5000;
 
 /* --------- HTTP + Socket.IO --------- */
@@ -60,17 +62,19 @@ app.use((req, _res, next) => {
 /* --------- Routes --------- */
 app.get("/", (_req, res) => res.send("API working with Socket.IO 🔥"));
 
-app.use("/api/auth",                authRouter);
-app.use("/api/staff",               staffRouter);
-app.use("/api/users",               userRouter);
-app.use("/api/parkinglot",          parkingRouter);
-app.use("/api/apartments",          apartmentRouter);
-app.use("/api/residents",           residentRouter);
-app.use("/api/admin-dashboard",     adminDashboardRoutes);
+app.use("/api/auth", authRouter);
+app.use("/api/staff", staffRouter);
+app.use("/api/users", userRouter);
+app.use("/api/parkinglot", parkingRouter);
+app.use("/api/apartments", apartmentRouter);
+app.use("/api/residents", residentRouter);
+app.use("/api/admin-dashboard", adminDashboardRoutes);
 app.use("/api/resident-verifications", residentVerificationRouter);
 app.use("/api/posts", postRouter);
 app.use("/api/package", postPackage);
 app.use("/api/payment", paymentRouter);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/expenses", expenseRoutes);
 
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {

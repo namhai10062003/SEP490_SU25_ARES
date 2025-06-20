@@ -8,7 +8,7 @@ import socket from '../../server/socket';
 import h1 from "../images/banner.jpg";
 import './StaffDashboard.css';
 
-const StaffDashboard = () => {
+const StaffDashboard = ({ children }) => {
   const navigate = useNavigate(); // ✅ khai báo navigate
   const token = localStorage.getItem('token');
   let userName = 'Người dùng';
@@ -52,18 +52,7 @@ const StaffDashboard = () => {
     };
   }, [navigate]); // ✅ thêm navigate vào dependency array
 
-  const stats = [
-    { title: 'Bài Post', count: 128, color: 'blue' },
-    { title: 'Căn hộ & BĐS', count: 56, color: 'green' },
-    { title: 'Bài đồ xe', count: 78, color: 'orange' },
-    { title: 'Chi phí', count: 45, color: 'red' },
-  ];
 
-  const users = [
-    { name: 'Nguyễn Văn A', email: 'nguyenvana@gmail.com', role: 'Admin', date: '2024-01-15' },
-    { name: 'Trần Thị B', email: 'tranthib@gmail.com', role: 'Nhân viên', date: '2024-02-12' },
-    { name: 'Phạm Văn C', email: 'phamvanc@gmail.com', role: 'Khách hàng', date: '2024-03-10' },
-  ];
 
   return (
     <div className="layout">
@@ -85,62 +74,8 @@ const StaffDashboard = () => {
       </aside>
 
       <main className="dashboard-container">
-        <div className="topbar">
-          <h2 className="dashboard-title">Dashboard</h2>
-          <input type="text" placeholder="Tìm kiếm..." className="search-bar" />
-          <div className="user-info">
-            <span className="user-name">{userName}</span>
-          </div>
-        </div>
 
-        <h2 className="dashboard-title">Bảng điều khiển</h2>
-
-        <div className="stat-boxes">
-          {stats.map((item, idx) => (
-            <div key={idx} className={`stat-box ${item.color}`}>
-              <div className="stat-title">{item.title}</div>
-              <div className="stat-count">{item.count}</div>
-              <button className="stat-btn">Xem chi tiết</button>
-            </div>
-          ))}
-        </div>
-
-        <div className="charts">
-          <div className="chart-box">
-            <h3>Doanh thu theo tháng</h3>
-            <img src={h1} alt="Doanh thu" />
-          </div>
-          <div className="chart-box">
-            <h3>Người đăng mới theo tháng</h3>
-            <img src={h1} alt="Người dùng mới" />
-          </div>
-        </div>
-
-        <div className="user-table">
-          <h3>Danh sách người dùng</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Tên</th>
-                <th>Email</th>
-                <th>Vai trò</th>
-                <th>Ngày đăng ký</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((user, idx) => (
-                <tr key={idx}>
-                  <td>{idx + 1}</td>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>{user.role}</td>
-                  <td>{user.date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {children}
       </main>
     </div>
   );
