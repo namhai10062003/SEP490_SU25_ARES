@@ -1,7 +1,8 @@
 import ResidentVerification from '../models/ResidentVerification.js';
 import Apartment from '../models/Apartment.js';
 import User from '../models/User.js';
-
+import Notification from '../models/Notification.js'
+// tạo một file ví dụ như config hay helper cho hai hàm này đi, đừng để ở đây rối
 export const searchUser = async (req, res) => {
   try {
     const { keyword } = req.query;
@@ -27,8 +28,6 @@ export const searchUser = async (req, res) => {
     return res.status(500).json({ error: "Lỗi server" });
   }
 };
-
-
 export const getApartments = async (req, res) => {
   try {
     const apartments = await Apartment.find();
@@ -40,13 +39,15 @@ export const getApartments = async (req, res) => {
 
 export const submitVerification = async (req, res) => {
   try {
-    console.log(req.body);
-    const data = req.body
+    console.log("==== SUBMIT VERIFICATION ====");
+    console.log("req.body:", req.body);
+    const data = req.body;
+    console.log("data.userId:", data.userId);
     const imageUrls = req.file?.path;
     console.log(imageUrls);
 
     const newVerification = new ResidentVerification({
-      userId: data.userId,
+      user: data.userId,
       fullName: data.fullName,
       email: data.email,
       phone: data.phone,
@@ -66,98 +67,119 @@ export const submitVerification = async (req, res) => {
       data: newVerification,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("❌ Lỗi trong submitVerification:", err); // Log toàn bộ lỗi
+    res.status(500).json({ error: err.message, detail: err });
   }
 };
 
 const getAllResidentVerifications = async (req, res) => {
-    try {
-        const forms = await ResidentVerification.find()
-            .populate('staff', 'name email')
-            .populate('user', 'name email')
-            .populate('apartment', 'apartmentCode name');
-        res.json(forms);
-    } catch (err) {
-        res.status(500).json({ error: "Server error" });
-    }
+  try {
+    const forms = await ResidentVerification.find()
+      .populate('staff', 'name email')
+      .populate('user', 'name email')
+      .populate('apartment', 'apartmentCode name');
+    res.json(forms);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
 };
 
 const getResidentVerificationById = async (req, res) => {
-    try {
-        const form = await ResidentVerification.findById(req.params.id)
-            .populate('staff', 'name email')
-            .populate('user', 'name email')
-            .populate('apartment', 'apartmentCode name');
-        if (!form) return res.status(404).json({ error: "Resident verification not found" });
-        res.json(form);
-    } catch (err) {
-        res.status(500).json({ error: "Server error" });
-    }
+  try {
+    const form = await ResidentVerification.findById(req.params.id)
+      .populate('staff', 'name email')
+      .populate('user', 'name email')
+      .populate('apartment', 'apartmentCode name');
+    if (!form) return res.status(404).json({ error: "Resident verification not found" });
+    res.json(form);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
 };
 
 const approveResidentVerification = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const application = await ResidentVerification.findById(id);
-        if (!application) return res.status(404).json({ error: "Không tìm thấy đơn xác nhận cư dân" });
+  try {
+    const { id } = req.params;
+    const application = await ResidentVerification.findById(id);
+    if (!application) return res.status(404).json({ error: "Không tìm thấy đơn xác nhận cư dân" });
 
-        // Find the apartment
-        const apartment = await Apartment.findOne({ apartmentCode: application.apartmentCode });
-        if (!apartment) return res.status(404).json({ error: "Không tìm thấy căn hộ" });
+    if (application.status === "Đã duyệt")
+      return res.status(400).json({ error: "Đơn này đã được duyệt, không thể duyệt lại." });
+    if (application.status === "Đã từ chối")
+      return res.status(400).json({ error: "Đơn này đã bị từ chối, không thể duyệt." });
 
-        // Find the user
-        const user = await User.findById(application.user);
-        if (!user) return res.status(404).json({ error: "Không tìm thấy người dùng" });
+    const apartment = await Apartment.findOne({ apartmentCode: application.apartmentCode });
+    if (!apartment) return res.status(404).json({ error: "Không tìm thấy căn hộ" });
+    console.log("application.user:", application.user);
 
-        // Update apartment and user based on documentType
-        if (application.documentType === "Hợp đồng mua bán") {
-            apartment.ownerName = application.fullName;
-            apartment.ownerPhone = application.phone;
-            apartment.userId = user._id;
-            apartment.status = "đang ở";
-            apartment.isOwner = true;
-            apartment.isRenter = false;
-            await apartment.save();
 
-            user.apartmentId = apartment._id;
-            await user.save();
-        } else if (application.documentType === "Hợp đồng cho thuê") {
-            apartment.ownerName = application.fullName;
-            apartment.ownerPhone = application.phone;
-            apartment.userId = user._id;
-            apartment.status = "đang cho thuê";
-            apartment.isOwner = false;
-            apartment.isRenter = true;
-            await apartment.save();
+    const user = await User.findById(application.user);
+    if (!user) return res.status(404).json({ error: "Không tìm thấy người dùng" });
 
-            user.apartmentId = apartment._id;
-            await user.save();
-        } else {
-            return res.status(400).json({ error: "Loại giấy tờ không hợp lệ" });
-        }
-
-        application.status = "Đã duyệt";
-        await application.save();
-
-        res.json({ success: true, message: "Đã duyệt đơn thành công!" });
-    } catch (err) {
-        res.status(500).json({ error: "Lỗi server khi duyệt đơn" });
+    if (application.documentType === "Hợp đồng mua bán" || application.documentType === "ownership" || application.documentType === 'Giấy chủ quyền') {
+      // Transfer ownership, clear renter
+      apartment.ownerName = application.fullName;
+      apartment.ownerPhone = application.phone;
+      apartment.isOwner = user._id;
+      apartment.isRenter = null;
+      apartment.status = "đang ở";
+    } else if (application.documentType === "Hợp đồng cho thuê" || application.documentType === "rental") {
+      if (apartment.isRenter) {
+        return res.status(403).json({ error: "Căn hộ này đã có người thuê!" });
+      }
+      apartment.isRenter = user._id;     // <-- ObjectId
+      apartment.status = "đang cho thuê";
+      // Do not change owner info or isOwner
+    } else {
+      return res.status(400).json({ error: "Loại giấy tờ không hợp lệ" });
     }
+
+    await apartment.save();
+
+    application.status = "Đã duyệt";
+    await application.save();
+    // Notify user
+    await Notification.create({
+      userId: user._id,
+      message: `Đơn xác nhận cư dân của bạn cho căn hộ ${apartment.apartmentCode} đã được duyệt.`,
+    });
+
+
+    res.json({ success: true, message: "Đã duyệt đơn thành công!" });
+  } catch (err) {
+    console.error("Error approving resident verification:", err);
+    res.status(500).json({ error: "Lỗi server khi duyệt đơn" });
+  }
 };
 
 const rejectResidentVerification = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const application = await ResidentVerification.findById(id);
-        if (!application) return res.status(404).json({ error: "Application not found" });
+  try {
+    const { id } = req.params;
+    const { reason } = req.body; // Ở trong body lúc reject request
+    const application = await ResidentVerification.findById(id);
+    if (!application) return res.status(404).json({ error: "Không tìm thấy đơn xác nhận cư dân" });
 
-        // Update application status
-        application.status = "Đã từ chối";
-        await application.save();
+    if (application.status === "Đã duyệt")
+      return res.status(400).json({ error: "Đơn này đã được duyệt, không thể từ chối." });
+    if (application.status === "Đã từ chối")
+      return res.status(400).json({ error: "Đơn này đã bị từ chối, không thể từ chối lại." });
 
-        res.json({ success: true, message: "Đã từ chối đơn thành công!" });
-    } catch (err) {
-        res.status(500).json({ error: "Server error" });
+    application.status = "Đã từ chối";
+    await application.save();
+    // Notify user with reason in message
+    if (application.user) {
+      const user = await User.findById(application.user);
+      if (user) {
+        await Notification.create({
+          userId: user._id,
+          message: `Đơn xác nhận cư dân của bạn cho căn hộ ${application.apartmentCode} đã bị từ chối. Lý do: ${reason || "Không có lý do cụ thể."}`,
+        });
+      }
     }
+    res.json({ success: true, message: "Đã từ chối đơn thành công!" });
+  } catch (err) {
+    console.error("Error rejecting resident verification:", err);
+    res.status(500).json({ error: "Server error" });
+  }
 };
 export { getAllResidentVerifications, getResidentVerificationById, approveResidentVerification, rejectResidentVerification };

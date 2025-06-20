@@ -35,6 +35,9 @@ import ParkingRegistration from "./parkingRegistration/parkingRegistration";
 import CustomerPostManagement from "./pages/MangementPostByCustomer/CustomerPostManagement.jsx";
 import BlogList from "./pages/BlogList/BlogList.jsx";
 
+
+import ManageExpense from "./pages/staff/manageExpense.jsx";
+
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 function ProtectedRoute({ element, allowedRoles }) {
   const { user } = useAuth();
@@ -65,10 +68,10 @@ function App() {
             <Route path="/dichvu/dangtin" element={<RegistrationForm />} />
 
             <Route
-            path="/quanlipostcustomer"
-            element={<CustomerPostManagement />}
-          />
-          <Route path="/blog" element={<BlogList />} />
+              path="/quanlipostcustomer"
+              element={<CustomerPostManagement />}
+            />
+            <Route path="/blog" element={<BlogList />} />
 
             {/* Route được bảo vệ (chỉ admin mới vào được) */}
             {<Route
@@ -81,16 +84,16 @@ function App() {
               }
             />}
             {
-            <Route
-              path="/admin-dashboard/posts"
-              element={
-                <ProtectedRoute
-                  element={<PostManagement />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />
-          }
+              <Route
+                path="/admin-dashboard/posts"
+                element={
+                  <ProtectedRoute
+                    element={<PostManagement />}
+                    allowedRoles={["admin"]}
+                  />
+                }
+              />
+            }
             {<Route
               path="/admin-dashboard/manage-staff"
               element={
@@ -118,12 +121,39 @@ function App() {
                 />
               }
             />
+            {<Route
+              path="/admin-dashboard/manage-staff"
+              element={
+                <ProtectedRoute
+                  element={<ManageStaff />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />}
+            <Route
+              path="/admin-dashboard/manage-resident-verification"
+              element={
+                <ProtectedRoute
+                  element={<ManageApplicationForm />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
             {/* Route được bảo vệ staff mới được vào */}
             {<Route
               path="/staff-dashboard"
               element={
                 <ProtectedRoute
                   element={<StaffDashboard />}
+                  allowedRoles={["staff"]}
+                />
+              }
+            />}
+            {<Route
+              path="/staff-dashboard/manage-expenses"
+              element={
+                <ProtectedRoute
+                  element={<ManageExpense />}
                   allowedRoles={["staff"]}
                 />
               }
@@ -161,24 +191,6 @@ function App() {
                 <ProtectedRoute
                   element={<ParkingLotList />}
                   allowedRoles={["staff"]}
-                />
-              }
-            />
-            {<Route
-              path="/admin-dashboard/manage-staff"
-              element={
-                <ProtectedRoute
-                  element={<ManageStaff />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />}
-            <Route
-              path="/admin-dashboard/manage-resident-verification"
-              element={
-                <ProtectedRoute
-                  element={<ManageApplicationForm />}
-                  allowedRoles={["admin"]}
                 />
               }
             />
