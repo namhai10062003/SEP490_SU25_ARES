@@ -125,3 +125,111 @@ export const getPostbyUser = async (req, res) => {
         });
     }
 };
+
+export const getPostActive = async (req, res) => {
+    try {
+        const post = await Post.find({ status: "active", isActive: true })
+            .populate('contactInfo', 'name email phone')
+            .populate('postPackage', 'type price expireAt')
+        if (post.length === 0) {
+            return res.status(404).json({
+                message: "Post not found",
+                success: false,
+                error: true
+            });
+        }
+        return res.status(200).json({
+            message: "Post retrieved successfully",
+            success: true,
+            error: false,
+            data: post
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+            error: true
+        });
+    }
+};
+
+export const updatePost = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const updateData = req.body;
+        const images = req.file?.path;
+
+        // Kiểm tra xem bài đăng có tồn tại không
+        const existingPost = await Post.findById(postId);
+        if (!existingPost) {
+            return res.status(404).json({
+                message: "Post not found",
+                success: false,
+                error: true
+            });
+        }
+        // Cập nhật từng trường riêng biệt
+        existingPost.title = updateData.title;
+        existingPost.description = updateData.description;
+        existingPost.location = updateData.location;
+        existingPost.property = updateData.property;
+        existingPost.area = updateData.area;
+        existingPost.price = updateData.price;
+        existingPost.legalDocument = updateData.legalDocument;
+        existingPost.interiorStatus = updateData.interiorStatus;
+        existingPost.amenities = updateData.amenities;
+        existingPost.postPackage = updateData.postPackagename;
+        existingPost.images = images || existingPost.images;
+        // Lưu các thay đổi
+        await existingPost.save();
+        return res.status(200).json({
+            message: "Post updated successfully",
+            success: true,
+            error: false,
+            data: existingPost
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+            error: true
+        });
+    }
+};
+
+export const updatePostStatusByAdmin = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const status = req.body.status;
+        const reasonreject = req.body.reasonreject;
+        // Kiểm tra xem bài đăng có tồn tại không
+        const existingPost = await Post.findById(postId);
+        if (!existingPost) {
+            return res.status(404).json({
+                message: "Post not found",
+                success: false,
+                error: true
+            });
+        }
+        if (status === "rejected") {
+            existingPost.status = status;
+            existingPost.reasonreject = reasonreject
+        } else {
+            existingPost.status = status;
+        }
+        // Lưu các thay đổi
+        await existingPost.save();
+        return res.status(200).json({
+            message: "Post updated successfully",
+            success: true,
+            error: false,
+            data: existingPost
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+            error: true
+        });
+    }
+};
