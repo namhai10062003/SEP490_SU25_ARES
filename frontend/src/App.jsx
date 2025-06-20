@@ -28,6 +28,7 @@ import ParkingRegistration from "./parkingRegistration/parkingRegistration";
 import SocketListener from "../components/SocketListener.jsx";
 import DashboardHome from "./pages/DashboardHome.jsx";
 import ManageApplicationForm from "./pages/manage-application-form.jsx";
+import RegistrationForm from "./pages/PostRegistration/registrationForm.jsx";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
 import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
 
@@ -59,6 +60,7 @@ function App() {
             <Route path="/dichvu/baidoxe" element={<ParkingRegistration />} />
             <Route path="/dichvu/dangkybaidoxe" element={<FormParkingRegistration />} />
             <Route path="/parkinglot/detail-parkinglot/:id" element={<ParkingRegistrationDetails />} />
+            <Route path="/dichvu/dangtin" element={<RegistrationForm />} />
             {/* Route được bảo vệ (chỉ admin mới vào được) */}
             {<Route
               path="/admin-dashboard"

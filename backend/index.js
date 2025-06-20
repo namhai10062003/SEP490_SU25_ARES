@@ -4,9 +4,7 @@ import dotenv from "dotenv";
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
-
 import connectToDatabase from "./db/db.js";
-
 import adminDashboardRoutes from "./router/adminDashboardRoutes.js";
 import apartmentRouter from "./router/apartmentRoutes.js";
 import authRouter from "./router/auth.js";
@@ -15,6 +13,8 @@ import residentRouter from "./router/residentRoutes.js";
 import residentVerificationRouter from "./router/residentVerificationRoutes.js";
 import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
+import postRouter from "./router/postRouter.js"
+import postPackage from "./router/postPackage.js"
 
 import { initSocket } from "./socket.js";
 
@@ -66,6 +66,8 @@ app.use("/api/apartments",          apartmentRouter);
 app.use("/api/residents",           residentRouter);
 app.use("/api/admin-dashboard",     adminDashboardRoutes);
 app.use("/api/resident-verifications", residentVerificationRouter);
+app.use("/api/posts", postRouter);
+app.use("/api/package", postPackage);
 
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {
