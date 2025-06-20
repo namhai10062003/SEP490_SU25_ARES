@@ -233,3 +233,33 @@ export const updatePostStatusByAdmin = async (req, res) => {
         });
     }
 };
+
+export const deletePost = async (req, res) => {
+    try {
+        const postId = req.params.id;
+
+        // Kiểm tra xem bài đăng có tồn tại không
+        const existingPost = await Post.findById(postId);
+        if (!existingPost) {
+            return res.status(404).json({
+                message: "Post not found",
+                success: false,
+                error: true
+            });
+        }
+
+        await Post.findByIdAndDelete(postId);
+
+        return res.status(200).json({
+            message: "Post deleted successfully",
+            success: true,
+            error: false
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+            error: true
+        });
+    }
+};

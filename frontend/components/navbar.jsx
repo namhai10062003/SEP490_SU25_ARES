@@ -37,9 +37,6 @@ const Navbar = (role) => {
               <li>
                 <Link to="/dichvu/dangtin">Dịch vụ đăng tin</Link>
               </li>
-              <li>
-                <Link to="/quanlipost">Quản lí tin</Link>
-              </li>
                <li>
                 <Link to="/quanlipostcustomer">Quản lí tin Customer</Link>
               </li>
