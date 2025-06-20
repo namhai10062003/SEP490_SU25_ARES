@@ -111,7 +111,6 @@ export default function ResidentVerificationList() {
                 </thead>
                 <tbody>
                   {currentUsers.map((user, index) => (
-                    
                     <tr key={user._id}>
                       <td>{indexOfFirstUser + index + 1}</td>
                       <td>{user.name}</td>
