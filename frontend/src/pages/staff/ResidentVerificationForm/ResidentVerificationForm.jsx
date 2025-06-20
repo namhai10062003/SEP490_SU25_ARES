@@ -247,7 +247,7 @@ export default function ResidentVerificationForm() {
                     </option>
                   ))}
                 </select>
-                <select
+               <select
   name="documentType"
   value={formData.documentType}
   onChange={handleChange}
