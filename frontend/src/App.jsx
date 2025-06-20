@@ -32,6 +32,8 @@ import StaffDashboard from "./pages/staff/staffDashboard";
 import FormParkingRegistration from "./parkingRegistration/formParkingRegistation";
 import ParkingRegistrationDetails from "./parkingRegistration/parkingRegistartionDetail";
 import ParkingRegistration from "./parkingRegistration/parkingRegistration";
+import CustomerPostManagement from "./pages/MangementPostByCustomer/CustomerPostManagement.jsx";
+import BlogList from "./pages/BlogList/BlogList.jsx";
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 function ProtectedRoute({ element, allowedRoles }) {
@@ -61,6 +63,13 @@ function App() {
             <Route path="/dichvu/dangkybaidoxe" element={<FormParkingRegistration />} />
             <Route path="/parkinglot/detail-parkinglot/:id" element={<ParkingRegistrationDetails />} />
             <Route path="/dichvu/dangtin" element={<RegistrationForm />} />
+
+            <Route
+            path="/quanlipostcustomer"
+            element={<CustomerPostManagement />}
+          />
+          <Route path="/blog" element={<BlogList />} />
+
             {/* Route được bảo vệ (chỉ admin mới vào được) */}
             {<Route
               path="/admin-dashboard"

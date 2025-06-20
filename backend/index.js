@@ -15,6 +15,8 @@ import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
 import postRouter from "./router/postRouter.js"
 import postPackage from "./router/postPackage.js"
+import paymentRouter from "./router/payment.js"
+import './cron/expirePostJob.js'; 
 
 import { initSocket } from "./socket.js";
 
@@ -68,6 +70,7 @@ app.use("/api/admin-dashboard",     adminDashboardRoutes);
 app.use("/api/resident-verifications", residentVerificationRouter);
 app.use("/api/posts", postRouter);
 app.use("/api/package", postPackage);
+app.use("/api/payment", paymentRouter);
 
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {
