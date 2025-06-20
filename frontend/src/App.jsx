@@ -21,6 +21,7 @@ import Register from "./pages/register.jsx";
 import ResetPassword from "./pages/resetpassword";
 import ManageParkingLot from "./pages/staff/manageParkingLot/manageParkinglot";
 import ParkingLotList from "./pages/staff/manageParkingLot/parkinglot-list";
+import ResidentVerification from "./pages/staff/residentVerification.jsx";
 import StaffDashboard from "./pages/staff/staffDashboard";
 import FormParkingRegistration from "./parkingRegistration/formParkingRegistation";
 import ParkingRegistrationDetails from "./parkingRegistration/parkingRegistartionDetail";
@@ -28,8 +29,6 @@ import ParkingRegistration from "./parkingRegistration/parkingRegistration";
 import SocketListener from "../components/SocketListener.jsx";
 import DashboardHome from "./pages/DashboardHome.jsx";
 import ManageApplicationForm from "./pages/manage-application-form.jsx";
-import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
-import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
 
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
@@ -110,38 +109,29 @@ function App() {
               path="/residentVerification"
               element={
                 <ProtectedRoute
-                  element={<ResidentVerificationForm />}
+                  element={<ResidentVerification />}
                   allowedRoles={["staff"]}
                 />
               }
             />
-            <Route
-              path="/listresidentVerification"
-              element={
-                <ProtectedRoute
-                  element={<ResidentVerificationList />}
-                  allowedRoles={["staff"]}
-                />
-              }
-            />
-            <Route
-              path="/manage-parkinglot"
-              element={
-                <ProtectedRoute
-                  element={<ManageParkingLot />}
-                  allowedRoles={["staff"]}
-                />
-              }
-            />
-            <Route
-              path="/parkinglot-list"
-              element={
-                <ProtectedRoute
-                  element={<ParkingLotList />}
-                  allowedRoles={["staff"]}
-                />
-              }
-            />
+               <Route
+            path="/manage-parkinglot"
+            element={
+              <ProtectedRoute
+                element={<ManageParkingLot />}
+                allowedRoles={["staff"]}
+              />
+            }
+          />
+          <Route
+            path="/parkinglot-list"
+            element={
+              <ProtectedRoute
+                element={<ParkingLotList />}
+                allowedRoles={["staff"]}
+              />
+            }
+          />
             {<Route
               path="/admin-dashboard/manage-staff"
               element={
