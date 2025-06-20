@@ -30,6 +30,37 @@ const getUsers = async (req, res) => {
     }
 };
 
+const getUsersDepartment = async (req, res) => {
+    try {
+        const users = await User.find({
+            apartmentId: { $exists: true, $ne: null }
+        }).populate('apartmentId');
+
+        if (!users || users.length === 0) {
+            return res.status(404).json({
+                message: "Không tìm thấy user nào có apartmentId",
+                success: false,
+                error: false,
+                data: [],
+            });
+        }
+
+        res.status(200).json({
+            message: "Lấy danh sách user có apartmentId thành công",
+            success: true,
+            error: false,
+            data: users,
+        });
+    } catch (err) {
+        res.status(500).json({
+            message: "Lỗi server",
+            success: false,
+            error: true,
+        });
+    }
+};
+
+
 // PATCH /api/users/:id/status
 const changeUserStatus = async (req, res) => {
     try {
@@ -84,4 +115,4 @@ const deleteUser = async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 };
-export { getUsers, changeUserStatus, getUserById, deleteUser };
+export { getUsers, changeUserStatus, getUserById, deleteUser, getUsersDepartment };
