@@ -11,27 +11,27 @@ import SocketProvider from "../context/socketContext";
 import Home from "./home/home";
 import VerifyEmail from "./pages/verify-otp.jsx";
 // import Dashboard from "./pages/dashboard.jsx"; // Giả sử đây là trang chỉ dành cho admin
+import SocketListener from "../components/SocketListener.jsx";
+import DashboardHome from "./pages/DashboardHome.jsx";
+import RegistrationForm from "./pages/PostRegistration/registrationForm.jsx";
 import ForgotPassword from "./pages/forgotpassword";
 import GoogleCallback from "./pages/google-callback.jsx";
 import Login from "./pages/login.jsx";
 import ManageApartment from "./pages/manage-apartment.jsx";
+import ManageApplicationForm from "./pages/manage-application-form.jsx";
 import ManageStaff from "./pages/manage-staff.jsx";
 import ManageUser from "./pages/manage-user.jsx";
 import Register from "./pages/register.jsx";
 import ResetPassword from "./pages/resetpassword";
+import PostManagement from "./pages/staff/ManagementPost/PostManagement.jsx";
+import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
+import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
 import ManageParkingLot from "./pages/staff/manageParkingLot/manageParkinglot";
 import ParkingLotList from "./pages/staff/manageParkingLot/parkinglot-list";
 import StaffDashboard from "./pages/staff/staffDashboard";
 import FormParkingRegistration from "./parkingRegistration/formParkingRegistation";
 import ParkingRegistrationDetails from "./parkingRegistration/parkingRegistartionDetail";
 import ParkingRegistration from "./parkingRegistration/parkingRegistration";
-import SocketListener from "../components/SocketListener.jsx";
-import DashboardHome from "./pages/DashboardHome.jsx";
-import ManageApplicationForm from "./pages/manage-application-form.jsx";
-import RegistrationForm from "./pages/PostRegistration/registrationForm.jsx";
-import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
-import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
-
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 function ProtectedRoute({ element, allowedRoles }) {
@@ -71,6 +71,17 @@ function App() {
                 />
               }
             />}
+            {
+            <Route
+              path="/admin-dashboard/posts"
+              element={
+                <ProtectedRoute
+                  element={<PostManagement />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+          }
             {<Route
               path="/admin-dashboard/manage-staff"
               element={
