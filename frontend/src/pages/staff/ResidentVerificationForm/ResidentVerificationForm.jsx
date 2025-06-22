@@ -81,7 +81,7 @@ export default function ResidentVerificationForm() {
 
   const data = new FormData();
 
-  data.append("userId", user._id); // ✅ đúng như bạn yêu cầu
+  data.append("user", user._id); // ✅ đúng như bạn yêu cầu
   data.append("fullName", user.name || "");
   data.append("email", user.email || "");
   data.append("phone", user.phone || "");
