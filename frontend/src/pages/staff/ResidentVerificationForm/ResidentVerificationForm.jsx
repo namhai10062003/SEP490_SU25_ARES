@@ -150,7 +150,7 @@ export default function ResidentVerificationForm() {
         <nav className="sidebar-menu">
           <ul>
             <li>
-              <Link to="/">Dashboard</Link>
+              <Link to="/staff-dashboard">Dashboard</Link>
             </li>
             <li>
               <Link to="/posts">Quản lý bài post</Link>
@@ -159,7 +159,7 @@ export default function ResidentVerificationForm() {
               <Link to="/real-estate">Quản lý bất động sản</Link>
             </li>
             <li>
-              <Link to="/vehicles">Quản lý bài đồ xe</Link>
+              <Link to="/manage-parkinglot">Quản lý bài đồ xe</Link>
             </li>
             <li>
               <Link to="/expenses">Quản lý chi phí</Link>
@@ -256,7 +256,7 @@ export default function ResidentVerificationForm() {
 >
   <option value="">-- Loại hợp đồng --</option>
   <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
-  <option value="Giấy chủ quyền">Giấy chủ quyền</option>
+  <option value="Hợp đồng mua bán">Hợp đồng mua bán</option>
   <option value="Khác">Khác</option>
 </select>
                 <input
