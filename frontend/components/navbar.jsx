@@ -62,7 +62,7 @@ const Navbar = (role) => {
           <span>CĂN HỘ ▾</span>
           {activeMenu === 'canho' && (
             <ul className="dropdown-menu">
-              <li><Link to="/can-ho/danh-sach">Danh sách</Link></li>
+              <li><Link to="/canho/nhaukhau">Danh sách nhân khẩu</Link></li>
               <li><Link to="/can-ho/chi-tiet">Chi tiết</Link></li>
               <li><Link to="/can-ho/yeu-thich">Yêu thích</Link></li>
             </ul>

@@ -1,0 +1,211 @@
+/* ======= Toàn trang ======= */
+.resident-page {
+  background: #f4f6f9;
+  min-height: 100vh;
+  width: 1900px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ======= Container chính ======= */
+.resident-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+}
+
+/* ======= Tiêu đề ======= */
+.resident-title {
+  font-size: 28px;
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 2rem;
+  font-weight: 700;
+}
+
+/* ======= Thông tin tổng quan ======= */
+.resident-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  color: #34495e;
+}
+
+/* ======= Nút Đăng ký ======= */
+.resident-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.resident-register-btn {
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
+  text-decoration: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);
+  transition: all 0.3s ease;
+}
+
+.resident-register-btn:hover {
+  background: linear-gradient(135deg, #1e7e34, #1c7430);
+  box-shadow: 0 6px 14px rgba(40, 167, 69, 0.4);
+  transform: translateY(-1px);
+}
+
+/* ======= Bảng ======= */
+.resident-table-wrapper {
+  overflow-x: auto;
+}
+
+.resident-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 800px;
+}
+
+.resident-table thead {
+  background: linear-gradient(to right, #007bff, #0056b3);
+  color: white;
+}
+
+.resident-table th,
+.resident-table td {
+  padding: 12px 15px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.resident-table tbody tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.resident-table tbody tr:hover {
+  background-color: #eaf4ff;
+  transition: 0.2s ease-in-out;
+}
+
+/* ======= Trạng thái ======= */
+.status {
+  font-weight: bold;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-block;
+  font-size: 13px;
+}
+
+.status.approved {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status.pending {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+.status.rejected {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* ======= Nút xem chi tiết ======= */
+.resident-view-btn {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(0, 123, 255, 0.2);
+}
+
+.resident-view-btn:hover {
+  background: linear-gradient(135deg, #0069d9, #004b99);
+  box-shadow: 0 5px 12px rgba(0, 123, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ======= Nút lý do từ chối ======= */
+.resident-reason-btn {
+  background: linear-gradient(135deg, #ffc107, #ff9800);
+  color: white;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(255, 193, 7, 0.3);
+  font-size: 14px;
+}
+
+.resident-reason-btn:hover {
+  background: linear-gradient(135deg, #ffb300, #ff6f00);
+  box-shadow: 0 5px 12px rgba(255, 193, 7, 0.5);
+  transform: translateY(-1px);
+}
+
+/* ======= Modal ======= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 400px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  text-align: center;
+  position: relative;
+}
+
+.modal-content h3 {
+  font-size: 20px;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.modal-content button {
+  margin-top: 1rem;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.modal-content button:hover {
+  background-color: #0056b3;
+}
+
+/* ======= Footer ======= */
+.resident-footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 14px;
+  color: #888;
+  margin-top: 2rem;
+}
