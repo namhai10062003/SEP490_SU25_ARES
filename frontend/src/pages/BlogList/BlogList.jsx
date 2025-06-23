@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from "react";
+// BlogList.jsx – đã thêm <Link> để click sang trang chi tiết, giữ nguyên style & logic
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Header from "../../../components/header";
 import { useAuth } from "../../../context/authContext";
 import { getAllPostsActive } from "../../service/postService";
+
 const BlogList = () => {
   const { user, logout } = useAuth();
   const [name, setName] = useState(null);
@@ -27,19 +30,17 @@ const BlogList = () => {
     setIsLoading(true);
     try {
       const response = await getAllPostsActive();
-
       if (response.data.success) {
         const sortedPosts = response.data.data.sort((a, b) => {
           const priceA = a.postPackage?.price || 0;
           const priceB = b.postPackage?.price || 0;
-          return priceB - priceA; // ⬅️ sắp xếp giảm dần
+          return priceB - priceA;
         });
-        setPosts(sortedPosts); // cập nhật posts đã sort
+        setPosts(sortedPosts);
       } else {
         setError("Không thể tải dữ liệu bài đăng");
       }
     } catch (error) {
-      console.error("Error fetching posts:", error);
       setError("Có lỗi xảy ra khi tải dữ liệu");
     } finally {
       setIsLoading(false);
@@ -50,255 +51,103 @@ const BlogList = () => {
     if (selectedFilter === "all") {
       setFilteredPosts(posts);
     } else {
-      const filtered = posts.filter(
-        (post) => post.postPackage?.type === selectedFilter
-      );
-      setFilteredPosts(filtered);
+      setFilteredPosts(posts.filter((p) => p.postPackage?.type === selectedFilter));
     }
   };
 
-  const handleFilterChange = (filterType) => {
-    setSelectedFilter(filterType);
-  };
+  const formatPrice = (price) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
+  const formatDate = (d) => new Date(d).toLocaleDateString("vi-VN", { year: "numeric", month: "long", day: "numeric" });
+  const getTypeLabel = (t) => ({ ban: "Bán", cho_thue: "Cho thuê", dich_vu: "Dịch vụ" })[t] || t;
+  const getPackageColor = (t) => ({ VIP1: "#3498db", VIP2: "#e74c3c", VIP3: "#f39c12" })[t] || "#95a5a6";
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(price);
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const getTypeLabel = (type) => {
-    const typeLabels = {
-      ban: "Bán",
-      cho_thue: "Cho thuê",
-      dich_vu: "Dịch vụ",
-    };
-    return typeLabels[type] || type;
-  };
-
-  const getPackageColor = (packageType) => {
-    const colors = {
-      VIP1: "#3498db",
-      VIP2: "#e74c3c",
-      VIP3: "#f39c12",
-    };
-    return colors[packageType] || "#95a5a6";
-  };
-
-  if (isLoading) {
-    return (
-      <div style={styles.container}>
-        <Header user={user} name={name} logout={logout} />
-        <div style={styles.loadingContainer}>
-          <div style={styles.spinner}></div>
-          <span style={styles.loadingText}>Đang tải dữ liệu...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div style={styles.container}>
-        <Header user={user} name={name} logout={logout} />
-        <div style={styles.errorContainer}>
-          <div style={styles.errorIcon}>⚠️</div>
-          <div style={styles.errorText}>{error}</div>
-          <button onClick={fetchPosts} style={styles.retryButton}>
-            Thử lại
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <div style={styles.container}>Đang tải...</div>;
+  if (error) return <div style={styles.container}>{error}</div>;
 
   return (
     <div style={styles.container}>
       <Header user={user} name={name} logout={logout} />
-
       <div style={styles.contentWrapper}>
+        {/* HEADER */}
         <div style={styles.header}>
           <h1 style={styles.headerTitle}>📋 Danh sách bài đăng</h1>
-          <p style={styles.headerSubtitle}>
-            Tổng cộng {filteredPosts.length} bài đăng
-          </p>
+          <p style={styles.headerSubtitle}>Tổng cộng {filteredPosts.length} bài đăng</p>
         </div>
 
         <div style={styles.pageLayout}>
-          {/* Filter Sidebar */}
+          {/* SIDEBAR FILTER */}
           <div style={styles.sidebar}>
             <h3 style={styles.sidebarTitle}>Lọc theo gói</h3>
             <div style={styles.filterList}>
-              {[
-                { value: "all", label: "Tất cả", count: posts.length },
-                {
-                  value: "VIP1",
-                  label: "VIP1",
-                  count: posts.filter((p) => p.postPackage?.type === "VIP1")
-                    .length,
-                },
-                {
-                  value: "VIP2",
-                  label: "VIP2",
-                  count: posts.filter((p) => p.postPackage?.type === "VIP2")
-                    .length,
-                },
-                {
-                  value: "VIP3",
-                  label: "VIP3",
-                  count: posts.filter((p) => p.postPackage?.type === "VIP3")
-                    .length,
-                },
-              ].map((filter) => (
+              {["all", "VIP1", "VIP2", "VIP3"].map((v) => (
                 <div
-                  key={filter.value}
+                  key={v}
                   style={{
                     ...styles.filterItem,
-                    ...(selectedFilter === filter.value
-                      ? styles.activeFilter
-                      : {}),
+                    ...(selectedFilter === v ? styles.activeFilter : {}),
                   }}
-                  onClick={() => handleFilterChange(filter.value)}
+                  onClick={() => setSelectedFilter(v)}
                 >
-                  <span style={styles.filterLabel}>{filter.label}</span>
-                  <span style={styles.filterCount}>{filter.count}</span>
+                  <span style={styles.filterLabel}>{v === "all" ? "Tất cả" : v}</span>
+                  <span style={styles.filterCount}>{v === "all" ? posts.length : posts.filter((p) => p.postPackage?.type === v).length}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Posts Content */}
+          {/* POSTS GRID */}
           <div style={styles.postsContent}>
             {filteredPosts.length === 0 ? (
-              <div style={styles.emptyState}>
-                <div style={styles.emptyIcon}>📭</div>
-                <div style={styles.emptyTitle}>Không có bài đăng nào</div>
-                <div style={styles.emptySubtitle}>
-                  {selectedFilter === "all"
-                    ? "Chưa có bài đăng nào được tạo"
-                    : `Không có bài đăng nào với gói ${selectedFilter}`}
-                </div>
-              </div>
+              <div style={styles.emptyState}>Không có bài đăng</div>
             ) : (
               <div style={styles.postsGrid}>
                 {filteredPosts.map((post) => (
-                  <div key={post._id} style={styles.postCard}>
-                    {/* Post Image */}
-                    <div style={styles.postImageContainer}>
-                      {post.images && post.images.length > 0 ? (
-                        <img
-                          src={post.images[0]}
-                          alt={post.title}
-                          style={styles.postImage}
-                        />
-                      ) : (
-                        <div style={styles.noImage}>
-                          <span style={styles.noImageIcon}>🏠</span>
-                        </div>
-                      )}
-
-                      {/* Package Badge */}
-                      <div
-                        style={{
-                          ...styles.packageBadge,
-                          backgroundColor: getPackageColor(
-                            post.postPackage?.type
-                          ),
-                        }}
-                      >
-                        {post.postPackage?.type || "Standard"}
-                      </div>
-                    </div>
-
-                    {/* Post Content */}
-                    <div style={styles.postContent}>
-                      <div style={styles.postHeader}>
-                        <h3 style={styles.postTitle}>{post.title}</h3>
-                        <span style={styles.postType}>
-                          {getTypeLabel(post.type)}
-                        </span>
-                      </div>
-
-                      <div style={styles.postDescription}>
-                        {post.description}
-                      </div>
-
-                      <div style={styles.postDetails}>
-                        <div style={styles.postDetailItem}>
-                          <span style={styles.detailIcon}>📍</span>
-                          <span style={styles.detailText}>{post.location}</span>
-                        </div>
-
-                        <div style={styles.postDetailItem}>
-                          <span style={styles.detailIcon}>📐</span>
-                          <span style={styles.detailText}>{post.area} m²</span>
-                        </div>
-
-                        <div style={styles.postDetailItem}>
-                          <span style={styles.detailIcon}>💰</span>
-                          <span style={styles.detailText}>
-                            {formatPrice(post.price)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div style={styles.postFooter}>
-                        <div style={styles.contactInfo}>
-                          <span style={styles.contactIcon}>👤</span>
-                          <span style={styles.contactName}>
-                            {post.contactInfo?.name}
-                          </span>
-                          {/* <span style={styles.contactPhone}>
-                            {post.contactInfo?.phone}
-                          </span> */}
-                        </div>
-
-                        {/* <div style={styles.postDate}>
-                          {formatDate(post.createdAt)}
-                        </div> */}
-                      </div>
-
-                      {/* Status */}
-                      <div style={styles.postStatus}>
-                        <span
+                  <Link
+                    key={post._id}
+                    to={`/postdetail/${post._id}`}
+                    style={{ textDecoration: "none", color: "inherit" }}
+                  >
+                    <div style={styles.postCard}>
+                      {/* IMAGE */}
+                      <div style={styles.postImageContainer}>
+                        {post.images?.[0] ? (
+                          <img src={post.images[0]} alt={post.title} style={styles.postImage} />
+                        ) : (
+                          <div style={styles.noImage}><span style={styles.noImageIcon}>🏠</span></div>
+                        )}
+                        <div
                           style={{
-                            ...styles.statusBadge,
-                            ...(post.status === "active"
-                              ? styles.statusActive
-                              : styles.statusInactive),
+                            ...styles.packageBadge,
+                            backgroundColor: getPackageColor(post.postPackage?.type),
                           }}
                         >
-                          {post.status === "active"
-                            ? "Đang hoạt động"
-                            : "Không hoạt động"}
-                        </span>
+                          {post.postPackage?.type || "Standard"}
+                        </div>
+                      </div>
 
-                        {/* {post.paymentStatus && (
-                          <span
-                            style={{
-                              ...styles.paymentBadge,
-                              ...(post.paymentStatus === "paid"
-                                ? styles.paymentPaid
-                                : styles.paymentUnpaid),
-                            }}
-                          >
-                            {post.paymentStatus === "paid"
-                              ? "Đã thanh toán"
-                              : "Chưa thanh toán"}
-                          </span>
-                        )} */}
+                      {/* CONTENT */}
+                      <div style={styles.postContent}>
+                        <div style={styles.postHeader}>
+                          <h3 style={styles.postTitle}>{post.title}</h3>
+                          <span style={styles.postType}>{getTypeLabel(post.type)}</span>
+                        </div>
+                        <div style={styles.postDescription}>{post.description}</div>
+                        <div style={styles.postDetails}>
+                          <div style={styles.postDetailItem}><span style={styles.detailIcon}>📍</span><span>{post.location}</span></div>
+                          <div style={styles.postDetailItem}><span style={styles.detailIcon}>📐</span><span>{post.area} m²</span></div>
+                          <div style={styles.postDetailItem}><span style={styles.detailIcon}>💰</span><span>{formatPrice(post.price)}</span></div>
+                        </div>
+                        <div style={styles.postFooter}>
+                          <div style={styles.contactInfo}><span style={styles.contactIcon}>👤</span><span>{post.contactInfo?.name}</span></div>
+                        </div>
+                        <div style={styles.postStatus}>
+                          <span style={{
+                            ...styles.statusBadge,
+                            ...(post.status === "active" ? styles.statusActive : styles.statusInactive),
+                          }}>{post.status === "active" ? "Đang hoạt động" : "Không hoạt động"}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}

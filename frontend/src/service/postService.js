@@ -51,7 +51,14 @@ export const getAllPostsActive = async () => {
         },
     });
 };
-
+// ham chi tiet blog 
+export const getPostById = async (id) => {
+    return axios.get(`http://localhost:4000/api/posts/postdetail/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  };
 export const createPost = async (updatedData) => {
     return axios.post(`http://localhost:4000/api/posts/create-post`, updatedData, {
         headers: {

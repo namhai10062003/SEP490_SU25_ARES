@@ -5,7 +5,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import socket from '../../server/socket';
-import h1 from "../images/banner.jpg";
 import './StaffDashboard.css';
 
 const StaffDashboard = ({ children }) => {
@@ -62,9 +61,8 @@ const StaffDashboard = ({ children }) => {
         <nav className="sidebar-menu">
           <ul>
             <li><Link to="/staff-dashboard">Dashboard</Link></li>
-            <li><Link to="/posts">Quản lý bài post</Link></li>
             <li><Link to="/real-estate">Quản lý bất động sản</Link></li>
-            <li><Link to="/manage-parkinglot">Quản lý bài đồ xe</Link></li>
+            <li><Link to="/manage-parkinglot">Quản lý bãi đồ xe</Link></li>
             <li><Link to="/expenses">Quản lý chi phí</Link></li>
             <li><Link to="/residentVerification">Quản lý người dùng</Link></li>
             <li><Link to="/revenue">Quản lý doanh thu</Link></li>
