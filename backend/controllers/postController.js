@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Post from '../models/Post.js';
 import PostPackage from '../models/Postpackage.js';
 import User from '../models/User.js';
@@ -152,7 +153,59 @@ export const getPostActive = async (req, res) => {
         });
     }
 };
-
+// lấy bài viết chi tiết 
+export const getPostDetail = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      // 1️⃣ Kiểm tra ObjectId hợp lệ
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({
+          message: "Invalid post ID",
+          success: false,
+          error: true,
+        });
+      }
+  
+      // 2️⃣ Truy vấn đúng ID
+      const post = await Post.findById(id)
+        .populate("contactInfo", "name email phone")
+        .populate("postPackage", "type price expireAt")
+        .lean();
+  
+      if (!post) {
+        // Không hề tồn tại trong DB
+        return res.status(404).json({
+          message: "Post not found",
+          success: false,
+          error: true,
+        });
+      }
+  
+      // 3️⃣ Kiểm tra trạng thái
+      if (post.status !== "active" || !post.isActive) {
+        return res.status(403).json({
+          message: "Bài viết tồn tại nhưng không hoạt động (inactive)",
+          success: false,
+          error: true,
+        });
+      }
+  
+      // 4️⃣ Thành công
+      return res.status(200).json({
+        message: "Post details retrieved successfully",
+        success: true,
+        error: false,
+        data: post,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: error.message,
+        success: false,
+        error: true,
+      });
+    }
+  };
 export const updatePost = async (req, res) => {
     try {
         const postId = req.params.id;

@@ -4,21 +4,22 @@ import dotenv from "dotenv";
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
+import './cron/expirePostJob.js';
 import connectToDatabase from "./db/db.js";
 import adminDashboardRoutes from "./router/adminDashboardRoutes.js";
 import apartmentRouter from "./router/apartmentRoutes.js";
 import authRouter from "./router/auth.js";
+import expenseRoutes from "./router/expenseRoutes.js";
+import interationRouter from "./router/interactions.js";
+import notificationRoutes from './router/notificationRoutes.js';
 import parkingRouter from "./router/parkingRegistration.js";
+import paymentRouter from "./router/payment.js";
+import postPackage from "./router/postPackage.js";
+import postRouter from "./router/postRouter.js";
 import residentRouter from "./router/residentRoutes.js";
 import residentVerificationRouter from "./router/residentVerificationRoutes.js";
 import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
-import postRouter from "./router/postRouter.js"
-import postPackage from "./router/postPackage.js"
-import paymentRouter from "./router/payment.js"
-import notificationRoutes from './router/notificationRoutes.js';
-import expenseRoutes from "./router/expenseRoutes.js";
-import './cron/expirePostJob.js';
 
 import { initSocket } from "./socket.js";
 
@@ -75,7 +76,7 @@ app.use("/api/package", postPackage);
 app.use("/api/payment", paymentRouter);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/expenses", expenseRoutes);
-
+app.use("/api/interaction", interationRouter);
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);

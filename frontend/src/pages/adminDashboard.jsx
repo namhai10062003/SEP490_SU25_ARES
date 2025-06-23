@@ -13,7 +13,7 @@ export default function AdminDashboard({ children }) {
         <h5 className="adminx-sidebar-title">ADMIN PANEL</h5>
         <ul className="adminx-nav-list">
           <li><Link to="/admin-dashboard" className="adminx-nav-link">• Tổng quan</Link></li>
-          <li><Link to="/admin-dashboard/reports" className="adminx-nav-link">• Quản lí bài Report</Link></li>
+          <li><Link to="/admin-dashboard/report" className="adminx-nav-link">• Quản lí bài Report</Link></li>
           <li><Link to="/admin-dashboard/create-account" className="adminx-nav-link">• Tạo tài khoản</Link></li>
           <li><Link to="/admin-dashboard/posts" className="adminx-nav-link">• Quản lí bài Post</Link></li>
           <li><Link to="/admin-dashboard/revenue" className="adminx-nav-link">• Phân tích doanh thu</Link></li>
