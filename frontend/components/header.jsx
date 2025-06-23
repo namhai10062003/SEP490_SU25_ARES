@@ -9,6 +9,28 @@ const Header = ({ user, name, logout }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [selectedNotification, setSelectedNotification] = useState(null);
+  const [showNotification, setShowNotification] = useState(false);
+  const [activeMenu, setActiveMenu] = useState(null);
+
+  const handleMouseEnter = (menu) => {
+    setActiveMenu(menu);
+  };
+  const handleMouseLeave = () => {
+    setActiveMenu(null);
+  };
+
+  const [notifications, setNotifications] = useState([
+    { id: 1, text: "🎉 Chào mừng bạn đến với web!", link: "/welcome" },
+    {
+      id: 2,
+      text: "🖼️ Bạn chưa cập nhật thông tin cá nhân của mình! Hãy cập nhật bạn nhé >>>.",
+      link: "/profile",
+    },
+    { id: 3, text: "🔔 Đã có bản cập nhật mới cho ứng dụng.", link: "/updates" },
+    { id: 4, text: "🔔 Đã có bản dịch vụ mới. Mọi người vào xem nhé❤️", link: "/updates" },
+    { id: 5, text: "🔔 Đã có update mới về căn hộ. Mọi người vào xem nhé❤️", link: "/updates" },
+  ]);
+
   const dropdownRef = useRef();
 
   // Fetch notifications from backend
@@ -24,6 +46,17 @@ const Header = ({ user, name, logout }) => {
       }
     }
   };
+  useEffect(() => {
+    let timer;
+    if (user) {
+      setShowNotification(true);
+
+      timer = setTimeout(() => {
+        setShowNotification(false);
+      }, 2000);
+    }
+    return () => clearTimeout(timer);
+  }, [user]);
 
   useEffect(() => {
     fetchNotifications();

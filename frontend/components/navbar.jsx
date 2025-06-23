@@ -4,7 +4,7 @@ import './navbar.css';
 
 const Navbar = (role) => {
   const [activeMenu, setActiveMenu] = useState(null);
- console.log("Role:", role);
+  console.log("Role:", role);
   const handleMouseEnter = (menu) => {
     setActiveMenu(menu);
   };
@@ -31,14 +31,9 @@ const Navbar = (role) => {
           <span>DỊCH VỤ ▾</span>
           {activeMenu === 'dichvu' && (
             <ul className="dropdown-menu">
-              <li><Link to="/dich-vu/don-dep">Dọn dẹp</Link></li>
-              <li><Link to="/dich-vu/sua-chua">Sửa chữa</Link></li>
               <li><Link to="/dichvu/baidoxe">Dịch vụ đăng ký bãi đỗ xe</Link></li>
               <li>
                 <Link to="/dichvu/dangtin">Dịch vụ đăng tin</Link>
-              </li>
-               <li>
-                <Link to="/quanlipostcustomer">Quản lí tin Customer</Link>
               </li>
             </ul>
           )}

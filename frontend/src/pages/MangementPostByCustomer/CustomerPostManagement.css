@@ -1,10 +1,16 @@
 /* CustomerPostManagement.css */
 .customer-post-management {
     font-family: Arial, sans-serif;
-    min-height: 100vh;
+    min-height: 100%;
     padding: 20px;
-    width: 1700px
+    max-width: 2000px;
+    width: 137%;
+    margin: 0 auto;
+    /* Căn giữa nếu rộng hơn */
+    box-sizing: border-box;
 }
+
+
 
 /* Loading */
 .loading-container {
@@ -33,6 +39,9 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 /* Post Item */
@@ -165,20 +174,23 @@
 /* Action Buttons */
 .action-buttons {
     display: flex;
-    gap: 5px;
     flex-direction: row;
+    gap: 5px;
+    width: 22%;
 }
 
 .btn {
     border: none;
-    padding: 8px 10px;
+    padding: 8px 12px;
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
     transition: all 0.3s ease;
     text-align: center;
-    min-width: 80px;
+    min-width: 100px;
+    width: auto;
+    white-space: nowrap;
 }
 
 .btn1 {
@@ -363,6 +375,18 @@
 .close-btn:hover {
     color: #333;
 }
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    /* Ngăn scroll ngang */
+}
+
+* {
+    box-sizing: border-box;
+}
+
 
 .modal-body {
     padding: 20px;

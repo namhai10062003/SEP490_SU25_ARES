@@ -47,7 +47,7 @@ export const submitVerification = async (req, res) => {
     console.log(imageUrls);
 
     const newVerification = new ResidentVerification({
-      user: data.userId,
+      user: data.user,
       fullName: data.fullName,
       email: data.email,
       phone: data.phone,

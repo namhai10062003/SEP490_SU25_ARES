@@ -59,6 +59,7 @@
   min-width: 160px;
   z-index: 999;
   border-radius: 4px;
+  width: max-content;
 }
 
 /* Các mục trong menu dropdown */

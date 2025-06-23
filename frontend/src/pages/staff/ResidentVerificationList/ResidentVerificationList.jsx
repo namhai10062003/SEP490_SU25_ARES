@@ -50,10 +50,10 @@ export default function ResidentVerificationList() {
         <h2 className="sidebar-title">BẢN QUẢN LÝ</h2>
         <nav className="sidebar-menu">
           <ul>
-            <li><Link to="/">Dashboard</Link></li>
+            <li><Link to="/staff-dashboard">Dashboard</Link></li>
             <li><Link to="/posts">Quản lý bài post</Link></li>
             <li><Link to="/real-estate">Quản lý bất động sản</Link></li>
-            <li><Link to="/vehicles">Quản lý bài đồ xe</Link></li>
+            <li><Link to="/manage-parkinglot">Quản lý bài đồ xe</Link></li>
             <li><Link to="/expenses">Quản lý chi phí</Link></li>
             <li>
               <span style={{ marginLeft: "10px" }}>Quản lý người dùng ▼</span>

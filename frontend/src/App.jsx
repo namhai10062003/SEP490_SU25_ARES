@@ -66,11 +66,7 @@ function App() {
             <Route path="/dichvu/dangkybaidoxe" element={<FormParkingRegistration />} />
             <Route path="/parkinglot/detail-parkinglot/:id" element={<ParkingRegistrationDetails />} />
             <Route path="/dichvu/dangtin" element={<RegistrationForm />} />
-
-            <Route
-              path="/quanlipostcustomer"
-              element={<CustomerPostManagement />}
-            />
+            <Route path="/profile/quanlipostcustomer" element={<CustomerPostManagement />} />
             <Route path="/blog" element={<BlogList />} />
 
             {/* Route được bảo vệ (chỉ admin mới vào được) */}
