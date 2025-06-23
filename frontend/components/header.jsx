@@ -9,28 +9,9 @@ const Header = ({ user, name, logout }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [selectedNotification, setSelectedNotification] = useState(null);
-  const [showNotification, setShowNotification] = useState(false);
-  const [activeMenu, setActiveMenu] = useState(null);
 
-  const handleMouseEnter = (menu) => {
-    setActiveMenu(menu);
-  };
-  const handleMouseLeave = () => {
-    setActiveMenu(null);
-  };
-
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "🎉 Chào mừng bạn đến với web!", link: "/welcome" },
-    {
-      id: 2,
-      text: "🖼️ Bạn chưa cập nhật thông tin cá nhân của mình! Hãy cập nhật bạn nhé >>>.",
-      link: "/profile",
-    },
-    { id: 3, text: "🔔 Đã có bản cập nhật mới cho ứng dụng.", link: "/updates" },
-    { id: 4, text: "🔔 Đã có bản dịch vụ mới. Mọi người vào xem nhé❤️", link: "/updates" },
-    { id: 5, text: "🔔 Đã có update mới về căn hộ. Mọi người vào xem nhé❤️", link: "/updates" },
-  ]);
-
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const profileDropdownRef = useRef();
   const dropdownRef = useRef();
 
   // Fetch notifications from backend
@@ -46,17 +27,6 @@ const Header = ({ user, name, logout }) => {
       }
     }
   };
-  useEffect(() => {
-    let timer;
-    if (user) {
-      setShowNotification(true);
-
-      timer = setTimeout(() => {
-        setShowNotification(false);
-      }, 2000);
-    }
-    return () => clearTimeout(timer);
-  }, [user]);
 
   useEffect(() => {
     fetchNotifications();
@@ -69,15 +39,20 @@ const Header = ({ user, name, logout }) => {
       ) {
         setShowDropdown(false);
       }
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target)
+      ) {
+        setShowProfileDropdown(false);
+      }
     };
-    if (showDropdown) {
+    if (showDropdown || showProfileDropdown) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-    // Combine all dependencies
-  }, [user, showDropdown, selectedNotification]);
+  }, [user, showDropdown, selectedNotification, showProfileDropdown]);
 
   // Mark as read and show modal
   const handleNotificationClick = async (note) => {
@@ -111,7 +86,9 @@ const Header = ({ user, name, logout }) => {
               >
                 <FiBell size={22} />
                 {notifications.length > 0 && (
-                  <span className="notification-badge">{notifications.length}</span>
+                  <span className="notification-badge">
+                    {notifications.length}
+                  </span>
                 )}
               </div>
 
@@ -134,11 +111,23 @@ const Header = ({ user, name, logout }) => {
                     zIndex: 1000,
                   }}
                 >
-                  <div style={{ padding: "10px 16px", borderBottom: "1px solid #eee", fontWeight: 600 }}>
+                  <div
+                    style={{
+                      padding: "10px 16px",
+                      borderBottom: "1px solid #eee",
+                      fontWeight: 600,
+                    }}
+                  >
                     Thông báo mới
                   </div>
                   {notifications.length === 0 ? (
-                    <div style={{ color: "#888", textAlign: "center", padding: 24 }}>
+                    <div
+                      style={{
+                        color: "#888",
+                        textAlign: "center",
+                        padding: 24,
+                      }}
+                    >
                       Không có thông báo mới
                     </div>
                   ) : (
@@ -156,10 +145,25 @@ const Header = ({ user, name, logout }) => {
                             }}
                             onClick={() => handleNotificationClick(note)}
                           >
-                            <td style={{ padding: "10px 8px", fontSize: 15, maxWidth: 200, wordBreak: "break-word" }}>
+                            <td
+                              style={{
+                                padding: "10px 8px",
+                                fontSize: 15,
+                                maxWidth: 200,
+                                wordBreak: "break-word",
+                              }}
+                            >
                               {note.message}
                             </td>
-                            <td style={{ padding: "10px 8px", fontSize: 13, color: "#888", textAlign: "right", whiteSpace: "nowrap" }}>
+                            <td
+                              style={{
+                                padding: "10px 8px",
+                                fontSize: 13,
+                                color: "#888",
+                                textAlign: "right",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
                               {new Date(note.createdAt).toLocaleString("vi-VN")}
                             </td>
                           </tr>
@@ -186,7 +190,7 @@ const Header = ({ user, name, logout }) => {
                     justifyContent: "center",
                     zIndex: 9999,
                   }}
-                  onClick={closeModal} // Only closes modal, not dropdown
+                  onClick={closeModal}
                 >
                   <div
                     className="notification-modal-content"
@@ -208,7 +212,9 @@ const Header = ({ user, name, logout }) => {
                       {selectedNotification.message}
                     </div>
                     <div style={{ fontSize: 13, color: "#888" }}>
-                      {new Date(selectedNotification.createdAt).toLocaleString("vi-VN")}
+                      {new Date(
+                        selectedNotification.createdAt
+                      ).toLocaleString("vi-VN")}
                     </div>
                     <button
                       style={{
@@ -230,14 +236,109 @@ const Header = ({ user, name, logout }) => {
                 </div>
               )}
 
-              <Link to="/profile" className="profile-link">
-                <img
-                  src="https://i.imgur.com/2DhmtJ4.png"
-                  alt="Avatar"
-                  className="avatar"
-                />
-                <span>My Profile</span>
-              </Link>
+              {/* Profile dropdown */}
+              <div
+                style={{ position: "relative", display: "inline-block" }}
+                ref={profileDropdownRef}
+              >
+                <button
+                  className="profile-link"
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                  onClick={() =>
+                    setShowProfileDropdown((prev) => !prev)
+                  }
+                >
+                  <img
+                    src="https://i.imgur.com/2DhmtJ4.png"
+                    alt="Avatar"
+                    className="avatar"
+                  />
+                  {/* <span>My Profile</span> */}
+                </button>
+                {showProfileDropdown && (
+                  <ul
+                    className="dropdown-menu"
+                    style={{
+                      position: "absolute",
+                      top: "110%",
+                      right: 0,
+                      background: "#fff",
+                      border: "1px solid #eee",
+                      borderRadius: 8,
+                      boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
+                      minWidth: 180,
+                      zIndex: 1001,
+                      padding: 0,
+                      margin: 0,
+                      listStyle: "none",
+                    }}
+                  >
+                    <li>
+                      <Link
+                        to="/profile"
+                        style={{
+                          display: "block",
+                          padding: "10px 16px",
+                          color: "#333",
+                          textDecoration: "none",
+                        }}
+                        onClick={() => setShowProfileDropdown(false)}
+                      >
+                        My Profile
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/profile/quanlipostcustomer"
+                        style={{
+                          display: "block",
+                          padding: "10px 16px",
+                          color: "#333",
+                          textDecoration: "none",
+                        }}
+                        onClick={() => setShowProfileDropdown(false)}
+                      >
+                        Quản lí tin đăng
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/profile/settings"
+                        style={{
+                          display: "block",
+                          padding: "10px 16px",
+                          color: "#333",
+                          textDecoration: "none",
+                        }}
+                        onClick={() => setShowProfileDropdown(false)}
+                      >
+                        Settings
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/profile/security"
+                        style={{
+                          display: "block",
+                          padding: "10px 16px",
+                          color: "#333",
+                          textDecoration: "none",
+                        }}
+                        onClick={() => setShowProfileDropdown(false)}
+                      >
+                        Security
+                      </Link>
+                    </li>
+                  </ul>
+                )}
+              </div>
 
               <button onClick={logout} className="logout-btn">
                 Logout

@@ -123,6 +123,7 @@ const approveResidentVerification = async (req, res) => {
       apartment.isOwner = user._id;
       apartment.isRenter = null;
       apartment.status = "đang ở";
+      apartment.legalDocuments = "sổ hồng"; // Đảm bảo có sổ
     } else if (application.documentType === "Hợp đồng cho thuê" || application.documentType === "rental") {
       if (apartment.isRenter) {
         return res.status(403).json({ error: "Căn hộ này đã có người thuê!" });
