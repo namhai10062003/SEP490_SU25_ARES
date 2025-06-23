@@ -4,6 +4,7 @@ import {
   FaCheckCircle,
   FaHeart,
   FaMapMarkerAlt,
+  FaRegHeart,
   FaRulerCombined,
   FaStar,
 } from "react-icons/fa";
@@ -172,12 +173,18 @@ const PostDetail = () => {
             <button style={styles.contactBtn}>Nhắn tin</button>
 
             <div style={styles.interactionBox}>
-  <button
-    style={{ ...styles.iconBtn, ...styles.likeBtn }}
-    onClick={handleLike}
-  >
-    <FaHeart color="#fff" /> {likeCount}
-  </button>
+            <button
+  style={{
+    ...styles.iconBtn,
+    ...styles.likeBtn,
+    backgroundColor: isLiked ? "#e74c3c" : "#fff",
+    color: isLiked ? "#fff" : "#e74c3c",
+    border: `2px solid #e74c3c`,
+  }}
+  onClick={handleLike}
+>
+  {isLiked ? <FaHeart /> : <FaRegHeart />} {likeCount}
+</button>
   <button
     style={{ ...styles.iconBtn, ...styles.commentBtnToggle }}
     onClick={() => setShowComments((prev) => !prev)}

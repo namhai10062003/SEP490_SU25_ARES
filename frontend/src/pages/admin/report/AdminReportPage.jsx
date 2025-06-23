@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import Modal from "react-modal";
 import { toast } from "react-toastify";
 import {
-    fetchAllReports,
-    updateReportStatus,
+  fetchAllReports,
+  updateReportStatus,
 } from "../../../service/reportService";
 import AdminDashboard from "../../adminDashboard";
 
@@ -127,11 +127,11 @@ const AdminReportPage = () => {
                 <th>Mô tả bài viết</th>
                 <th>Loại GD</th>
                 <th>Loại BĐS</th>
-                <th>Vị trí</th>
+                {/* <th>Vị trí</th>
                 <th>Diện tích</th>
-                <th>Giá</th>
+                <th>Giá</th> */}
                 <th>Pháp lý</th>
-                <th>Nội thất</th>
+                {/* <th>Nội thất</th> */}
                 <th>Người gửi</th>
                 <th>Lý do</th>
                 <th>Mô tả BC</th>
@@ -180,11 +180,11 @@ const AdminReportPage = () => {
                     </td>
                     <td>{p?.type || "--"}</td>
                     <td>{p?.property || "--"}</td>
-                    <td>{p?.location || "--"}</td>
+                    {/* <td>{p?.location || "--"}</td>
                     <td>{p?.area ? `${p.area} m²` : "--"}</td>
-                    <td>{p?.price ? p.price.toLocaleString("vi-VN") + " đ" : "--"}</td>
+                    <td>{p?.price ? p.price.toLocaleString("vi-VN") + " đ" : "--"}</td> */}
                     <td>{p?.legalDocument || "--"}</td>
-                    <td>{p?.interiorStatus || "--"}</td>
+                    {/* <td>{p?.interiorStatus || "--"}</td> */}
                     <td>
                       {rep.user?.name || "Ẩn danh"}
                       <br />
