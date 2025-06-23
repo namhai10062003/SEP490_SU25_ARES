@@ -35,6 +35,9 @@ import ParkingRegistration from "./parkingRegistration/parkingRegistration";
 import CustomerPostManagement from "./pages/MangementPostByCustomer/CustomerPostManagement.jsx";
 import BlogList from "./pages/BlogList/BlogList.jsx";
 
+
+import ManageExpense from "./pages/staff/manageExpense.jsx";
+
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 function ProtectedRoute({ element, allowedRoles }) {
   const { user } = useAuth();
@@ -77,16 +80,16 @@ function App() {
               }
             />}
             {
-            <Route
-              path="/admin-dashboard/posts"
-              element={
-                <ProtectedRoute
-                  element={<PostManagement />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />
-          }
+              <Route
+                path="/admin-dashboard/posts"
+                element={
+                  <ProtectedRoute
+                    element={<PostManagement />}
+                    allowedRoles={["admin"]}
+                  />
+                }
+              />
+            }
             {<Route
               path="/admin-dashboard/manage-staff"
               element={
@@ -114,6 +117,15 @@ function App() {
                 />
               }
             />
+            {<Route
+              path="/admin-dashboard/manage-staff"
+              element={
+                <ProtectedRoute
+                  element={<ManageStaff />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />}
             <Route
               path="/admin-dashboard/manage-resident-verification"
               element={
@@ -129,6 +141,15 @@ function App() {
               element={
                 <ProtectedRoute
                   element={<StaffDashboard />}
+                  allowedRoles={["staff"]}
+                />
+              }
+            />}
+            {<Route
+              path="/staff-dashboard/manage-expenses"
+              element={
+                <ProtectedRoute
+                  element={<ManageExpense />}
                   allowedRoles={["staff"]}
                 />
               }
@@ -169,7 +190,6 @@ function App() {
                 />
               }
             />
-            
           </Routes>
           <SocketListener />
           {/* ✅ Thêm ToastContainer để bật thông báo realtime */}
