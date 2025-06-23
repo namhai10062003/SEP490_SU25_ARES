@@ -63,12 +63,8 @@ function App() {
             <Route path="/dichvu/dangkybaidoxe" element={<FormParkingRegistration />} />
             <Route path="/parkinglot/detail-parkinglot/:id" element={<ParkingRegistrationDetails />} />
             <Route path="/dichvu/dangtin" element={<RegistrationForm />} />
-
-            <Route
-            path="/quanlipostcustomer"
-            element={<CustomerPostManagement />}
-          />
-          <Route path="/blog" element={<BlogList />} />
+            <Route path="/profile/quanlipostcustomer" element={<CustomerPostManagement />} />
+            <Route path="/blog" element={<BlogList />} />
 
             {/* Route được bảo vệ (chỉ admin mới vào được) */}
             {<Route
@@ -114,6 +110,15 @@ function App() {
               element={
                 <ProtectedRoute
                   element={<ManageApartment />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />
+            <Route
+              path="/admin-dashboard/manage-resident-verification"
+              element={
+                <ProtectedRoute
+                  element={<ManageApplicationForm />}
                   allowedRoles={["admin"]}
                 />
               }
@@ -164,24 +169,7 @@ function App() {
                 />
               }
             />
-            {<Route
-              path="/admin-dashboard/manage-staff"
-              element={
-                <ProtectedRoute
-                  element={<ManageStaff />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />}
-            <Route
-              path="/admin-dashboard/manage-resident-verification"
-              element={
-                <ProtectedRoute
-                  element={<ManageApplicationForm />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />
+            
           </Routes>
           <SocketListener />
           {/* ✅ Thêm ToastContainer để bật thông báo realtime */}

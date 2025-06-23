@@ -6,6 +6,14 @@ import Navbar from "./navbar";
 
 const Header = ({ user, name, logout }) => {
   const [showNotification, setShowNotification] = useState(false);
+  const [activeMenu, setActiveMenu] = useState(null);
+
+  const handleMouseEnter = (menu) => {
+    setActiveMenu(menu);
+  };
+  const handleMouseLeave = () => {
+    setActiveMenu(null);
+  };
 
   const [notifications, setNotifications] = useState([
     { id: 1, text: "🎉 Chào mừng bạn đến với web!", link: "/welcome" },
@@ -28,7 +36,7 @@ const Header = ({ user, name, logout }) => {
 
       timer = setTimeout(() => {
         setShowNotification(false);
-      }, 4000);
+      }, 2000);
     }
     return () => clearTimeout(timer);
   }, [user]);
@@ -98,14 +106,30 @@ const Header = ({ user, name, logout }) => {
                 </div>
               )}
 
-              <Link to="/profile" className="profile-link">
-                <img
-                  src="https://i.imgur.com/2DhmtJ4.png"
-                  alt="Avatar"
-                  className="avatar"
-                />
-                <span>My Profile</span>
-              </Link>
+              <div
+                className="profile-dropdown"
+                onMouseEnter={() => handleMouseEnter("profile")}
+                onMouseLeave={handleMouseLeave}
+              >
+                <div className="profile-link">
+                  <img
+                    src="https://i.imgur.com/2DhmtJ4.png"
+                    alt="Avatar"
+                    className="avatar"
+                  />
+                  <span>My Profile</span>
+                </div>
+
+                {activeMenu === "profile" && (
+                  <ul className="dropdown-menu">
+                    <li>
+                <Link to="/profile/quanlipostcustomer">Quản lí tin đăng</Link>
+              </li>
+                    <li><Link to="/profile/settings">Settings</Link></li>
+                    <li><Link to="/profile/security">Security</Link></li>
+                  </ul>
+                )}
+              </div>
 
               <button onClick={logout} className="logout-btn">
                 Logout
