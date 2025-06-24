@@ -60,10 +60,20 @@ const ResidentDetail = () => {
         <p><strong>Ngày cấp CCCD:</strong> {resident.issueDate ? new Date(resident.issueDate).toLocaleDateString('vi-VN') : '---'}</p>
         <p><strong>Mã căn hộ:</strong> {resident.apartmentId?.apartmentCode || '---'}</p>
         <p><strong>Trạng thái:</strong> 
-          {resident.verifiedByAdmin ? '✅ Đã duyệt' :
-            resident.verifiedByStaff ? '🟡 Chờ admin' :
-              '🟡 Chờ staff'}
-        </p>
+  {resident.verifiedByStaff ? (
+    <span className="status approved">✅ Đã duyệt</span>
+  ) : resident.rejectReason ? (
+    <span className="status rejected">❌ Đã từ chối</span>
+  ) : (
+    <span className="status pending">🟡 Chờ xác minh</span>
+  )}
+</p>
+
+{resident.rejectReason && (
+  <div style={{ marginTop: '8px' }}>
+    <strong>Lý do từ chối:</strong> {resident.rejectReason}
+  </div>
+)}
       </div>
   
       <div className="resident-detail-v2-images">

@@ -122,20 +122,11 @@ const ResidentRegister = () => {
               required
             >
               <option value="">-- Chọn căn hộ --</option>
-              {apartments.map((apt) => {
-                const roleLabel =
-                  String(apt.isOwner?._id) === String(user._id)
-                    ? ' (Chủ)'
-                    : String(apt.isRenter?._id) === String(user._id)
-                    ? ' (Thuê)'
-                    : '';
-
-                return (
-                  <option key={apt._id} value={apt._id}>
-                    {apt.apartmentCode + roleLabel}
-                  </option>
-                );
-              })}
+              {apartments.map((apt) => (
+  <option key={apt._id} value={apt._id}>
+    {apt.apartmentCode}
+  </option>
+))}
             </select>
           </div>
 
