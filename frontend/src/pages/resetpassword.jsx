@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import './resetpassword.css';
 
 // ResetPassword component
 const ResetPassword = () => {
@@ -48,88 +49,44 @@ const ResetPassword = () => {
   };
 
   return (
-    <div style={styles.page}>
-      <form style={styles.form} onSubmit={handleReset}>
-        <h2 style={styles.title}>🔐 Đặt lại mật khẩu</h2>
+    <div className="reset-password-page">
+      <div className="reset-container">
+        <div className="reset-left">
+          <h1>ARES-FPTCITY</h1>
+          <p>Giải pháp tối ưu, kiến tạo tương lai tại FPT City Đà Nẵng.</p>
+        </div>
 
-        <input
-          type="email"
-          placeholder="Nhập email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={styles.input}
-        />
-
-        <input
-          type="text"
-          placeholder="Nhập mã OTP"
-          value={otp}
-          onChange={(e) => setOtp(e.target.value)}
-          style={styles.input}
-        />
-
-        <input
-          type="password"
-          placeholder="Nhập mật khẩu mới"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          style={styles.input}
-        />
-
-        <button type="submit" style={styles.button} disabled={loading}>
-          {loading ? "Đang xử lý..." : "✅ Đặt lại mật khẩu"}
-        </button>
-      </form>
+        <div className="reset-right">
+          <h2>🔐 Đặt lại mật khẩu</h2>
+          <form onSubmit={handleReset}>
+            <input
+              type="email"
+              placeholder="Nhập email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Nhập mã OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              required
+            />
+            <input
+              type="password"
+              placeholder="Nhập mật khẩu mới"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+            />
+            <button type="submit" disabled={loading}>
+              {loading ? "Đang xử lý..." : "✅ Đặt lại mật khẩu"}
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };
-
-// 🔧 CSS styles with better contrast
-const styles = {
-  page: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100vh",
-    background: "linear-gradient(to right, #667eea, #764ba2)",
-    padding: "20px",
-  },
-  form: {
-    backgroundColor: "#fff",
-    borderRadius: "12px",
-    padding: "30px 40px",
-    maxWidth: "400px",
-    width: "100%",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
-  },
-  title: {
-    textAlign: "center",
-    marginBottom: "10px",
-    color: "#333",
-  },
-  input: {
-    padding: "12px",
-    fontSize: "16px",
-    borderRadius: "8px",
-    border: "1px solid #ccc",
-    backgroundColor: "#f8f8f8", // nền xám nhạt
-    color: "#333", // màu chữ đậm hơn
-    outline: "none",
-    transition: "border-color 0.3s, box-shadow 0.3s",
-  },
-  button: {
-    padding: "12px",
-    fontSize: "16px",
-    borderRadius: "8px",
-    backgroundColor: "#5a67d8",
-    color: "#fff",
-    border: "none",
-    cursor: "pointer",
-    transition: "background-color 0.3s",
-  },
-};
-
 export default ResetPassword;

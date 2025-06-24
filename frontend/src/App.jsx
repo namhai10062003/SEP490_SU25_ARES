@@ -174,7 +174,7 @@ function App() {
               }
             />}
             {<Route
-              path="/staff-dashboard/manage-expenses"
+              path="/manage-expenses"
               element={
                 <ProtectedRoute
                   element={<ManageExpense />}
