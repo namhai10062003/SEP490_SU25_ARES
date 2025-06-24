@@ -17,7 +17,11 @@ import PostDetail from "./pages/BlogList/BlogListDetail";
 import DashboardHome from "./pages/DashboardHome.jsx";
 import CustomerPostManagement from "./pages/MangementPostByCustomer/CustomerPostManagement.jsx";
 import RegistrationForm from "./pages/PostRegistration/registrationForm.jsx";
+import ResidentDetail from "./pages/Residentpeople/residentDetail";
+import ResidentRegister from "./pages/Residentpeople/residentRegister";
+import ResidentList from "./pages/Residentpeople/residentpeople";
 import AdminReportPage from "./pages/admin/report/AdminReportPage";
+import AdminResidentApproval from "./pages/admin/residentVerifyByAdmin/AdminResidentApproval";
 import ForgotPassword from "./pages/forgotpassword";
 import GoogleCallback from "./pages/google-callback.jsx";
 import Login from "./pages/login.jsx";
@@ -30,6 +34,7 @@ import ResetPassword from "./pages/resetpassword";
 import PostManagement from "./pages/staff/ManagementPost/PostManagement.jsx";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
 import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
+import ResidentVerifyList from "./pages/staff/ResidentVerify/residentVerifyList";
 import DashboardPage from "./pages/staff/dashboardStatistics";
 import ManageExpense from "./pages/staff/manageExpense.jsx";
 import ManageParkingLot from "./pages/staff/manageParkingLot/manageParkinglot";
@@ -68,8 +73,12 @@ function App() {
             <Route path="/dichvu/dangtin" element={<RegistrationForm />} />
             <Route path="/profile/quanlipostcustomer" element={<CustomerPostManagement />} />
             <Route path="/blog" element={<BlogList />} />
-            <Route path="/postdetail/:id" element={<PostDetail />} />
             <Route path="/my-apartment" element={<MyApartment />} />
+            <Route path="/postdetail/:id" element={<PostDetail/>} />
+            <Route path="/canho/nhaukhau" element={<ResidentList/>} />
+            <Route path="/canho/dangkynhankhau" element={<ResidentRegister/>} />
+            <Route path="/residents/:id" element={<ResidentDetail/>} />
+
             {/* Route được bảo vệ (chỉ admin mới vào được) */}
             {<Route
               path="/admin-dashboard"
@@ -136,7 +145,16 @@ function App() {
                 />
               }
             />
-            {<Route
+             {<Route
+              path="/admin-dashboard/resident-verify-admin"
+              element={
+                <ProtectedRoute
+                  element={<AdminResidentApproval />}
+                  allowedRoles={["admin"]}
+                />
+              }
+            />}
+             {<Route
               path="/admin-dashboard/report"
               element={
                 <ProtectedRoute
@@ -164,6 +182,15 @@ function App() {
                 />
               }
             />}
+              <Route
+              path="/resident-verify"
+              element={
+                <ProtectedRoute
+                  element={<ResidentVerifyList/>}
+                  allowedRoles={["staff"]}
+                />
+              }
+            />
             <Route
               path="/residentVerification"
               element={

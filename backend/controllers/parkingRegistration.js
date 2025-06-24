@@ -152,12 +152,19 @@ const createParkingRegistration = async (req, res) => {
       expireDate
     } = req.body;
 
-    /* 2. Căn hộ phải thuộc quyền user hiện tại */
-    const apartment = await Apartment.findOne({ _id: apartmentId, userId });
-    if (!apartment) {
-      return res.status(403).json({ message: 'Bạn không có quyền đăng ký gửi xe cho căn hộ này.' });
-    }
+   // 2. Kiểm tra quyền người dùng: là chủ hộ hoặc người thuê
+/* 2. Căn hộ phải thuộc quyền user hiện tại */
+const apartment = await Apartment.findOne({
+  _id: apartmentId,
+  $or: [
+    { isOwner: userId },
+    { isRenter: userId }
+  ]
+});
 
+if (!apartment) {
+  return res.status(403).json({ message: 'Bạn không có quyền đăng ký gửi xe cho căn hộ này.' });
+}
     /* 3. CHỐT 1: Kiểm tra dung lượng bãi (global) */
     const globalCount = await ParkingRegistration.countDocuments({
       status: { $in: ['approved'] }

@@ -1,0 +1,125 @@
+/* ======= Trang chi tiết nhân khẩu ======= */
+.resident-detail-v2-page {
+    background: #f4f6f9;
+    min-height: 100vh;
+    width: 1900px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  /* ======= Container chính ======= */
+  .resident-detail-v2-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* ======= Tiêu đề ======= */
+  .resident-detail-v2-title {
+    font-size: 26px;
+    font-weight: 600;
+    text-align: center;
+    color: #333;
+    margin-bottom: 2rem;
+  }
+  
+  /* ======= Thông tin nhân khẩu ======= */
+  .resident-detail-v2-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    font-size: 15px;
+    color: #444;
+    margin-bottom: 2rem;
+  }
+  
+  .resident-detail-v2-info p {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 6px;
+  }
+  
+  .resident-detail-v2-info strong {
+    color: #555;
+    width: 45%;
+  }
+  
+  /* ======= Hình ảnh CCCD ======= */
+  .resident-detail-v2-images {
+    margin-top: 2rem;
+  }
+  
+  .resident-detail-v2-images h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #007bff;
+    margin-bottom: 1rem;
+  }
+  
+  .resident-detail-v2-images-wrapper {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+  }
+  
+  .resident-detail-v2-image {
+    width: 48%;
+    height: 160px;
+    object-fit: contain;
+    border: 1px dashed #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #fafafa;
+  }
+  
+  /* ======= Nút quay lại ======= */
+  .resident-detail-v2-back-btn {
+    display: inline-block;
+    margin-top: 2rem;
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 16px;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+  
+  .resident-detail-v2-back-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  /* ======= Trạng thái loading và lỗi ======= */
+  .resident-detail-v2-loading,
+  .resident-detail-v2-error {
+    text-align: center;
+    font-size: 18px;
+    color: #888;
+    padding: 60px 0;
+  }
+  
+  /* ======= Footer ======= */
+  .resident-detail-v2-footer {
+    text-align: center;
+    font-size: 14px;
+    color: #888;
+    margin-top: 2rem;
+  }
+  .status.approved {
+    color: green;
+    font-weight: bold;
+  }
+  
+  .status.rejected {
+    color: red;
+    font-weight: bold;
+  }
+  
+  .status.pending {
+    color: orange;
+    font-weight: bold;
+  }
+  
