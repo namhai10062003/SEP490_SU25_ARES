@@ -26,36 +26,62 @@ const FormParkingRegistration = () => {
     registerDate: '',
     expireDate: '',
     documentFront: null,
-    documentBack: null
+    documentBack: null,
+    previewFront: null,
+    previewBack: null,
   });
 
-  /* ---------- lấy danh sách căn hộ ---------- */
-  useEffect(() => {
-    setName(user?.name || null);
-    (async () => {
-      try {
-        const r = await fetch('http://localhost:4000/api/apartments');
-        const data = await r.json();
+  /* ---------- lấy danh sách căn hộ ---------- */useEffect(() => {
+  setName(user?.name || null);
+  (async () => {
+    try {
+      const r = await fetch('http://localhost:4000/api/apartments');
+      const data = await r.json();
+
+      const userId = String(user._id);
+
+      const filtered = data.filter(apt => {
+        const isOwner = String(apt.isOwner?._id) === userId;
+        const isRenter = String(apt.isRenter?._id) === userId;
+
+        // ✅ Nếu là người thuê → được phép
+        if (isRenter) return true;
+
+        // ✅ Nếu là chủ hộ và không có người thuê → được phép
+        if (isOwner && !apt.isRenter) return true;
+
+        // ❌ Chủ hộ nhưng có người thuê → không được
+        return false;
+      });
+
+      setApartments(filtered);
+    } catch (err) {
+      console.error(err);
+      toast.error('❌ Lỗi khi lấy dữ liệu căn hộ');
+    }
+  })();
+}, [user]);
+
   
-        // 👉 Lọc căn hộ theo user hiện tại
-        const filtered = data.filter(apt => String(apt.userId?._id) === String(user._id));
-  
-        setApartments(filtered);
-      } catch (err) {
-        console.error(err);
-        toast.error('❌ Lỗi khi lấy dữ liệu căn hộ');
-      }
-    })();
-  }, [user]);
 
   /* ---------- xử lý input ---------- */
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: files ? files[0] : value
-    }));
+  
+    if (files && files.length > 0) {
+      const file = files[0];
+      const previewUrl = URL.createObjectURL(file);
+  
+      setFormData(prev => ({
+        ...prev,
+        [name]: file,
+        [`preview${name === 'documentFront' ? 'Front' : 'Back'}`]: previewUrl
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
+  
 
   /* ---------- validate ngày ---------- */
   const validateDates = () => {
@@ -213,24 +239,45 @@ const FormParkingRegistration = () => {
           <div className="form-group wide">
             <label>Mặt trước và mặt sau giấy tờ xe</label>
             <div className="image-upload-boxes">
-              <span>Mặt trước</span>
-              <div className="image-upload-box">
-                <label className="upload-btn">
-                  Chọn ảnh
-                  <input type="file" name="documentFront" accept="image/*" onChange={handleChange} hidden />
-                </label>
-                <div className="file-name">{formData.documentFront ? formData.documentFront.name : 'Chưa chọn ảnh'}</div>
-              </div>
+  {/* Mặt trước */}
+  <span>Mặt trước</span>
+  <div className="image-upload-box">
+    <label className="upload-btn">
+      Chọn ảnh
+      <input type="file" name="documentFront" accept="image/*" onChange={handleChange} hidden />
+    </label>
+    <div className="file-name">
+      {formData.documentFront ? formData.documentFront.name : 'Chưa chọn ảnh'}
+    </div>
+    {formData.previewFront && (
+      <img
+        src={formData.previewFront}
+        alt="Preview trước"
+        style={{ marginTop: 8, maxWidth: 200, border: '1px solid #ccc', borderRadius: 8 }}
+      />
+    )}
+  </div>
 
-              <span>Mặt sau</span>
-              <div className="image-upload-box">
-                <label className="upload-btn">
-                  Chọn ảnh
-                  <input type="file" name="documentBack" accept="image/*" onChange={handleChange} hidden />
-                </label>
-                <div className="file-name">{formData.documentBack ? formData.documentBack.name : 'Chưa chọn ảnh'}</div>
-              </div>
-            </div>
+  {/* Mặt sau */}
+  <span>Mặt sau</span>
+  <div className="image-upload-box">
+    <label className="upload-btn">
+      Chọn ảnh
+      <input type="file" name="documentBack" accept="image/*" onChange={handleChange} hidden />
+    </label>
+    <div className="file-name">
+      {formData.documentBack ? formData.documentBack.name : 'Chưa chọn ảnh'}
+    </div>
+    {formData.previewBack && (
+      <img
+        src={formData.previewBack}
+        alt="Preview sau"
+        style={{ marginTop: 8, maxWidth: 200, border: '1px solid #ccc', borderRadius: 8 }}
+      />
+    )}
+  </div>
+</div>
+
           </div>
 
           <div className="form-group full center">

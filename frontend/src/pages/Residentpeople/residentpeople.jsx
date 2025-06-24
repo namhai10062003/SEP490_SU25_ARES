@@ -60,11 +60,15 @@ const ResidentList = () => {
           <span>Số nhân khẩu: <strong>{apt.residentCount}</strong></span>
         </div>
 
-        <div className="resident-actions">
-          <Link to="/canho/dangkynhankhau" className="resident-register-btn">
-            + Đăng ký nhân khẩu
-          </Link>
-        </div>
+        {((isOwner && !apt.isRenter) || isRenter) && (
+  <div className="resident-actions">
+    <Link to="/canho/dangkynhankhau" className="resident-register-btn">
+      + Đăng ký nhân khẩu
+    </Link>
+  </div>
+)}
+
+
 
         <div className="resident-table-wrapper">
           <table className="resident-table">

@@ -108,4 +108,18 @@
     color: #888;
     margin-top: 2rem;
   }
+  .status.approved {
+    color: green;
+    font-weight: bold;
+  }
+  
+  .status.rejected {
+    color: red;
+    font-weight: bold;
+  }
+  
+  .status.pending {
+    color: orange;
+    font-weight: bold;
+  }
   
