@@ -108,7 +108,7 @@ const StaffDashboard = () => {
             <li><Link to="/posts">Quản lý bài post</Link></li>
             <li><Link to="/real-estate">Quản lý bất động sản</Link></li>
             <li><Link to="/manage-parkinglot">Quản lý bãi đồ xe</Link></li>
-            <li><Link to="/staff-dashboard/manage-expenses">Quản lý chi phí</Link></li>
+            <li><Link to="/manage-expenses">Quản lý chi phí</Link></li>
             <li><Link to="/residentVerification">Quản lý người dùng</Link></li>
             <li><Link to="/resident-verify">Quản lý nhân khẩu</Link></li>
             <li><Link to="/revenue">Quản lý doanh thu</Link></li>

@@ -62,7 +62,7 @@ const Expenses = () => {
     };
 
     return (
-        <StaffDashboard>
+        <div>
             <h2 style={{ marginBottom: 24 }}>Quản lý chi phí căn hộ</h2>
             {/* Add new expense form */}
             <form onSubmit={handleAdd} style={{ margin: "0 auto 32px auto", maxWidth: 500, display: "flex", gap: 8, alignItems: "center" }}>
@@ -174,7 +174,7 @@ const Expenses = () => {
             <p className="mt-3" style={{ marginTop: 32 }}>
                 <b>Ghi chú:</b> Giá quản lý căn hộ sẽ được tính tự động theo diện tích và loại tòa nhà.
             </p>
-        </StaffDashboard>
+            </div>
     );
 };
 

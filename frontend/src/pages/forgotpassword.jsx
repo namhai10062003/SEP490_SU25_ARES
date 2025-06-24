@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import './forgotpassword.css';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -49,33 +50,42 @@ const ForgotPassword = () => {
     }
   };
 
-  return (
-    <div className="forgot-password-page">
-      <h2>Quên mật khẩu</h2>
-      <p>Nhập email để nhận liên kết đặt lại mật khẩu.</p>
-      <form onSubmit={handleSubmit} noValidate>
-        <input
-          type="email"
-          name="email"
-          placeholder="mail@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={loading}
-          required
-        />
-        <button type="submit" disabled={loading}>
-          {loading ? "Đang gửi..." : "Gửi yêu cầu"}
-        </button>
-      </form>
+return (
+  <div className="forgot-password-page">
+    <div className="forgot-container">
+      <div className="forgot-left">
+        <h1>ARES-FPTCITY</h1>
+        <p>Giải pháp tối ưu, kiến tạo tương lai tại FPT City Đà Nẵng.</p>
+      </div>
 
-      <p>
-        Quay lại trang{" "}
-        <Link to="/login" className="highlight-link">
-          đăng nhập
-        </Link>
-      </p>
+      <div className="forgot-right">
+        <h2>Đặt lại mật khẩu</h2>
+        <p>Nhập email để nhận liên kết đặt lại mật khẩu.</p>
+        <form onSubmit={handleSubmit} noValidate>
+          <input
+            type="email"
+            name="email"
+            placeholder="mail@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+            required
+          />
+          <button type="submit" disabled={loading}>
+            {loading ? "Đang gửi..." : "Gửi yêu cầu"}
+          </button>
+        </form>
+        <p>
+          Quay lại{" "}
+          <Link to="/login" className="highlight-link">
+            đăng nhập
+          </Link>
+        </p>
+      </div>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default ForgotPassword;
