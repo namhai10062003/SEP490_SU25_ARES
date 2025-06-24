@@ -6,9 +6,10 @@ import {
   getApartmentById,
   updateApartment,
   deleteApartment,
-  assignUserToApartment
+  assignUserToApartment,
+  getUserApartment,
+  getApartmentExpense
 } from "../controllers/apartmentController.js";
-
 const router = express.Router();
 
 router.post("/", createApartment);
@@ -17,5 +18,7 @@ router.get("/:id", getApartmentById);
 router.put("/:id", updateApartment);
 router.delete("/:id", deleteApartment);
 router.post("/:id/assign-user", assignUserToApartment);
+router.get('/my-apartment/:userId', getUserApartment);
+router.get("/expense/:apartmentId", getApartmentExpense);
 
 export default router;
