@@ -296,6 +296,15 @@ const Header = ({ user, name, logout }) => {
                     </li>
                     <li>
                       <Link
+                        to="/my-apartment"
+                        style={{ display: "block", padding: "10px 16px", color: "#333", textDecoration: "none" }}
+                        onClick={() => setShowProfileDropdown(false)}
+                      >
+                        Căn hộ của tôi
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
                         to="/profile/quanlipostcustomer"
                         style={{
                           display: "block",

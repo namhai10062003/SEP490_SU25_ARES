@@ -63,7 +63,7 @@ const StaffDashboard = ({ children }) => {
             <li><Link to="/staff-dashboard">Dashboard</Link></li>
             <li><Link to="/real-estate">Quản lý bất động sản</Link></li>
             <li><Link to="/manage-parkinglot">Quản lý bãi đồ xe</Link></li>
-            <li><Link to="/expenses">Quản lý chi phí</Link></li>
+            <li><Link to="/staff-dashboard/manage-expenses">Quản lý chi phí</Link></li>
             <li><Link to="/residentVerification">Quản lý người dùng</Link></li>
             <li><Link to="/revenue">Quản lý doanh thu</Link></li>
             <li><Link to="/login">Đăng Xuất</Link></li>

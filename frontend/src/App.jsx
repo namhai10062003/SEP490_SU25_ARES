@@ -37,6 +37,7 @@ import ParkingLotList from "./pages/staff/manageParkingLot/parkinglot-list";
 import FormParkingRegistration from "./parkingRegistration/formParkingRegistation";
 import ParkingRegistrationDetails from "./parkingRegistration/parkingRegistartionDetail";
 import ParkingRegistration from "./parkingRegistration/parkingRegistration";
+import MyApartment from "./pages/manageUserApartment/MyApartment.jsx";
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 function ProtectedRoute({ element, allowedRoles }) {
   const { user } = useAuth();
@@ -67,7 +68,8 @@ function App() {
             <Route path="/dichvu/dangtin" element={<RegistrationForm />} />
             <Route path="/profile/quanlipostcustomer" element={<CustomerPostManagement />} />
             <Route path="/blog" element={<BlogList />} />
-            <Route path="/postdetail/:id" element={<PostDetail/>} />
+            <Route path="/postdetail/:id" element={<PostDetail />} />
+            <Route path="/my-apartment" element={<MyApartment />} />
             {/* Route được bảo vệ (chỉ admin mới vào được) */}
             {<Route
               path="/admin-dashboard"
@@ -134,11 +136,11 @@ function App() {
                 />
               }
             />
-             {<Route
+            {<Route
               path="/admin-dashboard/report"
               element={
                 <ProtectedRoute
-                  element={<AdminReportPage/>}
+                  element={<AdminReportPage />}
                   allowedRoles={["admin"]}
                 />
               }
