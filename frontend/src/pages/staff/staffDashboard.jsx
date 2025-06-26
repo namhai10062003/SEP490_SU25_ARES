@@ -7,7 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import socket from '../../server/socket';
 import h1 from "../images/banner.jpg";
 import './StaffDashboard.css';
-
+import StaffNavbar from './staffNavbar.jsx';
 const StaffDashboard = () => {
   const navigate = useNavigate(); // ✅ khai báo navigate
   const token = localStorage.getItem('token');
@@ -26,11 +26,11 @@ const StaffDashboard = () => {
     /* === Nghe sự kiện đăng ký bãi đỗ xe (giữ nguyên) === */
     socket.on('staff:new-parking-request', (data) => {
       console.log('📥 Dữ liệu socket nhận được:', data);
-  
+
       const message = data['Có đăng ký gửi xe mới cần duyệt'] || '📥 Có yêu cầu gửi xe mới';
       const registration = data?.registration || {};
       const { apartmentCode, owner, licensePlate, vehicleType, _id } = registration;
-  
+
       toast.info(
         `${message}: 🚗 Căn hộ ${apartmentCode} - ${owner} (${licensePlate}, ${vehicleType})`,
         {
@@ -47,19 +47,19 @@ const StaffDashboard = () => {
         }
       );
     });
-  
+
     /* === Nghe sự kiện đăng ký nhân khẩu mới === */
     socket.on('new-resident-registered', (resident) => {
       console.log('📥 Nhân khẩu mới đăng ký:', resident);
-  
+
       const {
         fullName,
         gender,
         apartmentCode,
         relation,
       } = resident;
-    // 👉 Ghi log riêng phần quan hệ
-    console.log('🧾 Quan hệ với chủ hộ:', relation);
+      // 👉 Ghi log riêng phần quan hệ
+      console.log('🧾 Quan hệ với chủ hộ:', relation);
       toast.info(
         `📋 Nhân khẩu mới: ${fullName} (${gender}, ${relation}) – Căn hộ ${apartmentCode}`,
         {
@@ -76,7 +76,7 @@ const StaffDashboard = () => {
         }
       );
     });
-  
+
     return () => {
       socket.off('staff:new-parking-request');
       socket.off('new-resident-registered');
@@ -100,22 +100,7 @@ const StaffDashboard = () => {
   return (
     <div className="layout">
       <ToastContainer />
-      <aside className="sidebar">
-        <h2 className="sidebar-title">BẢN QUẢN LÝ</h2>
-        <nav className="sidebar-menu">
-          <ul>
-            <li><Link to="/staff-dashboard">Dashboard</Link></li>
-            <li><Link to="/posts">Quản lý bài post</Link></li>
-            <li><Link to="/real-estate">Quản lý bất động sản</Link></li>
-            <li><Link to="/manage-parkinglot">Quản lý bãi đồ xe</Link></li>
-            <li><Link to="/manage-expenses">Quản lý chi phí</Link></li>
-            <li><Link to="/residentVerification">Quản lý người dùng</Link></li>
-            <li><Link to="/resident-verify">Quản lý nhân khẩu</Link></li>
-            <li><Link to="/revenue">Quản lý doanh thu</Link></li>
-            <li><Link to="/login">Đăng Xuất</Link></li>
-          </ul>
-        </nav>
-      </aside>
+      <StaffNavbar />
 
       <main className="dashboard-container">
         <div className="topbar">
