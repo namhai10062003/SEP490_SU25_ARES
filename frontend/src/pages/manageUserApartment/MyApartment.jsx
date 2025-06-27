@@ -10,23 +10,41 @@ const MyApartment = () => {
     const [showExpenseModal, setShowExpenseModal] = useState(false);
     const [maintenanceFee, setMaintenanceFee] = useState(null);
     const [feeLoading, setFeeLoading] = useState(false);
+    const [parkingRegs, setParkingRegs] = useState([]);
+    const [parkingLoading, setParkingLoading] = useState(false);
 
     useEffect(() => {
-        const fetchApartment = async () => {
-            try {
-                const res = await axios.get(
-                    `${import.meta.env.VITE_API_URL}/api/apartments/my-apartment/${user._id}`
-                );
-                setApartment(res.data);
-            } catch (err) {
-                setApartment(null);
-            } finally {
-                setLoading(false);
-            }
-        };
-        if (user?._id) fetchApartment();
+        if (user?._id) {
+            fetchApartment();
+            fetchParkingRegs();
+        }
     }, [user]);
-
+    const fetchApartment = async () => {
+        try {
+            const res = await axios.get(
+                `${import.meta.env.VITE_API_URL}/api/apartments/my-apartment/${user._id}`
+            );
+            setApartment(res.data);
+        } catch (err) {
+            setApartment(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+    const fetchParkingRegs = async () => {
+        setParkingLoading(true);
+        try {
+            const res = await axios.get(
+                `${import.meta.env.VITE_API_URL}/api/parkinglot/user/${user._id}`
+            );
+            // Lọc chỉ lấy trạng thái đã duyệt
+            setParkingRegs(res.data.data.filter(item => item.status === "approved"));
+        } catch (err) {
+            setParkingRegs([]);
+        } finally {
+            setParkingLoading(false);
+        }
+    };
     const handleShowExpense = async () => {
         if (!apartment?._id) return;
         setFeeLoading(true);
@@ -41,6 +59,8 @@ const MyApartment = () => {
         } finally {
             setFeeLoading(false);
         }
+        // Lấy phí gửi xe
+        await fetchParkingRegs();
     };
 
     if (loading) return (
@@ -99,7 +119,7 @@ const MyApartment = () => {
                     </button>
                 </div>
             </div>
-
+            {/* Modal hiển thị chi phí bảo trì */}
             {showExpenseModal && (
                 <div style={{
                     position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
@@ -120,6 +140,25 @@ const MyApartment = () => {
                                 {maintenanceFee !== null
                                     ? maintenanceFee.toLocaleString("vi-VN") + " đ/tháng"
                                     : "Không có dữ liệu"}
+                                {/* Phần gửi xe */}
+                                {parkingLoading ? (
+                                    <div>Đang tải phí gửi xe...</div>
+                                ) : parkingRegs.length > 0 ? (
+                                    <div style={{ marginTop: 12 }}>
+                                        <strong>Phí gửi xe:</strong>
+                                        <ul style={{ margin: 0, paddingLeft: 20 }}>
+                                            {parkingRegs.map((reg, idx) => (
+                                                <li key={reg._id || idx}>
+                                                    {reg.vehicleType}
+                                                    {reg.licensePlate ? ` (${reg.licensePlate})` : ""}
+                                                    : {reg.price?.toLocaleString("vi-VN")} đ/tháng
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ) : (
+                                    <div style={{ marginTop: 12 }}>Không có đăng ký gửi xe</div>
+                                )}
                             </div>
                         )}
                         <div style={{ marginTop: 24, textAlign: "right" }}>
@@ -130,6 +169,7 @@ const MyApartment = () => {
                     </div>
                 </div>
             )}
+
         </>
     );
 };
