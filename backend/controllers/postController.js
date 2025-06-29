@@ -196,7 +196,13 @@ export const getPostDetail = async (req, res) => {
         message: "Post details retrieved successfully",
         success: true,
         error: false,
-        data: post,
+        data: {
+          ...post,
+          contactInfo: {
+            ...post.contactInfo,
+            userId: post.contactInfo._id,
+          },
+        },
       });
     } catch (error) {
       return res.status(500).json({
