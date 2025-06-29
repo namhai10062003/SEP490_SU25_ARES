@@ -36,6 +36,17 @@ const userSchema = new mongoose.Schema(
 
     status: { type: Number, enum: [0, 1], default: 1 }, // 1: active, 0: blocked
     deletedAt: { type: Date, default: null }, // Soft delete
+    // update profile 
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"], // đổi theo kiểu tiếng Anh
+      default: "other",
+    },
+    dob: { type: Date },
+    address: { type: String },
+    identityNumber: { type: String },
+    bio: { type: String },
+    jobTitle: { type: String },
   },
   {
     timestamps: true, // Tự động createdAt & updatedAt

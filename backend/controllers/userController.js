@@ -1,5 +1,6 @@
-import User from '../models/User.js';
+import bcrypt from "bcryptjs";
 import Notification from '../models/Notification.js';
+import User from '../models/User.js';
 // GET /api/users?page=1&limit=10&role=staff&status=1
 const getUsers = async (req, res) => {
     try {
@@ -115,4 +116,104 @@ const deleteUser = async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 };
-export { getUsers, changeUserStatus, getUserById, deleteUser, getUsersDepartment };
+
+// update profile 
+export const updateProfile = async (req, res) => {
+    try {
+      const userId = req.user._id;
+  
+      const {
+        name,
+        phone,
+        gender,
+        dob,
+        address,
+        identityNumber,
+        bio,
+        jobTitle,
+      } = req.body;
+  
+      const updateData = {
+        name,
+        phone,
+        gender,
+        dob,
+        address,
+        identityNumber,
+        bio,
+        jobTitle,
+      };
+  
+      // Nếu có ảnh đại diện mới từ Cloudinary
+      if (req.file && req.file.path) {
+        updateData.profileImage = req.file.path;
+      }
+  
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $set: updateData },
+        { new: true }
+      );
+  
+      res.status(200).json({
+        message: "Cập nhật hồ sơ thành công",
+        user: updatedUser,
+      });
+    } catch (error) {
+      console.error("Lỗi cập nhật hồ sơ:", error);
+      res.status(500).json({ message: "Lỗi server" });
+    }
+  };
+  export const getUserProfileById = async (req, res) => {
+    try {
+      const _id = req.params.id;
+  
+      if (!_id) {
+        return res.status(400).json({ error: "Thiếu ID người dùng" });
+      }
+  
+      const user = await User.findById(_id).select(
+        'name phone gender dob address identityNumber jobTitle bio profileImage'
+      );
+  
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy người dùng" });
+      }
+  
+      res.status(200).json(user);
+    } catch (err) {
+      console.error("❌ Lỗi khi lấy profile:", err.message);
+      res.status(500).json({ error: "Server error" });
+    }
+  };
+// change mk 
+export const changePassword = async (req, res) => {
+    try {
+      const userId = req.user._id; // Lấy ID từ middleware xác thực
+      const { oldPassword, newPassword } = req.body;
+  
+      if (!oldPassword || !newPassword) {
+        return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
+      }
+  
+      const user = await User.findById(userId);
+      if (!user) return res.status(404).json({ message: "Người dùng không tồn tại." });
+  
+      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Mật khẩu cũ không đúng." });
+      }
+  
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+      await user.save();
+  
+      res.status(200).json({ message: "✅ Đổi mật khẩu thành công!" });
+    } catch (err) {
+      console.error("Lỗi đổi mật khẩu:", err);
+      res.status(500).json({ message: "❌ Lỗi server." });
+    }
+  };
+
+export { changeUserStatus, deleteUser, getUserById, getUsers, getUsersDepartment };
+

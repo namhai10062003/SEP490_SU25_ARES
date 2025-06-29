@@ -29,6 +29,7 @@ import ManageApartment from "./pages/manage-apartment.jsx";
 import ManageApplicationForm from "./pages/manage-application-form.jsx";
 import ManageStaff from "./pages/manage-staff.jsx";
 import ManageUser from "./pages/manage-user.jsx";
+import MyApartment from "./pages/manageUserApartment/MyApartment.jsx";
 import Register from "./pages/register.jsx";
 import ResetPassword from "./pages/resetpassword";
 import PostManagement from "./pages/staff/ManagementPost/PostManagement.jsx";
@@ -39,10 +40,13 @@ import DashboardPage from "./pages/staff/dashboardStatistics";
 import ManageExpense from "./pages/staff/manageExpense.jsx";
 import ManageParkingLot from "./pages/staff/manageParkingLot/manageParkinglot";
 import ParkingLotList from "./pages/staff/manageParkingLot/parkinglot-list";
+import ChangePassword from "./pages/user/profile/ChangePassword";
+import Profile from "./pages/user/profile/profile";
+import UpdateProfileForm from "./pages/user/profile/updateProfile";
 import FormParkingRegistration from "./parkingRegistration/formParkingRegistation";
 import ParkingRegistrationDetails from "./parkingRegistration/parkingRegistartionDetail";
 import ParkingRegistration from "./parkingRegistration/parkingRegistration";
-import MyApartment from "./pages/manageUserApartment/MyApartment.jsx";
+
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 function ProtectedRoute({ element, allowedRoles }) {
   const { user } = useAuth();
@@ -78,6 +82,9 @@ function App() {
             <Route path="/canho/nhaukhau" element={<ResidentList/>} />
             <Route path="/canho/dangkynhankhau" element={<ResidentRegister/>} />
             <Route path="/residents/:id" element={<ResidentDetail/>} />
+            <Route path="/updateprofile" element={<UpdateProfileForm/>} />
+            <Route path="/profile" element={<Profile/>} />
+            <Route path="/changepassword" element={<ChangePassword/>} />
 
             {/* Route được bảo vệ (chỉ admin mới vào được) */}
             {<Route
