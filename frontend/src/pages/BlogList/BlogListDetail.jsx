@@ -11,7 +11,9 @@ import {
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../components/header";
+import { useChat } from "../../../context/ChatContext.jsx"; // THÊM
 import { useAuth } from "../../../context/authContext";
+// import ChatBox from "../messages/ChatBox";
 import {
   addComment,
   checkLiked,
@@ -38,9 +40,10 @@ const PostDetail = () => {
   const [reportDescription, setReportDescription] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [showReport, setShowReport] = useState(false);
-
+  // const [showChat, setShowChat] = useState(false);
+  const { setReceiver } = useChat(); // THÊM
   useEffect(() => setName(user?.name || null), [user]);
-
+// hàm fetch data bài post chi tiết 
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -70,7 +73,7 @@ const PostDetail = () => {
 
     fetchData();
   }, [id, user]);
-
+// hàm xử lí like 
   const handleLike = async () => {
     try {
       await toggleLike(id);
@@ -80,7 +83,7 @@ const PostDetail = () => {
       console.error("Lỗi like bài viết");
     }
   };
-
+//hàm xử lí comment
   const handleAddComment = async () => {
     if (!commentText.trim()) return;
     try {
@@ -92,7 +95,7 @@ const PostDetail = () => {
       console.error("Lỗi gửi bình luận");
     }
   };
-
+//hàm xử lí report 
   const handleReport = async () => {
     if (!reportReason.trim()) {
       toast.warn("Vui lòng nhập lý do báo cáo!", { position: "top-right" });
@@ -114,7 +117,21 @@ const PostDetail = () => {
       );
     }
   };
+//hàm xử lí effect nhắn tin dễ dàng
+useEffect(() => {
+  if (post?.contactInfo?.userId) {
+    if (user && user._id !== post.contactInfo.userId) {
+      setReceiver({
+        id: post.contactInfo.userId,
+        name: post.contactInfo.name,
+      });
+    } else {
+      setReceiver(null); // Nếu là chính mình đăng bài, không mở chat
+    }
+  }
+}, [post, user]);
 
+// hàm xử lí giá tiền 
   const formatPrice = (price) =>
     new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -136,7 +153,7 @@ const PostDetail = () => {
         <p style={{ ...styles.loading, color: "red" }}>{err}</p>
       </div>
     );
-
+    console.log("🧾 Receiver ID:", post?.contactInfo?.userId);
   return (
     <div style={styles.container}>
       <Header user={user} name={name} logout={logout} />
@@ -170,8 +187,29 @@ const PostDetail = () => {
           <div style={styles.infoColumn}>
             <h1 style={styles.title}>{post.title}</h1>
             <p style={styles.price}>{formatPrice(post.price)}</p>
-            <button style={styles.contactBtn}>Nhắn tin</button>
+            {/* <button style={styles.contactBtn}>Nhắn tin</button> */}
 
+          
+
+            <div style={styles.section}>
+              <h3 style={styles.sectionTitle}>📌 Mô tả dự án</h3>
+              {post.description?.split("\n").map((line, idx) => (
+                <p key={idx} style={styles.descLine}>
+                  {line}
+                </p>
+              ))}
+            </div>
+           
+
+            <div style={iconStyles.wrapper}>
+              <IconInfoRow icon={<FaRulerCombined />} label="Diện tích" value={`${post.area} m²`} />
+              <IconInfoRow icon={<FaMapMarkerAlt />} label="Vị trí" value={post.location} />
+              <IconInfoRow icon={<FaCalendarAlt />} label="Ngày đăng" value={new Date(post.createdAt).toLocaleDateString("vi-VN")} />
+              <IconInfoRow icon={<FaStar />} label="Loại bài" value={post.postPackage?.type || "Standard"} />
+              <IconInfoRow icon={<FaCheckCircle />} label="Trạng thái" value={post.status === "active" ? "Hoạt động" : "Ẩn"} />
+            </div>
+
+            <div style={styles.section}>
             <div style={styles.interactionBox}>
             <button
   style={{
@@ -239,29 +277,61 @@ const PostDetail = () => {
                 </button>
               </div>
             )}
-
-            <div style={styles.section}>
-              <h3 style={styles.sectionTitle}>📌 Mô tả dự án</h3>
-              {post.description?.split("\n").map((line, idx) => (
-                <p key={idx} style={styles.descLine}>
-                  {line}
-                </p>
-              ))}
-            </div>
-
-            <div style={iconStyles.wrapper}>
-              <IconInfoRow icon={<FaRulerCombined />} label="Diện tích" value={`${post.area} m²`} />
-              <IconInfoRow icon={<FaMapMarkerAlt />} label="Vị trí" value={post.location} />
-              <IconInfoRow icon={<FaCalendarAlt />} label="Ngày đăng" value={new Date(post.createdAt).toLocaleDateString("vi-VN")} />
-              <IconInfoRow icon={<FaStar />} label="Loại bài" value={post.postPackage?.type || "Standard"} />
-              <IconInfoRow icon={<FaCheckCircle />} label="Trạng thái" value={post.status === "active" ? "Hoạt động" : "Ẩn"} />
-            </div>
-
-            <div style={styles.section}>
               <h3 style={styles.sectionTitle}>📞 Liên hệ</h3>
               <p>👤 {post.contactInfo?.name}</p>
+              {/* {user && post.contactInfo?.userId && (
+  <div> */}
+    {/* Nút icon để toggle */}
+    {/* <span
+      className="material-symbols-rounded"
+      style={{ fontSize: 30, color: "#2ecc71", cursor: "pointer", marginBottom: 10 }}
+      onClick={() => setShowChat((prev) => !prev)}
+    >
+      chat
+    </span> */}
+
+    {/* Khung chat chỉ hiện khi showChat === true */}
+    {/* {showChat &&
+      (user._id === post.contactInfo.userId ? (
+        <Inbox currentUserId={user._id} />
+      ) : (
+        <ChatBox
+          currentUserId={user._id}
+          receiverId={post.contactInfo.userId}
+          receiverName={post.contactInfo.name}
+        />
+      ))}
+  </div>
+)} */}
+
+
+
+
               <p>📧 {post.contactInfo?.email}</p>
               <p>📱 {post.contactInfo?.phone}</p>
+              {user && post.contactInfo?.userId && (
+  <div>
+    <span
+      className="material-symbols-rounded"
+      style={{
+        fontSize: 30,
+        color: "#2ecc71",
+        cursor: "pointer",
+        marginBottom: 10,
+      }}
+      onClick={() => {
+        // ✅ Luôn mở chat tới người đăng bài
+        setReceiver({
+          id: post.contactInfo.userId,
+          name: post.contactInfo.name,
+        });
+      }}
+    >
+      chat
+    </span>
+  </div>
+)}
+
             </div>
 
           </div>

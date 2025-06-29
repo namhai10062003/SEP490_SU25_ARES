@@ -11,6 +11,7 @@ import apartmentRouter from "./router/apartmentRoutes.js";
 import authRouter from "./router/auth.js";
 import expenseRoutes from "./router/expenseRoutes.js";
 import interationRouter from "./router/interactions.js";
+import messageRoutes from "./router/messageRoutes.js";
 import notificationRoutes from './router/notificationRoutes.js';
 import parkingRouter from "./router/parkingRegistration.js";
 import paymentRouter from "./router/payment.js";
@@ -77,6 +78,7 @@ app.use("/api/payment", paymentRouter);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/interaction", interationRouter);
+app.use("/api/messages", messageRoutes);
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);
@@ -87,6 +89,31 @@ io.on("connection", (socket) => {
   socket.on("message", (payload) => {
     console.log("📩 Message:", payload);
     io.emit("message", payload);
+  });
+// video calll 
+  // --- 📞 VIDEO CALL LOGIC ---
+  socket.on("call-user", ({ to, offer, from }) => {
+    console.log(`📞 ${from} is calling ${to}`);
+    // Tìm socket của người nhận
+    const targetSocket = [...io.sockets.sockets.values()].find(s => s.userId === to);
+    if (targetSocket) {
+      targetSocket.emit("incoming-call", { from, offer });
+    }
+  });
+
+  socket.on("answer-call", ({ to, answer }) => {
+    console.log(`✅ ${socket.userId} answered call to ${to}`);
+    const targetSocket = [...io.sockets.sockets.values()].find(s => s.userId === to);
+    if (targetSocket) {
+      targetSocket.emit("call-answered", { answer });
+    }
+  });
+
+  socket.on("ice-candidate", ({ to, candidate }) => {
+    const targetSocket = [...io.sockets.sockets.values()].find(s => s.userId === to);
+    if (targetSocket) {
+      targetSocket.emit("ice-candidate", { candidate });
+    }
   });
 
   socket.on("disconnect", () => {
