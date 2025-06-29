@@ -43,11 +43,15 @@ import ManageExpense from "./pages/staff/manageExpense.jsx";
 import ManageParkingLot from "./pages/staff/manageParkingLot/manageParkinglot";
 import ParkingLotList from "./pages/staff/manageParkingLot/parkinglot-list";
 import VerifyEmail from "./pages/verify-otp.jsx";
+import ChangePassword from "./pages/user/profile/ChangePassword";
+import Profile from "./pages/user/profile/profile";
+import UpdateProfileForm from "./pages/user/profile/updateProfile";
 import FormParkingRegistration from "./parkingRegistration/formParkingRegistation";
 import ParkingRegistrationDetails from "./parkingRegistration/parkingRegistartionDetail";
 import ParkingRegistration from "./parkingRegistration/parkingRegistration";
 
-// Bảo vệ route
+// Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
+
 function ProtectedRoute({ element, allowedRoles }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" />;
@@ -130,7 +134,7 @@ function App() {
       <SocketProvider>
         <ChatProvider>
           <AppContent />
-        </ChatProvider>
+        </ChatProvider>  
       </SocketProvider>
     </AuthProvider>
   );

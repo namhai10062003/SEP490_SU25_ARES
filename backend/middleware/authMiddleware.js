@@ -21,7 +21,7 @@ const verifysUser = async (req, res, next) => {
 
         // Find the user by decoded._id and exclude the password field
         const user = await User.findById(decoded._id).select('-password');
-
+        console.log("👤 User tìm được:", user); // Thêm dòng này
         // If user not found, send an error
         if (!user) {
             return res.status(404).json({ success: false, error: "User not found" });
