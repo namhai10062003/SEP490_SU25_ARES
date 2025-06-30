@@ -4,7 +4,8 @@ import "react-toastify/dist/ReactToastify.css";
 
 // index.js hoặc App.js
 // import '@fortawesome/fontawesome-free/css/all.min.css';
-// import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 import AuthProvider, { useAuth } from "../context/authContext";
 import SocketProvider from "../context/socketContext";
@@ -74,10 +75,10 @@ function App() {
             <Route path="/profile/quanlipostcustomer" element={<CustomerPostManagement />} />
             <Route path="/blog" element={<BlogList />} />
             <Route path="/my-apartment" element={<MyApartment />} />
-            <Route path="/postdetail/:id" element={<PostDetail/>} />
-            <Route path="/canho/nhaukhau" element={<ResidentList/>} />
-            <Route path="/canho/dangkynhankhau" element={<ResidentRegister/>} />
-            <Route path="/residents/:id" element={<ResidentDetail/>} />
+            <Route path="/postdetail/:id" element={<PostDetail />} />
+            <Route path="/canho/nhaukhau" element={<ResidentList />} />
+            <Route path="/canho/dangkynhankhau" element={<ResidentRegister />} />
+            <Route path="/residents/:id" element={<ResidentDetail />} />
 
             {/* Route được bảo vệ (chỉ admin mới vào được) */}
             {<Route
@@ -145,7 +146,7 @@ function App() {
                 />
               }
             />
-             {<Route
+            {<Route
               path="/admin-dashboard/resident-verify-admin"
               element={
                 <ProtectedRoute
@@ -154,7 +155,7 @@ function App() {
                 />
               }
             />}
-             {<Route
+            {<Route
               path="/admin-dashboard/report"
               element={
                 <ProtectedRoute
@@ -182,11 +183,11 @@ function App() {
                 />
               }
             />}
-              <Route
+            <Route
               path="/resident-verify"
               element={
                 <ProtectedRoute
-                  element={<ResidentVerifyList/>}
+                  element={<ResidentVerifyList />}
                   allowedRoles={["staff"]}
                 />
               }

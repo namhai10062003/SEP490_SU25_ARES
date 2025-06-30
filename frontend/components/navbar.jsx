@@ -1,83 +1,111 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import './navbar.css';
+import React from "react";
+import { Link } from "react-router-dom";
 
-const Navbar = (role) => {
-  const [activeMenu, setActiveMenu] = useState(null);
-  console.log("Role:", role);
-  const handleMouseEnter = (menu) => {
-    setActiveMenu(menu);
-  };
-
-  const handleMouseLeave = () => {
-    setActiveMenu(null);
-  };
-
-  return (
-    <nav className="navbar">
-      <ul className="nav-list">
-        <li className="nav-item active">
-          <Link to="/">TRANG CHỦ</Link>
+const Navbar = () => (
+  <ul className="navbar-nav flex-row gap-2 ms-3">
+    <li className="nav-item">
+      <Link className="nav-link fw-bold link-dark" to="/">
+        TRANG CHỦ
+      </Link>
+    </li>
+    <li className="nav-item">
+      <Link className="nav-link link-dark" to="/gioi-thieu">
+        GIỚI THIỆU
+      </Link>
+    </li>
+    <li className="nav-item dropdown">
+      <span
+        className="nav-link dropdown-toggle link-dark"
+        id="dichvuDropdown"
+        role="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        style={{ cursor: "pointer" }}
+      >
+        DỊCH VỤ
+      </span>
+      <ul className="dropdown-menu" aria-labelledby="dichvuDropdown">
+        <li>
+          <Link className="dropdown-item" to="/dichvu/baidoxe">
+            Dịch vụ đăng ký bãi đỗ xe
+          </Link>
         </li>
-        <li className="nav-item">
-          <Link to="/gioi-thieu">GIỚI THIỆU</Link>
-        </li>
-
-        <li
-          className="nav-item dropdown"
-          onMouseEnter={() => handleMouseEnter('dichvu')}
-          onMouseLeave={handleMouseLeave}
-        >
-          <span>DỊCH VỤ ▾</span>
-          {activeMenu === 'dichvu' && (
-            <ul className="dropdown-menu">
-              <li><Link to="/dichvu/baidoxe">Dịch vụ đăng ký bãi đỗ xe</Link></li>
-              <li>
-                <Link to="/dichvu/dangtin">Dịch vụ đăng tin</Link>
-              </li>
-            </ul>
-          )}
-        </li>
-
-        <li
-          className="nav-item dropdown"
-          onMouseEnter={() => handleMouseEnter('hoadon')}
-          onMouseLeave={handleMouseLeave}
-        >
-          <span>HÓA ĐƠN ▾</span>
-          {activeMenu === 'hoadon' && (
-            <ul className="dropdown-menu">
-              <li><Link to="/hoa-don/thanh-toan">Thanh toán</Link></li>
-              <li><Link to="/hoa-don/lich-su">Lịch sử</Link></li>
-              <li><Link to="/hoa-don/yeu-cau">Gửi yêu cầu</Link></li>
-            </ul>
-          )}
-        </li>
-
-        <li
-          className="nav-item dropdown"
-          onMouseEnter={() => handleMouseEnter('canho')}
-          onMouseLeave={handleMouseLeave}
-        >
-          <span>CĂN HỘ ▾</span>
-          {activeMenu === 'canho' && (
-            <ul className="dropdown-menu">
-              <li><Link to="/canho/nhaukhau">Danh sách nhân khẩu</Link></li>
-              <li><Link to="/can-ho/chi-tiet">Chi tiết</Link></li>
-              <li><Link to="/can-ho/yeu-thich">Yêu thích</Link></li>
-            </ul>
-          )}
-        </li>
-
-        <li className="nav-item">
-          <Link to="/blog">BLOG</Link>
-        </li>
-        <li className="nav-item">
-          <Link to="/lien-he">LIÊN HỆ</Link>
+        <li>
+          <Link className="dropdown-item" to="/dichvu/dangtin">
+            Dịch vụ đăng tin
+          </Link>
         </li>
       </ul>
-    </nav>
-  );
-};
+    </li>
+    <li className="nav-item dropdown">
+      <span
+        className="nav-link dropdown-toggle link-dark"
+        id="hoadonDropdown"
+        role="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        style={{ cursor: "pointer" }}
+      >
+        HÓA ĐƠN
+      </span>
+      <ul className="dropdown-menu" aria-labelledby="hoadonDropdown">
+        <li>
+          <Link className="dropdown-item" to="/hoa-don/thanh-toan">
+            Thanh toán
+          </Link>
+        </li>
+        <li>
+          <Link className="dropdown-item" to="/hoa-don/lich-su">
+            Lịch sử
+          </Link>
+        </li>
+        <li>
+          <Link className="dropdown-item" to="/hoa-don/yeu-cau">
+            Gửi yêu cầu
+          </Link>
+        </li>
+      </ul>
+    </li>
+    <li className="nav-item dropdown">
+      <span
+        className="nav-link dropdown-toggle link-dark"
+        id="canhoDropdown"
+        role="button"
+        data-bs-toggle="dropdown"
+        aria-expanded="false"
+        style={{ cursor: "pointer" }}
+      >
+        CĂN HỘ
+      </span>
+      <ul className="dropdown-menu" aria-labelledby="canhoDropdown">
+        <li>
+          <Link className="dropdown-item" to="/canho/nhaukhau">
+            Danh sách nhân khẩu
+          </Link>
+        </li>
+        <li>
+          <Link className="dropdown-item" to="/can-ho/chi-tiet">
+            Chi tiết
+          </Link>
+        </li>
+        <li>
+          <Link className="dropdown-item" to="/can-ho/yeu-thich">
+            Yêu thích
+          </Link>
+        </li>
+      </ul>
+    </li>
+    <li className="nav-item">
+      <Link className="nav-link link-dark" to="/blog">
+        BLOG
+      </Link>
+    </li>
+    <li className="nav-item">
+      <Link className="nav-link link-dark" to="/lien-he">
+        LIÊN HỆ
+      </Link>
+    </li>
+  </ul>
+);
 
 export default Navbar;
