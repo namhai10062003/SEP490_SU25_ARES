@@ -1,14 +1,11 @@
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../../context/authContext";
-
-import "./register.css";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -21,12 +18,11 @@ const Register = () => {
 
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
-  const { login } = useAuth(); // từ context
+  const { login } = useAuth();
 
   useEffect(() => {
     const loadGoogleScript = () => {
@@ -182,93 +178,157 @@ const Register = () => {
   };
 
   return (
-    <div className="register-page">
-      <div className="container">
-        <div className="left-panel">
-          <h1>ARES-FPTCITY</h1>
-          <p>Giải pháp tối ưu, kiến tạo tương lai tại FPT City Đà Nẵng.</p>
-        </div>
-        <div className="right-panel">
-          <h2>Đăng ký tại đây!!!</h2>
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              name="firstName"
-              placeholder="First Name"
-              value={formData.firstName}
-              onChange={handleChange}
-              required
-            />
-            <input
-              type="tel"
-              name="phone"
-              placeholder="Phone Number"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="mail@example.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-            <div className="password-wrapper">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-              <span
-                className="password-toggle"
-                onClick={toggleShowPassword}
-                aria-label="Toggle password visibility"
-              >
-                <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-              </span>
+    <div
+      className="min-vh-100 d-flex align-items-center justify-content-center"
+      style={{
+        backgroundImage: "url('/images/banner_login.jpg')",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        minHeight: "100vh"
+      }}
+    >
+      <div className="container" style={{ maxWidth: 900 }}>
+        <div className="row shadow-lg rounded-4 overflow-hidden bg-white">
+          {/* Left panel */}
+          <div
+            className="col-md-6 d-none d-md-flex flex-column justify-content-center align-items-center p-4"
+            style={{
+              backgroundImage: "url('/images/content_login.jpeg')",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              backgroundSize: "cover",
+              minHeight: 480,
+              position: "relative"
+            }}
+          >
+            <div className="text-white text-center" style={{ textShadow: "0 2px 8px #000", zIndex: 1 }}>
+              <h1 className="fw-bold mb-3 text-warning">ARES-FPTCITY</h1>
+              <p>Giải pháp tối ưu, kiến tạo tương lai tại FPT City Đà Nẵng.</p>
             </div>
-            <div className="password-wrapper">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                placeholder="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                required
-              />
-              <span
-                className="password-toggle"
-                onClick={toggleShowConfirmPassword}
-                aria-label="Toggle confirm password visibility"
-              >
-                <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
-              </span>
-            </div>
-            <button type="submit" disabled={loading}>
-              {loading ? "Đang đăng ký..." : "Register"}
-            </button>
-          </form>
-
-          <div className="already-account">
-            <span>Bạn đã có tài khoản? </span>
-            <Link to="/login" className="login-link">
-              Đăng nhập ngay
-            </Link>
+            <div
+              style={{
+                position: "absolute",
+                top: 0, left: 0, right: 0, bottom: 0,
+                background: "rgba(0,0,0,0.5)",
+                zIndex: 0
+              }}
+            />
           </div>
-
-          <div className="social-icons">
+          {/* Right panel */}
+          <div className="col-12 col-md-6 bg-white p-4 d-flex flex-column justify-content-center">
+            <div className="mb-4 text-center">
+              <h2 className="fw-bold mb-1" style={{
+                background: "linear-gradient(to right, #00c6ff, #0072ff)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent"
+              }}>Đăng ký tại đây!!!</h2>
+            </div>
+            <form onSubmit={handleSubmit} noValidate>
+              <div className="mb-3">
+                <input
+                  type="text"
+                  name="firstName"
+                  className="form-control form-control-lg"
+                  placeholder="Họ và tên"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  required
+                  autoFocus
+                />
+              </div>
+              <div className="mb-3">
+                <input
+                  type="tel"
+                  name="phone"
+                  className="form-control form-control-lg"
+                  placeholder="Số điện thoại"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="mb-3">
+                <input
+                  type="email"
+                  name="email"
+                  className="form-control form-control-lg"
+                  placeholder="mail@example.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="mb-3 position-relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  className="form-control form-control-lg pe-5"
+                  placeholder="Mật khẩu"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+                <span
+                  className="position-absolute top-50 end-0 translate-middle-y me-3"
+                  style={{ cursor: "pointer", color: "#aaa", fontSize: "1.3rem" }}
+                  onClick={toggleShowPassword}
+                  aria-label="Toggle password visibility"
+                >
+                  <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                </span>
+              </div>
+              <div className="mb-3 position-relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  className="form-control form-control-lg pe-5"
+                  placeholder="Nhập lại mật khẩu"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                />
+                <span
+                  className="position-absolute top-50 end-0 translate-middle-y me-3"
+                  style={{ cursor: "pointer", color: "#aaa", fontSize: "1.3rem" }}
+                  onClick={toggleShowConfirmPassword}
+                  aria-label="Toggle confirm password visibility"
+                >
+                  <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
+                </span>
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-warning btn-lg w-100 fw-bold mb-3"
+              >
+                {loading ? "Đang đăng ký..." : "Đăng ký"}
+              </button>
+            </form>
+            <div className="text-center my-3">
+              <span className="text-secondary">Bạn đã có tài khoản? </span>
+              <Link to="/login" className="fw-bold link-warning">Đăng nhập ngay</Link>
+            </div>
+            <div className="d-flex align-items-center my-3">
+              <hr className="flex-grow-1" />
+              <span className="mx-2 text-secondary">hoặc</span>
+              <hr className="flex-grow-1" />
+            </div>
             <button
-              className="square"
+              className="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2 mb-2"
               aria-label="Google"
               onClick={handleGoogleLogin}
               disabled={googleLoading}
+              type="button"
             >
-              <FontAwesomeIcon icon={faGoogle} />
+              {googleLoading ? (
+                <span className="spinner-border spinner-border-sm"></span>
+              ) : (
+                <>
+                  <FontAwesomeIcon icon={faGoogle} />
+                  <span className="fw-semibold">Đăng ký với Google</span>
+                </>
+              )}
             </button>
           </div>
         </div>

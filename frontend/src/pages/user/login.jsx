@@ -1,10 +1,13 @@
-// ... import giữ nguyên
 import { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+<<<<<<< HEAD:frontend/src/pages/login.jsx
+import { useAuth } from "../../context/authContext";
+=======
 import { useAuth } from "../../../context/authContext";
 import "./login.css";
+>>>>>>> 87f5e442486a779e0265ff2f5697e8abb57669dd:frontend/src/pages/user/login.jsx
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -16,7 +19,6 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  // 👉 điều hướng theo role
   const redirectByRole = (role) => {
     switch (role) {
       case "admin":
@@ -159,135 +161,131 @@ const Login = () => {
   };
 
   return (
-    <div className="login-page">
-      <div className="container">
-        <div className="left-panel">
-          <div className="brand-content">
-            <h1>OFFICIAL</h1>
-            <p>Lorem Ipsum Dolor Sit Amet. Consectetur Adipiscing Elit.</p>
-            <div className="decorative-line"></div>
+    <div
+      className="min-vh-100 d-flex align-items-center justify-content-center bg-light"
+      style={{
+        background: "url('/images/banner_login.jpg') center/cover no-repeat",
+        minHeight: "100vh"
+      }}
+    >
+      <div className="container" style={{ maxWidth: 900 }}>
+        <div className="row shadow-lg rounded-4 overflow-hidden bg-white">
+          {/* Left panel */}
+          <div className="col-md-6 d-none d-md-flex flex-column justify-content-center align-items-center p-4" style={{
+            background: "url('../images/content_login.jpeg') center/cover no-repeat",
+            minHeight: 480
+          }}>
+            <div className="text-white text-center" style={{ textShadow: "0 2px 8px #000" }}>
+              <h1 className="fw-bold mb-3">OFFICIAL</h1>
+              <p>Lorem Ipsum Dolor Sit Amet. Consectetur Adipiscing Elit.</p>
+              <hr className="border-light opacity-50" style={{ width: "60px", margin: "24px auto" }} />
+            </div>
           </div>
-        </div>
-        <div className="right-panel">
-          <div className="form-container">
-            <h2>Official Login Form</h2>
+          {/* Right panel */}
+          <div className="col-12 col-md-6 bg-white p-4 d-flex flex-column justify-content-center">
+            <div className="mb-4 text-center">
+              <h2 className="fw-bold mb-1" style={{
+                background: "linear-gradient(to right, #00c6ff, #0072ff)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent"
+              }}>Đăng nhập</h2>
+              <div className="text-secondary small">Chào mừng bạn quay lại!</div>
+            </div>
             <form onSubmit={handleSubmit} noValidate>
-              <div className="input-group">
+              <div className="mb-3">
                 <input
                   type="email"
                   name="email"
+                  className="form-control form-control-lg"
                   placeholder="mail@example.com"
                   value={formData.email}
                   onChange={handleChange}
                   disabled={loading}
                   required
+                  autoFocus
                 />
               </div>
-              <div className="input-group">
+              <div className="mb-2">
                 <input
                   type="password"
                   name="password"
-                  placeholder="Password"
+                  className="form-control form-control-lg"
+                  placeholder="Mật khẩu"
                   value={formData.password}
                   onChange={handleChange}
                   disabled={loading}
                   required
                 />
               </div>
-
-              <div className="forgot-password">
-                <Link to="/forgot-password" className="highlight-link">
-                  Quên mật khẩu?
-                </Link>
+              <div className="mb-3 text-end">
+                <Link to="/forgot-password" className="link-primary small">Quên mật khẩu?</Link>
               </div>
-
-              <button type="submit" disabled={loading} className="primary-btn">
+              <button type="submit" disabled={loading} className="btn btn-primary btn-lg w-100 mb-2">
                 {loading ? (
                   <>
-                    <span className="spinner"></span>
+                    <span className="spinner-border spinner-border-sm me-2"></span>
                     Đang đăng nhập...
                   </>
                 ) : (
-                  "Login"
+                  "Đăng nhập"
                 )}
               </button>
             </form>
-
-            <div className="register-link">
-              <p>
-                Bạn chưa có tài khoản?{" "}
-                <Link to="/register" className="highlight-link">
-                  Đăng ký tại đây
-                </Link>
-              </p>
+            <div className="text-center my-3">
+              <span className="text-secondary">Bạn chưa có tài khoản? </span>
+              <Link to="/register" className="fw-bold link-primary">Đăng ký tại đây</Link>
             </div>
-
-            <div className="divider">
-              <span>hoặc</span>
+            <div className="d-flex align-items-center my-3">
+              <hr className="flex-grow-1" />
+              <span className="mx-2 text-secondary">hoặc</span>
+              <hr className="flex-grow-1" />
             </div>
-
-            <div className="social-login">
-              <div className="social-text">Đăng nhập nhanh với tài khoản mạng xã hội</div>
-              <div className="social-icons">
-                <button
-                  onClick={handleGoogleLogin}
-                  disabled={googleLoading}
-                  className={`flex items-center justify-center gap-2 w-full px-4 py-2 rounded-2xl border border-gray-300 shadow-sm transition duration-200 
-    ${googleLoading ? "bg-gray-100 cursor-not-allowed" : "bg-white hover:shadow-md hover:bg-gray-50"}`}
-                  aria-label="Đăng nhập với Google"
-                >
-                  {googleLoading ? (
-                    <span className="spinner w-5 h-5 border-2 border-t-transparent border-gray-400 rounded-full animate-spin"></span>
-                  ) : (
-                    <>
-                      <FcGoogle size={20} />
-                      <span className="text-sm font-medium text-gray-700">Đăng nhập với Google</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+            <button
+              onClick={handleGoogleLogin}
+              disabled={googleLoading}
+              className="btn btn-outline-secondary w-100 d-flex align-items-center justify-content-center gap-2 mb-2"
+              aria-label="Đăng nhập với Google"
+              type="button"
+            >
+              {googleLoading ? (
+                <span className="spinner-border spinner-border-sm"></span>
+              ) : (
+                <>
+                  <FcGoogle size={22} />
+                  <span className="fw-semibold">Đăng nhập với Google</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
+        {/* Modal thông báo bị khóa */}
         {showBlockedModal && (
           <div
             className="modal fade show"
             style={{ display: "block", background: "rgba(0,0,0,0.3)" }}
-            onClick={() => setShowBlockedModal(false)} // Close on backdrop click
+            onClick={() => setShowBlockedModal(false)}
           >
             <div
               className="modal-dialog"
-              onClick={e => e.stopPropagation()} // Prevent closing when clicking inside modal
+              onClick={e => e.stopPropagation()}
             >
               <div className="modal-content">
-                <div className="modal-header" style={{ justifyContent: "space-between", alignItems: "center" }}>
-                  <h5
-                    className="modal-title"
-                    style={{
-                      color: "#dc3545",
-                      fontSize: 21,
-                      margin: 0,
-                      flex: 1,
-                      textAlign: "center"
-                    }}
-                  >
+                <div className="modal-header justify-content-between align-items-center">
+                  <h5 className="modal-title text-danger fw-bold flex-grow-1 text-center mb-0">
                     {blockedMsg.includes("xóa")
                       ? "Tài khoản bị xóa"
                       : "Tài khoản bị khóa"}
                   </h5>
                   <button
                     type="button"
-                    className="close"
+                    className="btn-close"
                     onClick={() => setShowBlockedModal(false)}
-                    style={{ marginLeft: "auto" }}
-                  >
-                    <span>&times;</span>
-                  </button>
+                  />
                 </div>
                 <div className="modal-body">
-                  <p style={{ color: "#222", fontSize: 16, margin: 0 }}>{blockedMsg}</p>
+                  <p className="mb-0">{blockedMsg}</p>
                 </div>
-                <div className="modal-footer" style={{ display: "flex", justifyContent: "center" }}>
+                <div className="modal-footer justify-content-center">
                   <button className="btn btn-secondary" onClick={() => setShowBlockedModal(false)}>
                     Đóng
                   </button>

@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from "react";
 import { FiBell } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import "./Header.css";
 import Navbar from "./navbar";
 
 const Header = ({ user, name, logout }) => {
@@ -69,303 +68,191 @@ const Header = ({ user, name, logout }) => {
   const closeModal = () => setSelectedNotification(null);
 
   return (
-    <header className="header">
-      <div className="logo">A R E S</div>
-      <Navbar />
-      <div className="header-right">
-        {user ? (
-          <div className="user-logged-in">
-            <span className="welcome-message">Hello, {name}</span>
-            <div className="avatar-wrapper" style={{ position: "relative" }}>
+    <nav className="navbar navbar-expand-lg bg-white shadow-sm sticky-top py-2 px-3">
+      <div className="container-fluid">
+        <Link className="navbar-brand fw-bold text-warning fs-4" to="/">
+          A R E S
+        </Link>
+        <Navbar />
+        <div className="d-flex align-items-center gap-3 ms-auto">
+          {user ? (
+            <>
+              <span className="fw-semibold text-secondary">Hello, {name}</span>
               {/* Notification bell */}
-              <div
-                className="notification-icon"
-                title="Notifications"
-                onClick={() => setShowDropdown((prev) => !prev)}
-                style={{ cursor: "pointer", position: "relative" }}
-              >
-                <FiBell size={22} />
-                {notifications.length > 0 && (
-                  <span className="notification-badge">
-                    {notifications.length}
-                  </span>
-                )}
-              </div>
-
-              {/* Notification dropdown */}
-              {showDropdown && (
-                <div
-                  className="notification-dropdown"
+              <div className="d-flex align-items-center" style={{ minWidth: 40 }}>
+                <button
+                  className="btn btn-link p-0 d-flex align-items-center"
+                  style={{ color: "#333", minWidth: 0 }}
+                  onClick={() => setShowDropdown((prev) => !prev)}
+                  title="Notifications"
                   ref={dropdownRef}
-                  style={{
-                    position: "absolute",
-                    top: 36,
-                    right: 0,
-                    width: 340,
-                    maxHeight: 320,
-                    background: "#fff",
-                    border: "1px solid #eee",
-                    borderRadius: 8,
-                    boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
-                    overflowY: "auto",
-                    zIndex: 1000,
-                  }}
                 >
+                  <span className="position-relative">
+                    <FiBell size={22} />
+                    {notifications.length > 0 && (
+                      <span
+                        className="position-absolute start-75 translate-middle badge rounded-pill bg-danger"
+                        style={{
+                          fontSize: 12,
+                          left: 15,
+                          top: 5,
+                          padding: "2px 6px",
+                          minWidth: 20,
+                          lineHeight: "16px",
+                        }}
+                      >
+                        {notifications.length}
+                      </span>
+                    )}
+                  </span>
+                </button>
+                {/* Notification dropdown */}
+                {showDropdown && (
                   <div
+                    className="dropdown-menu show p-0"
                     style={{
-                      padding: "10px 16px",
-                      borderBottom: "1px solid #eee",
-                      fontWeight: 600,
+                      minWidth: 240, // Giảm chiều rộng
+                      maxWidth: 320,
+                      right: 0,
+                      left: "auto",
+                      top: 40,
+                      zIndex: 1000,
+                      position: "absolute",
+                      fontSize: 15,
                     }}
                   >
-                    Thông báo mới
-                  </div>
-                  {notifications.length === 0 ? (
-                    <div
-                      style={{
-                        color: "#888",
-                        textAlign: "center",
-                        padding: 24,
-                      }}
-                    >
-                      Không có thông báo mới
+                    <div className="px-3 py-2 border-bottom fw-bold" style={{ fontSize: 16 }}>
+                      Thông báo mới
                     </div>
-                  ) : (
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                      <tbody>
+                    {notifications.length === 0 ? (
+                      <div className="text-center text-secondary py-3" style={{ fontSize: 14 }}>
+                        Không có thông báo mới
+                      </div>
+                    ) : (
+                      <div style={{ maxHeight: 260, overflowY: "auto" }}>
                         {notifications.map((note) => (
-                          <tr
+                          <div
                             key={note._id}
-                            className="notification-row"
+                            className="dropdown-item"
                             style={{
                               cursor: "pointer",
-                              background: "#fff",
-                              borderBottom: "1px solid #f0f0f0",
-                              transition: "background 0.2s",
+                              whiteSpace: "normal",
+                              fontSize: 14,
+                              padding: "10px 16px",
                             }}
                             onClick={() => handleNotificationClick(note)}
                           >
-                            <td
-                              style={{
-                                padding: "10px 8px",
-                                fontSize: 15,
-                                maxWidth: 200,
-                                wordBreak: "break-word",
-                              }}
-                            >
-                              {note.message}
-                            </td>
-                            <td
-                              style={{
-                                padding: "10px 8px",
-                                fontSize: 13,
-                                color: "#888",
-                                textAlign: "right",
-                                whiteSpace: "nowrap",
-                              }}
-                            >
+                            <div className="fw-normal">{note.message}</div>
+                            <div className="small text-muted">
                               {new Date(note.createdAt).toLocaleString("vi-VN")}
-                            </td>
-                          </tr>
+                            </div>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
-              )}
-
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
               {/* Notification modal */}
               {selectedNotification && (
                 <div
-                  className="notification-modal"
+                  className="modal fade show"
                   style={{
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: "100vw",
-                    height: "100vh",
+                    display: "block",
                     background: "rgba(0,0,0,0.3)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 9999,
                   }}
+                  tabIndex={-1}
                   onClick={closeModal}
                 >
                   <div
-                    className="notification-modal-content"
-                    style={{
-                      background: "#fff",
-                      borderRadius: 8,
-                      minWidth: 320,
-                      maxWidth: 400,
-                      maxHeight: "70vh",
-                      overflowY: "auto",
-                      boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
-                      padding: 24,
-                      position: "relative",
-                    }}
+                    className="modal-dialog modal-dialog-centered"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <h3 style={{ margin: 0, marginBottom: 16 }}>Thông báo</h3>
-                    <div style={{ fontSize: 16, marginBottom: 12 }}>
-                      {selectedNotification.message}
+                    <div className="modal-content">
+                      <div className="modal-header">
+                        <h5 className="modal-title">Thông báo</h5>
+                        <button
+                          type="button"
+                          className="btn-close"
+                          onClick={closeModal}
+                        ></button>
+                      </div>
+                      <div className="modal-body">
+                        <div>{selectedNotification.message}</div>
+                        <div className="small text-muted mt-2">
+                          {new Date(selectedNotification.createdAt).toLocaleString("vi-VN")}
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ fontSize: 13, color: "#888" }}>
-                      {new Date(
-                        selectedNotification.createdAt
-                      ).toLocaleString("vi-VN")}
-                    </div>
-                    <button
-                      style={{
-                        position: "absolute",
-                        top: 10,
-                        right: 14,
-                        background: "none",
-                        border: "none",
-                        fontSize: 18,
-                        cursor: "pointer",
-                        color: "#888",
-                      }}
-                      onClick={closeModal}
-                      aria-label="Đóng"
-                    >
-                      ×
-                    </button>
                   </div>
                 </div>
               )}
-
               {/* Profile dropdown */}
-              <div
-                style={{ position: "relative", display: "inline-block" }}
-                ref={profileDropdownRef}
-              >
+              <div className="dropdown" ref={profileDropdownRef} style={{ position: "relative" }}>
                 <button
-                  className="profile-link"
-                  style={{
-                    background: "none",
-                    border: "none",
-                    padding: 0,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                  onClick={() =>
-                    setShowProfileDropdown((prev) => !prev)
-                  }
+                  className={`btn btn-link p-0 dropdown-toggle${showProfileDropdown ? " show" : ""}`}
+                  type="button"
+                  id="profileDropdown"
+                  onClick={() => setShowProfileDropdown((prev) => !prev)}
+                  tabIndex={0}
+                // KHÔNG dùng data-bs-toggle hay aria-expanded
                 >
                   <img
                     src="https://i.imgur.com/2DhmtJ4.png"
                     alt="Avatar"
-                    className="avatar"
+                    className="rounded-circle border"
+                    style={{ width: 36, height: 36, objectFit: "cover" }}
                   />
-                  {/* <span>My Profile</span> */}
                 </button>
-                {showProfileDropdown && (
-                  <ul
-                    className="dropdown-menu"
-                    style={{
-                      position: "absolute",
-                      top: "110%",
-                      right: 0,
-                      background: "#fff",
-                      border: "1px solid #eee",
-                      borderRadius: 8,
-                      boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
-                      minWidth: 180,
-                      zIndex: 1001,
-                      padding: 0,
-                      margin: 0,
-                      listStyle: "none",
-                    }}
-                  >
-                    <li>
-                      <Link
-                        to="/profile"
-                        style={{
-                          display: "block",
-                          padding: "10px 16px",
-                          color: "#333",
-                          textDecoration: "none",
-                        }}
-                        onClick={() => setShowProfileDropdown(false)}
-                      >
-                        My Profile
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/my-apartment"
-                        style={{ display: "block", padding: "10px 16px", color: "#333", textDecoration: "none" }}
-                        onClick={() => setShowProfileDropdown(false)}
-                      >
-                        Căn hộ của tôi
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/profile/quanlipostcustomer"
-                        style={{
-                          display: "block",
-                          padding: "10px 16px",
-                          color: "#333",
-                          textDecoration: "none",
-                        }}
-                        onClick={() => setShowProfileDropdown(false)}
-                      >
-                        Quản lí tin đăng
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/profile/settings"
-                        style={{
-                          display: "block",
-                          padding: "10px 16px",
-                          color: "#333",
-                          textDecoration: "none",
-                        }}
-                        onClick={() => setShowProfileDropdown(false)}
-                      >
-                        Settings
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/profile/security"
-                        style={{
-                          display: "block",
-                          padding: "10px 16px",
-                          color: "#333",
-                          textDecoration: "none",
-                        }}
-                        onClick={() => setShowProfileDropdown(false)}
-                      >
-                        Security
-                      </Link>
-                    </li>
-                  </ul>
-                )}
+                <ul
+                  className={`dropdown-menu dropdown-menu-end mt-2${showProfileDropdown ? " show" : ""}`}
+                  aria-labelledby="profileDropdown"
+                  style={{ minWidth: 180, position: "absolute" }}
+                >
+                  <li>
+                    <Link className="dropdown-item" to="/profile" onClick={() => setShowProfileDropdown(false)}>
+                      My Profile
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item" to="/my-apartment" onClick={() => setShowProfileDropdown(false)}>
+                      Căn hộ của tôi
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item" to="/profile/quanlipostcustomer" onClick={() => setShowProfileDropdown(false)}>
+                      Quản lí tin đăng
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item" to="/profile/settings" onClick={() => setShowProfileDropdown(false)}>
+                      Settings
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item" to="/profile/security" onClick={() => setShowProfileDropdown(false)}>
+                      Security
+                    </Link>
+                  </li>
+                </ul>
               </div>
-
-              <button onClick={logout} className="logout-btn">
+              <button onClick={logout} className="btn btn-outline-warning ms-2">
                 Logout
               </button>
+            </>
+          ) : (
+            <div className="d-flex align-items-center gap-2">
+              <Link to="/login" className="btn btn-link text-secondary fw-semibold">
+                Sign In
+              </Link>
+              <Link to="/register" className="btn btn-warning fw-semibold px-3 rounded-pill">
+                Register
+              </Link>
             </div>
-          </div>
-        ) : (
-          <div className="user-guest">
-            <Link to="/login" className="login-link">
-              Sign In
-            </Link>
-            <Link to="/register" className="register-btn">
-              Register
-            </Link>
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </header>
+    </nav>
   );
 };
 
