@@ -5,7 +5,7 @@ import {
   fetchAllReports,
   updateReportStatus,
 } from "../../../service/reportService";
-import AdminDashboard from "../../adminDashboard";
+import AdminDashboard from "../adminDashboard";
 
 Modal.setAppElement("#root");
 

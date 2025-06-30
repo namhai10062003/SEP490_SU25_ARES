@@ -2,6 +2,8 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { ChatProvider } from "../context/ChatContext.jsx";
+import { VideoCallProvider, useVideoCall } from "../context/VideoCallContext.jsx";
 // index.js hoặc App.js
 // import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -9,30 +11,35 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 import AuthProvider, { useAuth } from "../context/authContext";
 import SocketProvider from "../context/socketContext";
-import Home from "./home/home";
-import VerifyEmail from "./pages/verify-otp.jsx";
-// import Dashboard from "./pages/dashboard.jsx"; // Giả sử đây là trang chỉ dành cho admin
+
 import SocketListener from "../components/SocketListener.jsx";
-import BlogList from "./pages/BlogList/BlogList.jsx";
-import PostDetail from "./pages/BlogList/BlogListDetail";
-import DashboardHome from "./pages/DashboardHome.jsx";
-import CustomerPostManagement from "./pages/MangementPostByCustomer/CustomerPostManagement.jsx";
-import RegistrationForm from "./pages/PostRegistration/registrationForm.jsx";
-import ResidentDetail from "./pages/Residentpeople/residentDetail";
-import ResidentRegister from "./pages/Residentpeople/residentRegister";
-import ResidentList from "./pages/Residentpeople/residentpeople";
+import VideoPlayer from "../src/pages/user/messages/VideoPlayer.jsx";
+import GlobalChatBox from "./pages/user/messages/GlobalChatBox.jsx";
+import VideoCallPopup from "./pages/user/messages/VideoCallPopup";
+
+// Các trang
+import Home from "./home/home";
+import BlogList from "./pages/user/BlogList/BlogList.jsx";
+import PostDetail from "./pages/user/BlogList/BlogListDetail";
+import DashboardHome from "./pages/admin/DashboardHome.jsx";
+import CustomerPostManagement from "./pages/user/MangementPostByCustomer/CustomerPostManagement.jsx";
+import RegistrationForm from "./pages/user/PostRegistration/registrationForm.jsx";
+import ResidentDetail from "./pages/user/Residentpeople/residentDetail";
+import ResidentRegister from "./pages/user/Residentpeople/residentRegister";
+import ResidentList from "./pages/user/Residentpeople/residentpeople";
 import AdminReportPage from "./pages/admin/report/AdminReportPage";
 import AdminResidentApproval from "./pages/admin/residentVerifyByAdmin/AdminResidentApproval";
-import ForgotPassword from "./pages/forgotpassword";
-import GoogleCallback from "./pages/google-callback.jsx";
-import Login from "./pages/login.jsx";
-import ManageApartment from "./pages/manage-apartment.jsx";
-import ManageApplicationForm from "./pages/manage-application-form.jsx";
-import ManageStaff from "./pages/manage-staff.jsx";
-import ManageUser from "./pages/manage-user.jsx";
-import Register from "./pages/register.jsx";
-import ResetPassword from "./pages/resetpassword";
-import PostManagement from "./pages/staff/ManagementPost/PostManagement.jsx";
+import ForgotPassword from "./pages/user/forgotpassword";
+import GoogleCallback from "./pages/user/google-callback.jsx";
+import Login from "./pages/user/login.jsx";
+import ManageApartment from "./pages/admin/manage-apartment.jsx";
+import ManageApplicationForm from "./pages/admin/manage-application-form.jsx";
+import ManageStaff from "./pages/admin/manage-staff.jsx";
+import ManageUser from "./pages/admin/manage-user.jsx";
+import MyApartment from "./pages/user/manageUserApartment/MyApartment.jsx";
+import Register from "./pages/user/register.jsx";
+import ResetPassword from "./pages/user/resetpassword";
+import PostManagement from "./pages/admin/ManagementPost/PostManagement.jsx";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
 import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
 import ResidentVerifyList from "./pages/staff/ResidentVerify/residentVerifyList";
@@ -40,209 +47,102 @@ import DashboardPage from "./pages/staff/dashboardStatistics";
 import ManageExpense from "./pages/staff/manageExpense.jsx";
 import ManageParkingLot from "./pages/staff/manageParkingLot/manageParkinglot";
 import ParkingLotList from "./pages/staff/manageParkingLot/parkinglot-list";
-import FormParkingRegistration from "./parkingRegistration/formParkingRegistation";
-import ParkingRegistrationDetails from "./parkingRegistration/parkingRegistartionDetail";
-import ParkingRegistration from "./parkingRegistration/parkingRegistration";
-import MyApartment from "./pages/manageUserApartment/MyApartment.jsx";
+import VerifyEmail from "./pages/user/verify-otp.jsx";
+import ChangePassword from "./pages/user/profile/ChangePassword";
+import Profile from "./pages/user/profile/profile";
+import UpdateProfileForm from "./pages/user/profile/updateProfile";
+import FormParkingRegistration from "./pages/user/parkingRegistration/formParkingRegistation";
+import ParkingRegistrationDetails from "./pages/user/parkingRegistration/parkingRegistartionDetail";
+import ParkingRegistration from "./pages/user/parkingRegistration/parkingRegistration";
+
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
+
 function ProtectedRoute({ element, allowedRoles }) {
   const { user } = useAuth();
-
   if (!user) return <Navigate to="/login" />;
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" />;
-  }
+  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/" />;
   return element;
 }
 
+// 🎬 Hiển thị routes và các thành phần ngoài route
+function AppRoutes() {
+  const { callActive, incomingCall } = useVideoCall();
+
+  return (
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/verify-otp" element={<VerifyEmail />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/google/callback" element={<GoogleCallback />} />
+          <Route path="/blog" element={<BlogList />} />
+          <Route path="/postdetail/:id" element={<PostDetail />} />
+          <Route path="/dichvu/dangtin" element={<RegistrationForm />} />
+          <Route path="/profile/quanlipostcustomer" element={<CustomerPostManagement />} />
+          <Route path="/my-apartment" element={<MyApartment />} />
+          <Route path="/canho/nhaukhau" element={<ResidentList />} />
+          <Route path="/canho/dangkynhankhau" element={<ResidentRegister />} />
+          <Route path="/residents/:id" element={<ResidentDetail />} />
+          <Route path="/dichvu/baidoxe" element={<ParkingRegistration />} />
+          <Route path="/dichvu/dangkybaidoxe" element={<FormParkingRegistration />} />
+          <Route path="/parkinglot/detail-parkinglot/:id" element={<ParkingRegistrationDetails />} />
+          <Route path="/updateprofile" element={<UpdateProfileForm />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/changepassword" element={<ChangePassword />} />
+
+          {/* Admin */}
+          <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
+          <Route path="/admin-dashboard/posts" element={<ProtectedRoute element={<PostManagement />} allowedRoles={["admin"]} />} />
+          <Route path="/admin-dashboard/manage-user" element={<ProtectedRoute element={<ManageUser />} allowedRoles={["admin"]} />} />
+          <Route path="/admin-dashboard/manage-staff" element={<ProtectedRoute element={<ManageStaff />} allowedRoles={["admin"]} />} />
+          <Route path="/admin-dashboard/manage-apartment" element={<ProtectedRoute element={<ManageApartment />} allowedRoles={["admin"]} />} />
+          <Route path="/admin-dashboard/manage-resident-verification" element={<ProtectedRoute element={<ManageApplicationForm />} allowedRoles={["admin"]} />} />
+          <Route path="/admin-dashboard/resident-verify-admin" element={<ProtectedRoute element={<AdminResidentApproval />} allowedRoles={["admin"]} />} />
+          <Route path="/admin-dashboard/report" element={<ProtectedRoute element={<AdminReportPage />} allowedRoles={["admin"]} />} />
+
+          {/* Staff */}
+          <Route path="/staff-dashboard" element={<ProtectedRoute element={<DashboardPage />} allowedRoles={["staff"]} />} />
+          <Route path="/manage-expenses" element={<ProtectedRoute element={<ManageExpense />} allowedRoles={["staff"]} />} />
+          <Route path="/resident-verify" element={<ProtectedRoute element={<ResidentVerifyList />} allowedRoles={["staff"]} />} />
+          <Route path="/residentVerification" element={<ProtectedRoute element={<ResidentVerificationForm />} allowedRoles={["staff"]} />} />
+          <Route path="/listresidentVerification" element={<ProtectedRoute element={<ResidentVerificationList />} allowedRoles={["staff"]} />} />
+          <Route path="/manage-parkinglot" element={<ProtectedRoute element={<ManageParkingLot />} allowedRoles={["staff"]} />} />
+          <Route path="/parkinglot-list" element={<ProtectedRoute element={<ParkingLotList />} allowedRoles={["staff"]} />} />
+        </Routes>
+
+        {/* Global components */}
+        <SocketListener />
+        <ToastContainer position="top-right" autoClose={1500} theme="light" />
+        <GlobalChatBox />
+        <VideoCallPopup />
+        {(callActive || incomingCall) && <VideoPlayer />}
+      </BrowserRouter>
+    </>
+  );
+}
+
+// ✅ Bọc provider + gọi AppRoutes bên trong AppContent
+function AppContent() {
+  const { user } = useAuth();
+  return (
+    <VideoCallProvider userId={user?._id}>
+      <AppRoutes />
+    </VideoCallProvider>
+  );
+}
+
+// ✅ Gốc của ứng dụng
 function App() {
   return (
     <AuthProvider>
       <SocketProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/verify-otp" element={<VerifyEmail />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/google/callback" element={<GoogleCallback />} />
-            <Route path="/dichvu/baidoxe" element={<ParkingRegistration />} />
-            <Route path="/dichvu/dangkybaidoxe" element={<FormParkingRegistration />} />
-            <Route path="/parkinglot/detail-parkinglot/:id" element={<ParkingRegistrationDetails />} />
-            <Route path="/dichvu/dangtin" element={<RegistrationForm />} />
-            <Route path="/profile/quanlipostcustomer" element={<CustomerPostManagement />} />
-            <Route path="/blog" element={<BlogList />} />
-            <Route path="/my-apartment" element={<MyApartment />} />
-            <Route path="/postdetail/:id" element={<PostDetail />} />
-            <Route path="/canho/nhaukhau" element={<ResidentList />} />
-            <Route path="/canho/dangkynhankhau" element={<ResidentRegister />} />
-            <Route path="/residents/:id" element={<ResidentDetail />} />
-
-            {/* Route được bảo vệ (chỉ admin mới vào được) */}
-            {<Route
-              path="/admin-dashboard"
-              element={
-                <ProtectedRoute
-                  element={<DashboardHome />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />}
-            {
-              <Route
-                path="/admin-dashboard/posts"
-                element={
-                  <ProtectedRoute
-                    element={<PostManagement />}
-                    allowedRoles={["admin"]}
-                  />
-                }
-              />
-            }
-            {<Route
-              path="/admin-dashboard/manage-staff"
-              element={
-                <ProtectedRoute
-                  element={<ManageStaff />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />}
-            {<Route
-              path="/admin-dashboard/manage-user"
-              element={
-                <ProtectedRoute
-                  element={<ManageUser />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />}
-            <Route
-              path="/admin-dashboard/manage-apartment"
-              element={
-                <ProtectedRoute
-                  element={<ManageApartment />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />
-            {<Route
-              path="/admin-dashboard/manage-staff"
-              element={
-                <ProtectedRoute
-                  element={<ManageStaff />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />}
-            <Route
-              path="/admin-dashboard/manage-resident-verification"
-              element={
-                <ProtectedRoute
-                  element={<ManageApplicationForm />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />
-            {<Route
-              path="/admin-dashboard/resident-verify-admin"
-              element={
-                <ProtectedRoute
-                  element={<AdminResidentApproval />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />}
-            {<Route
-              path="/admin-dashboard/report"
-              element={
-                <ProtectedRoute
-                  element={<AdminReportPage />}
-                  allowedRoles={["admin"]}
-                />
-              }
-            />}
-            {/* Route được bảo vệ staff mới được vào */}
-            {<Route
-              path="/staff-dashboard"
-              element={
-                <ProtectedRoute
-                  element={<DashboardPage />}
-                  allowedRoles={["staff"]}
-                />
-              }
-            />}
-            {<Route
-              path="/manage-expenses"
-              element={
-                <ProtectedRoute
-                  element={<ManageExpense />}
-                  allowedRoles={["staff"]}
-                />
-              }
-            />}
-            <Route
-              path="/resident-verify"
-              element={
-                <ProtectedRoute
-                  element={<ResidentVerifyList />}
-                  allowedRoles={["staff"]}
-                />
-              }
-            />
-            <Route
-              path="/residentVerification"
-              element={
-                <ProtectedRoute
-                  element={<ResidentVerificationForm />}
-                  allowedRoles={["staff"]}
-                />
-              }
-            />
-            <Route
-              path="/listresidentVerification"
-              element={
-                <ProtectedRoute
-                  element={<ResidentVerificationList />}
-                  allowedRoles={["staff"]}
-                />
-              }
-            />
-            <Route
-              path="/manage-parkinglot"
-              element={
-                <ProtectedRoute
-                  element={<ManageParkingLot />}
-                  allowedRoles={["staff"]}
-                />
-              }
-            />
-            <Route
-              path="/parkinglot-list"
-              element={
-                <ProtectedRoute
-                  element={<ParkingLotList />}
-                  allowedRoles={["staff"]}
-                />
-              }
-            />
-          </Routes>
-          <SocketListener />
-          {/* ✅ Thêm ToastContainer để bật thông báo realtime */}
-          <ToastContainer
-            position="top-right"
-            autoClose={1500}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            theme="light" // hoặc "dark"
-          />
-        </BrowserRouter>
+        <ChatProvider>
+          <AppContent />
+        </ChatProvider>
       </SocketProvider>
     </AuthProvider>
   );
