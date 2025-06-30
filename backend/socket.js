@@ -51,19 +51,32 @@ export const initSocket = (serverIO) => {
       }
     });
     // ✉️ Gửi tin nhắn
-    socket.on("sendMessage", ({ senderId, receiverId, content, _id, timestamp }) => {
+    socket.on("sendMessage", (data) => {
+      const {
+        _id,
+        senderId,
+        receiverId,
+        content,
+        timestamp,
+        type = "text", // hỗ trợ cả message dạng "missed-call"
+      } = data;
+    
       const roomId = [senderId, receiverId].sort().join("_");
-
+    
       const payload = {
         _id,
         senderId,
         receiverId,
         content,
-        timestamp: timestamp || new Date(),
+        timestamp: timestamp || new Date().toISOString(),
+        type,
       };
-
-      io.to(roomId).emit("receiveMessage", payload);
+    
+      console.log("📤 Gửi message tới phòng:", roomId, payload);
+    
+      io.to(roomId).emit("receiveMessage", payload); // realtime gửi về cả 2 người
     });
+    
 
     // 🔌 Ngắt kết nối
     socket.on("disconnect", () => {

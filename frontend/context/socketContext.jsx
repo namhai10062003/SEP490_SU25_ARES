@@ -19,6 +19,7 @@ const SocketProvider = ({ children }) => {
         if (user?._id) {
             socketRef.current = io("http://localhost:4000");
             socketRef.current.emit("register", user._id);
+            socketRef.current.emit("register-user", user._id);
             setSocketConnected(true);
         } else {
             setSocketConnected(false);
