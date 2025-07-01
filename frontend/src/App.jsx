@@ -14,27 +14,14 @@ import VideoCallPopup from "./pages/user/messages/VideoCallPopup";
 
 // Các trang
 import Home from "./home/home";
-import BlogList from "./pages/user/BlogList/BlogList.jsx";
-import PostDetail from "./pages/user/BlogList/BlogListDetail";
 import DashboardHome from "./pages/admin/DashboardHome.jsx";
-import CustomerPostManagement from "./pages/user/MangementPostByCustomer/CustomerPostManagement.jsx";
-import RegistrationForm from "./pages/user/PostRegistration/registrationForm.jsx";
-import ResidentDetail from "./pages/user/Residentpeople/residentDetail";
-import ResidentRegister from "./pages/user/Residentpeople/residentRegister";
-import ResidentList from "./pages/user/Residentpeople/residentpeople";
-import AdminReportPage from "./pages/admin/report/AdminReportPage";
-import AdminResidentApproval from "./pages/admin/residentVerifyByAdmin/AdminResidentApproval";
-import ForgotPassword from "./pages/user/forgotpassword";
-import GoogleCallback from "./pages/user/google-callback.jsx";
-import Login from "./pages/user/login.jsx";
+import PostManagement from "./pages/admin/ManagementPost/PostManagement.jsx";
 import ManageApartment from "./pages/admin/manage-apartment.jsx";
 import ManageApplicationForm from "./pages/admin/manage-application-form.jsx";
 import ManageStaff from "./pages/admin/manage-staff.jsx";
 import ManageUser from "./pages/admin/manage-user.jsx";
-import MyApartment from "./pages/user/manageUserApartment/MyApartment.jsx";
-import Register from "./pages/user/register.jsx";
-import ResetPassword from "./pages/user/resetpassword";
-import PostManagement from "./pages/admin/ManagementPost/PostManagement.jsx";
+import AdminReportPage from "./pages/admin/report/AdminReportPage";
+import AdminResidentApproval from "./pages/admin/residentVerifyByAdmin/AdminResidentApproval";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
 import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
 import ResidentVerifyList from "./pages/staff/ResidentVerify/residentVerifyList";
@@ -42,13 +29,30 @@ import DashboardPage from "./pages/staff/dashboardStatistics";
 import ManageExpense from "./pages/staff/manageExpense.jsx";
 import ManageParkingLot from "./pages/staff/manageParkingLot/manageParkinglot";
 import ParkingLotList from "./pages/staff/manageParkingLot/parkinglot-list";
-import VerifyEmail from "./pages/user/verify-otp.jsx";
-import ChangePassword from "./pages/user/profile/ChangePassword";
-import Profile from "./pages/user/profile/profile";
-import UpdateProfileForm from "./pages/user/profile/updateProfile";
+import BlogList from "./pages/user/BlogList/BlogList.jsx";
+import PostDetail from "./pages/user/BlogList/BlogListDetail";
+import CustomerPostManagement from "./pages/user/MangementPostByCustomer/CustomerPostManagement.jsx";
+import RegistrationForm from "./pages/user/PostRegistration/registrationForm.jsx";
+import ResidentDetail from "./pages/user/Residentpeople/residentDetail";
+import ResidentRegister from "./pages/user/Residentpeople/residentRegister";
+import ResidentList from "./pages/user/Residentpeople/residentpeople";
+import BookingForm from "./pages/user/booking/BookingForm.jsx";
+import ContractDetail from "./pages/user/booking/ContractDetail.jsx";
+import MyContractRequests from "./pages/user/booking/MyContractRequests.jsx";
+import MyContracts from "./pages/user/booking/myContract.jsx";
+import ForgotPassword from "./pages/user/forgotpassword";
+import GoogleCallback from "./pages/user/google-callback.jsx";
+import Login from "./pages/user/login.jsx";
+import MyApartment from "./pages/user/manageUserApartment/MyApartment.jsx";
 import FormParkingRegistration from "./pages/user/parkingRegistration/formParkingRegistation";
 import ParkingRegistrationDetails from "./pages/user/parkingRegistration/parkingRegistartionDetail";
 import ParkingRegistration from "./pages/user/parkingRegistration/parkingRegistration";
+import ChangePassword from "./pages/user/profile/ChangePassword";
+import Profile from "./pages/user/profile/profile";
+import UpdateProfileForm from "./pages/user/profile/updateProfile";
+import Register from "./pages/user/register.jsx";
+import ResetPassword from "./pages/user/resetpassword";
+import VerifyEmail from "./pages/user/verify-otp.jsx";
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
@@ -88,7 +92,10 @@ function AppRoutes() {
           <Route path="/updateprofile" element={<UpdateProfileForm/>} />
           <Route path="/profile" element={<Profile/>} />
           <Route path="/changepassword" element={<ChangePassword/>} />
-
+          <Route path="/booking/:postId" element={<BookingForm />} />
+          <Route path="/my-contracts" element={<MyContracts />} />
+          <Route path="/my-requests" element={<MyContractRequests/>} />
+          <Route path="/contracts/:id" element={<ContractDetail />} />
           {/* Admin */}
           <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/posts" element={<ProtectedRoute element={<PostManagement />} allowedRoles={["admin"]} />} />

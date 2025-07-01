@@ -1,7 +1,7 @@
+import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { FiBell } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import "./Header.css";
 import Navbar from "./navbar";
 
@@ -303,6 +303,24 @@ const Header = ({ user, name, logout }) => {
                         Căn hộ của tôi
                       </Link>
                     </li>
+                    <li>
+  <Link
+    to="/my-contracts"
+    style={{ display: "block", padding: "10px 16px", color: "#333", textDecoration: "none" }}
+    onClick={() => setShowProfileDropdown(false)}
+  >
+    📄 Quản lý hợp đồng của tôi
+  </Link>
+</li>
+<li>
+  <Link
+    to="/my-requests"
+    style={{ display: "block", padding: "10px 16px", color: "#333", textDecoration: "none" }}
+    onClick={() => setShowProfileDropdown(false)}
+  >
+    📥 Yêu cầu của tôi
+  </Link>
+</li>
                     <li>
                       <Link
                         to="/profile/quanlipostcustomer"

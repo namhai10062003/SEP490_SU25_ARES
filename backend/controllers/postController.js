@@ -169,7 +169,7 @@ export const getPostDetail = async (req, res) => {
   
       // 2️⃣ Truy vấn đúng ID
       const post = await Post.findById(id)
-        .populate("contactInfo", "name email phone")
+        .populate("contactInfo", "name email phone identityNumber address")
         .populate("postPackage", "type price expireAt")
         .lean();
   

@@ -248,6 +248,9 @@ const verifyUser = async (req, res) => {
           name: user.name,
           role: user.role,
           email: user.email,
+          identityNumber: user.identityNumber,
+          address: user.address,
+          phone : user.phone
         },
       });
     }

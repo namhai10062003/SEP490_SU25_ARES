@@ -9,6 +9,7 @@ import connectToDatabase from "./db/db.js";
 import adminDashboardRoutes from "./router/adminDashboardRoutes.js";
 import apartmentRouter from "./router/apartmentRoutes.js";
 import authRouter from "./router/auth.js";
+import contractRouter from "./router/contractRouter.js";
 import expenseRoutes from "./router/expenseRoutes.js";
 import interationRouter from "./router/interactions.js";
 import messageRoutes from "./router/messageRoutes.js";
@@ -79,6 +80,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/interaction", interationRouter);
 app.use("/api/messages", messageRoutes);
+app.use("/api/contracts", contractRouter);
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);

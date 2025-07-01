@@ -29,7 +29,7 @@ const verifysUser = async (req, res, next) => {
 
         // Attach the user to the request object
         req.user = user;
-
+        
         // Proceed to the next middleware
         next();
     } catch (error) {
