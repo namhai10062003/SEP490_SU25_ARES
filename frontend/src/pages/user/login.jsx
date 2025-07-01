@@ -2,12 +2,8 @@ import { useEffect, useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-<<<<<<< HEAD:frontend/src/pages/login.jsx
-import { useAuth } from "../../context/authContext";
-=======
 import { useAuth } from "../../../context/authContext";
 import "./login.css";
->>>>>>> 87f5e442486a779e0265ff2f5697e8abb57669dd:frontend/src/pages/user/login.jsx
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
