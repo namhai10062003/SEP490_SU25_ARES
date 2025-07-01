@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import socket from '../../../server/socket';
-import './ManageParkingLot.css';
 
 const ManageParkingLot = () => {
   const [parkingRequests, setParkingRequests] = useState([]);
@@ -13,7 +12,6 @@ const ManageParkingLot = () => {
   useEffect(() => {
     isMountedRef.current = true;
 
-    // Socket listener để cập nhật trạng thái realtime
     socket.on('parkingStatusUpdated', ({ id, status }) => {
       if (isMountedRef.current) {
         setParkingRequests((prevList) =>
@@ -57,21 +55,18 @@ const ManageParkingLot = () => {
 
       const responseData = await res.json();
       const rawList = Array.isArray(responseData.data) ? responseData.data : [];
-      console.log('✅ Dữ liệu fetch về:', rawList);
-
 
       const mappedList = rawList
-  .filter((item) => item['trạngThái'] === 'pending')
-  .map((item) => ({
-    _id: item.id,
-    apartmentCode: item['mãCănHộ'],
-    owner: item['tênChủSởHữu'],
-    licensePlate: item['biểnSốXe'],
-    vehicleType: item['loạiXe'],
-    registerDate: item['ngàyĐăngKý'],
-    status: item['trạngThái'] || 'pending', // Cập nhật theo key backend
-  }));
-      console.log('✅ Sau khi lọc pending:', mappedList);
+        .filter((item) => item['trạngThái'] === 'pending')
+        .map((item) => ({
+          _id: item.id,
+          apartmentCode: item['mãCănHộ'],
+          owner: item['tênChủSởHữu'],
+          licensePlate: item['biểnSốXe'],
+          vehicleType: item['loạiXe'],
+          registerDate: item['ngàyĐăngKý'],
+          status: item['trạngThái'] || 'pending',
+        }));
       if (isMountedRef.current) setParkingRequests(mappedList);
     } catch (err) {
       if (isMountedRef.current)
@@ -117,88 +112,91 @@ const ManageParkingLot = () => {
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('vi-VN'); 
+    return date.toLocaleDateString('vi-VN');
   };
 
   return (
-    <div className="layout">
-      <aside className="sidebar">
-        <h2 className="sidebar-title">BẢN QUẢN LÝ</h2>
-        <nav className="sidebar-menu">
-          <ul>
-            <li><Link to="/staff-dashboard">Dashboard</Link></li>
-            <li><Link to="/posts">Quản lý bài post</Link></li>
-            <li><Link to="/real-estate">Quản lý bất động sản</Link></li>
-            <li className="has-submenu">
-  <span>Quản lý bãi đỗ xe ▾</span>
-  <ul className="submenu">
-    <li><Link to="/parkinglot-list">Danh sách bãi đỗ xe</Link></li>
-    <li><Link to="/manage-parkinglot">Quản lý yêu cầu gửi xe</Link></li>
-  </ul>
-</li>
-            <li><Link to="/expenses">Quản lý chi phí</Link></li>
-            <li><Link to="/residentVerification">Quản lý người dùng</Link></li>
-            <li><Link to="/revenue">Quản lý doanh thu</Link></li>
-            <li><Link to="/login">Đăng Xuất</Link></li>
+    <div className="d-flex min-vh-100 bg-light">
+      {/* Sidebar */}
+      <aside className="bg-primary text-white p-4" style={{ minWidth: 240 }}>
+        <h2 className="fw-bold mb-4 text-warning text-center">BẢN QUẢN LÝ</h2>
+        <nav>
+          <ul className="nav flex-column gap-2">
+            <li className="nav-item"><Link to="/staff-dashboard" className="nav-link text-white">Dashboard</Link></li>
+            <li className="nav-item"><Link to="/posts" className="nav-link text-white">Quản lý bài post</Link></li>
+            <li className="nav-item"><Link to="/real-estate" className="nav-link text-white">Quản lý bất động sản</Link></li>
+            <li className="nav-item">
+              <span className="nav-link text-white fw-bold">Quản lý bãi đỗ xe ▼</span>
+              <ul className="nav flex-column ms-3">
+                <li className="nav-item"><Link to="/parkinglot-list" className="nav-link text-white">Danh sách bãi đỗ xe</Link></li>
+                <li className="nav-item"><Link to="/manage-parkinglot" className="nav-link text-primary fw-bold bg-white">Quản lý yêu cầu gửi xe</Link></li>
+              </ul>
+            </li>
+            <li className="nav-item"><Link to="/expenses" className="nav-link text-white">Quản lý chi phí</Link></li>
+            <li className="nav-item"><Link to="/residentVerification" className="nav-link text-white">Quản lý người dùng</Link></li>
+            <li className="nav-item"><Link to="/revenue" className="nav-link text-white">Quản lý doanh thu</Link></li>
+            <li className="nav-item"><Link to="/login" className="nav-link text-white">Đăng Xuất</Link></li>
           </ul>
         </nav>
       </aside>
 
-      <main className="dashboard-container">
-        <div className="manage-parking-lot">
-          <h2>Quản lý yêu cầu gửi xe</h2>
-
-          <table className="parking-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Căn hộ</th>
-                <th>Chủ xe</th>
-                <th>Biển số</th>
-                <th>Loại xe</th>
-                <th>Ngày đăng ký</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {parkingRequests.length > 0 ? (
-                parkingRequests.map((item, idx) => (
-                  <tr key={item._id}>
-                    <td>{idx + 1}</td>
-                    <td>{item.apartmentCode}</td>
-                    <td>{item.owner}</td>
-                    <td>{item.licensePlate}</td>
-                    <td>{item.vehicleType}</td>
-                    <td>{formatDate(item.registerDate)}</td>
-                    <td>
-                      {role === 'staff' ? (
-                        <>
-                          <button
-                            onClick={() => handleStatusChange(item._id, 'approve')}
-                            className="approve-btn"
-                          >
-                            Phê duyệt
-                          </button>
-                          <button
-                            onClick={() => handleStatusChange(item._id, 'reject')}
-                            className="reject-btn"
-                          >
-                            Từ chối
-                          </button>
-                        </>
-                      ) : (
-                        <i>Chỉ xem</i>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              ) : (
+      {/* Main content */}
+      <main className="flex-grow-1 p-4">
+        <div className="bg-white rounded-4 shadow p-4 mb-4">
+          <h2 className="fw-bold mb-3">Quản lý yêu cầu gửi xe</h2>
+          <div className="table-responsive">
+            <table className="table table-bordered align-middle bg-white rounded-4 shadow">
+              <thead className="table-primary">
                 <tr>
-                  <td colSpan="7">Không có yêu cầu nào.</td>
+                  <th>#</th>
+                  <th>Căn hộ</th>
+                  <th>Chủ xe</th>
+                  <th>Biển số</th>
+                  <th>Loại xe</th>
+                  <th>Ngày đăng ký</th>
+                  <th>Hành động</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {parkingRequests.length > 0 ? (
+                  parkingRequests.map((item, idx) => (
+                    <tr key={item._id}>
+                      <td>{idx + 1}</td>
+                      <td>{item.apartmentCode}</td>
+                      <td>{item.owner}</td>
+                      <td>{item.licensePlate}</td>
+                      <td>{item.vehicleType}</td>
+                      <td>{formatDate(item.registerDate)}</td>
+                      <td>
+                        {role === 'staff' ? (
+                          <div className="d-flex gap-2">
+                            <button
+                              onClick={() => handleStatusChange(item._id, 'approve')}
+                              className="btn btn-success btn-sm"
+                            >
+                              Phê duyệt
+                            </button>
+                            <button
+                              onClick={() => handleStatusChange(item._id, 'reject')}
+                              className="btn btn-danger btn-sm"
+                            >
+                              Từ chối
+                            </button>
+                          </div>
+                        ) : (
+                          <i>Chỉ xem</i>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="text-center">Không có yêu cầu nào.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
     </div>

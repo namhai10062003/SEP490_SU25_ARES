@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Legend } from "recharts";
 import AdminDashboard from "./adminDashboard";
-// import "./adminDashboard.css"; // dùng chung CSS với admin layout
 
 const data = [
   { name: "Tháng 1", value: 10000 },
@@ -47,74 +46,96 @@ export default function DashboardHome() {
 
   return (
     <AdminDashboard>
-      <div className="adminx-main">
-        <h3>Dashboard tổng hợp</h3>
+      <div className="container-fluid px-0">
+        <h3 className="mb-4 fw-bold">Dashboard tổng hợp</h3>
 
-        <div className="adminx-stats">
-          <div className="adminx-card">
-            <h6>🔢 Tổng Apartment</h6>
-            <p className="adminx-stat-value">{stats.apartments}</p>
+        {/* Stats Cards */}
+        <div className="row g-4 mb-4">
+          <div className="col-12 col-md-4">
+            <div className="card shadow-sm border-0 text-center h-100">
+              <div className="card-body">
+                <h6 className="mb-2">🔢 Tổng Apartment</h6>
+                <div className="fs-2 fw-bold text-primary">{stats.apartments}</div>
+              </div>
+            </div>
           </div>
-          <div className="adminx-card">
-            <h6>👥 Tổng User</h6>
-            <p className="adminx-stat-value">{stats.customers}</p>
+          <div className="col-12 col-md-4">
+            <div className="card shadow-sm border-0 text-center h-100">
+              <div className="card-body">
+                <h6 className="mb-2">👥 Tổng User</h6>
+                <div className="fs-2 fw-bold text-primary">{stats.customers}</div>
+              </div>
+            </div>
           </div>
-          <div className="adminx-card">
-            <h6>🧑‍💼 Tổng Staff</h6>
-            <p className="adminx-stat-value">{stats.staffs}</p>
+          <div className="col-12 col-md-4">
+            <div className="card shadow-sm border-0 text-center h-100">
+              <div className="card-body">
+                <h6 className="mb-2">🧑‍💼 Tổng Staff</h6>
+                <div className="fs-2 fw-bold text-primary">{stats.staffs}</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="adminx-dashboard-sections">
-          <div className="adminx-revenue">
-            <div className="adminx-filter">
-              <h6>📊 Thống kê doanh thu</h6>
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-              >
-                <option value="2024">2024</option>
-                <option value="2023">2023</option>
-              </select>
+        {/* Revenue Table & Chart */}
+        <div className="row g-4">
+          <div className="col-12 col-lg-6">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <h6 className="mb-0">📊 Thống kê doanh thu</h6>
+                  <select
+                    className="form-select w-auto"
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                  >
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                  </select>
+                </div>
+                <table className="table table-striped table-hover mb-0">
+                  <thead>
+                    <tr>
+                      <th>Tháng</th>
+                      <th>Doanh thu ($)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.name}</td>
+                        <td>{item.value.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-            <table className="table table-dark table-striped">
-              <thead>
-                <tr>
-                  <th>Tháng</th>
-                  <th>Doanh thu ($)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.map((item, index) => (
-                  <tr key={index}>
-                    <td>{item.name}</td>
-                    <td>{item.value.toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
-
-          <div className="adminx-chart">
-            <h6>📈 Biểu đồ doanh thu</h6>
-            <PieChart width={300} height={300}>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {data.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Legend />
-            </PieChart>
+          <div className="col-12 col-lg-6">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body d-flex flex-column align-items-center">
+                <h6 className="mb-3">📈 Biểu đồ doanh thu</h6>
+                <PieChart width={300} height={300}>
+                  <Pie
+                    data={data}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {data.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <Legend />
+                </PieChart>
+              </div>
+            </div>
           </div>
         </div>
       </div>

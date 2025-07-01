@@ -2,7 +2,7 @@ import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import { useVideoCall } from "../../../../context/VideoCallContext";
-
+import { sendMessageWithSocket } from "./utils/sendMessageWithSocket";
 const socket = io("http://localhost:4000", { withCredentials: true });
 
 const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
@@ -12,24 +12,55 @@ const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
   const { callUser } = useVideoCall(); // ✅ dùng đúng tên từ context
 
   // Hàm xử lý nhận tin nhắn
-  const handleReceive = (msg) => {
-    console.log("📩 [SOCKET] Nhận tin nhắn:", msg);
-
-    if (msg.fromSelf) return;
-
+  const handleReceive = (rawMsg) => {
+    console.log("📩 [SOCKET] Nhận tin nhắn:", rawMsg);
+  
+    const msg = {
+      _id: rawMsg._id || Math.random().toString(36).substring(7),
+      senderId: rawMsg.senderId || rawMsg.sender,
+      receiverId: rawMsg.receiverId || rawMsg.receiver,
+      content: rawMsg.content,
+      timestamp: rawMsg.timestamp || rawMsg.createdAt || new Date(),
+      type: rawMsg.type || "text",
+    };
+  
     const isValid =
       (msg.senderId === receiverId && msg.receiverId === currentUserId) ||
       (msg.senderId === currentUserId && msg.receiverId === receiverId);
-
-    if (!isValid) return;
-
+  
+    if (!isValid) {
+      console.log("⛔ Không đúng người, bỏ qua:", msg);
+      return;
+    }
+  
     setMessages((prev) => {
-      if (prev.find((m) => m._id === msg._id || m.content === msg.content)) {
+      const existed = prev.find(
+        (m) =>
+          m._id === msg._id ||
+          (
+            m.content === msg.content &&
+            m.senderId === msg.senderId &&
+            new Date(m.timestamp).getTime() === new Date(msg.timestamp).getTime()
+          )
+      );
+  
+      if (existed) {
+        console.log("⚠️ Tin nhắn trùng, không thêm lại.");
         return prev;
       }
+  
+      console.log("✅ Thêm tin nhắn mới:", msg);
       return [...prev, msg];
     });
   };
+  
+  
+// ✅ Socket listener chỉ đăng ký 1 lần duy nhất
+useEffect(() => {
+  socket.on("receiveMessage", handleReceive);
+  return () => socket.off("receiveMessage", handleReceive);
+}, []);
+
 
   useEffect(() => {
     if (!currentUserId || !receiverId) return;
@@ -40,9 +71,12 @@ const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
       try {
         const res = await axios.get(`http://localhost:4000/api/messages/${currentUserId}/${receiverId}`);
         const normalized = res.data.data.map((msg) => ({
-          ...msg,
+          _id: msg._id,
           senderId: msg.sender,
           receiverId: msg.receiver,
+          content: msg.content,
+          timestamp: msg.createdAt,
+          type: msg.type || "text",
         }));
         setMessages(normalized);
       } catch (err) {
@@ -61,30 +95,16 @@ const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
   }, [currentUserId, receiverId]);
 
   const sendMessage = async () => {
-    if (!text.trim() || currentUserId === receiverId) return;
-
-    const message = {
+    await sendMessageWithSocket({
       senderId: currentUserId,
       receiverId,
       content: text,
-    };
-
-    try {
-      const res = await axios.post("http://localhost:4000/api/messages", message);
-      const newMsg = {
-        ...res.data.data,
-        senderId: currentUserId,
-        receiverId,
-        fromSelf: true,
-      };
-      socket.emit("sendMessage", newMsg);
-      setText("");
-      setMessages((prev) => [...prev, newMsg]); // thêm vào local luôn
-    } catch (err) {
-      console.error("❌ Gửi tin nhắn thất bại:", err);
-    }
+      socket,
+      setMessages,
+      setText,
+    });
   };
-
+  
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);

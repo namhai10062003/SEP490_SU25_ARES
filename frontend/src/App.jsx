@@ -4,6 +4,11 @@ import "react-toastify/dist/ReactToastify.css";
 
 import { ChatProvider } from "../context/ChatContext.jsx";
 import { VideoCallProvider, useVideoCall } from "../context/VideoCallContext.jsx";
+// index.js hoặc App.js
+// import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+
 import AuthProvider, { useAuth } from "../context/authContext";
 import SocketProvider from "../context/socketContext";
 
@@ -96,6 +101,7 @@ function AppRoutes() {
           <Route path="/my-contracts" element={<MyContracts />} />
           <Route path="/my-requests" element={<MyContractRequests/>} />
           <Route path="/contracts/:id" element={<ContractDetail />} />
+
           {/* Admin */}
           <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/posts" element={<ProtectedRoute element={<PostManagement />} allowedRoles={["admin"]} />} />
@@ -144,7 +150,7 @@ function App() {
       <SocketProvider>
         <ChatProvider>
           <AppContent />
-        </ChatProvider>  
+        </ChatProvider>
       </SocketProvider>
     </AuthProvider>
   );
