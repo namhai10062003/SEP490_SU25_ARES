@@ -8,7 +8,7 @@ import {
   FaRulerCombined,
   FaStar,
 } from "react-icons/fa";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../../components/header.jsx";
 import { useChat } from "../../../../context/ChatContext.jsx"; // THÊM
@@ -41,6 +41,7 @@ const PostDetail = () => {
   const [showComments, setShowComments] = useState(false);
   const [showReport, setShowReport] = useState(false);
   // const [showChat, setShowChat] = useState(false);
+  const navigate = useNavigate();
   const { setReceiver } = useChat(); // THÊM
   useEffect(() => setName(user?.name || null), [user]);
 // hàm fetch data bài post chi tiết 
@@ -308,7 +309,7 @@ useEffect(() => {
 
 
               <p>📧 {post.contactInfo?.email}</p>
-              <p>📱 {post.contactInfo?.phone}</p>
+              {/* <p>📱 {post.contactInfo?.phone}</p> */}
               {user && post.contactInfo?.userId && (
   <div>
     <span
@@ -331,7 +332,12 @@ useEffect(() => {
     </span>
   </div>
 )}
-
+<button
+  style={{ ...styles.contactBtn, backgroundColor: "#27ae60" }}
+  onClick={() => navigate(`/booking/${post._id}`)}
+>
+  📄 Đặt chỗ
+</button>
             </div>
 
           </div>

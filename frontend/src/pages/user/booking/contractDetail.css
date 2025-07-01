@@ -1,0 +1,42 @@
+.contract-detail-container {
+    padding: 20px;
+    width: 200vh;
+  }
+  
+  .contract-detail-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .contract-detail-box {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 20px;
+    line-height: 1.8;
+  }
+  
+  .back-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #aaa;
+    color: white;
+    border: none;
+    border-radius: 4px;
+  }
+  .status-approved {
+    color: green;
+    font-weight: bold;
+  }
+  .status-rejected {
+    color: red;
+    font-weight: bold;
+  }
+  .status-expired {
+    color: gray;
+    font-weight: bold;
+  }
+  .status-pending {
+    color: orange;
+    font-weight: bold;
+  }
+  

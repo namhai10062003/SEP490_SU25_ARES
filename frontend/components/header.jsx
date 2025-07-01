@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { FiBell } from "react-icons/fi";
 import { Link } from "react-router-dom";
@@ -217,6 +218,16 @@ const Header = ({ user, name, logout }) => {
                   <li>
                     <Link className="dropdown-item" to="/my-apartment" onClick={() => setShowProfileDropdown(false)}>
                       Căn hộ của tôi
+                    </Link>
+                  </li>
+                   <li>
+                    <Link className="dropdown-item" to="/my-contracts" onClick={() => setShowProfileDropdown(false)}>
+                      Quản lí hợp đồng
+                    </Link>
+                  </li>
+                    <li>
+                    <Link className="dropdown-item" to="/my-requests" onClick={() => setShowProfileDropdown(false)}>
+                     Quản Lí Yêu Cầu 
                     </Link>
                   </li>
                   <li>
