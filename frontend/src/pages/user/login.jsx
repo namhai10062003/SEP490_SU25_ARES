@@ -3,7 +3,6 @@ import { FcGoogle } from "react-icons/fc";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../../../context/authContext";
-import "./login.css";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
