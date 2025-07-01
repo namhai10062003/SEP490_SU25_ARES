@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import './residentVerifyList.css';
 
 const ResidentVerifyList = () => {
   const [residents, setResidents] = useState([]);
@@ -89,94 +88,115 @@ const ResidentVerifyList = () => {
   };
 
   return (
-    <div className="layout">
-      <aside className="sidebar">
-        <h2 className="sidebar-title">BẢN QUẢN LÝ</h2>
-        <nav className="sidebar-menu">
-          <ul>
-            <li><Link to="/staff-dashboard">Dashboard</Link></li>
-            <li><Link to="/posts">Quản lý bài post</Link></li>
-            <li><Link to="/real-estate">Quản lý bất động sản</Link></li>
-            <li><Link to="/manage-parkinglot">Quản lý bãi đỗ xe</Link></li>
-            <li><Link to="/expenses">Quản lý chi phí</Link></li>
-            <li><Link to="/residentVerification">Quản lý người dùng</Link></li>
-            <li><Link to="/resident-verify" className="active">Quản lý nhân khẩu</Link></li>
-            <li><Link to="/revenue">Quản lý doanh thu</Link></li>
-            <li><Link to="/login">Đăng Xuất</Link></li>
+    <div className="bg-light min-vh-100 d-flex">
+      {/* Sidebar */}
+      <aside className="bg-primary text-white p-4" style={{ minWidth: 240, minHeight: "100vh" }}>
+        <h2 className="fw-bold mb-4 text-warning text-center">BẢN QUẢN LÝ</h2>
+        <nav>
+          <ul className="nav flex-column gap-2">
+            <li className="nav-item"><Link to="/staff-dashboard" className="nav-link text-white">Dashboard</Link></li>
+            <li className="nav-item"><Link to="/posts" className="nav-link text-white">Quản lý bài post</Link></li>
+            <li className="nav-item"><Link to="/real-estate" className="nav-link text-white">Quản lý bất động sản</Link></li>
+            <li className="nav-item"><Link to="/manage-parkinglot" className="nav-link text-white">Quản lý bãi đỗ xe</Link></li>
+            <li className="nav-item"><Link to="/expenses" className="nav-link text-white">Quản lý chi phí</Link></li>
+            <li className="nav-item"><Link to="/residentVerification" className="nav-link text-white">Quản lý người dùng</Link></li>
+            <li className="nav-item"><Link to="/resident-verify" className="nav-link active bg-white text-primary fw-bold">Quản lý nhân khẩu</Link></li>
+            <li className="nav-item"><Link to="/revenue" className="nav-link text-white">Quản lý doanh thu</Link></li>
+            <li className="nav-item"><Link to="/login" className="nav-link text-white">Đăng Xuất</Link></li>
           </ul>
         </nav>
       </aside>
 
-      <main className="resident-verify-container">
-        <h2 className="resident-verify-title">Danh sách nhân khẩu chờ xác minh</h2>
+      {/* Main content */}
+      <main className="flex-grow-1 p-4">
+        <h2 className="fw-bold mb-4 text-center text-primary">Danh sách nhân khẩu chờ xác minh</h2>
 
         {loading ? (
-          <p>Đang tải dữ liệu...</p>
+          <div className="d-flex align-items-center justify-content-center py-5">
+            <div className="spinner-border text-primary me-2"></div>
+            <span>Đang tải dữ liệu...</span>
+          </div>
         ) : residents.length === 0 ? (
-          <p>Không có nhân khẩu nào cần xác minh.</p>
+          <p className="text-center">Không có nhân khẩu nào cần xác minh.</p>
         ) : (
-          <table className="resident-verify-table">
-            <thead>
-              <tr>
-                <th>Họ tên</th>
-                <th>Căn hộ</th>
-                <th>Giới tính</th>
-                <th>Ngày sinh</th>
-                <th>Quan hệ</th>
-                <th>Quốc tịch</th>
-                <th>CCCD</th>
-                <th>Ngày cấp</th>
-                <th>Ảnh CCCD</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              {residents.map((r) => (
-                <tr key={r._id}>
-                  <td>{r.fullName}</td>
-                  <td>{r.apartmentId?.apartmentCode || '---'}</td>
-                  <td>{r.gender}</td>
-                  <td>{r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString('vi-VN') : ''}</td>
-                  <td>{r.relationWithOwner}</td>
-                  <td>{r.nationality}</td>
-                  <td>{r.idNumber}</td>
-                  <td>{r.issueDate ? new Date(r.issueDate).toLocaleDateString('vi-VN') : ''}</td>
-                  <td>
-                    {r.documentFront ? (
-                      <img
-                        src={r.documentFront}
-                        alt="front"
-                        className="thumb"
-                        onClick={() => openImage(r.documentFront)}
-                      />
-                    ) : '---'}
-                  </td>
-                  <td>
-                    <button className="btn-verify" onClick={() => handleVerify(r._id)}>Xác minh</button>
-                    <button className="btn-reject" onClick={() => setRejectId(r._id)}>Từ chối</button>
-                  </td>
+          <div className="table-responsive">
+            <table className="table table-bordered align-middle bg-white rounded-4 shadow">
+              <thead className="table-primary">
+                <tr>
+                  <th>Họ tên</th>
+                  <th>Căn hộ</th>
+                  <th>Giới tính</th>
+                  <th>Ngày sinh</th>
+                  <th>Quan hệ</th>
+                  <th>Quốc tịch</th>
+                  <th>CCCD</th>
+                  <th>Ngày cấp</th>
+                  <th>Ảnh CCCD</th>
+                  <th>Thao tác</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {residents.map((r) => (
+                  <tr key={r._id}>
+                    <td>{r.fullName}</td>
+                    <td>{r.apartmentId?.apartmentCode || '---'}</td>
+                    <td>{r.gender}</td>
+                    <td>{r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString('vi-VN') : ''}</td>
+                    <td>{r.relationWithOwner}</td>
+                    <td>{r.nationality}</td>
+                    <td>{r.idNumber}</td>
+                    <td>{r.issueDate ? new Date(r.issueDate).toLocaleDateString('vi-VN') : ''}</td>
+                    <td>
+                      {r.documentFront ? (
+                        <img
+                          src={r.documentFront}
+                          alt="front"
+                          style={{ width: 60, height: 40, objectFit: "cover", cursor: "pointer", borderRadius: 4, border: "1px solid #ccc" }}
+                          onClick={() => openImage(r.documentFront)}
+                        />
+                      ) : '---'}
+                    </td>
+                    <td>
+                      <button className="btn btn-success btn-sm mb-1 w-100" onClick={() => handleVerify(r._id)}>Xác minh</button>
+                      <button className="btn btn-danger btn-sm w-100" onClick={() => setRejectId(r._id)}>Từ chối</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
+        {/* Modal từ chối */}
         {rejectId && (
-          <div className="reject-modal">
-            <div className="modal-content">
-              <h3>Lý do từ chối</h3>
-              <textarea
-                rows="4"
-                placeholder="Nhập lý do từ chối..."
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-              />
-              <div className="modal-actions">
-                <button onClick={handleReject}>Gửi từ chối</button>
-                <button onClick={() => {
-                  setRejectId(null);
-                  setRejectReason('');
-                }}>Huỷ</button>
+          <div
+            className="modal fade show"
+            style={{ display: "block", background: "rgba(30,41,59,0.5)" }}
+            tabIndex={-1}
+            onClick={() => setRejectId(null)}
+          >
+            <div className="modal-dialog modal-dialog-centered" onClick={e => e.stopPropagation()}>
+              <div className="modal-content rounded-4">
+                <div className="modal-header">
+                  <h5 className="modal-title">Lý do từ chối</h5>
+                  <button type="button" className="btn-close" onClick={() => setRejectId(null)} />
+                </div>
+                <div className="modal-body">
+                  <textarea
+                    rows="4"
+                    className="form-control"
+                    placeholder="Nhập lý do từ chối..."
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                  />
+                </div>
+                <div className="modal-footer d-flex justify-content-end gap-2">
+                  <button className="btn btn-danger" onClick={handleReject}>Gửi từ chối</button>
+                  <button className="btn btn-secondary" onClick={() => {
+                    setRejectId(null);
+                    setRejectReason('');
+                  }}>Huỷ</button>
+                </div>
               </div>
             </div>
           </div>
