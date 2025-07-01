@@ -2,7 +2,6 @@ import { jwtDecode } from 'jwt-decode';
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import './manageParkinglot.css'; // Dùng lại CSS cũ
 
 const ParkingLotList = () => {
   const [parkingList, setParkingList] = useState([]);
@@ -25,7 +24,7 @@ const ParkingLotList = () => {
     }
 
     try {
-      jwtDecode(token); // kiểm tra token hợp lệ
+      jwtDecode(token);
       fetchParkingList(token);
       fetchSlotInfo(token);
     } catch (err) {
@@ -48,13 +47,13 @@ const ParkingLotList = () => {
       const filteredList = data
         .filter(item => item['trạngThái'] !== 'pending')
         .map(item => ({
-          _id:           item.id || Math.random(),
+          _id: item.id || Math.random(),
           apartmentCode: item['mãCănHộ'],
-          owner:         item['tênChủSởHữu'],
-          licensePlate:  item['biểnSốXe'],
-          vehicleType:   item['loạiXe'],
-          registerDate:  item['ngàyĐăngKý'],
-          status:        item['trạngThái'] || 'Không rõ',
+          owner: item['tênChủSởHữu'],
+          licensePlate: item['biểnSốXe'],
+          vehicleType: item['loạiXe'],
+          registerDate: item['ngàyĐăngKý'],
+          status: item['trạngThái'] || 'Không rõ',
         }));
 
       if (isMountedRef.current) {
@@ -87,97 +86,103 @@ const ParkingLotList = () => {
   };
 
   return (
-    <div className="layout">
-      <aside className="sidebar">
-        <h2 className="sidebar-title">BẢN QUẢN LÝ</h2>
-        <nav className="sidebar-menu">
-          <ul>
-            <li><Link to="/staff-dashboard">Dashboard</Link></li>
-            <li><Link to="/posts">Quản lý bài post</Link></li>
-            <li className="has-submenu">
-              <span>Quản lý bãi đỗ xe ▾</span>
-              <ul className="submenu">
-                <li><Link to="/parkinglot-list">Danh sách bãi đỗ xe</Link></li>
-                <li><Link to="/manage-parkinglot">Quản lý yêu cầu gửi xe</Link></li>
+    <div className="d-flex min-vh-100 bg-light">
+      {/* Sidebar */}
+      <aside className="bg-primary text-white p-4" style={{ minWidth: 240 }}>
+        <h2 className="fw-bold mb-4 text-warning text-center">BẢN QUẢN LÝ</h2>
+        <nav>
+          <ul className="nav flex-column gap-2">
+            <li className="nav-item"><Link to="/staff-dashboard" className="nav-link text-white">Dashboard</Link></li>
+            <li className="nav-item"><Link to="/posts" className="nav-link text-white">Quản lý bài post</Link></li>
+            <li className="nav-item">
+              <span className="nav-link text-white fw-bold">Quản lý bãi đỗ xe ▼</span>
+              <ul className="nav flex-column ms-3">
+                <li className="nav-item"><Link to="/parkinglot-list" className="nav-link text-primary fw-bold bg-white">Danh sách bãi đỗ xe</Link></li>
+                <li className="nav-item"><Link to="/manage-parkinglot" className="nav-link text-white">Quản lý yêu cầu gửi xe</Link></li>
               </ul>
             </li>
-            <li><Link to="/expenses">Quản lý chi phí</Link></li>
-            <li><Link to="/residentVerification">Quản lý người dùng</Link></li>
-            <li><Link to="/revenue">Quản lý doanh thu</Link></li>
-            <li><Link to="/login">Đăng Xuất</Link></li>
+            <li className="nav-item"><Link to="/expenses" className="nav-link text-white">Quản lý chi phí</Link></li>
+            <li className="nav-item"><Link to="/residentVerification" className="nav-link text-white">Quản lý người dùng</Link></li>
+            <li className="nav-item"><Link to="/revenue" className="nav-link text-white">Quản lý doanh thu</Link></li>
+            <li className="nav-item"><Link to="/login" className="nav-link text-white">Đăng Xuất</Link></li>
           </ul>
         </nav>
       </aside>
 
-      <main className="dashboard-container">
-        <div className="manage-parking-lot">
-          <h2>Danh sách bãi đỗ xe</h2>
-
-          {/* 🟦 Hiển thị tổng quan slot */}
-          <div className="slot-summary" style={{ marginBottom: '1rem', fontSize: '1rem' }}>
-            <strong>Tổng chỗ:</strong> {slotInfo.totalSlots} |{' '}
-            <strong>Đã dùng:</strong> {slotInfo.usedSlots} |{' '}
-            <strong>Còn trống:</strong> {slotInfo.availableSlots}
+      {/* Main content */}
+      <main className="flex-grow-1 p-4">
+        <div className="bg-white rounded-4 shadow p-4 mb-4">
+          <h2 className="fw-bold mb-3">Danh sách bãi đỗ xe</h2>
+          <div className="mb-3">
+            <span className="me-3"><strong>Tổng chỗ:</strong> {slotInfo.totalSlots}</span>
+            <span className="me-3"><strong>Đã dùng:</strong> {slotInfo.usedSlots}</span>
+            <span><strong>Còn trống:</strong> {slotInfo.availableSlots}</span>
           </div>
-
-          {/* 🟨 Bộ lọc trạng thái */}
-          <div className="filter-container" style={{ marginBottom: '16px' }}>
-            <label htmlFor="statusFilter">Lọc theo trạng thái: </label>
+          <div className="mb-3">
+            <label className="me-2">Lọc theo trạng thái:</label>
             <select
-              id="statusFilter"
+              className="form-select d-inline-block w-auto"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              style={{ padding: '4px 8px', marginLeft: '8px', borderRadius: '4px' }}
             >
               <option value="all">Tất cả</option>
               <option value="approved">Đã phê duyệt</option>
               <option value="rejected">Đã từ chối</option>
             </select>
           </div>
-
-          <table className="parking-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Căn hộ</th>
-                <th>Chủ xe</th>
-                <th>Biển số</th>
-                <th>Loại xe</th>
-                <th>Ngày đăng ký</th>
-                <th>Trạng thái</th>
-              </tr>
-            </thead>
-            <tbody>
-              {parkingList.length > 0 ? (
-                parkingList
-                  .filter(item => {
-                    if (statusFilter === 'all') return true;
-                    return item.status === statusFilter;
-                  })
-                  .map((item, idx) => (
-                    <tr key={item._id}>
-                      <td>{idx + 1}</td>
-                      <td>{item.apartmentCode}</td>
-                      <td>{item.owner}</td>
-                      <td>{item.licensePlate}</td>
-                      <td>{item.vehicleType}</td>
-                      <td>{formatDate(item.registerDate)}</td>
-                      <td style={{
-                        color: item.status === 'approved' ? 'green'
-                              : item.status === 'rejected' ? 'red' : 'gray',
-                        fontWeight: 'bold',
-                      }}>
-                        {item.status}
-                      </td>
-                    </tr>
-                  ))
-              ) : (
+          <div className="table-responsive">
+            <table className="table table-bordered align-middle bg-white rounded-4 shadow">
+              <thead className="table-primary">
                 <tr>
-                  <td colSpan="7">Không có dữ liệu.</td>
+                  <th>#</th>
+                  <th>Căn hộ</th>
+                  <th>Chủ xe</th>
+                  <th>Biển số</th>
+                  <th>Loại xe</th>
+                  <th>Ngày đăng ký</th>
+                  <th>Trạng thái</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {parkingList.length > 0 ? (
+                  parkingList
+                    .filter(item => {
+                      if (statusFilter === 'all') return true;
+                      return item.status === statusFilter;
+                    })
+                    .map((item, idx) => (
+                      <tr key={item._id}>
+                        <td>{idx + 1}</td>
+                        <td>{item.apartmentCode}</td>
+                        <td>{item.owner}</td>
+                        <td>{item.licensePlate}</td>
+                        <td>{item.vehicleType}</td>
+                        <td>{formatDate(item.registerDate)}</td>
+                        <td>
+                          <span className={
+                            item.status === 'approved'
+                              ? 'badge bg-success'
+                              : item.status === 'rejected'
+                                ? 'badge bg-danger'
+                                : 'badge bg-secondary'
+                          }>
+                            {item.status === 'approved'
+                              ? 'Đã phê duyệt'
+                              : item.status === 'rejected'
+                                ? 'Đã từ chối'
+                                : item.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="text-center">Không có dữ liệu.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
     </div>

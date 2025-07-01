@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../../../components/header';
 import { useAuth } from '../../../../context/authContext';
-import './residentList.css';
 
 const ResidentList = () => {
   const { user, logout } = useAuth();
@@ -52,27 +51,33 @@ const ResidentList = () => {
     }
 
     return (
-      <div className="resident-block" key={apt.apartmentId}>
-        <div className="resident-summary">
-          <span>Mã căn hộ: <strong>{apt.apartmentCode}</strong></span>
-          <span>Vai trò của bạn: <strong>{roleText}</strong></span>
-          <span>Chủ căn hộ: <strong>{apt.ownerName || 'Không rõ'}</strong></span>
-          <span>Số nhân khẩu: <strong>{apt.residentCount}</strong></span>
+      <div className="bg-white rounded-4 shadow p-4 mb-4" key={apt.apartmentId}>
+        <div className="row mb-3">
+          <div className="col-md-3 mb-2">
+            <span className="fw-bold">Mã căn hộ:</span> <span>{apt.apartmentCode}</span>
+          </div>
+          <div className="col-md-3 mb-2">
+            <span className="fw-bold">Vai trò của bạn:</span> <span>{roleText}</span>
+          </div>
+          <div className="col-md-3 mb-2">
+            <span className="fw-bold">Chủ căn hộ:</span> <span>{apt.ownerName || 'Không rõ'}</span>
+          </div>
+          <div className="col-md-3 mb-2">
+            <span className="fw-bold">Số nhân khẩu:</span> <span>{apt.residentCount}</span>
+          </div>
         </div>
 
         {((isOwner && !apt.isRenter) || isRenter) && (
-  <div className="resident-actions">
-    <Link to="/canho/dangkynhankhau" className="resident-register-btn">
-      + Đăng ký nhân khẩu
-    </Link>
-  </div>
-)}
+          <div className="mb-3 text-end">
+            <Link to="/canho/dangkynhankhau" className="btn btn-success rounded-pill fw-semibold">
+              + Đăng ký nhân khẩu
+            </Link>
+          </div>
+        )}
 
-
-
-        <div className="resident-table-wrapper">
-          <table className="resident-table">
-            <thead>
+        <div className="table-responsive">
+          <table className="table table-bordered align-middle mb-0">
+            <thead className="table-primary">
               <tr>
                 <th>Họ tên</th>
                 <th>Ngày sinh</th>
@@ -92,18 +97,20 @@ const ResidentList = () => {
                     <td>{r.relationWithOwner}</td>
                     <td>
                       {r.verifiedByStaff ? (
-                        <span className="status approved">✅ Đã duyệt</span>
+                        <span className="badge bg-success">✅ Đã duyệt</span>
                       ) : r.rejectReason ? (
-                        <span className="status rejected">❌ Đã từ chối</span>
+                        <span className="badge bg-danger">❌ Đã từ chối</span>
                       ) : (
-                        <span className="status pending">🟡 Chờ duyệt</span>
+                        <span className="badge bg-warning text-dark">🟡 Chờ duyệt</span>
                       )}
                     </td>
                     <td>
-                      <Link to={`/residents/${r._id}`} className="resident-view-btn">Xem chi tiết</Link>
+                      <Link to={`/residents/${r._id}`} className="btn btn-primary btn-sm rounded-pill me-2">
+                        Xem chi tiết
+                      </Link>
                       {r.rejectReason && (
                         <button
-                          className="resident-reason-btn"
+                          className="btn btn-warning btn-sm rounded-pill"
                           onClick={() => setModalReason({ name: r.fullName, reason: r.rejectReason })}
                         >
                           ❓ Lý do
@@ -114,7 +121,7 @@ const ResidentList = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', padding: '1rem' }}>
+                  <td colSpan="6" className="text-center py-3">
                     Chưa có nhân khẩu
                   </td>
                 </tr>
@@ -127,30 +134,50 @@ const ResidentList = () => {
   };
 
   return (
-    <div className="resident-page">
+    <div className="bg-light min-vh-100">
       <Header user={user} name={name} logout={logout} />
 
-      <div className="resident-container">
-        <h2 className="resident-title">Danh sách nhân khẩu theo căn hộ</h2>
+      <div className="container py-5">
+        <h2 className="fw-bold text-center mb-4 text-primary">Danh sách nhân khẩu theo căn hộ</h2>
 
         {apartmentData.length ? (
           apartmentData.map(renderApartment)
         ) : (
-          <p style={{ textAlign: 'center', marginTop: '2rem' }}>
+          <p className="text-center mt-5">
             Hiện tại bạn không thuộc căn hộ nào nên không có dữ liệu để hiển thị.
           </p>
         )}
       </div>
 
-      <footer className="resident-footer">&copy; 2025 Quản lý nhân khẩu</footer>
+      <footer className="text-center py-4 text-secondary small">
+        &copy; 2025 Quản lý nhân khẩu
+      </footer>
 
       {modalReason && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Lý do từ chối</h3>
-            <p><strong>{modalReason.name}</strong> đã bị từ chối với lý do:</p>
-            <p style={{ color: '#c00', margin: '1rem 0' }}>{modalReason.reason}</p>
-            <button onClick={() => setModalReason(null)}>Đóng</button>
+        <div
+          className="modal fade show"
+          style={{ display: "block", background: "rgba(0,0,0,0.3)" }}
+          tabIndex={-1}
+          onClick={() => setModalReason(null)}
+        >
+          <div className="modal-dialog modal-dialog-centered" onClick={e => e.stopPropagation()}>
+            <div className="modal-content rounded-4 text-center">
+              <div className="modal-header">
+                <h5 className="modal-title">Lý do từ chối</h5>
+                <button type="button" className="btn-close" onClick={() => setModalReason(null)} />
+              </div>
+              <div className="modal-body">
+                <p>
+                  <strong>{modalReason.name}</strong> đã bị từ chối với lý do:
+                </p>
+                <p className="text-danger fw-bold">{modalReason.reason}</p>
+              </div>
+              <div className="modal-footer justify-content-center">
+                <button className="btn btn-secondary" onClick={() => setModalReason(null)}>
+                  Đóng
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

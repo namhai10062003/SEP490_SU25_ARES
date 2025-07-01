@@ -5,7 +5,6 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import Header from '../../../../components/header';
 import { useAuth } from '../../../../context/authContext';
-import './residentregister.css';
 
 const ResidentRegister = () => {
   const { user, logout } = useAuth();
@@ -39,15 +38,11 @@ const ResidentRegister = () => {
         });
 
         const data = await res.json();
-        // console.log('📦 Dữ liệu từ API /api/apartments:', data);
-
         const filtered = data.filter(
           (apt) =>
             String(apt.isOwner?._id) === String(user._id) ||
             String(apt.isRenter?._id) === String(user._id)
         );
-
-        // console.log('🏠 Căn hộ sau khi lọc theo user:', filtered);
         setApartments(filtered);
       } catch (err) {
         console.error('❌ Không lấy được danh sách căn hộ:', err);
@@ -104,164 +99,168 @@ const ResidentRegister = () => {
   };
 
   return (
-    <div className="resident-reg-page">
+    <div className="bg-light min-vh-100">
       <Header user={user} name={user?.name} logout={logout} />
       <ToastContainer />
 
-      <div className="resident-reg-container">
-        <h2 className="resident-reg-title">Đăng ký nhân khẩu</h2>
-
-        <form className="resident-reg-form" onSubmit={handleSubmit}>
-          {/* Căn hộ */}
-          <div className="form-group">
-            <label>Căn hộ *</label>
-            <select
-              name="apartmentId"
-              value={form.apartmentId}
-              onChange={handleChange}
-              required
-            >
-              <option value="">-- Chọn căn hộ --</option>
-              {apartments.map((apt) => (
-  <option key={apt._id} value={apt._id}>
-    {apt.apartmentCode}
-  </option>
-))}
-            </select>
-          </div>
-
-          {/* Họ tên */}
-          <div className="form-group">
-            <label>Họ tên *</label>
-            <input
-              type="text"
-              name="fullName"
-              value={form.fullName}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          {/* Giới tính + ngày sinh */}
-          <div className="form-row">
-            <div className="form-group">
-              <label>Giới tính *</label>
-              <select
-                name="gender"
-                value={form.gender}
-                onChange={handleChange}
-                required
-              >
-                <option value="">-- Chọn --</option>
-                <option value="Nam">Nam</option>
-                <option value="Nữ">Nữ</option>
-              </select>
+      <div className="container py-5">
+        <div className="bg-white rounded-4 shadow p-4 mx-auto" style={{ maxWidth: 900 }}>
+          <h2 className="fw-bold mb-4 border-start border-4 border-primary ps-3">Đăng ký nhân khẩu</h2>
+          <form onSubmit={handleSubmit}>
+            <div className="row g-3">
+              {/* Căn hộ */}
+              <div className="col-md-6">
+                <label className="form-label">Căn hộ *</label>
+                <select
+                  name="apartmentId"
+                  value={form.apartmentId}
+                  onChange={handleChange}
+                  className="form-select"
+                  required
+                >
+                  <option value="">-- Chọn căn hộ --</option>
+                  {apartments.map((apt) => (
+                    <option key={apt._id} value={apt._id}>
+                      {apt.apartmentCode}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Họ tên */}
+              <div className="col-md-6">
+                <label className="form-label">Họ tên *</label>
+                <input
+                  type="text"
+                  name="fullName"
+                  value={form.fullName}
+                  onChange={handleChange}
+                  className="form-control"
+                  required
+                />
+              </div>
+              {/* Giới tính */}
+              <div className="col-md-3">
+                <label className="form-label">Giới tính *</label>
+                <select
+                  name="gender"
+                  value={form.gender}
+                  onChange={handleChange}
+                  className="form-select"
+                  required
+                >
+                  <option value="">-- Chọn --</option>
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
+                </select>
+              </div>
+              {/* Ngày sinh */}
+              <div className="col-md-3">
+                <label className="form-label">Ngày sinh *</label>
+                <input
+                  type="date"
+                  name="dateOfBirth"
+                  value={form.dateOfBirth}
+                  onChange={handleChange}
+                  className="form-control"
+                  required
+                />
+              </div>
+              {/* Quan hệ với chủ hộ */}
+              <div className="col-md-3">
+                <label className="form-label">Quan hệ với chủ hộ *</label>
+                <input
+                  type="text"
+                  name="relationWithOwner"
+                  value={form.relationWithOwner}
+                  onChange={handleChange}
+                  className="form-control"
+                  required
+                />
+              </div>
+              {/* Quốc tịch */}
+              <div className="col-md-3">
+                <label className="form-label">Quốc tịch</label>
+                <input
+                  type="text"
+                  name="nationality"
+                  value={form.nationality}
+                  onChange={handleChange}
+                  className="form-control"
+                />
+              </div>
+              {/* Ngày chuyển đến */}
+              <div className="col-md-6">
+                <label className="form-label">Ngày chuyển đến</label>
+                <input
+                  type="date"
+                  name="moveInDate"
+                  value={form.moveInDate}
+                  onChange={handleChange}
+                  className="form-control"
+                />
+              </div>
+              {/* Số CCCD */}
+              <div className="col-md-3">
+                <label className="form-label">Số CCCD</label>
+                <input
+                  type="text"
+                  name="idNumber"
+                  value={form.idNumber}
+                  onChange={handleChange}
+                  className="form-control"
+                />
+              </div>
+              {/* Ngày cấp */}
+              <div className="col-md-3">
+                <label className="form-label">Ngày cấp</label>
+                <input
+                  type="date"
+                  name="issueDate"
+                  value={form.issueDate}
+                  onChange={handleChange}
+                  className="form-control"
+                />
+              </div>
+              {/* Ảnh giấy tờ */}
+              <div className="col-md-6">
+                <label className="form-label">Mặt trước CCCD</label>
+                <input
+                  type="file"
+                  name="documentFront"
+                  accept="image/*"
+                  onChange={handleChange}
+                  className="form-control"
+                />
+                {previewFront && (
+                  <img src={previewFront} alt="front" className="img-thumbnail mt-2" style={{ maxHeight: 180 }} />
+                )}
+              </div>
+              <div className="col-md-6">
+                <label className="form-label">Mặt sau CCCD</label>
+                <input
+                  type="file"
+                  name="documentBack"
+                  accept="image/*"
+                  onChange={handleChange}
+                  className="form-control"
+                />
+                {previewBack && (
+                  <img src={previewBack} alt="back" className="img-thumbnail mt-2" style={{ maxHeight: 180 }} />
+                )}
+              </div>
+              {/* Nút submit */}
+              <div className="col-12">
+                <button type="submit" className="btn btn-primary btn-lg w-100 mt-3">
+                  Đăng ký
+                </button>
+              </div>
             </div>
-            <div className="form-group">
-              <label>Ngày sinh *</label>
-              <input
-                type="date"
-                name="dateOfBirth"
-                value={form.dateOfBirth}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-
-          {/* Quan hệ + Quốc tịch */}
-          <div className="form-row">
-            <div className="form-group">
-              <label>Quan hệ với chủ hộ *</label>
-              <input
-                type="text"
-                name="relationWithOwner"
-                value={form.relationWithOwner}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Quốc tịch</label>
-              <input
-                type="text"
-                name="nationality"
-                value={form.nationality}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          {/* Ngày chuyển đến */}
-          <div className="form-group">
-            <label>Ngày chuyển đến</label>
-            <input
-              type="date"
-              name="moveInDate"
-              value={form.moveInDate}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* CCCD + ngày cấp */}
-          <div className="form-row">
-            <div className="form-group">
-              <label>Số CCCD</label>
-              <input
-                type="text"
-                name="idNumber"
-                value={form.idNumber}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="form-group">
-              <label>Ngày cấp</label>
-              <input
-                type="date"
-                name="issueDate"
-                value={form.issueDate}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-
-          {/* Ảnh giấy tờ */}
-          <div className="form-row">
-            <div className="form-group">
-              <label>Mặt trước CCCD</label>
-              <input
-                type="file"
-                name="documentFront"
-                accept="image/*"
-                onChange={handleChange}
-              />
-              {previewFront && (
-                <img src={previewFront} className="image-preview" alt="front" />
-              )}
-            </div>
-            <div className="form-group">
-              <label>Mặt sau CCCD</label>
-              <input
-                type="file"
-                name="documentBack"
-                accept="image/*"
-                onChange={handleChange}
-              />
-              {previewBack && (
-                <img src={previewBack} className="image-preview" alt="back" />
-              )}
-            </div>
-          </div>
-
-          <div className="form-group full">
-            <button type="submit" className="submit-btn">
-              Đăng ký
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
+        <footer className="text-center mt-4 text-secondary small">
+          © 2025 Quản lý nhân khẩu
+        </footer>
       </div>
-
-      <footer className="resident-reg-footer">© 2025 Quản lý nhân khẩu</footer>
     </div>
   );
 };
