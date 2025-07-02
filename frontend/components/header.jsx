@@ -2,7 +2,6 @@ import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { FiBell } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import Navbar from "./navbar";
 
 const Header = ({ user, name, logout }) => {

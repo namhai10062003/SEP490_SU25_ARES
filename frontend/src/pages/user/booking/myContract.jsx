@@ -9,46 +9,54 @@ import "./myContracts.css";
 const MyContracts = () => {
   const { user, loading } = useAuth();
   const [contracts, setContracts] = useState([]);
-  const [filter, setFilter] = useState("all"); // 🆕 Bộ lọc
+  const [filter, setFilter] = useState("all");
   const [editingContract, setEditingContract] = useState(null);
   const [editForm, setEditForm] = useState({
     startDate: "",
     endDate: "",
     contractTerms: "",
   });
+
   const navigate = useNavigate();
   const location = useLocation();
-  // ✅ Thông báo khi người dùng vừa hủy thanh toán
+
+  // ✅ Xử lý khi thanh toán thành công
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const cancel = params.get("cancel");
     const status = params.get("status");
-  
-    if (cancel === "true" && status === "CANCELLED") {
-      toast.info("❌ Bạn đã hủy giao dịch");
-  
-      // ✅ Quay lại đúng trang /my-contracts (xóa query)
-      navigate("/my-contracts", { replace: true });
-    }
-  
-    if (status === "PAID") {
-      toast.success("✅ Thanh toán thành công");
-      navigate("/my-contracts", { replace: true });
-    }
-  }, [location.search, navigate]);
-  useEffect(() => {
-    const fetchContracts = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:4000/api/contracts/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setContracts(res.data.data);
-      } catch (err) {
-        toast.error("❌ Lỗi khi tải hợp đồng");
+
+    const handlePaymentReturn = async () => {
+      if (status === "PAID") {
+        toast.success("✅ Thanh toán thành công");
+
+        // Đợi webhook xử lý xong
+        setTimeout(async () => {
+          try {
+            await fetchContracts();
+          } catch {
+            toast.error("❌ Lỗi khi làm mới hợp đồng");
+          }
+          navigate("/my-contracts", { replace: true });
+        }, 2000);
       }
     };
 
+    handlePaymentReturn();
+  }, [location.search, navigate]);
+
+  const fetchContracts = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get("http://localhost:4000/api/contracts/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setContracts(res.data.data);
+    } catch {
+      toast.error("❌ Lỗi khi tải hợp đồng");
+    }
+  };
+
+  useEffect(() => {
     if (user) fetchContracts();
   }, [user]);
 
@@ -91,25 +99,23 @@ const MyContracts = () => {
         {},
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
-  
+
       const paymentUrl = res.data.data.paymentUrl;
-  
       if (paymentUrl) {
         toast.success("💳 Đang chuyển đến cổng thanh toán...");
-        // Chuyển hướng sang PayOS
         window.location.href = paymentUrl;
       } else {
         toast.error("❌ Không nhận được link thanh toán");
       }
     } catch (err) {
-      console.error(err);
       toast.error("❌ Lỗi khi tạo thanh toán hợp đồng");
     }
   };
+
   if (loading) return <p>🔄 Đang tải...</p>;
 
   const myTenantContracts = contracts.filter(
@@ -138,18 +144,18 @@ const MyContracts = () => {
       <h2 className="contracts-title">📄 Hợp đồng của tôi</h2>
 
       <div className="filter-container">
-  <label>Lọc theo thanh toán:</label>
-  <select
-    value={filter}
-    onChange={(e) => setFilter(e.target.value)}
-    className="filter-select"
-  >
-    <option value="all">Tất cả</option>
-    <option value="paid">Đã thanh toán</option>
-    <option value="unpaid">Chưa thanh toán</option>
-    <option value="failed">Thanh toán thất bại</option>
-  </select>
-</div>
+        <label>Lọc theo thanh toán:</label>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="filter-select"
+        >
+          <option value="all">Tất cả</option>
+          <option value="paid">Đã thanh toán</option>
+          <option value="unpaid">Chưa thanh toán</option>
+          <option value="failed">Thanh toán thất bại</option>
+        </select>
+      </div>
 
       {filteredContracts.length === 0 ? (
         <p>📭 Không có hợp đồng phù hợp.</p>
@@ -166,21 +172,21 @@ const MyContracts = () => {
                   <p>💰 Đặt cọc: {contract.depositAmount?.toLocaleString("vi-VN")} VNĐ</p>
                   <p>📞 Liên hệ: {contract.phoneA}</p>
                   <p>
-  Trạng thái:{" "}
-  {contract.status === "pending" ? (
-    <span className="status-pending">⏳ Chờ duyệt</span>
-  ) : contract.status === "rejected" ? (
-    <span className="status-rejected">❌ Đã từ chối</span>
-  ) : contract.status === "expired" ? (
-    <span className="status-expired">📅 Đã hết hạn</span>
-  ) : contract.paymentStatus === "paid" ? (
-    <span className="status-paid">✅ Đã thanh toán</span>
-  ) : contract.paymentStatus === "failed" ? (
-    <span className="status-failed">❌ Thanh toán thất bại</span>
-  ) : (
-    <span className="status-unpaid">💵 Chưa thanh toán</span>
-  )}
-</p>
+                    Trạng thái:{" "}
+                    {contract.status === "pending" ? (
+                      <span className="status-pending">⏳ Chờ duyệt</span>
+                    ) : contract.status === "rejected" ? (
+                      <span className="status-rejected">❌ Đã từ chối</span>
+                    ) : contract.status === "expired" ? (
+                      <span className="status-expired">📅 Đã hết hạn</span>
+                    ) : contract.paymentStatus === "paid" ? (
+                      <span className="status-paid">✅ Đã thanh toán</span>
+                    ) : contract.paymentStatus === "failed" ? (
+                      <span className="status-failed">❌ Thanh toán thất bại</span>
+                    ) : (
+                      <span className="status-unpaid">💵 Chưa thanh toán</span>
+                    )}
+                  </p>
 
                   {contract.status === "rejected" && (
                     <>
@@ -202,10 +208,10 @@ const MyContracts = () => {
                 </button>
 
                 {contract.status === "approved" && contract.paymentStatus === "unpaid" && (
-  <button className="pay-btn" onClick={() => handlePayment(contract._id)}>
-    THANH TOÁN
-  </button>
-)}
+                  <button className="pay-btn" onClick={() => handlePayment(contract._id)}>
+                    THANH TOÁN
+                  </button>
+                )}
 
                 {editingContract && (
                   <div className="popup-overlay">

@@ -2,7 +2,7 @@ import express from "express";
 import { approveContract, createContract, deleteContract, getContractById, getMyContracts, rejectContract, resubmitContract } from "../controllers/contractController.js";
 import {
   createContractPayment,
-  handleContractPaymentWebhook, handlePaymentReturn
+  handleContractPaymentWebhook
 } from "../controllers/contractPaymentController.js";
 import verifysUser from "../middleware/authMiddleware.js";
 import Contract from "../models/Contract.js";
@@ -14,8 +14,8 @@ router.put("/:contractId/pay", createContractPayment);
 
 // ✅ Nhận webhook từ PayOS
 router.post("/payment-webhook", handleContractPaymentWebhook);
-// return về hủy thanh toán 
-router.get("/payment/return", handlePaymentReturn);
+// // return về hủy thanh toán 
+// router.get("/payment/return", handlePaymentReturn);
 
 // bên contract
 router.post("/", verifysUser,createContract);
