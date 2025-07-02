@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function ResidentVerificationForm() {
@@ -148,6 +148,7 @@ export default function ResidentVerificationForm() {
               </ul>
             </li>
             <li className="nav-item"><Link to="/revenue" className="nav-link text-white">Quản lý doanh thu</Link></li>
+            <li className="nav-item"><Link to="/resident-verify" className="nav-link text-white">Quản lý nhân khẩu</Link></li>
             <li className="nav-item"><Link to="/login" className="nav-link text-white">Đăng Xuất</Link></li>
           </ul>
         </nav>

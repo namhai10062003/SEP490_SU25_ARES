@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function ResidentVerificationList() {
@@ -52,6 +52,7 @@ export default function ResidentVerificationList() {
             <li className="nav-item"><Link to="/expenses" className="nav-link text-white">Quản lý chi phí</Link></li>
             <li className="nav-item"><Link to="/residentVerification" className="nav-link active bg-white text-primary fw-bold">Quản lý người dùng</Link></li>
             <li className="nav-item"><Link to="/revenue" className="nav-link text-white">Quản lý doanh thu</Link></li>
+            <li className="nav-item"><Link to="/resident-verify" className="nav-link text-white">Quản lý nhân khẩu</Link></li>
             <li className="nav-item"><Link to="/login" className="nav-link text-white">Đăng Xuất</Link></li>
           </ul>
         </nav>
