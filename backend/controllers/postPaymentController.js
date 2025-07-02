@@ -1,6 +1,5 @@
 import PayOS from "@payos/node";
 import Post from "../models/Post.js";
-import mongoose from 'mongoose';
 
 const payos = new PayOS(
     process.env.CLIENTID,

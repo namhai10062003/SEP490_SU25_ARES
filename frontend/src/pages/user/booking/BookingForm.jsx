@@ -16,7 +16,21 @@ const BookingForm = () => {
     endDate: "",
     agreed: false,
   });
+  
+// Hàm lấy ngày hôm nay dạng yyyy-MM-dd (theo UTC)
+const getToday = () => {
+  const today = new Date();
+  return new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+    .toISOString()
+    .split("T")[0];
+};
 
+useEffect(() => {
+  // Nếu startDate sau endDate thì auto cập nhật endDate bằng startDate
+  if (form.endDate < form.startDate) {
+    setForm(prev => ({ ...prev, endDate: form.startDate }));
+  }
+}, [form.startDate]);
   useEffect(() => {
     const fetchPost = async () => {
       const res = await getPostById(postId);
@@ -27,6 +41,16 @@ const BookingForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // if (!form.startDate || !form.endDate || form.startDate > form.endDate) {
+    //   return toast.error("❌ Vui lòng chọn ngày hợp lệ");
+    // }
+    if (!form.startDate || !form.endDate) {
+      return toast.error("❌ Vui lòng chọn đầy đủ ngày thuê");
+    }
+    
+    if (form.startDate >= form.endDate) {
+      return toast.error("❌ Ngày kết thúc phải sau ngày bắt đầu ít nhất 1 ngày");
+    }
     try {
       const deposit = Math.floor(post.price * 0.1);
   
@@ -60,6 +84,7 @@ const BookingForm = () => {
       console.error(err);
       toast.error("❌ Lỗi khi tạo hợp đồng");
     }
+   
   };
   
 
@@ -131,10 +156,30 @@ if (user._id === post.contactInfo?._id) {
 
         {/* Thời gian thuê */}
         <section className="rental-dates">
-          <h4><strong>THỜI GIAN THUÊ</strong></h4>
-          <div className="input-line"><label>Từ ngày:</label> <input type="date" value={form.startDate} onChange={e => setForm({ ...form, startDate: e.target.value })} /></div>
-          <div className="input-line"><label>Đến ngày:</label> <input type="date" value={form.endDate} onChange={e => setForm({ ...form, endDate: e.target.value })} /></div>
-        </section>
+  <h4><strong>THỜI GIAN THUÊ</strong></h4>
+  <div className="input-line">
+    <label>Từ ngày:</label>
+    <input
+      type="date"
+      value={form.startDate}
+      min={getToday()}
+      onChange={(e) =>
+        setForm((prev) => ({ ...prev, startDate: e.target.value }))
+      }
+    />
+  </div>
+  <div className="input-line">
+    <label>Đến ngày:</label>
+    <input
+      type="date"
+      value={form.endDate}
+      min={form.startDate}
+      onChange={(e) =>
+        setForm((prev) => ({ ...prev, endDate: e.target.value }))
+      }
+    />
+  </div>
+</section>
 
         {/* Điều khoản */}
         <h3 className="contract-subtitle">📌 ĐIỀU KHOẢN HỢP ĐỒNG</h3>
