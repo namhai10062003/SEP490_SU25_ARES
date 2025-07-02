@@ -14,45 +14,44 @@ const GlobalChatBox = () => {
   return (
     <>
       {/* Nút mở chat */}
-      <div
+      <button
+        className="btn btn-warning rounded-circle shadow"
         style={{
           position: "fixed",
           bottom: 20,
           right: 20,
-          backgroundColor: "#F2B98E",
           width: 60,
           height: 60,
-          borderRadius: "50%",
+          fontSize: 28,
+          zIndex: 9999,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#fff",
-          fontSize: 28,
-          cursor: "pointer",
-          zIndex: 9999,
         }}
         onClick={() => setOpen((prev) => !prev)}
+        aria-label="Mở chat"
       >
         💬
-      </div>
+      </button>
 
       {/* Khung chat hiện ra */}
       {open && (
         <div
-        style={{
+          className="shadow-lg"
+          style={{
             position: "fixed",
             bottom: 90,
             right: 20,
-            width: 360,
-            height: 460,
-            background: "#fff",           
-            border: "1px solid #F2B98E",      // ✅ viền cùng màu nền (hoặc đậm hơn nếu muốn)
+            width: 570,
+            height: 500,
+            background: "#fff",
+            border: "1px solid #F2B98E",
             borderRadius: 12,
             overflow: "hidden",
             zIndex: 9999,
-            boxShadow: "0 0 10px rgba(0,0,0,0.2)",
+            display: "flex",
+            flexDirection: "column",
           }}
-          
         >
           {receiver ? (
             <ChatBox

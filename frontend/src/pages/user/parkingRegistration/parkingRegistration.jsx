@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import io from 'socket.io-client';
 import Header from '../../../../components/header';
 import { useAuth } from '../../../../context/authContext';
-import './parkingRegistration.css';
 
 const socket = io('http://localhost:4000'); // địa chỉ backend socket
 
@@ -12,9 +11,9 @@ const ParkingRegistrationList = () => {
   const [name, setName] = useState(null);
   const [carRegistrations, setCarRegistrations] = useState([]);
   const [bikeRegistrations, setBikeRegistrations] = useState([]);
-  const [canRegister, setCanRegister] = useState(false); // 👈 quyền đăng ký
+  const [canRegister, setCanRegister] = useState(false);
 
-  // 👇 Lấy quyền đăng ký
+  // Lấy quyền đăng ký
   useEffect(() => {
     const fetchUserApartments = async () => {
       try {
@@ -34,10 +33,8 @@ const ParkingRegistrationList = () => {
         const isEligible = data.some(apt => {
           const isOwner = String(apt.isOwner?._id) === userId;
           const isRenter = String(apt.isRenter?._id) === userId;
-
-          if (isRenter) return true; // ✅ Người thuê luôn được phép
-          if (isOwner && !apt.isRenter) return true; // ✅ Chủ và chưa có người thuê
-
+          if (isRenter) return true;
+          if (isOwner && !apt.isRenter) return true;
           return false;
         });
 
@@ -52,14 +49,13 @@ const ParkingRegistrationList = () => {
     }
   }, [user]);
 
-  // 👇 Lấy danh sách đăng ký giữ xe
+  // Lấy danh sách đăng ký giữ xe
   useEffect(() => {
     setName(user?.name || null);
 
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-
         const res = await fetch('http://localhost:4000/api/parkinglot/parkinglot', {
           method: 'GET',
           headers: {
@@ -100,11 +96,11 @@ const ParkingRegistrationList = () => {
   }, [user]);
 
   const renderTable = (title, data) => (
-    <div className="parking-section">
-      <h3 className="parking-section-title">{title}</h3>
-      <div className="parking-list-table-wrapper">
-        <table className="parking-list-table">
-          <thead>
+    <div className="mb-5">
+      <h3 className="fw-bold text-primary mb-3">{title}</h3>
+      <div className="table-responsive">
+        <table className="table table-bordered align-middle bg-white rounded-4 shadow-sm">
+          <thead className="table-primary">
             <tr>
               <th>Chủ sở hữu</th>
               <th>Loại xe</th>
@@ -128,17 +124,17 @@ const ParkingRegistrationList = () => {
                   <td>{item.ngàyĐăngKý}</td>
                   <td>
                     {item.trạngThái === 'approved' ? (
-                      <span className="status approved">✅ Đã đăng ký</span>
+                      <span className="badge bg-success">Đã đăng ký</span>
                     ) : item.trạngThái === 'rejected' ? (
-                      <span className="status rejected">❌ Đã bị từ chối</span>
+                      <span className="badge bg-danger">Đã bị từ chối</span>
                     ) : (
-                      <span className="status pending">🟡 Đang đăng ký</span>
+                      <span className="badge bg-warning text-dark">Đang đăng ký</span>
                     )}
                   </td>
                   <td>
                     <Link
                       to={`/parkinglot/detail-parkinglot/${item.id}`}
-                      className="parking-list-view-btn"
+                      className="btn btn-success btn-sm"
                     >
                       Xem chi tiết
                     </Link>
@@ -147,7 +143,7 @@ const ParkingRegistrationList = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="8" style={{ textAlign: 'center', padding: '1rem' }}>
+                <td colSpan="8" className="text-center py-3">
                   Không có dữ liệu
                 </td>
               </tr>
@@ -159,23 +155,27 @@ const ParkingRegistrationList = () => {
   );
 
   return (
-    <div className="parking-list-page">
+    <div className="bg-light min-vh-100">
       <Header user={user} name={name} logout={logout} />
-      <div className="parking-list-container">
-        <h2 className="parking-list-title">Danh sách đăng ký bãi giữ xe</h2>
+      <div className="container py-5">
+        <div className="bg-white rounded-4 shadow p-4 mx-auto" style={{ maxWidth: 1200 }}>
+          <h2 className="fw-bold text-center mb-4">Danh sách đăng ký bãi giữ xe</h2>
 
-        {canRegister && (
-          <div className="parking-list-actions">
-            <Link to="/dichvu/dangkybaidoxe" className="parking-register-btn">
-              + Đăng ký mới
-            </Link>
-          </div>
-        )}
+          {canRegister && (
+            <div className="d-flex justify-content-end mb-3">
+              <Link to="/dichvu/dangkybaidoxe" className="btn btn-primary fw-bold">
+                + Đăng ký mới
+              </Link>
+            </div>
+          )}
 
-        {renderTable('🚗 Ô tô', carRegistrations)}
-        {renderTable('🏍️ Xe máy', bikeRegistrations)}
+          {renderTable('🚗 Ô tô', carRegistrations)}
+          {renderTable('🏍️ Xe máy', bikeRegistrations)}
+        </div>
+        <footer className="text-center mt-4 text-secondary small">
+          &copy; 2025 Bãi giữ xe
+        </footer>
       </div>
-      <footer className="parking-list-footer">&copy; 2025 Bãi giữ xe</footer>
     </div>
   );
 };

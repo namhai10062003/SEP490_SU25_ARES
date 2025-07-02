@@ -4,12 +4,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
-import "./myContracts.css";
 
 const MyContracts = () => {
   const { user, loading } = useAuth();
   const [contracts, setContracts] = useState([]);
-  const [filter, setFilter] = useState("all"); // 🆕 Bộ lọc
+  const [filter, setFilter] = useState("all");
   const [editingContract, setEditingContract] = useState(null);
   const [editForm, setEditForm] = useState({
     startDate: "",
@@ -18,24 +17,22 @@ const MyContracts = () => {
   });
   const navigate = useNavigate();
   const location = useLocation();
-  // ✅ Thông báo khi người dùng vừa hủy thanh toán
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const cancel = params.get("cancel");
     const status = params.get("status");
-  
+
     if (cancel === "true" && status === "CANCELLED") {
       toast.info("❌ Bạn đã hủy giao dịch");
-  
-      // ✅ Quay lại đúng trang /my-contracts (xóa query)
       navigate("/my-contracts", { replace: true });
     }
-  
     if (status === "PAID") {
       toast.success("✅ Thanh toán thành công");
       navigate("/my-contracts", { replace: true });
     }
   }, [location.search, navigate]);
+
   useEffect(() => {
     const fetchContracts = async () => {
       try {
@@ -48,7 +45,6 @@ const MyContracts = () => {
         toast.error("❌ Lỗi khi tải hợp đồng");
       }
     };
-
     if (user) fetchContracts();
   }, [user]);
 
@@ -95,12 +91,9 @@ const MyContracts = () => {
           }
         }
       );
-  
       const paymentUrl = res.data.data.paymentUrl;
-  
       if (paymentUrl) {
         toast.success("💳 Đang chuyển đến cổng thanh toán...");
-        // Chuyển hướng sang PayOS
         window.location.href = paymentUrl;
       } else {
         toast.error("❌ Không nhận được link thanh toán");
@@ -110,6 +103,7 @@ const MyContracts = () => {
       toast.error("❌ Lỗi khi tạo thanh toán hợp đồng");
     }
   };
+
   if (loading) return <p>🔄 Đang tải...</p>;
 
   const myTenantContracts = contracts.filter(
@@ -125,7 +119,7 @@ const MyContracts = () => {
   });
 
   return (
-    <div className="contracts-container">
+    <div className="bg-light min-vh-100">
       <Header
         user={user}
         name={user?.name}
@@ -135,118 +129,137 @@ const MyContracts = () => {
         }}
       />
 
-      <h2 className="contracts-title">📄 Hợp đồng của tôi</h2>
+      <div className="container py-4">
+        <h2 className="fw-bold mb-4 text-primary">📄 Hợp đồng của tôi</h2>
 
-      <div className="filter-container">
-  <label>Lọc theo thanh toán:</label>
-  <select
-    value={filter}
-    onChange={(e) => setFilter(e.target.value)}
-    className="filter-select"
-  >
-    <option value="all">Tất cả</option>
-    <option value="paid">Đã thanh toán</option>
-    <option value="unpaid">Chưa thanh toán</option>
-    <option value="failed">Thanh toán thất bại</option>
-  </select>
-</div>
+        <div className="mb-4 d-flex align-items-center gap-2">
+          <label className="fw-semibold">Lọc theo thanh toán:</label>
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="form-select w-auto"
+          >
+            <option value="all">Tất cả</option>
+            <option value="paid">Đã thanh toán</option>
+            <option value="unpaid">Chưa thanh toán</option>
+            <option value="failed">Thanh toán thất bại</option>
+          </select>
+        </div>
 
-      {filteredContracts.length === 0 ? (
-        <p>📭 Không có hợp đồng phù hợp.</p>
-      ) : (
-        <div className="contract-list">
-          {filteredContracts.map((contract, index) => (
-            <div className="contract-card" key={contract._id}>
-              <div className="contract-left">
-                <div className="contract-index">{index + 1}</div>
-                <div className="contract-info">
-                  <h3>🏠 {contract.fullNameA}</h3>
-                  <p>📍 Địa chỉ: {contract.addressA}</p>
-                  <p>📅 Từ: {contract.startDate?.slice(0, 10)} - {contract.endDate?.slice(0, 10)}</p>
-                  <p>💰 Đặt cọc: {contract.depositAmount?.toLocaleString("vi-VN")} VNĐ</p>
-                  <p>📞 Liên hệ: {contract.phoneA}</p>
-                  <p>
-  Trạng thái:{" "}
-  {contract.status === "pending" ? (
-    <span className="status-pending">⏳ Chờ duyệt</span>
-  ) : contract.status === "rejected" ? (
-    <span className="status-rejected">❌ Đã từ chối</span>
-  ) : contract.status === "expired" ? (
-    <span className="status-expired">📅 Đã hết hạn</span>
-  ) : contract.paymentStatus === "paid" ? (
-    <span className="status-paid">✅ Đã thanh toán</span>
-  ) : contract.paymentStatus === "failed" ? (
-    <span className="status-failed">❌ Thanh toán thất bại</span>
-  ) : (
-    <span className="status-unpaid">💵 Chưa thanh toán</span>
-  )}
-</p>
-
-                  {contract.status === "rejected" && (
-                    <>
-                      <p className="reject-reason">📝 Lý do: {contract.rejectionReason || "Không có lý do cụ thể"}</p>
-                      <button className="edit-btn" onClick={() => openEditPopup(contract)}>
-                        CHỈNH SỬA & GỬI LẠI
+        {filteredContracts.length === 0 ? (
+          <div className="alert alert-info">📭 Không có hợp đồng phù hợp.</div>
+        ) : (
+          <div className="row g-4">
+            {filteredContracts.map((contract, index) => (
+              <div className="col-12" key={contract._id}>
+                <div className="card shadow-sm rounded-4 border-0">
+                  <div className="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                    <div className="d-flex align-items-start gap-3 flex-grow-1">
+                      <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: 44, height: 44, fontSize: 20 }}>
+                        {index + 1}
+                      </div>
+                      <div>
+                        <h5 className="fw-bold mb-1">🏠 {contract.fullNameA}</h5>
+                        <div className="mb-1"><span className="fw-semibold">📍 Địa chỉ:</span> {contract.addressA}</div>
+                        <div className="mb-1"><span className="fw-semibold">📅 Từ:</span> {contract.startDate?.slice(0, 10)} - {contract.endDate?.slice(0, 10)}</div>
+                        <div className="mb-1"><span className="fw-semibold">💰 Đặt cọc:</span> {contract.depositAmount?.toLocaleString("vi-VN")} VNĐ</div>
+                        <div className="mb-1"><span className="fw-semibold">📞 Liên hệ:</span> {contract.phoneA}</div>
+                        <div>
+                          <span className="fw-semibold">Trạng thái: </span>
+                          {contract.status === "pending" ? (
+                            <span className="badge bg-warning text-dark">⏳ Chờ duyệt</span>
+                          ) : contract.status === "rejected" ? (
+                            <span className="badge bg-danger">❌ Đã từ chối</span>
+                          ) : contract.status === "expired" ? (
+                            <span className="badge bg-secondary">📅 Đã hết hạn</span>
+                          ) : contract.paymentStatus === "paid" ? (
+                            <span className="badge bg-success">✅ Đã thanh toán</span>
+                          ) : contract.paymentStatus === "failed" ? (
+                            <span className="badge bg-danger">❌ Thanh toán thất bại</span>
+                          ) : (
+                            <span className="badge bg-info text-dark">💵 Chưa thanh toán</span>
+                          )}
+                        </div>
+                        {contract.status === "rejected" && (
+                          <>
+                            <div className="text-danger fst-italic mt-2">
+                              📝 Lý do: {contract.rejectionReason || "Không có lý do cụ thể"}
+                            </div>
+                            <button className="btn btn-outline-primary btn-sm mt-2" onClick={() => openEditPopup(contract)}>
+                              CHỈNH SỬA & GỬI LẠI
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="d-flex flex-column gap-2 mt-3 mt-md-0">
+                      <button
+                        className="btn btn-info fw-bold"
+                        onClick={() => navigate(`/contracts/${contract._id}`)}
+                      >
+                        XEM CHI TIẾT
                       </button>
-                    </>
-                  )}
+                      {contract.status === "approved" && contract.paymentStatus === "unpaid" && (
+                        <button className="btn btn-primary fw-bold" onClick={() => handlePayment(contract._id)}>
+                          THANH TOÁN
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              <div className="contract-actions">
-                <button
-                  className="detail-btn"
-                  onClick={() => navigate(`/contracts/${contract._id}`)}
-                >
-                  XEM CHI TIẾT
-                </button>
-
-                {contract.status === "approved" && contract.paymentStatus === "unpaid" && (
-  <button className="pay-btn" onClick={() => handlePayment(contract._id)}>
-    THANH TOÁN
-  </button>
-)}
-
-                {editingContract && (
-                  <div className="popup-overlay">
-                    <div className="popup">
-                      <h3>✏️ Chỉnh sửa hợp đồng</h3>
-                      <p><strong>👤 Người thuê:</strong> {editingContract.fullNameB} - {editingContract.phoneB}</p>
-                      <p><strong>👤 Chủ nhà:</strong> {editingContract.fullNameA} - {editingContract.phoneA}</p>
-
-                      <label>📅 Ngày bắt đầu</label>
-                      <input
-                        type="date"
-                        value={editForm.startDate}
-                        onChange={(e) => setEditForm({ ...editForm, startDate: e.target.value })}
-                      />
-
-                      <label>📅 Ngày kết thúc</label>
-                      <input
-                        type="date"
-                        value={editForm.endDate}
-                        onChange={(e) => setEditForm({ ...editForm, endDate: e.target.value })}
-                      />
-
-                      <label>📜 Điều khoản hợp đồng</label>
-                      <textarea
-                        rows={4}
-                        value={editForm.contractTerms}
-                        onChange={(e) => setEditForm({ ...editForm, contractTerms: e.target.value })}
-                      />
-
-                      <div className="popup-actions">
-                        <button className="cancel-btn" onClick={() => setEditingContract(null)}>Hủy</button>
-                        <button className="submit-btn" onClick={handleResubmit}>Gửi lại</button>
+                {/* Popup chỉnh sửa */}
+                {editingContract && editingContract._id === contract._id && (
+                  <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.4)" }}>
+                    <div className="modal-dialog modal-dialog-centered">
+                      <div className="modal-content">
+                        <div className="modal-header">
+                          <h5 className="modal-title">✏️ Chỉnh sửa hợp đồng</h5>
+                          <button type="button" className="btn-close" onClick={() => setEditingContract(null)}></button>
+                        </div>
+                        <div className="modal-body">
+                          <div className="mb-2"><strong>👤 Người thuê:</strong> {editingContract.fullNameB} - {editingContract.phoneB}</div>
+                          <div className="mb-2"><strong>👤 Chủ nhà:</strong> {editingContract.fullNameA} - {editingContract.phoneA}</div>
+                          <div className="mb-3">
+                            <label className="form-label">📅 Ngày bắt đầu</label>
+                            <input
+                              type="date"
+                              className="form-control"
+                              value={editForm.startDate}
+                              onChange={(e) => setEditForm({ ...editForm, startDate: e.target.value })}
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label className="form-label">📅 Ngày kết thúc</label>
+                            <input
+                              type="date"
+                              className="form-control"
+                              value={editForm.endDate}
+                              onChange={(e) => setEditForm({ ...editForm, endDate: e.target.value })}
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label className="form-label">📜 Điều khoản hợp đồng</label>
+                            <textarea
+                              rows={4}
+                              className="form-control"
+                              value={editForm.contractTerms}
+                              onChange={(e) => setEditForm({ ...editForm, contractTerms: e.target.value })}
+                            />
+                          </div>
+                        </div>
+                        <div className="modal-footer">
+                          <button className="btn btn-secondary" onClick={() => setEditingContract(null)}>Hủy</button>
+                          <button className="btn btn-success" onClick={handleResubmit}>Gửi lại</button>
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

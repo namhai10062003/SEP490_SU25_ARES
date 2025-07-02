@@ -80,7 +80,7 @@ const ManageApartment = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     // Chỉ kiểm tra các trường bắt buộc (bỏ qua ownerName và ownerPhone)
     const requiredFields = [
       "apartmentCode",
@@ -93,14 +93,14 @@ const ManageApartment = () => {
       "building",
       "legalDocuments"
     ];
-  
+
     const isMissing = requiredFields.some((field) => !form[field]);
-  
+
     if (isMissing) {
       alert("Vui lòng điền đầy đủ thông tin (trừ Chủ sở hữu và SĐT có thể bỏ trống)!");
       return;
     }
-  
+
     const floor = parseInt(form.floor);
     const area = parseInt(form.area);
     const bedrooms = parseInt(form.bedrooms);
@@ -108,9 +108,9 @@ const ManageApartment = () => {
       alert("Tầng, Diện tích, và Số phòng ngủ phải là số!");
       return;
     }
-  
+
     const slug = form.apartmentCode.toLowerCase().replace(/ /g, "-");
-  
+
     const payload = {
       apartmentCode: form.apartmentCode,
       slug,
@@ -126,15 +126,15 @@ const ManageApartment = () => {
       legalDocuments: form.legalDocuments,
       // userId: isEdit ? form.userId : null,
     };
-  
+
     try {
       const url = isEdit
         ? `${import.meta.env.VITE_API_URL}/api/apartments/${form._id}`
         : `${import.meta.env.VITE_API_URL}/api/apartments`;
       const method = isEdit ? "PUT" : "POST";
-  
+
       const res = await axios({ method, url, data: payload });
-  
+
       if (res.status === 200 || res.status === 201) {
         fetchApartments();
         setShowModal(false);
@@ -182,7 +182,7 @@ const ManageApartment = () => {
               style={{ padding: "0.5rem", width: "200px", marginRight: "1rem" }}
             />
             <button
-              className="btn btn-sm btn-primary"
+              className="btn btn-sm btn-primary w-bold rounded-pill px-4 py-2 align-items-center gap-2 shadow-sm"
               onClick={() => {
                 setIsEdit(false);
                 setForm({
@@ -202,7 +202,7 @@ const ManageApartment = () => {
                 setShowModal(true);
               }}
             >
-              Tạo Căn hộ
+              + Tạo Căn hộ
             </button>
           </div>
         </div>
@@ -269,10 +269,14 @@ const ManageApartment = () => {
             </table>
           </div>
         </div>
-        <div style={{ marginTop: "1rem", display: "flex", alignItems: "center", gap: "1rem" }}>
-          <button className="btn btn-sm btn-outline-secondary">Prev</button>
-          <span>Trang 1/1</span>
-          <button className="btn btn-sm btn-outline-secondary">Next</button>
+        <div className="d-flex justify-content-center align-items-center mt-4">
+          <button className="btn btn-outline-secondary me-2" disabled>
+            &lt; Prev
+          </button>
+          <span style={{ minWidth: 90, textAlign: "center" }}>Trang 1/1</span>
+          <button className="btn btn-outline-secondary ms-2" disabled>
+            Next &gt;
+          </button>
         </div>
       </div>
 
@@ -296,121 +300,125 @@ const ManageApartment = () => {
                   </button>
                 </div>
                 <div className="modal-body">
-                  <div className="form-group">
-                    <label>Tên Căn hộ</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="apartmentCode"
-                      value={form.apartmentCode}
-                      onChange={handleChange}
-                      placeholder="Nhập mã căn hộ (ví dụ: P2-18.01)"
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Tầng</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="floor"
-                      value={form.floor}
-                      onChange={handleChange}
-                      placeholder="Nhập số tầng"
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Diện tích (m²)</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="area"
-                      value={form.area}
-                      onChange={handleChange}
-                      placeholder="Nhập diện tích (m²)"
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Trạng thái</label>
-                    <div className="form-group">
-                      <select name="status" value={form.status} onChange={handleChange} className="form-control" required>
-                        <option value="">-- Chọn trạng thái --</option>
-                        <option value="đang ở">Đang ở</option>
-                        <option value="đang cho thuê">Đang cho thuê</option>
-                        <option value="chưa có chủ sở hữu">Chưa có chủ sở hữu</option>
-                      </select>
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label>Tên Căn hộ</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="apartmentCode"
+                          value={form.apartmentCode}
+                          onChange={handleChange}
+                          placeholder="Nhập mã căn hộ (ví dụ: P2-18.01)"
+                          required
+                        />
+                      </div>
+                      <div className="form-group mt-2">
+                        <label>Tầng</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="floor"
+                          value={form.floor}
+                          onChange={handleChange}
+                          placeholder="Nhập số tầng"
+                          required
+                        />
+                      </div>
+                      <div className="form-group mt-2">
+                        <label>Diện tích (m²)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="area"
+                          value={form.area}
+                          onChange={handleChange}
+                          placeholder="Nhập diện tích (m²)"
+                          required
+                        />
+                      </div>
+                      <div className="form-group mt-2">
+                        <label>Trạng thái</label>
+                        <select name="status" value={form.status} onChange={handleChange} className="form-control" required>
+                          <option value="">-- Chọn trạng thái --</option>
+                          <option value="đang ở">Đang ở</option>
+                          <option value="đang cho thuê">Đang cho thuê</option>
+                          <option value="chưa có chủ sở hữu">Chưa có chủ sở hữu</option>
+                        </select>
+                      </div>
+                      <div className="form-group mt-2">
+                        <label>Chủ sở hữu</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="ownerName"
+                          value={form.ownerName}
+                          onChange={handleChange}
+                          placeholder="Nhập tên chủ sở hữu"
+                        />
+                      </div>
+                      <div className="form-group mt-2">
+                        <label>SĐT</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          name="ownerPhone"
+                          value={form.ownerPhone}
+                          onChange={handleChange}
+                          placeholder="Nhập số điện thoại"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="form-group">
-                    <label>Chủ sở hữu</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="ownerName"
-                      value={form.ownerName}
-                      onChange={handleChange}
-                      placeholder="Nhập tên chủ sở hữu"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>SĐT</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="ownerPhone"
-                      value={form.ownerPhone}
-                      onChange={handleChange}
-                      placeholder="Nhập số điện thoại"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Số phòng ngủ</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="bedrooms"
-                      value={form.bedrooms}
-                      onChange={handleChange}
-                      placeholder="Nhập số phòng ngủ"
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Nội thất</label>
-                    <select name="furniture" value={form.furniture} onChange={handleChange} className="form-control" required>
-                      <option value="">-- Chọn nội thất --</option>
-                      <option value="Đầy đủ">Đầy đủ</option>
-                      <option value="Cơ bản">Cơ bản</option>
-                      <option value="Không có">Không có</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Hướng</label>
-                    <select name="direction" value={form.direction} onChange={handleChange} className="form-control" required>
-                      <option value="">-- Chọn hướng --</option>
-                      <option value="Đông">Đông</option>
-                      <option value="Tây">Tây</option>
-                      <option value="Nam">Nam</option>
-                      <option value="Bắc">Bắc</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Tòa nhà</label>
-                    <select name="building" value={form.building} onChange={handleChange} className="form-control" required>
-                      <option value="">-- Chọn tòa nhà --</option>
-                      <option value="Plaza 1">Plaza 1</option>
-                      <option value="Plaza 2">Plaza 2</option>
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Tài liệu pháp lý</label>
-                    <select name="legalDocuments" value={form.legalDocuments} onChange={handleChange} className="form-control" required>
-                      <option value="">-- Chọn tài liệu --</option>
-                      <option value="sổ hồng">Sổ hồng</option>
-                      <option value="chưa có sổ">Chưa có sổ</option>
-                    </select>
+                    <div className="col-md-6">
+                      <div className="form-group">
+                        <label>Số phòng ngủ</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="bedrooms"
+                          value={form.bedrooms}
+                          onChange={handleChange}
+                          placeholder="Nhập số phòng ngủ"
+                          required
+                        />
+                      </div>
+                      <div className="form-group mt-2">
+                        <label>Nội thất</label>
+                        <select name="furniture" value={form.furniture} onChange={handleChange} className="form-control" required>
+                          <option value="">-- Chọn nội thất --</option>
+                          <option value="Đầy đủ">Đầy đủ</option>
+                          <option value="Cơ bản">Cơ bản</option>
+                          <option value="Không có">Không có</option>
+                        </select>
+                      </div>
+                      <div className="form-group mt-2">
+                        <label>Hướng</label>
+                        <select name="direction" value={form.direction} onChange={handleChange} className="form-control" required>
+                          <option value="">-- Chọn hướng --</option>
+                          <option value="Đông">Đông</option>
+                          <option value="Tây">Tây</option>
+                          <option value="Nam">Nam</option>
+                          <option value="Bắc">Bắc</option>
+                        </select>
+                      </div>
+                      <div className="form-group mt-2">
+                        <label>Tòa nhà</label>
+                        <select name="building" value={form.building} onChange={handleChange} className="form-control" required>
+                          <option value="">-- Chọn tòa nhà --</option>
+                          <option value="Plaza 1">Plaza 1</option>
+                          <option value="Plaza 2">Plaza 2</option>
+                        </select>
+                      </div>
+                      <div className="form-group mt-2">
+                        <label>Tài liệu pháp lý</label>
+                        <select name="legalDocuments" value={form.legalDocuments} onChange={handleChange} className="form-control" required>
+                          <option value="">-- Chọn tài liệu --</option>
+                          <option value="sổ hồng">Sổ hồng</option>
+                          <option value="chưa có sổ">Chưa có sổ</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="modal-footer">

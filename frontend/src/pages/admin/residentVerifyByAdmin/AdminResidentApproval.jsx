@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import './residentVerifyListByAdmin.css'; // dùng CSS đã sửa theo sidebar mới
 
 const AdminResidentApproval = () => {
   const [residents, setResidents] = useState([]);
@@ -56,78 +55,84 @@ const AdminResidentApproval = () => {
   };
 
   return (
-    <div className="adminx-layout">
-      {/* === Sidebar mới === */}
-      <aside className="adminx-sidebar">
-        <h5 className="adminx-sidebar-title">ADMIN PANEL</h5>
-        <ul className="adminx-nav-list">
-          <li><Link to="/admin-dashboard" className="adminx-nav-link">• Tổng quan</Link></li>
-          <li><Link to="/admin-dashboard/reports" className="adminx-nav-link">• Quản lí bài Report</Link></li>
-          <li><Link to="/admin-dashboard/create-account" className="adminx-nav-link">• Tạo tài khoản</Link></li>
-          <li><Link to="/admin-dashboard/posts" className="adminx-nav-link">• Quản lí bài Post</Link></li>
-          <li><Link to="/admin-dashboard/revenue" className="adminx-nav-link">• Phân tích doanh thu</Link></li>
-          <li><Link to="/admin-dashboard/notifications" className="adminx-nav-link">• Gửi thông báo</Link></li>
-          <li><Link to="/admin-dashboard/manage-user" className="adminx-nav-link">• Quản lí User</Link></li>
-          <li><Link to="/admin-dashboard/manage-staff" className="adminx-nav-link">• Quản lí Staff</Link></li>
-          <li><Link to="/admin-dashboard/manage-apartment" className="adminx-nav-link">• Quản lí Căn hộ</Link></li>
-          <li><Link to="/admin-dashboard/resident-verify-admin" className="adminx-nav-link active">• Quản lí Nhân Khẩu</Link></li>
-          <li><Link to="/admin-dashboard/manage-resident-verification" className="text-white text-decoration-none d-block py-1">• Quản lý xác nhận cư dân</Link></li>
-          <li><Link to="/login" className="adminx-nav-link">Đăng xuất</Link></li>
+    <div className="d-flex min-vh-100">
+      {/* Sidebar */}
+      <aside className="bg-primary text-white p-3" style={{ minWidth: 220 }}>
+        <h5 className="fw-bold text-uppercase mb-4">ADMIN PANEL</h5>
+        <ul className="nav flex-column gap-1">
+          <li><Link to="/admin-dashboard" className="nav-link text-white">• Tổng quan</Link></li>
+          <li><Link to="/admin-dashboard/reports" className="nav-link text-white">• Quản lí bài Report</Link></li>
+          <li><Link to="/admin-dashboard/create-account" className="nav-link text-white">• Tạo tài khoản</Link></li>
+          <li><Link to="/admin-dashboard/posts" className="nav-link text-white">• Quản lí bài Post</Link></li>
+          <li><Link to="/admin-dashboard/revenue" className="nav-link text-white">• Phân tích doanh thu</Link></li>
+          <li><Link to="/admin-dashboard/notifications" className="nav-link text-white">• Gửi thông báo</Link></li>
+          <li><Link to="/admin-dashboard/manage-user" className="nav-link text-white">• Quản lí User</Link></li>
+          <li><Link to="/admin-dashboard/manage-staff" className="nav-link text-white">• Quản lí Staff</Link></li>
+          <li><Link to="/admin-dashboard/manage-apartment" className="nav-link text-white">• Quản lí Căn hộ</Link></li>
+          <li><Link to="/admin-dashboard/resident-verify-admin" className="nav-link active bg-white text-primary fw-bold">• Quản lí Nhân Khẩu</Link></li>
+          <li><Link to="/admin-dashboard/manage-resident-verification" className="nav-link text-white">• Quản lý xác nhận cư dân</Link></li>
+          <li><Link to="/login" className="nav-link text-white">Đăng xuất</Link></li>
         </ul>
       </aside>
 
-      {/* === Main Content === */}
-      <main className="adminx-main">
-        <h3>Danh sách nhân khẩu đã xác minh bởi nhân viên</h3>
+      {/* Main Content */}
+      <main className="flex-grow-1 p-4 bg-light">
+        <h3 className="mb-4 fw-bold text-primary">Danh sách nhân khẩu đã xác minh bởi nhân viên</h3>
 
         {loading ? (
-          <p>Đang tải dữ liệu...</p>
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary mb-2"></div>
+            <div>Đang tải dữ liệu...</div>
+          </div>
         ) : residents.length === 0 ? (
-          <p>Không có nhân khẩu nào đang chờ admin duyệt.</p>
+          <div className="alert alert-info">Không có nhân khẩu nào đang chờ admin duyệt.</div>
         ) : (
-          <table className="resident-verify-table">
-            <thead>
-              <tr>
-                <th>Họ tên</th>
-                <th>Căn hộ</th>
-                <th>Giới tính</th>
-                <th>Ngày sinh</th>
-                <th>Quan hệ</th>
-                <th>CCCD</th>
-                <th>Ngày cấp</th>
-                <th>Ảnh CCCD</th>
-                <th>Duyệt</th>
-              </tr>
-            </thead>
-            <tbody>
-              {residents.map((r) => (
-                <tr key={r._id}>
-                  <td>{r.fullName}</td>
-                  <td>{r.apartmentId?.apartmentCode || '---'}</td>
-                  <td>{r.gender}</td>
-                  <td>{r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString('vi-VN') : ''}</td>
-                  <td>{r.relationWithOwner}</td>
-                  <td>{r.idNumber}</td>
-                  <td>{r.issueDate ? new Date(r.issueDate).toLocaleDateString('vi-VN') : ''}</td>
-                  <td>
-                    {r.documentFront ? (
-                      <img
-                        src={r.documentFront}
-                        alt="CCCD"
-                        className="thumb"
-                        onClick={() => openImage(r.documentFront)}
-                      />
-                    ) : '---'}
-                  </td>
-                  <td>
-                    <button className="btn-verify" onClick={() => handleApprove(r._id)}>
-                      Duyệt
-                    </button>
-                  </td>
+          <div className="table-responsive">
+            <table className="table table-bordered align-middle bg-white rounded-4 shadow-sm">
+              <thead className="table-primary">
+                <tr>
+                  <th>Họ tên</th>
+                  <th>Căn hộ</th>
+                  <th>Giới tính</th>
+                  <th>Ngày sinh</th>
+                  <th>Quan hệ</th>
+                  <th>CCCD</th>
+                  <th>Ngày cấp</th>
+                  <th>Ảnh CCCD</th>
+                  <th>Duyệt</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {residents.map((r) => (
+                  <tr key={r._id}>
+                    <td>{r.fullName}</td>
+                    <td>{r.apartmentId?.apartmentCode || '---'}</td>
+                    <td>{r.gender}</td>
+                    <td>{r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString('vi-VN') : ''}</td>
+                    <td>{r.relationWithOwner}</td>
+                    <td>{r.idNumber}</td>
+                    <td>{r.issueDate ? new Date(r.issueDate).toLocaleDateString('vi-VN') : ''}</td>
+                    <td>
+                      {r.documentFront ? (
+                        <img
+                          src={r.documentFront}
+                          alt="CCCD"
+                          className="img-thumbnail"
+                          style={{ width: 60, cursor: "pointer", borderRadius: 6 }}
+                          onClick={() => openImage(r.documentFront)}
+                        />
+                      ) : '---'}
+                    </td>
+                    <td>
+                      <button className="btn btn-success btn-sm px-3" onClick={() => handleApprove(r._id)}>
+                        Duyệt
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </main>
     </div>
