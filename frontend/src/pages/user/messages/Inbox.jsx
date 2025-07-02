@@ -12,10 +12,7 @@ const Inbox = ({ currentUserId }) => {
       try {
         const res = await axios.get(`http://localhost:4000/api/messages/recent-sender/${currentUserId}`);
         const data = res.data.data || [];
-
-        // Loại bỏ chính mình khỏi danh sách nếu có (phòng trường hợp lỗi gửi cho chính mình)
         const filtered = data.filter(user => user._id !== currentUserId);
-
         setPartners(filtered);
 
         if (filtered.length > 0) {
@@ -31,38 +28,50 @@ const Inbox = ({ currentUserId }) => {
   }, [currentUserId]);
 
   return (
-    <div style={{ display: "flex", height: "400px" }}>
-      <div style={{ width: "200px", borderRight: "1px solid #ccc", overflowY: "auto" }}>
-        <h4>💬 Người đã nhắn</h4>
-        {partners.length === 0 && <p>Không có cuộc hội thoại nào</p>}
-        {partners.map((p) => (
-          <div
-            key={p._id}
-            style={{
-              padding: "8px",
-              cursor: "pointer",
-              backgroundColor: p._id === selectedUserId ? "#ddd" : "transparent",
-            }}
-            onClick={() => {
-              setSelectedUserId(p._id);
-              setSelectedUserName(p.name || p.email || "Người dùng");
-            }}
-          >
-            {p.name || p.email}
-          </div>
-        ))}
+    <div className="h-100 d-flex flex-column flex-md-row" style={{ minHeight: 400, height: "100%" }}>
+      {/* Sidebar */}
+      <div className="bg-light border-end" style={{ width: 220, minWidth: 180, maxWidth: 260, height: "100%" }}>
+        <div className="p-3 border-bottom bg-primary text-white">
+          <h6 className="mb-0 fw-bold">💬 Người đã nhắn</h6>
+        </div>
+        <div className="list-group list-group-flush">
+          {partners.length === 0 && (
+            <div className="text-center text-secondary py-4">Không có cuộc hội thoại nào</div>
+          )}
+          {partners.map((p) => (
+            <button
+              key={p._id}
+              className={`list-group-item list-group-item-action border-0 text-start ${p._id === selectedUserId ? "active" : ""}`}
+              style={{ fontWeight: p._id === selectedUserId ? "bold" : "normal" }}
+              onClick={() => {
+                setSelectedUserId(p._id);
+                setSelectedUserName(p.name || p.email || "Người dùng");
+              }}
+            >
+              <span className="me-2">👤</span>
+              {p.name || p.email}
+            </button>
+          ))}
+        </div>
       </div>
-
-      <div style={{ flex: 1, paddingLeft: 16 }}>
-        {selectedUserId ? (
-          <ChatBox
-            currentUserId={currentUserId}
-            receiverId={selectedUserId}
-            receiverName={selectedUserName}
-          />
-        ) : (
-          <p>Chọn người để xem hội thoại</p>
-        )}
+      {/* Chat Box */}
+      <div className="flex-grow-1 d-flex flex-column" style={{ minHeight: 400 }}>
+        <div className="border-bottom p-3 bg-white">
+          <h6 className="mb-0 fw-bold text-primary">
+            {selectedUserName ? `Đang chat với: ${selectedUserName}` : "Chọn người để xem hội thoại"}
+          </h6>
+        </div>
+        <div className="flex-grow-1 p-3 bg-light" style={{ minHeight: 300, height: "100%" }}>
+          {selectedUserId ? (
+            <ChatBox
+              currentUserId={currentUserId}
+              receiverId={selectedUserId}
+              receiverName={selectedUserName}
+            />
+          ) : (
+            <div className="text-center text-secondary py-5">Chọn người để xem hội thoại</div>
+          )}
+        </div>
       </div>
     </div>
   );

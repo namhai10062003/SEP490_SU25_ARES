@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
-import "./updateProfile.css";
 
 const UpdateProfileForm = () => {
   const { user, logout } = useAuth();
@@ -27,7 +26,7 @@ const UpdateProfileForm = () => {
     jobTitle: "",
   });
 
-  // ✅ Lấy dữ liệu user để fill vào form
+  // Lấy dữ liệu user để fill vào form
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -115,90 +114,98 @@ const UpdateProfileForm = () => {
   };
 
   return (
-    <div className="update-profile-page">
+    <div className="bg-light min-vh-100">
       <Header user={user} name={name} logout={logout} />
-      <div className="update-profile-container">
-        <h2 className="update-profile-title">Cập nhật thông tin cá nhân</h2>
+      <div className="container py-5">
+        <div className="bg-white rounded-4 shadow p-4 mx-auto" style={{ maxWidth: 600 }}>
+          <h2 className="fw-bold text-center mb-4">Cập nhật thông tin cá nhân</h2>
 
-        <div className="avatar-wrapper" onClick={() => fileInputRef.current.click()}>
-          <img
-            src={previewImage || "/default-avatar.png"}
-            alt="Avatar"
-            className="avatar-preview"
+          <div
+            className="d-flex flex-column align-items-center mb-4"
+            style={{ cursor: "pointer" }}
+            onClick={() => fileInputRef.current.click()}
+          >
+            <img
+              src={previewImage || "/default-avatar.png"}
+              alt="Avatar"
+              className="rounded-circle border border-3 border-primary shadow"
+              style={{ width: 120, height: 120, objectFit: "cover", transition: "transform 0.3s" }}
+            />
+            <span className="mt-2 text-primary fw-semibold">Nhấn để đổi ảnh</span>
+          </div>
+
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            ref={fileInputRef}
+            onChange={handleImageChange}
           />
-          <p className="avatar-text">Nhấn để đổi ảnh</p>
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label className="form-label">Họ tên</label>
+              <input type="text" name="name" value={form.name} onChange={handleChange} className="form-control" required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">SĐT</label>
+              <input type="text" name="phone" value={form.phone} onChange={handleChange} className="form-control" required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Giới tính</label>
+              <select name="gender" value={form.gender} onChange={handleChange} className="form-select" required>
+                <option value="">-- Chọn giới tính --</option>
+                <option value="male">Nam</option>
+                <option value="female">Nữ</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Ngày sinh</label>
+              <input type="date" name="dob" value={form.dob} onChange={handleChange} className="form-control" required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Địa chỉ</label>
+              <input type="text" name="address" value={form.address} onChange={handleChange} className="form-control" required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">CMND/CCCD</label>
+              <input type="text" name="identityNumber" value={form.identityNumber} onChange={handleChange} className="form-control" required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Giới thiệu</label>
+              <textarea name="bio" rows="3" value={form.bio} onChange={handleChange} className="form-control" required></textarea>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Nghề nghiệp</label>
+              <input type="text" name="jobTitle" value={form.jobTitle} onChange={handleChange} className="form-control" required />
+            </div>
+
+            <div className="d-flex justify-content-between gap-2 mt-4">
+              <button
+                type="button"
+                className="btn btn-secondary px-4"
+                onClick={() => navigate(-1)}
+              >
+                ← Quay lại
+              </button>
+              <button type="submit" className="btn btn-primary px-4">
+                Cập nhật
+              </button>
+            </div>
+          </form>
         </div>
-
-        <input
-          type="file"
-          accept="image/*"
-          style={{ display: "none" }}
-          ref={fileInputRef}
-          onChange={handleImageChange}
-        />
-
-        <form onSubmit={handleSubmit} className="update-profile-form">
-          <div className="form-group">
-            <label>Họ tên</label>
-            <input type="text" name="name" value={form.name} onChange={handleChange} required />
-          </div>
-
-          <div className="form-group">
-            <label>SĐT</label>
-            <input type="text" name="phone" value={form.phone} onChange={handleChange} required />
-          </div>
-
-          <div className="form-group">
-            <label>Giới tính</label>
-            <select name="gender" value={form.gender} onChange={handleChange} required>
-              <option value="">-- Chọn giới tính --</option>
-              <option value="male">Nam</option>
-              <option value="female">Nữ</option>
-              <option value="other">Khác</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label>Ngày sinh</label>
-            <input type="date" name="dob" value={form.dob} onChange={handleChange} required />
-          </div>
-
-          <div className="form-group">
-            <label>Địa chỉ</label>
-            <input type="text" name="address" value={form.address} onChange={handleChange} required />
-          </div>
-
-          <div className="form-group">
-            <label>CMND/CCCD</label>
-            <input type="text" name="identityNumber" value={form.identityNumber} onChange={handleChange} required />
-          </div>
-
-          <div className="form-group">
-            <label>Giới thiệu</label>
-            <textarea name="bio" rows="3" value={form.bio} onChange={handleChange} required></textarea>
-          </div>
-
-          <div className="form-group">
-            <label>Nghề nghiệp</label>
-            <input type="text" name="jobTitle" value={form.jobTitle} onChange={handleChange} required />
-          </div>
-
-          <div className="button-group">
-            <button
-              type="button"
-              className="back-button"
-              onClick={() => navigate(-1)}
-            >
-              ← Quay lại
-            </button>
-
-            <button type="submit" className="submit-button">
-              Cập nhật
-            </button>
-          </div>
-        </form>
+        <footer className="text-center mt-4 text-secondary small">
+          &copy; 2025 Hồ sơ người dùng
+        </footer>
       </div>
-      <footer className="update-profile-footer">&copy; 2025 Hồ sơ người dùng</footer>
     </div>
   );
 };

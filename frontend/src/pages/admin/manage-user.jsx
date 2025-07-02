@@ -105,15 +105,15 @@ const ManageUsers = () => {
                                         <td>{user.email}</td>
                                         <td>{user.phone || "-"}</td>
                                         <td>
-                                            <span className={`badge ${user.status ? "badge-success" : "badge-secondary"}`}>
+                                            <span className={`badge ${user.status ? "bg-success" : "bg-secondary"}`}>
                                                 {user.status ? "Active" : "Blocked"}
                                             </span>
                                         </td>
                                         <td>
                                             {user.verified ? (
-                                                <span className="badge badge-success">Đã xác thực</span>
+                                                <span className="badge bg-success">Đã xác thực</span>
                                             ) : (
-                                                <span className="badge badge-warning">Chưa xác thực</span>
+                                                <span className="badge bg-warning text-dark">Chưa xác thực</span>
                                             )}
                                         </td>
                                         <td>

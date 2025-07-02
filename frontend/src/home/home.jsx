@@ -83,8 +83,8 @@ const Home = () => {
                 type="search"
                 placeholder="Nhập tên dự án, khu vực..."
                 style={{
-                  fontSize: 20,
-                  height: 120,
+                  fontSize: 18,
+                  height: 60,
                   width: "50%",
                   border: "none",
                   outline: "none",
@@ -102,8 +102,8 @@ const Home = () => {
               <button
                 type="submit"
                 style={{
-                  fontSize: 28,
-                  height: 120,
+                  fontSize: 18,
+                  height: 60,
                   width: "50%",
                   border: "none",
                   outline: "none",
