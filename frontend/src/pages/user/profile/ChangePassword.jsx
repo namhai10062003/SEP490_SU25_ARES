@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
-import "./changePassword.css";
 
 const ChangePassword = () => {
   const { user, logout } = useAuth();
@@ -49,62 +48,64 @@ const ChangePassword = () => {
   };
 
   return (
-    <div className="change-password-page">
+    <div className="bg-light min-vh-100">
       <Header user={user} name={user?.name} logout={logout} />
-      <div className="change-password-container">
-        <h2 className="change-password-title">Đổi mật khẩu</h2>
-
-        <form className="change-password-form" onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Email</label>
-            <input type="email" value={user?.email || ""} disabled />
-          </div>
-
-          <div className="form-group">
-            <label>Mật khẩu cũ</label>
-            <input
-              type="password"
-              value={oldPassword}
-              onChange={(e) => setOldPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Mật khẩu mới</label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Xác nhận mật khẩu mới</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <button type="submit" className="submit-button">
-            Cập nhật mật khẩu
-          </button>
-          <div style={{ textAlign: "center", marginTop: "20px" }}>
-  <button
-    type="button"
-    className="back-button"
-    onClick={() => navigate(-1)}
-  >
-    ⬅️ Quay lại
-  </button>
-</div>
-        </form>
+      <div className="container py-5">
+        <div className="bg-white rounded-4 shadow p-4 mx-auto" style={{ maxWidth: 500 }}>
+          <h2 className="fw-bold text-center mb-4">Đổi mật khẩu</h2>
+          <form onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label className="form-label">Email</label>
+              <input type="email" className="form-control" value={user?.email || ""} disabled />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Mật khẩu cũ</label>
+              <input
+                type="password"
+                className="form-control"
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Mật khẩu mới</label>
+              <input
+                type="password"
+                className="form-control"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <label className="form-label">Xác nhận mật khẩu mới</label>
+              <input
+                type="password"
+                className="form-control"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            </div>
+            <button type="submit" className="btn btn-primary w-100 fw-bold">
+              Cập nhật mật khẩu
+            </button>
+            <div className="text-center mt-3">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => navigate(-1)}
+              >
+                ⬅️ Quay lại
+              </button>
+            </div>
+          </form>
+        </div>
+        <footer className="text-center mt-4 text-secondary small">
+          &copy; 2025 Đổi mật khẩu
+        </footer>
       </div>
-      <footer className="update-profile-footer">&copy; 2025 Đổi mật khẩu</footer>
     </div>
   );
 };

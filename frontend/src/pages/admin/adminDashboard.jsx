@@ -9,7 +9,7 @@ export default function AdminDashboard({ children }) {
       <div className="row g-0">
         {/* Sidebar */}
         <aside className="col-12 col-md-3 col-lg-2 bg-primary text-white d-flex flex-column p-4 min-vh-100">
-          <h5 className="fw-bold text-uppercase mb-4 letter-spacing-1">ADMIN PANEL</h5>
+          <h5 className="fw-bold text-uppercase mb-4" style={{ letterSpacing: 1 }}>ADMIN PANEL</h5>
           <ul className="nav flex-column">
             <li className="nav-item mb-2">
               <Link to="/admin-dashboard" className={`nav-link text-white ${location.pathname === "/admin-dashboard" ? "active fw-bold bg-white bg-opacity-25 rounded" : ""}`}>• Tổng quan</Link>

@@ -12,8 +12,9 @@ const ManageStaff = () => {
     const [form, setForm] = useState({ username: "", password: "", email: "" });
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const PAGE_SIZE = 10;
 
-    // Fetch staff list on mount
     useEffect(() => {
         fetchStaff();
     }, []);
@@ -23,6 +24,7 @@ const ManageStaff = () => {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/staff`);
             const data = await res.json();
             setStaffList(data);
+            setPage(1); // Reset page về 1 khi load lại
         } catch (err) {
             toast.error("Không thể tải danh sách staff!");
         }
@@ -116,14 +118,41 @@ const ManageStaff = () => {
         }
     };
 
+    // Filter and pagination logic
+    const [filterStatus, setFilterStatus] = useState("");
+
+    const filteredStaff = filterStatus === ""
+        ? staffList
+        : staffList.filter(staff => String(staff.status) === filterStatus);
+
+    const pagedStaff = filteredStaff.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    const totalPages = Math.ceil(filteredStaff.length / PAGE_SIZE) || 1;
+
     return (
         <AdminDashboard>
             <div className="w-100">
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2 className="font-weight-bold">Quản lý Staff</h2>
-                    <button className="btn btn-primary" onClick={openAdd}>
-                        <FontAwesomeIcon icon={faPlus} className="mr-2" /> Thêm Staff
+                    <h2 className="fw-bold mb-0">Quản lý Staff</h2>
+                    <button
+                        className="btn btn-primary fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm"
+                        onClick={openAdd}
+                    >
+                        <FontAwesomeIcon icon={faPlus} />
+                        Thêm Staff
                     </button>
+
+                </div>
+                <div className="mb-3 d-flex">
+                    <select
+                        className="form-control"
+                        style={{ maxWidth: 220 }}
+                        value={filterStatus}
+                        onChange={e => { setPage(1); setFilterStatus(e.target.value); }}
+                    >
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="1">Active</option>
+                        <option value="0">Blocked</option>
+                    </select>
                 </div>
                 <div className="card w-100">
                     <div className="card-body p-0">
@@ -139,9 +168,9 @@ const ManageStaff = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {staffList.map((staff, idx) => (
+                                {pagedStaff.map((staff, idx) => (
                                     <tr key={staff._id}>
-                                        <td>{idx + 1}</td>
+                                        <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
                                         <td>{staff.name}</td>
                                         <td>{staff.email}</td>
                                         {/* <td>
@@ -167,19 +196,21 @@ const ManageStaff = () => {
                                             </button>
                                         </td> */}
                                         <td>
-                                            <span className={`badge ${staff.status ? "badge-success" : "badge-secondary"}`}>
+                                            <span className={`badge ${staff.status ? "bg-success" : "bg-secondary"}`}>
                                                 {staff.status ? "Active" : "Blocked"}
                                             </span>
                                         </td>
                                         <td>
                                             <button
-                                                className="btn btn-sm btn-outline-primary mr-2"
+                                                className="btn btn-sm btn-outline-primary me-2"
+                                                style={{ whiteSpace: "nowrap", minWidth: 70 }}
                                                 onClick={() => openUpdate(staff)}
                                             >
                                                 Cập nhật
                                             </button>
                                             <button
                                                 className={`btn btn-sm ${staff.status ? "btn-outline-danger" : "btn-outline-success"}`}
+                                                style={{ whiteSpace: "nowrap", minWidth: 70 }}
                                                 onClick={() => handleToggleStatus(staff)}
                                             >
                                                 {staff.status ? "Block" : "Active"}
@@ -197,6 +228,27 @@ const ManageStaff = () => {
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                {/* Pagination */}
+                <div className="d-flex justify-content-center align-items-center mt-4">
+                    <button
+                        className="btn btn-outline-secondary me-2"
+                        onClick={() => setPage(page - 1)}
+                        disabled={page <= 1}
+                    >
+                        &lt; Prev
+                    </button>
+                    <span style={{ minWidth: 90, textAlign: "center" }}>
+                        Trang {page} / {totalPages}
+                    </span>
+                    <button
+                        className="btn btn-outline-secondary ms-2"
+                        onClick={() => setPage(page + 1)}
+                        disabled={page >= totalPages}
+                    >
+                        Next &gt;
+                    </button>
                 </div>
 
                 {/* Modal */}
@@ -255,16 +307,14 @@ const ManageStaff = () => {
                                                     onChange={handleChange}
                                                     required
                                                 />
-                                                <div className="input-group-append">
-                                                    <button
-                                                        className="btn btn-outline-secondary"
-                                                        type="button"
-                                                        onClick={() => setShowPassword(!showPassword)}
-                                                        tabIndex={-1}
-                                                    >
-                                                        <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-                                                    </button>
-                                                </div>
+                                                <button
+                                                    className="btn btn-outline-secondary"
+                                                    type="button"
+                                                    onClick={() => setShowPassword(!showPassword)}
+                                                    tabIndex={-1}
+                                                >
+                                                    <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>

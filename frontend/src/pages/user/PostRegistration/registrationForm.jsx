@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Header from "../../../../components/header.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
 import { createPost } from "../../../service/postService.js";
+
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
     loaiHinh: "",
@@ -24,13 +25,13 @@ const RegistrationForm = () => {
   });
   const { user, logout } = useAuth();
   const [name, setName] = useState(null);
-  const [loaiBaiDang, setLoaiBaiDang] = useState("ban"); // từ sidebar
-  const [loaiHinhCon, setLoaiHinhCon] = useState(""); // ví dụ: "nha_can_ho" hoặc "nha_dat"
+  const [loaiBaiDang, setLoaiBaiDang] = useState("ban");
+  const [loaiHinhCon, setLoaiHinhCon] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setName(user?.name || null);
   }, [user]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -85,7 +86,6 @@ const RegistrationForm = () => {
         setIsSubmitting(false);
         return;
       }
-      // Create FormData for API submission
       const submitData = new FormData();
       submitData.append("type", loaiBaiDang);
       submitData.append("title", formData.tieuDe);
@@ -100,18 +100,14 @@ const RegistrationForm = () => {
       submitData.append("postPackage", formData.postPackage);
       submitData.append("phone", formData.thongTinNguoiDangBan);
 
-      // Add images
       formData.images.forEach((image) => {
-        submitData.append("images", image); // ✅ đúng
+        submitData.append("images", image);
       });
-      // submitData.append("loaiBaiDang", loaiBaiDang); // 👈 gửi kèm loại bài đăng
 
-      // Call API (replace with your actual endpoint)
       const response = await createPost(submitData);
 
       if (response.data.success) {
         alert("Đăng tin thành công!");
-        // Reset form
         setFormData({
           loaiHinh: "",
           tenThanhPho: "",
@@ -144,781 +140,394 @@ const RegistrationForm = () => {
   };
 
   return (
-    <div style={styles.container}>
+    <div className="bg-light min-vh-100">
       <Header user={user} name={name} logout={logout} />
-      <div style={styles.formWrapper}>
-        <div style={styles.header}>
-          <h1 style={styles.headerTitle}>🏠 Đăng tin</h1>
-          <p style={styles.headerSubtitle}>
+      <div className="container py-5">
+        <div className="bg-white rounded-4 shadow p-4 mb-4">
+          <h1 className="fw-bold text-center mb-2">🏠 Đăng tin</h1>
+          <p className="text-center text-secondary mb-4">
             Đăng tin các dịch vụ nhanh chóng và vô cùng dễ dàng
           </p>
-        </div>
-        <div style={styles.pageLayout}>
-          {/* Sidebar bên trái */}
-          <div style={styles.sidebar}>
-            <h3>Chọn loại bài đăng</h3>
-            <ul style={styles.sidebarList}>
-              <li
-                style={{
-                  ...styles.sidebarItem,
-                  ...(loaiBaiDang === "ban" ? styles.activeItem : {}),
-                }}
-                onClick={() => {
-                  setLoaiBaiDang("ban");
-                  setLoaiHinhCon("");
-                  setFormData((prev) => ({ ...prev, loaiHinh: "" }));
-                }}
-              >
-                Tin Bán
-              </li>
-
-              <li
-                style={{
-                  ...styles.sidebarItem,
-                  ...(loaiBaiDang === "cho_thue" ? styles.activeItem : {}),
-                }}
-                onClick={() => {
-                  setLoaiBaiDang("cho_thue");
-                  setLoaiHinhCon("");
-                  setFormData((prev) => ({ ...prev, loaiHinh: "" }));
-                }}
-              >
-                Tin Cho Thuê
-              </li>
-
-              <li
-                style={{
-                  ...styles.sidebarItem,
-                  ...(loaiBaiDang === "dich_vu" ? styles.activeItem : {}),
-                }}
-                onClick={() => {
-                  setLoaiBaiDang("dich_vu");
-                  setLoaiHinhCon("");
-                  setFormData((prev) => ({ ...prev, loaiHinh: "" }));
-                }}
-              >
-                Tin Dịch Vụ
-              </li>
-            </ul>
-          </div>
-
-          {/* Content bên phải */}
-          <div style={styles.formContent}>
-            <div style={styles.formGroup}>
-              <label style={styles.label}>
-                Loại hình <span style={styles.required}>*</span>
-              </label>
-
-              {/* Nếu là bán hoặc cho thuê */}
-              {["ban", "cho_thue"].includes(loaiBaiDang) && (
-                <select
-                  name="loaiHinh"
-                  value={formData.loaiHinh}
-                  onChange={(e) => {
-                    handleInputChange(e);
-                    setLoaiHinhCon(e.target.value); // lưu loại phụ: nhà/căn hộ hay nhà đất
-                  }}
-                  style={styles.select}
-                  required
-                >
-                  <option value="">Chọn loại hình</option>
-                  <option value="nha_can_ho">Nhà / Căn hộ</option>
-                  <option value="nha_dat">BĐS</option>
-                </select>
-              )}
-              {/* Nếu là dịch vụ */}
-              {loaiBaiDang === "dich_vu" && (
-                <select
-                  name="loaiHinh"
-                  value={formData.loaiHinh}
-                  onChange={handleInputChange}
-                  style={styles.select}
-                  required
-                >
-                  <option value="">Chọn loại dịch vụ</option>
-                  <option value="sua_chua">Sửa chữa</option>
-                  <option value="ve_sinh">Vệ sinh</option>
-                  <option value="khac">Khác</option>
-                </select>
-              )}
-            </div>
-            {loaiHinhCon === "nha_can_ho" && (
-              <div style={styles.formRow}>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Tòa plaza <span style={styles.required}>*</span>
-                  </label>
-                  <select
-                    name="toaPlaza"
-                    value={formData.toaPlaza || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        toaPlaza: e.target.value,
-                      }))
-                    }
-                    style={styles.select}
-                    required
+          <div className="row">
+            {/* Sidebar */}
+            <div className="col-12 col-md-3 mb-4">
+              <div className="bg-light rounded-3 p-3 shadow-sm">
+                <h5 className="fw-bold mb-3">Chọn loại bài đăng</h5>
+                <ul className="list-group">
+                  <li
+                    className={`list-group-item list-group-item-action ${loaiBaiDang === "ban" ? "active" : ""}`}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      setLoaiBaiDang("ban");
+                      setLoaiHinhCon("");
+                      setFormData((prev) => ({ ...prev, loaiHinh: "" }));
+                    }}
                   >
-                    <option value="">Chọn tòa plaza</option>
-                    <option value="plaza-a">Plaza A</option>
-                    <option value="plaza-b">Plaza B</option>
-                  </select>
-                </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Số căn hộ <span style={styles.required}>*</span>
-                  </label>
-                  <select
-                    name="soCanHo"
-                    value={formData.soCanHo || ""}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        soCanHo: e.target.value,
-                      }))
-                    }
-                    style={styles.select}
-                    required
+                    Tin Bán
+                  </li>
+                  <li
+                    className={`list-group-item list-group-item-action ${loaiBaiDang === "cho_thue" ? "active" : ""}`}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      setLoaiBaiDang("cho_thue");
+                      setLoaiHinhCon("");
+                      setFormData((prev) => ({ ...prev, loaiHinh: "" }));
+                    }}
                   >
-                    <option value="">Chọn số căn hộ</option>
-                    <option value="101">101</option>
-                    <option value="202">202</option>
-                    <option value="303">303</option>
-                  </select>
-                </div>
-              </div>
-            )}
-
-            <div style={styles.formGroup}>
-              <label style={styles.label}>
-                Địa chỉ cụ thể <span style={styles.required}>*</span>
-              </label>
-              <div style={styles.inputGroup}>
-                <span style={styles.inputIcon}>📍</span>
-                <input
-                  type="text"
-                  name="diaChiCuThe"
-                  value={formData.diaChiCuThe}
-                  onChange={handleInputChange}
-                  placeholder="Nhập địa chỉ cụ thể"
-                  style={styles.inputWithIcon}
-                  required
-                />
+                    Tin Cho Thuê
+                  </li>
+                  <li
+                    className={`list-group-item list-group-item-action ${loaiBaiDang === "dich_vu" ? "active" : ""}`}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      setLoaiBaiDang("dich_vu");
+                      setLoaiHinhCon("");
+                      setFormData((prev) => ({ ...prev, loaiHinh: "" }));
+                    }}
+                  >
+                    Tin Dịch Vụ
+                  </li>
+                </ul>
               </div>
             </div>
-
-            <div style={styles.formGroup}>
-              <label style={styles.label}>
-                Tiêu đề <span style={styles.required}>*</span>
-              </label>
-              <input
-                type="text"
-                name="tieuDe"
-                value={formData.tieuDe}
-                onChange={handleInputChange}
-                placeholder="Nhập tiêu đề"
-                style={styles.input}
-                required
-              />
-            </div>
-
-            <div style={styles.formGroup}>
-              <label style={styles.label}>
-                Mô tả chi tiết <span style={styles.required}>*</span>
-              </label>
-              <textarea
-                name="moTaChiTiet"
-                value={formData.moTaChiTiet}
-                onChange={handleInputChange}
-                placeholder="Mô tả chi tiết về bất động sản..."
-                rows="4"
-                style={styles.textarea}
-                required
-              />
-            </div>
-
-            {["ban", "cho_thue"].includes(loaiBaiDang) && (
-              <>
-                <div style={styles.formGroup}>
-                  <label style={styles.label}>
-                    Diện tích <span style={styles.required}>*</span>
+            {/* Form Content */}
+            <div className="col-12 col-md-9">
+              <div className="row g-3">
+                <div className="col-12 col-md-6">
+                  <label className="form-label">
+                    Loại hình <span className="text-danger">*</span>
                   </label>
-                  <div style={styles.inputGroup}>
-                    <span style={styles.inputIcon}>🏠</span>
-                    <input
-                      type="number"
-                      name="dienTich"
-                      value={formData.dienTich}
+                  {["ban", "cho_thue"].includes(loaiBaiDang) && (
+                    <select
+                      name="loaiHinh"
+                      value={formData.loaiHinh}
+                      onChange={(e) => {
+                        handleInputChange(e);
+                        setLoaiHinhCon(e.target.value);
+                      }}
+                      className="form-select"
+                      required
+                    >
+                      <option value="">Chọn loại hình</option>
+                      <option value="nha_can_ho">Nhà / Căn hộ</option>
+                      <option value="nha_dat">BĐS</option>
+                    </select>
+                  )}
+                  {loaiBaiDang === "dich_vu" && (
+                    <select
+                      name="loaiHinh"
+                      value={formData.loaiHinh}
                       onChange={handleInputChange}
-                      placeholder="m²"
-                      style={styles.inputWithIcon}
+                      className="form-select"
+                      required
+                    >
+                      <option value="">Chọn loại dịch vụ</option>
+                      <option value="sua_chua">Sửa chữa</option>
+                      <option value="ve_sinh">Vệ sinh</option>
+                      <option value="khac">Khác</option>
+                    </select>
+                  )}
+                </div>
+                {loaiHinhCon === "nha_can_ho" && (
+                  <>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Tòa plaza <span className="text-danger">*</span>
+                      </label>
+                      <select
+                        name="toaPlaza"
+                        value={formData.toaPlaza || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            toaPlaza: e.target.value,
+                          }))
+                        }
+                        className="form-select"
+                        required
+                      >
+                        <option value="">Chọn tòa plaza</option>
+                        <option value="plaza-a">Plaza A</option>
+                        <option value="plaza-b">Plaza B</option>
+                      </select>
+                    </div>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Số căn hộ <span className="text-danger">*</span>
+                      </label>
+                      <select
+                        name="soCanHo"
+                        value={formData.soCanHo || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            soCanHo: e.target.value,
+                          }))
+                        }
+                        className="form-select"
+                        required
+                      >
+                        <option value="">Chọn số căn hộ</option>
+                        <option value="101">101</option>
+                        <option value="202">202</option>
+                        <option value="303">303</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+                <div className="col-12">
+                  <label className="form-label">
+                    Địa chỉ cụ thể <span className="text-danger">*</span>
+                  </label>
+                  <div className="input-group">
+                    <span className="input-group-text">📍</span>
+                    <input
+                      type="text"
+                      name="diaChiCuThe"
+                      value={formData.diaChiCuThe}
+                      onChange={handleInputChange}
+                      placeholder="Nhập địa chỉ cụ thể"
+                      className="form-control"
                       required
                     />
                   </div>
                 </div>
-              </>
-            )}
-            <div style={styles.formGroup}>
-              <label style={styles.label}>
-                Giá <span style={styles.required}>*</span>
-              </label>
-              <div style={styles.inputGroup}>
-                <span style={styles.inputIcon}>💰</span>
-                <input
-                  type="number"
-                  name="gia"
-                  value={formData.gia}
-                  onChange={handleInputChange}
-                  placeholder="Thỏa thuận hoặc giá cụ thể"
-                  style={styles.inputWithIcon}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* <div style={styles.formRow}>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>
-                  Diện tích <span style={styles.required}>*</span>
-                </label>
-                <div style={styles.inputGroup}>
-                  <span style={styles.inputIcon}>🏠</span>
+                <div className="col-12">
+                  <label className="form-label">
+                    Tiêu đề <span className="text-danger">*</span>
+                  </label>
                   <input
-                    type="number"
-                    name="dienTich"
-                    value={formData.dienTich}
+                    type="text"
+                    name="tieuDe"
+                    value={formData.tieuDe}
                     onChange={handleInputChange}
-                    placeholder="m²"
-                    style={styles.inputWithIcon}
+                    placeholder="Nhập tiêu đề"
+                    className="form-control"
                     required
                   />
                 </div>
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.label}>
-                  Giá <span style={styles.required}>*</span>
-                </label>
-                <div style={styles.inputGroup}>
-                  <span style={styles.inputIcon}>💰</span>
-                  <input
-                    type="number"
-                    name="gia"
-                    value={formData.gia}
+                <div className="col-12">
+                  <label className="form-label">
+                    Mô tả chi tiết <span className="text-danger">*</span>
+                  </label>
+                  <textarea
+                    name="moTaChiTiet"
+                    value={formData.moTaChiTiet}
                     onChange={handleInputChange}
-                    placeholder="Thỏa thuận hoặc giá cụ thể"
-                    style={styles.inputWithIcon}
+                    placeholder="Mô tả chi tiết về bất động sản..."
+                    rows="4"
+                    className="form-control"
                     required
                   />
                 </div>
-              </div>
-            </div> */}
-            {["ban", "cho_thue"].includes(loaiBaiDang) && (
-              <>
-                <div style={styles.formRow}>
-                  <div style={styles.formGroup}>
-                    <label style={styles.label}>
-                      Giấy tờ pháp lí<span style={styles.required}>*</span>
+                {["ban", "cho_thue"].includes(loaiBaiDang) && (
+                  <div className="col-12 col-md-6">
+                    <label className="form-label">
+                      Diện tích <span className="text-danger">*</span>
                     </label>
-                    <div style={styles.inputGroup}>
-                      <span style={styles.inputIcon}>🏠</span>
+                    <div className="input-group">
+                      <span className="input-group-text">🏠</span>
+                      <input
+                        type="number"
+                        name="dienTich"
+                        value={formData.dienTich}
+                        onChange={handleInputChange}
+                        placeholder="m²"
+                        className="form-control"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="col-12 col-md-6">
+                  <label className="form-label">
+                    Giá <span className="text-danger">*</span>
+                  </label>
+                  <div className="input-group">
+                    <span className="input-group-text">💰</span>
+                    <input
+                      type="number"
+                      name="gia"
+                      value={formData.gia}
+                      onChange={handleInputChange}
+                      placeholder="Thỏa thuận hoặc giá cụ thể"
+                      className="form-control"
+                      required
+                    />
+                  </div>
+                </div>
+                {["ban", "cho_thue"].includes(loaiBaiDang) && (
+                  <>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Giấy tờ pháp lí <span className="text-danger">*</span>
+                      </label>
                       <input
                         type="text"
                         name="giayto"
                         value={formData.giayto}
                         onChange={handleInputChange}
                         placeholder="Giấy tờ đất, căn hộ..."
-                        style={styles.inputWithIcon}
+                        className="form-control"
                         required
                       />
                     </div>
-                  </div>
-
-                  <div style={styles.formGroup}>
-                    <label style={styles.label}>
-                      Tình trạng nổi bật <span style={styles.required}>*</span>
-                    </label>
-                    <div style={styles.inputGroup}>
-                      <span style={styles.inputIcon}>💰</span>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Tình trạng nổi bật <span className="text-danger">*</span>
+                      </label>
                       <input
                         type="text"
                         name="tinhtrang"
                         value={formData.tinhtrang}
                         onChange={handleInputChange}
                         placeholder="Nội thất..."
-                        style={styles.inputWithIcon}
+                        className="form-control"
                         required
                       />
                     </div>
-                  </div>
-                </div>
-
-                <div style={styles.formRow}>
-                  <div style={styles.formGroup}>
-                    <label style={styles.label}>
-                      Hướng đất, căn hộ <span style={styles.required}>*</span>
-                    </label>
-                    <div style={styles.inputGroup}>
-                      <span style={styles.inputIcon}>🏠</span>
+                    <div className="col-12 col-md-6">
+                      <label className="form-label">
+                        Hướng đất, căn hộ <span className="text-danger">*</span>
+                      </label>
                       <input
                         type="text"
                         name="huongdat"
                         value={formData.huongdat}
                         onChange={handleInputChange}
                         placeholder="Hướng thuận lợi..."
-                        style={styles.inputWithIcon}
+                        className="form-control"
                         required
                       />
                     </div>
+                  </>
+                )}
+                <div className="col-12">
+                  <label className="form-label">
+                    Thông tin người đăng bán <span className="text-danger">*</span>
+                  </label>
+                  <div className="input-group">
+                    <span className="input-group-text">👤</span>
+                    <input
+                      type="text"
+                      name="thongTinNguoiDangBan"
+                      value={formData.thongTinNguoiDangBan}
+                      onChange={handleInputChange}
+                      placeholder="Số điện thoại"
+                      className="form-control"
+                      required
+                    />
                   </div>
                 </div>
-              </>
-            )}
-
-            <div style={styles.formGroup}>
-              <label style={styles.label}>
-                Thông tin người đăng bán <span style={styles.required}>*</span>
-              </label>
-              <div style={styles.inputGroup}>
-                <span style={styles.inputIcon}>👤</span>
-                <input
-                  type="text"
-                  name="thongTinNguoiDangBan"
-                  value={formData.thongTinNguoiDangBan}
-                  onChange={handleInputChange}
-                  placeholder="Số điện thoại"
-                  style={styles.inputWithIcon}
-                  required
-                />
-              </div>
-            </div>
-
-            <div style={styles.formGroup}>
-              <label style={styles.label}>
-                Upload ảnh <span style={styles.required}>*</span>
-              </label>
-              <div
-                style={styles.uploadArea}
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                onClick={() => document.getElementById("imageInput").click()}
-              >
-                <div style={styles.uploadIcon}>📤</div>
-                <div style={styles.uploadText}>Upload Images</div>
-                <div style={styles.uploadSubtext}>
-                  Click to select multiple images
-                </div>
-                <input
-                  type="file"
-                  id="imageInput"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  style={styles.hiddenInput}
-                />
-              </div>
-
-              {formData.images.length > 0 && (
-                <div style={styles.imagePreview}>
-                  {formData.images.map((image, index) => (
-                    <div key={index} style={styles.imageItem}>
-                      <img
-                        src={URL.createObjectURL(image)}
-                        alt={`Preview ${index + 1}`}
-                        style={styles.previewImage}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        style={styles.removeButton}
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div style={styles.formGroup}>
-              <label style={styles.label}>
-                Chọn gói đăng tin <span style={styles.required}>*</span>
-              </label>
-              <div style={styles.genderOptions}>
-                {[
-                  {
-                    value: "685039e4f8f1552c6378a7a5",
-                    title: "VIP1 - Tin sẽ tồn tại trên Blog 3 ngày",
-                    subtitle: "10000d/tin",
-                  },
-                  {
-                    value: "685174b550c6fbcbc4efbe87",
-                    title: "VIP2 - Tin sẽ tồn tại trên Blog 5 ngày",
-                    subtitle: "20000d/tin",
-                  },
-                  {
-                    value: "685174db50c6fbcbc4efbe88",
-                    title: "VIP3 - Tin sẽ tồn tại trên Blog 7 ngày",
-                    subtitle: "30000d/tin",
-                  },
-                ].map((option) => (
+                <div className="col-12">
+                  <label className="form-label">
+                    Upload ảnh <span className="text-danger">*</span>
+                  </label>
                   <div
-                    key={option.value}
-                    style={{
-                      ...styles.genderCard,
-                      ...(formData.postPackage === option.value
-                        ? styles.genderCardSelected
-                        : {}),
-                    }}
-                    onClick={() => handleGenderSelect(option.value)}
+                    className="border border-2 border-primary rounded-3 p-4 text-center bg-light mb-3"
+                    style={{ cursor: "pointer" }}
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    onClick={() => document.getElementById("imageInput").click()}
                   >
-                    <div style={styles.genderTitle}>{option.title}</div>
-                    <div style={styles.genderSubtitle}>{option.subtitle}</div>
+                    <div className="fs-2 mb-2 text-primary">📤</div>
+                    <div className="fw-semibold">Upload Images</div>
+                    <div className="text-secondary small">Click để chọn nhiều ảnh</div>
+                    <input
+                      type="file"
+                      id="imageInput"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      style={{ display: "none" }}
+                    />
                   </div>
-                ))}
+                  {formData.images.length > 0 && (
+                    <div className="row g-2">
+                      {formData.images.map((image, index) => (
+                        <div className="col-6 col-md-3" key={index}>
+                          <div className="position-relative">
+                            <img
+                              src={URL.createObjectURL(image)}
+                              alt={`Preview ${index + 1}`}
+                              className="img-thumbnail"
+                              style={{ height: 100, objectFit: "cover" }}
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle"
+                              onClick={() => removeImage(index)}
+                              style={{ width: 28, height: 28, lineHeight: "14px" }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="col-12">
+                  <label className="form-label">
+                    Chọn gói đăng tin <span className="text-danger">*</span>
+                  </label>
+                  <div className="row g-2">
+                    {[
+                      {
+                        value: "685039e4f8f1552c6378a7a5",
+                        title: "VIP1 - Tin sẽ tồn tại trên Blog 3 ngày",
+                        subtitle: "10000đ/tin",
+                      },
+                      {
+                        value: "685174b550c6fbcbc4efbe87",
+                        title: "VIP2 - Tin sẽ tồn tại trên Blog 5 ngày",
+                        subtitle: "20000đ/tin",
+                      },
+                      {
+                        value: "685174db50c6fbcbc4efbe88",
+                        title: "VIP3 - Tin sẽ tồn tại trên Blog 7 ngày",
+                        subtitle: "30000đ/tin",
+                      },
+                    ].map((option) => (
+                      <div className="col-12 col-md-4" key={option.value}>
+                        <div
+                          className={`card h-100 ${formData.postPackage === option.value ? "border-primary shadow" : ""}`}
+                          style={{ cursor: "pointer" }}
+                          onClick={() => handleGenderSelect(option.value)}
+                        >
+                          <div className="card-body text-center">
+                            <div className="fw-bold">{option.title}</div>
+                            <div className="text-secondary">{option.subtitle}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="col-12 mt-4">
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    className="btn btn-primary btn-lg w-100 fw-bold"
+                  >
+                    {isSubmitting ? (
+                      <span>
+                        <span className="spinner-border spinner-border-sm me-2"></span>
+                        Đang xử lý...
+                      </span>
+                    ) : (
+                      "Đăng tin"
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              style={{
-                ...styles.submitBtn,
-                ...(isSubmitting ? styles.submitBtnDisabled : {}),
-              }}
-            >
-              {isSubmitting ? (
-                <div style={styles.loading}>
-                  <div style={styles.spinner}></div>
-                  <span>Đang xử lý...</span>
-                </div>
-              ) : (
-                "Đăng tin"
-              )}
-            </button>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-const styles = {
-  container: {
-    width: "100vw",
-    minHeight: "100vh",
-    margin: 0,
-    padding: 0,
-    backgroundColor: "#f4f6f8",
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-  },
-
-  formWrapper: {
-    width: "100%",
-  },
-
-  header: {
-    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    padding: "20px 20px",
-    textAlign: "center",
-    color: "white",
-  },
-  headerTitle: {
-    fontSize: "3rem",
-    fontWeight: "700",
-    marginBottom: "10px",
-  },
-  headerSubtitle: {
-    fontSize: "1.25rem",
-    opacity: 0.9,
-  },
-  pageLayout: {
-    display: "flex",
-    width: "100%",
-    backgroundImage: "url('')", // Đường dẫn ảnh
-    backgroundSize: "cover",
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "center",
-  },
-
-  sidebar: {
-    width: "220px",
-    marginTop: "20px",
-    marginLeft: "20px",
-    background: "#ffffff",
-    padding: "30px 20px",
-    borderRight: "1px solid #e0e0e0",
-    height: "100%",
-  },
-
-  sidebarList: {
-    listStyle: "none",
-    padding: 0,
-    marginTop: "20px",
-  },
-
-  sidebarItem: {
-    padding: "12px 16px",
-    cursor: "pointer",
-    borderRadius: "8px",
-    transition: "all 0.3s",
-    color: "#333",
-  },
-
-  activeItem: {
-    background: "#667eea",
-    color: "white",
-    fontWeight: "bold",
-  },
-
-  formContent: {
-    maxWidth: "1000px",
-    marginTop: "20px",
-    marginLeft: "150px",
-    padding: "40px 30px",
-    backgroundColor: "#ffffff",
-    borderRadius: "12px",
-    boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)",
-    marginBottom: "60px",
-  },
-
-  formGroup: {
-    marginBottom: "25px",
-  },
-  formRow: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "20px",
-  },
-
-  label: {
-    display: "block",
-    marginBottom: "8px",
-    fontWeight: "600",
-    color: "#333",
-    fontSize: "1rem",
-  },
-  required: {
-    color: "#e74c3c",
-    marginLeft: "4px",
-  },
-
-  input: {
-    width: "100%",
-    padding: "12px 16px",
-    border: "1.5px solid #ccc",
-    borderRadius: "10px",
-    fontSize: "1rem",
-    backgroundColor: "#fff",
-  },
-  inputWithIcon: {
-    width: "100%",
-    padding: "12px 16px 12px 40px",
-    border: "1.5px solid #ccc",
-    borderRadius: "10px",
-    fontSize: "1rem",
-    backgroundColor: "#fff",
-  },
-
-  select: {
-    width: "100%",
-    padding: "12px 16px",
-    border: "1.5px solid #ccc",
-    borderRadius: "10px",
-    fontSize: "1rem",
-    backgroundColor: "#fff",
-  },
-  featureIcon: {
-    fontSize: "0.8rem",
-    fontWeight: "bold",
-    marginRight: "8px",
-    width: "16px",
-    textAlign: "center",
-  },
-
-  selectedBadge: {
-    position: "absolute",
-    top: "-8px",
-    right: "16px",
-    color: "white",
-    fontSize: "0.75rem",
-    fontWeight: "600",
-    padding: "4px 12px",
-    borderRadius: "12px",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-  },
-
-  textarea: {
-    width: "100%",
-    padding: "14px",
-    border: "1.5px solid #ccc",
-    borderRadius: "10px",
-    fontSize: "1rem",
-    resize: "vertical",
-    minHeight: "120px",
-    backgroundColor: "#fff",
-  },
-
-  inputGroup: {
-    position: "relative",
-  },
-
-  inputIcon: {
-    position: "absolute",
-    left: "12px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    color: "#666",
-    fontSize: "1.1rem",
-    zIndex: "1",
-  },
-
-  uploadArea: {
-    border: "2px dashed #aaa",
-    borderRadius: "12px",
-    padding: "40px",
-    textAlign: "center",
-    background: "#fafafa",
-    cursor: "pointer",
-  },
-  uploadIcon: {
-    fontSize: "2.5rem",
-    marginBottom: "10px",
-    color: "#999",
-  },
-  uploadText: {
-    fontSize: "1.1rem",
-    fontWeight: "500",
-    color: "#333",
-  },
-  uploadSubtext: {
-    fontSize: "0.9rem",
-    color: "#888",
-  },
-  hiddenInput: {
-    display: "none",
-  },
-
-  imagePreview: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
-    gap: "15px",
-    marginTop: "15px",
-  },
-  imageItem: {
-    position: "relative",
-    borderRadius: "8px",
-    overflow: "hidden",
-    border: "1px solid #ddd",
-  },
-  previewImage: {
-    width: "100%",
-    height: "100px",
-    objectFit: "cover",
-  },
-  removeButton: {
-    position: "absolute",
-    top: "5px",
-    right: "5px",
-    backgroundColor: "#ff4d4f",
-    color: "#fff",
-    border: "none",
-    borderRadius: "50%",
-    width: "24px",
-    height: "24px",
-    fontSize: "14px",
-    cursor: "pointer",
-  },
-
-  genderOptions: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "16px",
-  },
-  genderCard: {
-    border: "2px solid #ccc",
-    borderRadius: "12px",
-    padding: "20px",
-    textAlign: "center",
-    cursor: "pointer",
-    backgroundColor: "#fff",
-    transition: "0.3s",
-  },
-  genderCardSelected: {
-    borderColor: "#667eea",
-    backgroundColor: "#eef0ff",
-    boxShadow: "0 5px 20px rgba(102, 126, 234, 0.2)",
-  },
-  genderEmoji: {
-    fontSize: "2rem",
-    marginBottom: "8px",
-  },
-  genderTitle: {
-    fontWeight: "600",
-    color: "#333",
-  },
-  genderSubtitle: {
-    color: "#777",
-    fontWeight: "700",
-    fontSize: "15px",
-  },
-
-  submitBtn: {
-    width: "100%",
-    padding: "16px",
-    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    color: "white",
-    fontSize: "1.2rem",
-    fontWeight: "600",
-    border: "none",
-    borderRadius: "12px",
-    cursor: "pointer",
-    transition: "all 0.3s ease",
-    marginTop: "30px",
-  },
-  submitBtnDisabled: {
-    opacity: 0.6,
-    cursor: "not-allowed",
-  },
-
-  loading: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "10px",
-  },
-  spinner: {
-    width: "20px",
-    height: "20px",
-    border: "2px solid rgba(255, 255, 255, 0.3)",
-    borderTop: "2px solid white",
-    borderRadius: "50%",
-    animation: "spin 1s linear infinite",
-  },
-};
-
-// Add keyframes for spinner animation
-const styleSheet = document.createElement("style");
-styleSheet.type = "text/css";
-styleSheet.innerText = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  @media (max-width: 768px) {
-    .form-row {
-      grid-template-columns: 1fr !important;
-    }
-    .gender-options {
-      grid-template-columns: 1fr !important;
-    }
-  }
-`;
-document.head.appendChild(styleSheet);
 
 export default RegistrationForm;

@@ -4,19 +4,23 @@ import AdminDashboard from "./adminDashboard.jsx";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+const PAGE_SIZE = 10;
 
 const ManageApplicationForm = () => {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
+    const [filterStatus, setFilterStatus] = useState("");
     const [selectedApp, setSelectedApp] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [page, setPage] = useState(1);
 
     useEffect(() => {
         fetchApplications();
     }, []);
 
     const fetchApplications = async () => {
+        setLoading(true);
         try {
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/resident-verifications`);
             setApplications(res.data);
@@ -58,24 +62,49 @@ const ManageApplicationForm = () => {
         }
     };
 
+    // Filter logic
     const filteredApps = applications.filter(app =>
-        searchTerm.trim() === "" ||
-        (app.fullName && app.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (app.apartmentCode && app.apartmentCode.toLowerCase().includes(searchTerm.toLowerCase()))
+        (searchTerm.trim() === "" ||
+            (app.fullName && app.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (app.apartmentCode && app.apartmentCode.toLowerCase().includes(searchTerm.toLowerCase()))
+        ) &&
+        (filterStatus === "" || String(app.status) === filterStatus)
     );
+
+    // Pagination logic
+    const totalPages = Math.ceil(filteredApps.length / PAGE_SIZE) || 1;
+    const pagedApps = filteredApps.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+    useEffect(() => {
+        setPage(1); // Reset page khi filter/search thay đổi
+    }, [searchTerm, filterStatus]);
 
     return (
         <AdminDashboard>
             <div className="w-100">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2 className="font-weight-bold">Quản lý đơn xác nhận cư dân</h2>
-                    <input
-                        type="text"
-                        placeholder="Tìm kiếm theo tên hoặc căn hộ..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{ padding: "0.5rem", width: "250px" }}
-                    />
+                <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+                    <h2 className="fw-bold mb-0">Quản lý đơn xác nhận cư dân</h2>
+                    <div className="d-flex gap-2">
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Tìm kiếm theo tên hoặc căn hộ..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            style={{ width: 220 }}
+                        />
+                        <select
+                            className="form-control"
+                            style={{ maxWidth: 180 }}
+                            value={filterStatus}
+                            onChange={e => setFilterStatus(e.target.value)}
+                        >
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="Chờ duyệt">Chờ duyệt</option>
+                            <option value="Đã duyệt">Đã duyệt</option>
+                            <option value="Đã từ chối">Đã từ chối</option>
+                        </select>
+                    </div>
                 </div>
                 <div className="card w-100">
                     <div className="card-body p-0">
@@ -99,24 +128,34 @@ const ManageApplicationForm = () => {
                                             Đang tải dữ liệu...
                                         </td>
                                     </tr>
-                                ) : filteredApps.length === 0 ? (
+                                ) : pagedApps.length === 0 ? (
                                     <tr>
                                         <td colSpan="8" className="text-center text-muted py-4">
                                             Không có đơn đăng ký nào.
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredApps.map((app, idx) => (
+                                    pagedApps.map((app, idx) => (
                                         <tr key={app._id}>
-                                            <td>{idx + 1}</td>
+                                            <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
                                             <td>{app.fullName}</td>
                                             <td>{app.email}</td>
                                             <td>{app.phone}</td>
                                             <td>{app.apartmentCode}</td>
                                             <td>{app.documentType}</td>
-                                            <td>{app.status}</td>
                                             <td>
-                                                <div style={{ display: "flex", gap: "0.5rem", whiteSpace: "nowrap" }}>
+                                                <span className={
+                                                    app.status === "Đã duyệt"
+                                                        ? "badge bg-success"
+                                                        : app.status === "Đã từ chối"
+                                                            ? "badge bg-danger"
+                                                            : "badge bg-warning text-dark"
+                                                }>
+                                                    {app.status}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="d-flex gap-2 flex-wrap">
                                                     <button
                                                         className="btn btn-sm btn-outline-info"
                                                         onClick={() => handleView(app)}
@@ -145,6 +184,27 @@ const ManageApplicationForm = () => {
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                {/* Pagination */}
+                <div className="d-flex justify-content-center align-items-center mt-4">
+                    <button
+                        className="btn btn-outline-secondary me-2"
+                        onClick={() => setPage(page - 1)}
+                        disabled={page <= 1}
+                    >
+                        &lt; Prev
+                    </button>
+                    <span style={{ minWidth: 90, textAlign: "center" }}>
+                        Trang {page} / {totalPages}
+                    </span>
+                    <button
+                        className="btn btn-outline-secondary ms-2"
+                        onClick={() => setPage(page + 1)}
+                        disabled={page >= totalPages}
+                    >
+                        Next &gt;
+                    </button>
                 </div>
 
                 {/* Modal xem chi tiết đơn */}
@@ -199,6 +259,7 @@ const ManageApplicationForm = () => {
                     </div>
                 )}
             </div>
+            <ToastContainer />
         </AdminDashboard>
     );
 };

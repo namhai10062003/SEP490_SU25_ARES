@@ -2,18 +2,18 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const Navbar = () => (
-  <ul className="navbar-nav flex-row gap-2 ms-3">
-    <li className="nav-item">
+  <ul className="navbar-nav flex-row ms-3">
+    <li className="nav-item mx-3">
       <Link className="nav-link fw-bold link-dark" to="/">
         TRANG CHỦ
       </Link>
     </li>
-    <li className="nav-item">
+    <li className="nav-item mx-3">
       <Link className="nav-link link-dark" to="/gioi-thieu">
         GIỚI THIỆU
       </Link>
     </li>
-    <li className="nav-item dropdown">
+    <li className="nav-item dropdown mx-3">
       <span
         className="nav-link dropdown-toggle link-dark"
         id="dichvuDropdown"
@@ -37,7 +37,7 @@ const Navbar = () => (
         </li>
       </ul>
     </li>
-    <li className="nav-item dropdown">
+    <li className="nav-item dropdown mx-3">
       <span
         className="nav-link dropdown-toggle link-dark"
         id="hoadonDropdown"
@@ -66,7 +66,7 @@ const Navbar = () => (
         </li>
       </ul>
     </li>
-    <li className="nav-item dropdown">
+    <li className="nav-item dropdown mx-3">
       <span
         className="nav-link dropdown-toggle link-dark"
         id="canhoDropdown"
@@ -95,12 +95,12 @@ const Navbar = () => (
         </li>
       </ul>
     </li>
-    <li className="nav-item">
+    <li className="nav-item mx-3">
       <Link className="nav-link link-dark" to="/blog">
         BLOG
       </Link>
     </li>
-    <li className="nav-item">
+    <li className="nav-item mx-3">
       <Link className="nav-link link-dark" to="/lien-he">
         LIÊN HỆ
       </Link>
