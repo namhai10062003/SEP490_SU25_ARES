@@ -6,7 +6,6 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import socket from '../../server/socket';
 import h1 from "../images/banner.jpg";
-import StaffNavbar from './staffNavbar.jsx';
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
@@ -98,7 +97,6 @@ const StaffDashboard = () => {
           <ul className="nav flex-column gap-2">
             <li className="nav-item"><Link to="/staff-dashboard" className="nav-link active bg-white text-primary fw-bold">Dashboard</Link></li>
             <li className="nav-item"><Link to="/posts" className="nav-link text-white">Quản lý bài post</Link></li>
-            <li className="nav-item"><Link to="/real-estate" className="nav-link text-white">Quản lý bất động sản</Link></li>
             <li className="nav-item">
               <span className="nav-link text-white fw-bold">Quản lý bãi đỗ xe ▼</span>
               <ul className="nav flex-column ms-3">
@@ -109,6 +107,7 @@ const StaffDashboard = () => {
             <li className="nav-item"><Link to="/expenses" className="nav-link text-white">Quản lý chi phí</Link></li>
             <li className="nav-item"><Link to="/residentVerification" className="nav-link text-white">Quản lý người dùng</Link></li>
             <li className="nav-item"><Link to="/revenue" className="nav-link text-white">Quản lý doanh thu</Link></li>
+            <li className="nav-item"><Link to="/resident-verify" className="nav-link text-white">Quản lý nhân khẩu</Link></li>
             <li className="nav-item"><Link to="/login" className="nav-link text-white">Đăng Xuất</Link></li>
           </ul>
         </nav>
