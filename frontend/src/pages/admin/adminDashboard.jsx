@@ -4,47 +4,75 @@ import { Link, useLocation } from "react-router-dom";
 export default function AdminDashboard({ children }) {
   const location = useLocation();
 
+  const navItems = [
+    { to: "/admin-dashboard", label: "Tổng quan" },
+    { to: "/admin-dashboard/report", label: "Quản lí bài Report" },
+    { to: "/admin-dashboard/create-account", label: "Tạo tài khoản" },
+    { to: "/admin-dashboard/posts", label: "Quản lí bài Post" },
+    { to: "/admin-dashboard/revenue", label: "Phân tích doanh thu" },
+    { to: "/admin-dashboard/notifications", label: "Gửi thông báo" },
+    { to: "/admin-dashboard/manage-user", label: "Quản lí User" },
+    { to: "/admin-dashboard/manage-staff", label: "Quản lí Staff" },
+    { to: "/admin-dashboard/manage-apartment", label: "Quản lí Căn hộ" },
+    { to: "/admin-dashboard/manage-resident-verification", label: "Quản lý xác nhận cư dân" },
+  ];
+
   return (
     <div className="container-fluid min-vh-100 bg-light p-0">
-      <div className="row g-0">
+      <div className="row g-0 flex-nowrap">
         {/* Sidebar */}
-        <aside className="col-12 col-md-3 col-lg-2 bg-primary text-white d-flex flex-column p-4 min-vh-100">
-          <h5 className="fw-bold text-uppercase mb-4" style={{ letterSpacing: 1 }}>ADMIN PANEL</h5>
-          <ul className="nav flex-column">
-            <li className="nav-item mb-2">
-              <Link to="/admin-dashboard" className={`nav-link text-white ${location.pathname === "/admin-dashboard" ? "active fw-bold bg-white bg-opacity-25 rounded" : ""}`}>• Tổng quan</Link>
-            </li>
-            <li className="nav-item mb-2">
-              <Link to="/admin-dashboard/report" className={`nav-link text-white ${location.pathname === "/admin-dashboard/report" ? "active fw-bold bg-white bg-opacity-25 rounded" : ""}`}>• Quản lí bài Report</Link>
-            </li>
-            <li className="nav-item mb-2">
-              <Link to="/admin-dashboard/create-account" className={`nav-link text-white ${location.pathname === "/admin-dashboard/create-account" ? "active fw-bold bg-white bg-opacity-25 rounded" : ""}`}>• Tạo tài khoản</Link>
-            </li>
-            <li className="nav-item mb-2">
-              <Link to="/admin-dashboard/posts" className={`nav-link text-white ${location.pathname === "/admin-dashboard/posts" ? "active fw-bold bg-white bg-opacity-25 rounded" : ""}`}>• Quản lí bài Post</Link>
-            </li>
-            <li className="nav-item mb-2">
-              <Link to="/admin-dashboard/revenue" className={`nav-link text-white ${location.pathname === "/admin-dashboard/revenue" ? "active fw-bold bg-white bg-opacity-25 rounded" : ""}`}>• Phân tích doanh thu</Link>
-            </li>
-            <li className="nav-item mb-2">
-              <Link to="/admin-dashboard/notifications" className={`nav-link text-white ${location.pathname === "/admin-dashboard/notifications" ? "active fw-bold bg-white bg-opacity-25 rounded" : ""}`}>• Gửi thông báo</Link>
-            </li>
-            <li className="nav-item mb-2">
-              <Link to="/admin-dashboard/manage-user" className={`nav-link text-white ${location.pathname === "/admin-dashboard/manage-user" ? "active fw-bold bg-white bg-opacity-25 rounded" : ""}`}>• Quản lí User</Link>
-            </li>
-            <li className="nav-item mb-2">
-              <Link to="/admin-dashboard/manage-staff" className={`nav-link text-white ${location.pathname === "/admin-dashboard/manage-staff" ? "active fw-bold bg-white bg-opacity-25 rounded" : ""}`}>• Quản lí Staff</Link>
-            </li>
-            <li className="nav-item mb-2">
-              <Link to="/admin-dashboard/manage-apartment" className={`nav-link text-white ${location.pathname === "/admin-dashboard/manage-apartment" ? "active fw-bold bg-white bg-opacity-25 rounded" : ""}`}>• Quản lí Căn hộ</Link>
-            </li>
-            <li className="nav-item mb-2">
-              <Link to="/admin-dashboard/manage-resident-verification" className={`nav-link text-white ${location.pathname === "/admin-dashboard/manage-resident-verification" ? "active fw-bold bg-white bg-opacity-25 rounded" : ""}`}>• Quản lý xác nhận cư dân</Link>
-            </li>
-            <li className="nav-item mt-3">
-              <Link to="/login" className="nav-link text-white">Đăng xuất</Link>
-            </li>
-          </ul>
+        <aside
+          className="col-12 col-md-3 col-lg-2 bg-primary text-white d-flex flex-column p-0 shadow"
+          style={{
+            minHeight: "100vh",
+            zIndex: 100,
+          }}
+        >
+          <div className="py-4 px-3 border-bottom border-2 border-warning bg-gradient">
+            <h5 className="fw-bold text-uppercase mb-0 text-warning text-center" style={{ letterSpacing: 1 }}>
+              ADMIN PANEL
+            </h5>
+          </div>
+          <nav className="flex-grow-1">
+            <ul className="nav flex-column gap-1 px-2 py-3">
+              {navItems.map((item) => (
+                <li className="nav-item" key={item.to}>
+                  <Link
+                    to={item.to}
+                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === item.to
+                      ? "active bg-white text-primary fw-bold shadow-sm"
+                      : "text-white"
+                      }`}
+                    style={{
+                      background:
+                        location.pathname === item.to
+                          ? "white"
+                          : "transparent",
+                      transition: "all .15s",
+                    }}
+                  >
+                    <span style={{ fontWeight: 500 }}>•</span>
+                    <span className="ms-2">{item.label}</span>
+                  </Link>
+                </li>
+              ))}
+              <li className="nav-item mt-3">
+                <Link
+                  to="/login"
+                  className="nav-link rounded-3 px-3 py-2 d-flex align-items-center text-white"
+                  style={{
+                    background: "rgba(255,255,255,0.07)",
+                    transition: "all .15s",
+                  }}
+                >
+                  <span className="material-icons me-2" style={{ fontSize: 20 }}>
+                    Đăng xuất
+                  </span>
+
+                </Link>
+              </li>
+            </ul>
+          </nav>
         </aside>
         {/* Main Content */}
         <main className="col-12 col-md-9 col-lg-10 p-4">

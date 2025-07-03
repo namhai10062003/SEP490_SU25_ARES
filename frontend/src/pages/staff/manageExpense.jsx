@@ -90,62 +90,57 @@ const Expenses = () => {
     }, {});
 
     return (
-        <div className="bg-light min-vh-100 d-flex">
+        <div className="d-flex min-vh-100 bg-light">
             <ToastContainer position="top-right" autoClose={2000} />
-
-            {/* Sidebar */}
-            <aside className="bg-primary text-white p-4" style={{ minWidth: 240 }}>
-                <h2 className="fw-bold mb-4 text-warning text-center">BẢNG QUẢN LÝ</h2>
-                <nav>
-                    <ul className="nav flex-column gap-2">
-                        <li className="nav-item"><Link to="/staff-dashboard" className="nav-link text-white">Dashboard</Link></li>
-                        <li className="nav-item"><Link to="/posts" className="nav-link text-white">Quản lý bài post</Link></li>
-                        <li className="nav-item"><Link to="/manage-parkinglot" className="nav-link text-white">Quản lý bãi đỗ xe</Link></li>
-                        <li className="nav-item"><Link to="/expenses" className="nav-link active bg-white text-primary fw-bold">Quản lý chi phí</Link></li>
-                        <li className="nav-item"><Link to="/residentVerification" className="nav-link text-white">Quản lý người dùng</Link></li>
-                        <li className="nav-item"><Link to="/resident-verify" className="nav-link text-white">Quản lý nhân khẩu</Link></li>
-                        <li className="nav-item"><Link to="/water-expense" className="nav-link text-white">Quản lý chi phí nước</Link></li>
-                        <li className="nav-item"><Link to="/login" className="nav-link text-white">Đăng Xuất</Link></li>
-                    </ul>
-                </nav>
-            </aside>
-
-            {/* Main content */}
+            <StaffNavbar />
             <main className="flex-grow-1 p-4">
-                <div className="mb-4">
-                    <h1 className="fw-bold text-dark" style={{ fontSize: "2.2rem" }}>Quản lý chi phí căn hộ</h1>
-                </div>
-
-                {/* Form thêm chi phí */}
-                <form onSubmit={handleAdd} className="d-flex flex-wrap gap-2 align-items-center mb-4" style={{ maxWidth: 600 }}>
-                    <select
-                        value={addType}
-                        onChange={(e) => setAddType(e.target.value)}
-                        className="form-select form-select-sm"
-                        style={{ width: 160 }}
-                        required
-                    >
-                        <option value="">Chọn loại chi phí</option>
-                        <option value="1">Chi phí quản lý</option>
-                    </select>
-                    <input
-                        type="text"
-                        placeholder="Tên Tòa nhà"
-                        className="form-control form-control-sm"
-                        value={addLabel}
-                        onChange={(e) => setAddLabel(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="number"
-                        min={0}
-                        placeholder="Giá (VND/m²)"
-                        className="form-control form-control-sm"
-                        value={addPrice}
-                        onChange={(e) => setAddPrice(e.target.value)}
-                        required
-                    />
-                    <button className="btn btn-success btn-sm" type="submit">Thêm mới</button>
+                <h2 className="fw-bold mb-4">Quản lý chi phí căn hộ</h2>
+                <form
+                    onSubmit={handleAdd}
+                    className="row g-2 align-items-center mb-4"
+                    style={{ maxWidth: 600 }}
+                >
+                    <div className="col-md-3">
+                        <select
+                            className="form-select"
+                            value={addType}
+                            onChange={e => setAddType(e.target.value)}
+                            required
+                        >
+                            <option value="">Chọn loại chi phí</option>
+                            <option value="1">Chi phí bảo trì</option>
+                            <option value="2">Giá gửi xe</option>
+                            <option value="3">Phí dịch vụ khác</option>
+                            <option value="4">Phí tiện ích</option>
+                        </select>
+                    </div>
+                    <div className="col-md-4">
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Tên Tòa nhà"
+                            value={addLabel}
+                            onChange={e => setAddLabel(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="col-md-3">
+                        <input
+                            type="number"
+                            className="form-control"
+                            step="1"
+                            placeholder="Giá (VND/m²)"
+                            value={addPrice}
+                            min={0}
+                            onChange={e => setAddPrice(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="col-md-2">
+                        <button className="btn btn-success w-100" type="submit">
+                            Thêm mới
+                        </button>
+                    </div>
                 </form>
 
                 {/* Hiển thị danh sách chi phí */}

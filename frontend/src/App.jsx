@@ -95,12 +95,12 @@ function AppRoutes() {
           <Route path="/dichvu/baidoxe" element={<ParkingRegistration />} />
           <Route path="/dichvu/dangkybaidoxe" element={<FormParkingRegistration />} />
           <Route path="/parkinglot/detail-parkinglot/:id" element={<ParkingRegistrationDetails />} />
-          <Route path="/updateprofile" element={<UpdateProfileForm/>} />
-          <Route path="/profile" element={<Profile/>} />
-          <Route path="/changepassword" element={<ChangePassword/>} />
+          <Route path="/updateprofile" element={<UpdateProfileForm />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/changepassword" element={<ChangePassword />} />
           <Route path="/booking/:postId" element={<BookingForm />} />
           <Route path="/my-contracts" element={<MyContracts />} />
-          <Route path="/my-requests" element={<MyContractRequests/>} />
+          <Route path="/my-requests" element={<MyContractRequests />} />
           <Route path="/contracts/:id" element={<ContractDetail />} />
 
           {/* Admin */}
@@ -115,13 +115,15 @@ function AppRoutes() {
 
           {/* Staff */}
           <Route path="/staff-dashboard" element={<ProtectedRoute element={<DashboardPage />} allowedRoles={["staff"]} />} />
-          <Route path="/expenses" element={<ProtectedRoute element={<ManageExpense />} allowedRoles={["staff"]} />} />
-          <Route path="/resident-verify" element={<ProtectedRoute element={<ResidentVerifyList />} allowedRoles={["staff"]} />} />
-          <Route path="/residentVerification" element={<ProtectedRoute element={<ResidentVerificationForm />} allowedRoles={["staff"]} />} />
-          <Route path="/listresidentVerification" element={<ProtectedRoute element={<ResidentVerificationList />} allowedRoles={["staff"]} />} />
-          <Route path="/manage-parkinglot" element={<ProtectedRoute element={<ManageParkingLot />} allowedRoles={["staff"]} />} />
-          <Route path="/parkinglot-list" element={<ProtectedRoute element={<ParkingLotList />} allowedRoles={["staff"]} />} />
-          <Route path="/water-expense" element={<ProtectedRoute element={<WaterDataUpload />} allowedRoles={["staff"]} />} />
+          <Route path="staff-expenses" element={<ProtectedRoute element={<ManageExpense />} allowedRoles={["staff"]} />} />
+          <Route path="staff-resident-verify" element={<ProtectedRoute element={<ResidentVerifyList />} allowedRoles={["staff"]} />} />
+          <Route path="staff-resident-register" element={<ProtectedRoute element={<ResidentVerificationForm />} allowedRoles={["staff"]} />} />
+          <Route path="staff-resident-verification" element={<ProtectedRoute element={<ResidentVerificationList />} allowedRoles={["staff"]} />} />
+          <Route path="staff-manage-parkinglot" element={<ProtectedRoute element={<ManageParkingLot />} allowedRoles={["staff"]} />} />
+          <Route path="staff-parkinglot-list" element={<ProtectedRoute element={<ParkingLotList />} allowedRoles={["staff"]} />} />
+          <Route path="staff-water-data-upload" element={<ProtectedRoute element={<WaterDataUpload />} allowedRoles={["staff"]} />} />
+
+          {/* User */}
         </Routes>
 
         {/* Global components */}
