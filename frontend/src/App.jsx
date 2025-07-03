@@ -58,6 +58,7 @@ import UpdateProfileForm from "./pages/user/profile/updateProfile";
 import Register from "./pages/user/register.jsx";
 import ResetPassword from "./pages/user/resetpassword";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
+import WaterDataUpload from "./pages/staff/waterExpense.jsx";
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
