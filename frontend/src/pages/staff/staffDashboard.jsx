@@ -108,6 +108,7 @@ const StaffDashboard = () => {
             <li className="nav-item"><Link to="/residentVerification" className="nav-link text-white">Quản lý người dùng</Link></li>
             <li className="nav-item"><Link to="/revenue" className="nav-link text-white">Quản lý doanh thu</Link></li>
             <li className="nav-item"><Link to="/resident-verify" className="nav-link text-white">Quản lý nhân khẩu</Link></li>
+            <li className="nav-item"><Link to="/water-expense" className="nav-link text-white">Thống kê tiêu thụ nước</Link></li>
             <li className="nav-item"><Link to="/login" className="nav-link text-white">Đăng Xuất</Link></li>
           </ul>
         </nav>
