@@ -1,11 +1,11 @@
-import { jwtDecode } from 'jwt-decode';
 import React, { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
-import socket from '../../server/socket';
+import { jwtDecode } from 'jwt-decode';
+import { useNavigate } from 'react-router-dom';
+import StaffNavbar from './staffNavbar'; // Sử dụng navbar chung
 import h1 from "../images/banner.jpg";
+import socket from '../../server/socket';
+import 'react-toastify/dist/ReactToastify.css';
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
@@ -90,30 +90,7 @@ const StaffDashboard = () => {
   return (
     <div className="d-flex min-vh-100 bg-light">
       <ToastContainer />
-      {/* Sidebar */}
-      <aside className="bg-primary text-white p-4" style={{ minWidth: 240 }}>
-        <h2 className="fw-bold mb-4 text-warning text-center">BẢN QUẢN LÝ</h2>
-        <nav>
-          <ul className="nav flex-column gap-2">
-            <li className="nav-item"><Link to="/staff-dashboard" className="nav-link active bg-white text-primary fw-bold">Dashboard</Link></li>
-            <li className="nav-item"><Link to="/posts" className="nav-link text-white">Quản lý bài post</Link></li>
-            <li className="nav-item">
-              <span className="nav-link text-white fw-bold">Quản lý bãi đỗ xe ▼</span>
-              <ul className="nav flex-column ms-3">
-                <li className="nav-item"><Link to="/parkinglot-list" className="nav-link text-white">Danh sách bãi đỗ xe</Link></li>
-                <li className="nav-item"><Link to="/manage-parkinglot" className="nav-link text-white">Quản lý yêu cầu gửi xe</Link></li>
-              </ul>
-            </li>
-            <li className="nav-item"><Link to="/expenses" className="nav-link text-white">Quản lý chi phí</Link></li>
-            <li className="nav-item"><Link to="/residentVerification" className="nav-link text-white">Quản lý người dùng</Link></li>
-            <li className="nav-item"><Link to="/revenue" className="nav-link text-white">Quản lý doanh thu</Link></li>
-            <li className="nav-item"><Link to="/resident-verify" className="nav-link text-white">Quản lý nhân khẩu</Link></li>
-            <li className="nav-item"><Link to="/login" className="nav-link text-white">Đăng Xuất</Link></li>
-          </ul>
-        </nav>
-      </aside>
-
-      {/* Main content */}
+      <StaffNavbar /> {/* Navbar dùng chung cho staff */}
       <main className="flex-grow-1 p-4">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h2 className="fw-bold mb-0">Dashboard</h2>

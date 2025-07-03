@@ -1,7 +1,8 @@
-import { jwtDecode } from 'jwt-decode';
 import React, { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import StaffNavbar from '../staffNavbar';
+
+const PAGE_SIZE = 10;
 
 const ParkingLotList = () => {
   const [parkingList, setParkingList] = useState([]);
@@ -11,6 +12,7 @@ const ParkingLotList = () => {
     usedSlots: 0,
     availableSlots: 0
   });
+  const [page, setPage] = useState(1);
 
   const isMountedRef = useRef(true);
 
@@ -23,13 +25,8 @@ const ParkingLotList = () => {
       return;
     }
 
-    try {
-      jwtDecode(token);
-      fetchParkingList(token);
-      fetchSlotInfo(token);
-    } catch (err) {
-      toast.error('Token không hợp lệ. Vui lòng đăng nhập lại.');
-    }
+    fetchParkingList(token);
+    fetchSlotInfo(token);
 
     return () => { isMountedRef.current = false; };
   }, []);
@@ -85,32 +82,23 @@ const ParkingLotList = () => {
     return date.toLocaleDateString('vi-VN');
   };
 
+  // Pagination logic
+  const filteredList = parkingList.filter(item => {
+    if (statusFilter === 'all') return true;
+    return item.status === statusFilter;
+  });
+  const totalPages = Math.ceil(filteredList.length / PAGE_SIZE);
+  const currentList = filteredList.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => {
+    // Reset page if filter changes and page is out of range
+    if (page > totalPages) setPage(1);
+    // eslint-disable-next-line
+  }, [statusFilter, totalPages]);
+
   return (
     <div className="d-flex min-vh-100 bg-light">
-      {/* Sidebar */}
-      <aside className="bg-primary text-white p-4" style={{ minWidth: 240 }}>
-        <h2 className="fw-bold mb-4 text-warning text-center">BẢN QUẢN LÝ</h2>
-        <nav>
-          <ul className="nav flex-column gap-2">
-            <li className="nav-item"><Link to="/staff-dashboard" className="nav-link text-white">Dashboard</Link></li>
-            <li className="nav-item"><Link to="/posts" className="nav-link text-white">Quản lý bài post</Link></li>
-            <li className="nav-item">
-              <span className="nav-link text-white fw-bold">Quản lý bãi đỗ xe ▼</span>
-              <ul className="nav flex-column ms-3">
-                <li className="nav-item"><Link to="/parkinglot-list" className="nav-link text-primary fw-bold bg-white">Danh sách bãi đỗ xe</Link></li>
-                <li className="nav-item"><Link to="/manage-parkinglot" className="nav-link text-white">Quản lý yêu cầu gửi xe</Link></li>
-              </ul>
-            </li>
-            <li className="nav-item"><Link to="/expenses" className="nav-link text-white">Quản lý chi phí</Link></li>
-            <li className="nav-item"><Link to="/residentVerification" className="nav-link text-white">Quản lý người dùng</Link></li>
-            <li className="nav-item"><Link to="/revenue" className="nav-link text-white">Quản lý doanh thu</Link></li>
-            <li className="nav-item"><Link to="/resident-verify" className="nav-link text-white">Quản lý nhân khẩu</Link></li>
-            <li className="nav-item"><Link to="/login" className="nav-link text-white">Đăng Xuất</Link></li>
-          </ul>
-        </nav>
-      </aside>
-
-      {/* Main content */}
+      <StaffNavbar />
       <main className="flex-grow-1 p-4">
         <div className="bg-white rounded-4 shadow p-4 mb-4">
           <h2 className="fw-bold mb-3">Danh sách bãi đỗ xe</h2>
@@ -145,37 +133,32 @@ const ParkingLotList = () => {
                 </tr>
               </thead>
               <tbody>
-                {parkingList.length > 0 ? (
-                  parkingList
-                    .filter(item => {
-                      if (statusFilter === 'all') return true;
-                      return item.status === statusFilter;
-                    })
-                    .map((item, idx) => (
-                      <tr key={item._id}>
-                        <td>{idx + 1}</td>
-                        <td>{item.apartmentCode}</td>
-                        <td>{item.owner}</td>
-                        <td>{item.licensePlate}</td>
-                        <td>{item.vehicleType}</td>
-                        <td>{formatDate(item.registerDate)}</td>
-                        <td>
-                          <span className={
-                            item.status === 'approved'
-                              ? 'badge bg-success'
-                              : item.status === 'rejected'
-                                ? 'badge bg-danger'
-                                : 'badge bg-secondary'
-                          }>
-                            {item.status === 'approved'
-                              ? 'Đã phê duyệt'
-                              : item.status === 'rejected'
-                                ? 'Đã từ chối'
-                                : item.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
+                {currentList.length > 0 ? (
+                  currentList.map((item, idx) => (
+                    <tr key={item._id}>
+                      <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
+                      <td>{item.apartmentCode}</td>
+                      <td>{item.owner}</td>
+                      <td>{item.licensePlate}</td>
+                      <td>{item.vehicleType}</td>
+                      <td>{formatDate(item.registerDate)}</td>
+                      <td>
+                        <span className={
+                          item.status === 'approved'
+                            ? 'badge bg-success'
+                            : item.status === 'rejected'
+                              ? 'badge bg-danger'
+                              : 'badge bg-secondary'
+                        }>
+                          {item.status === 'approved'
+                            ? 'Đã phê duyệt'
+                            : item.status === 'rejected'
+                              ? 'Đã từ chối'
+                              : item.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
                 ) : (
                   <tr>
                     <td colSpan="7" className="text-center">Không có dữ liệu.</td>
@@ -183,6 +166,26 @@ const ParkingLotList = () => {
                 )}
               </tbody>
             </table>
+            {/* Pagination */}
+            <div className="d-flex justify-content-center align-items-center mt-3">
+              <button
+                className="btn btn-outline-secondary me-2"
+                onClick={() => setPage(page - 1)}
+                disabled={page <= 1}
+              >
+                &lt; Prev
+              </button>
+              <span style={{ minWidth: 90, textAlign: "center" }}>
+                Trang {page} / {totalPages || 1}
+              </span>
+              <button
+                className="btn btn-outline-secondary ms-2"
+                onClick={() => setPage(page + 1)}
+                disabled={page >= totalPages}
+              >
+                Next &gt;
+              </button>
+            </div>
           </div>
         </div>
       </main>

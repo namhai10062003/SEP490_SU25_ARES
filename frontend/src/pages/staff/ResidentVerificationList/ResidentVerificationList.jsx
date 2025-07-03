@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import StaffNavbar from "../staffNavbar";
 
 export default function ResidentVerificationList() {
   const [users, setUsers] = useState([]);
@@ -8,8 +8,8 @@ export default function ResidentVerificationList() {
   const [error, setError] = useState(null);
 
   // Phân trang
-  const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 20;
+  const USERS_PER_PAGE = 20;
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -18,7 +18,6 @@ export default function ResidentVerificationList() {
         const res = await axios.get(
           "http://localhost:4000/api/users/get-user-apartment"
         );
-        // Không kiểm tra res.data.success nữa
         setUsers(res.data.data || []);
       } catch (err) {
         setError("Lỗi khi tải dữ liệu");
@@ -31,34 +30,14 @@ export default function ResidentVerificationList() {
   }, []);
 
   // Tính toán phân trang
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const totalPages = Math.ceil(users.length / USERS_PER_PAGE);
+  const indexOfLastUser = page * USERS_PER_PAGE;
+  const indexOfFirstUser = indexOfLastUser - USERS_PER_PAGE;
   const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
-  const totalPages = Math.ceil(users.length / usersPerPage);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <div className="d-flex min-vh-100 bg-light">
-      {/* Sidebar */}
-      <aside className="bg-primary text-white p-4" style={{ minWidth: 240 }}>
-        <h2 className="fw-bold mb-4 text-warning text-center">BẢN QUẢN LÝ</h2>
-        <nav>
-          <ul className="nav flex-column gap-2">
-            <li className="nav-item"><Link to="/staff-dashboard" className="nav-link text-white">Dashboard</Link></li>
-            <li className="nav-item"><Link to="/posts" className="nav-link text-white">Quản lý bài post</Link></li>
-            <li className="nav-item"><Link to="/real-estate" className="nav-link text-white">Quản lý bất động sản</Link></li>
-            <li className="nav-item"><Link to="/manage-parkinglot" className="nav-link text-white">Quản lý bài đồ xe</Link></li>
-            <li className="nav-item"><Link to="/expenses" className="nav-link text-white">Quản lý chi phí</Link></li>
-            <li className="nav-item"><Link to="/residentVerification" className="nav-link active bg-white text-primary fw-bold">Quản lý người dùng</Link></li>
-            <li className="nav-item"><Link to="/revenue" className="nav-link text-white">Quản lý doanh thu</Link></li>
-            <li className="nav-item"><Link to="/resident-verify" className="nav-link text-white">Quản lý nhân khẩu</Link></li>
-            <li className="nav-item"><Link to="/login" className="nav-link text-white">Đăng Xuất</Link></li>
-          </ul>
-        </nav>
-      </aside>
-
-      {/* Main content */}
+      <StaffNavbar />
       <main className="flex-grow-1 p-4">
         <div className="mb-4 text-center">
           <h1 className="fw-bold" style={{
@@ -118,30 +97,33 @@ export default function ResidentVerificationList() {
                 ))}
               </tbody>
             </table>
-
+            {/* Pagination */}
+            <div className="d-flex justify-content-center align-items-center mt-3">
+              <button
+                className="btn btn-outline-secondary me-2"
+                onClick={() => setPage(page - 1)}
+                disabled={page <= 1}
+              >
+                &lt; Prev
+              </button>
+              <span style={{ minWidth: 90, textAlign: "center" }}>
+                Trang {page} / {totalPages || 1}
+              </span>
+              <button
+                className="btn btn-outline-secondary ms-2"
+                onClick={() => setPage(page + 1)}
+                disabled={page >= totalPages || totalPages === 0}
+              >
+                Next &gt;
+              </button>
+            </div>
             {users.length === 0 && (
               <div className="text-center py-5 text-secondary">
                 Không có dữ liệu người dùng
               </div>
             )}
 
-            {/* Phân trang */}
-            {users.length > usersPerPage && (
-              <nav className="mt-4">
-                <ul className="pagination justify-content-center">
-                  {[...Array(totalPages)].map((_, index) => (
-                    <li key={index} className={`page-item${currentPage === index + 1 ? " active" : ""}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => paginate(index + 1)}
-                      >
-                        {index + 1}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </nav>
-            )}
+
           </div>
         )}
       </main>

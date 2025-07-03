@@ -97,42 +97,57 @@ const Expenses = () => {
     }, {});
 
     return (
-        <div className="layout">
+        <div className="d-flex min-vh-100 bg-light">
             <ToastContainer position="top-right" autoClose={2000} />
             <StaffNavbar />
-
-            <main className="dashboard-container">
-                <h2 style={{ marginBottom: 24 }}>Quản lý chi phí căn hộ</h2>
-                <form onSubmit={handleAdd} style={{ margin: "0 auto 32px auto", maxWidth: 500, display: "flex", gap: 8, alignItems: "center" }}>
-                    <select
-                        value={addType}
-                        onChange={e => setAddType(e.target.value)}
-                        style={{ width: 160 }}
-                        required
-                    >
-                        <option value="">Chọn loại chi phí</option>
-                        <option value="1">Chi phí bảo trì</option>
-                        <option value="2">Giá gửi xe</option>
-                        <option value="3">Phí dịch vụ khác</option>
-                        <option value="4">Phí tiện ích</option>
-                    </select>
-                    <input
-                        type="text"
-                        placeholder="Tên Tòa nhà"
-                        value={addLabel}
-                        onChange={e => setAddLabel(e.target.value)}
-                        required
-                    />
-                    <input
-                        type="number"
-                        step="1"
-                        placeholder="Giá (VND/m²)"
-                        value={addPrice}
-                        min={0}
-                        onChange={e => setAddPrice(e.target.value)}
-                        required
-                    />
-                    <button className="btn btn-success btn-sm" type="submit">Thêm mới</button>
+            <main className="flex-grow-1 p-4">
+                <h2 className="fw-bold mb-4">Quản lý chi phí căn hộ</h2>
+                <form
+                    onSubmit={handleAdd}
+                    className="row g-2 align-items-center mb-4"
+                    style={{ maxWidth: 600 }}
+                >
+                    <div className="col-md-3">
+                        <select
+                            className="form-select"
+                            value={addType}
+                            onChange={e => setAddType(e.target.value)}
+                            required
+                        >
+                            <option value="">Chọn loại chi phí</option>
+                            <option value="1">Chi phí bảo trì</option>
+                            <option value="2">Giá gửi xe</option>
+                            <option value="3">Phí dịch vụ khác</option>
+                            <option value="4">Phí tiện ích</option>
+                        </select>
+                    </div>
+                    <div className="col-md-4">
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Tên Tòa nhà"
+                            value={addLabel}
+                            onChange={e => setAddLabel(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="col-md-3">
+                        <input
+                            type="number"
+                            className="form-control"
+                            step="1"
+                            placeholder="Giá (VND/m²)"
+                            value={addPrice}
+                            min={0}
+                            onChange={e => setAddPrice(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="col-md-2">
+                        <button className="btn btn-success w-100" type="submit">
+                            Thêm mới
+                        </button>
+                    </div>
                 </form>
 
                 {loading ? (
@@ -140,50 +155,47 @@ const Expenses = () => {
                 ) : expenses.length === 0 ? (
                     <div>Không có dữ liệu chi phí.</div>
                 ) : (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "center" }}>
+                    <div className="row g-4">
                         {Object.entries(grouped).map(([label, items]) => (
-                            <div key={label} style={{
-                                background: "#fff",
-                                borderRadius: 10,
-                                boxShadow: "0 2px 8px #eee",
-                                padding: 24,
-                                minWidth: 320,
-                                maxWidth: 420,
-                                marginBottom: 32
-                            }}>
-                                <div style={{ fontWeight: "bold", fontSize: 20, marginBottom: 16, color: "#1976d2" }}>{label}</div>
-                                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                                    <thead>
-                                        <tr style={{ background: "#f5f5f5" }}>
-                                            <th style={{ textAlign: "left", padding: 8 }}>Loại phí</th>
-                                            <th style={{ textAlign: "right", padding: 8 }}>Giá</th>
-                                            <th style={{ padding: 8 }}></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {items.map(exp => (
-                                            <tr key={exp._id} style={{ borderBottom: "1px solid #eee" }}>
-                                                <td style={{ padding: 8, color: "#444" }}>{TYPE_LABELS[exp.type] || `Loại ${exp.type}`}</td>
-                                                <td style={{ padding: 8, textAlign: "right", fontWeight: "bold", color: "#1976d2" }}>
-                                                    {exp.price?.toLocaleString()} {exp.type === 1 ? "VND/m²" : "VND/tháng"}
-                                                </td>
-                                                <td style={{ padding: 8 }}>
-                                                    <button
-                                                        className="btn btn-danger btn-sm"
-                                                        onClick={() => handleDelete(exp._id)}
-                                                    >
-                                                        Xóa
-                                                    </button>
-                                                </td>
+                            <div key={label} className="col-12 col-md-6 col-lg-4">
+                                <div
+                                    className="bg-white rounded shadow-sm p-4 h-100"
+                                    style={{ minWidth: 260 }}
+                                >
+                                    <div className="fw-bold fs-5 mb-3 text-primary">{label}</div>
+                                    <table className="table table-sm mb-0">
+                                        <thead>
+                                            <tr className="table-light">
+                                                <th>Loại phí</th>
+                                                <th className="text-end">Giá</th>
+                                                <th></th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {items.map(exp => (
+                                                <tr key={exp._id}>
+                                                    <td>{TYPE_LABELS[exp.type] || `Loại ${exp.type}`}</td>
+                                                    <td className="text-end text-primary fw-bold">
+                                                        {exp.price?.toLocaleString()} {exp.type === 1 ? "VND/m²" : "VND/tháng"}
+                                                    </td>
+                                                    <td>
+                                                        <button
+                                                            className="btn btn-danger btn-sm"
+                                                            onClick={() => handleDelete(exp._id)}
+                                                        >
+                                                            Xóa
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         ))}
                     </div>
                 )}
-                <p className="mt-3" style={{ marginTop: 32 }}>
+                <p className="mt-4">
                     <b>Ghi chú:</b> Giá quản lý căn hộ sẽ được tính tự động theo diện tích và loại tòa nhà.
                 </p>
             </main>
