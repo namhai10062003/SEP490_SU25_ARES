@@ -121,6 +121,9 @@ function AppRoutes() {
           <Route path="staff-resident-verification" element={<ProtectedRoute element={<ResidentVerificationList />} allowedRoles={["staff"]} />} />
           <Route path="staff-manage-parkinglot" element={<ProtectedRoute element={<ManageParkingLot />} allowedRoles={["staff"]} />} />
           <Route path="staff-parkinglot-list" element={<ProtectedRoute element={<ParkingLotList />} allowedRoles={["staff"]} />} />
+          <Route path="staff-water-data-upload" element={<ProtectedRoute element={<WaterDataUpload />} allowedRoles={["staff"]} />} />
+
+          {/* User */}
         </Routes>
 
         {/* Global components */}

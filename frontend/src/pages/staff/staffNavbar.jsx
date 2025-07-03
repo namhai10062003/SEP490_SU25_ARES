@@ -7,10 +7,15 @@ const StaffNavbar = () => {
         location.pathname === "/staff-parkinglot-list" ||
         location.pathname === "/staff-manage-parkinglot";
     const [showParkingSub, setShowParkingSub] = useState(isParkingActive);
+    const isExpenseActive =
+        location.pathname === "/staff-expenses" ||
+        location.pathname === "/staff-water-data-upload";
+    const [showExpenseSub, setShowExpenseSub] = useState(isExpenseActive);
 
     useEffect(() => {
         if (isParkingActive) setShowParkingSub(true);
-    }, [isParkingActive]);
+        if (isExpenseActive) setShowExpenseSub(true);
+    }, [isParkingActive, isExpenseActive]);
 
     return (
         <aside
@@ -129,23 +134,69 @@ const StaffNavbar = () => {
                             </ul>
                         </div>
                     </li>
+
                     <li className="nav-item">
-                        <Link
-                            to="/staff-expenses"
-                            className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-expenses"
-                                ? "active bg-white text-primary fw-bold shadow-sm"
+                        <div
+                            className={`rounded-3 px-3 py-2 d-flex align-items-center w-100 border-0 ${location.pathname === "/staff-expenses" ||
+                                location.pathname === "/staff-water-data-upload"
+                                ? "bg-white text-primary fw-bold shadow-sm"
                                 : "text-white"
                                 }`}
                             style={{
+                                cursor: "pointer",
+                                userSelect: "none",
                                 background:
-                                    location.pathname === "/staff-expenses"
+                                    location.pathname === "/staff-expenses" ||
+                                        location.pathname === "/staff-water-data-upload"
                                         ? "white"
                                         : "transparent",
+                                fontWeight:
+                                    location.pathname === "/staff-expenses" ||
+                                        location.pathname === "/staff-water-data-upload"
+                                        ? 600
+                                        : 400,
+                            }}
+                            onClick={() => setShowExpenseSub((v) => !v)}
+                            aria-expanded={showExpenseSub}
+                        >
+                            <span>Quản lý chi phí</span>
+                            <span className="ms-auto">{showExpenseSub ? "▲" : "▼"}</span>
+                        </div>
+                        <div
+                            className={`collapse${showExpenseSub ? " show" : ""}`}
+                            style={{
+                                marginLeft: "0.5rem",
+                                borderLeft: "2px solid #fff3",
+                                transition: "all .2s",
                             }}
                         >
-                            Quản lý chi phí
-                        </Link>
+                            <ul className="nav flex-column ps-3 mt-1">
+                                <li className="nav-item">
+                                    <Link
+                                        to="/staff-expenses"
+                                        className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-expenses"
+                                            ? "active bg-white text-primary fw-bold shadow-sm"
+                                            : "text-white"
+                                            }`}
+                                    >
+                                        Tổng hợp chi phí
+                                    </Link>
+                                </li>
+                                <li className="nav-item">
+                                    <Link
+                                        to="/staff-water-data-upload"
+                                        className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-water-data-upload"
+                                            ? "active bg-white text-primary fw-bold shadow-sm"
+                                            : "text-white"
+                                            }`}
+                                    >
+                                        Quản lý chi phí nước
+                                    </Link>
+                                </li>
+                            </ul>
+                        </div>
                     </li>
+
                     <li className="nav-item">
                         <Link
                             to="/staff-resident-verification"
