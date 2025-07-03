@@ -23,6 +23,7 @@ import residentVerificationRouter from "./router/residentVerificationRoutes.js";
 import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
 import waterRoutes from "./router/waterRoutes.js";
+import feeRoutes from "./router/feeRoutes.js";
 
 import { initSocket } from "./socket.js";
 
@@ -83,6 +84,7 @@ app.use("/api/interaction", interationRouter);
 app.use("/api/messages", messageRoutes);
 app.use("/api/contracts", contractRouter);
 app.use("/api/water", waterRoutes); 
+app.use("/api/fees", feeRoutes); 
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);

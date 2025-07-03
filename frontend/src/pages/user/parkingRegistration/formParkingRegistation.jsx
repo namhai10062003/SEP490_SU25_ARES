@@ -229,11 +229,11 @@ const FormParkingRegistration = () => {
               <input type="date" name="registerDate" value={formData.registerDate} onChange={handleChange} className="form-control" required />
             </div>
 
-            {/* Ngày hết hạn */}
+            {/* Ngày hết hạn
             <div className="col-md-6">
               <label className="form-label">Ngày hết hạn</label>
               <input type="date" name="expireDate" value={formData.expireDate} onChange={handleChange} className="form-control" />
-            </div>
+            </div> */}
 
             {/* Ảnh giấy tờ */}
             <div className="col-12">

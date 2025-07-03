@@ -12,11 +12,15 @@ const MyApartment = () => {
     const [feeLoading, setFeeLoading] = useState(false);
     const [parkingRegs, setParkingRegs] = useState([]);
     const [parkingLoading, setParkingLoading] = useState(false);
+    const [waterFee, setWaterFee] = useState(null);
+    const [waterLoading, setWaterLoading] = useState(false);
+
 
     useEffect(() => {
         if (user?._id) {
             fetchApartment();
             fetchParkingRegs();
+            fetchWaterFee();
         }
     }, [user]);
     const fetchApartment = async () => {
@@ -43,6 +47,25 @@ const MyApartment = () => {
             setParkingRegs([]);
         } finally {
             setParkingLoading(false);
+        }
+    };
+    //lấy phí nước
+    const fetchWaterFee = async () => {
+        setWaterLoading(true);
+        try {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/water/usage`);
+            const waterList = res.data;
+
+            // Dữ liệu từ API có apartmentCode, ownerName... nhưng bạn có thể sửa API để trả thêm apartmentId
+            const matched = waterList.find(item => item.apartmentId === user.apartment); // user.apartment là ObjectId
+
+            if (matched) setWaterFee(matched.total);
+            else setWaterFee(null);
+        } catch (err) {
+            console.error("❌ Lỗi khi fetch water:", err);
+            setWaterFee(null);
+        } finally {
+            setWaterLoading(false);
         }
     };
     const handleShowExpense = async () => {
@@ -158,6 +181,16 @@ const MyApartment = () => {
                                     </div>
                                 ) : (
                                     <div style={{ marginTop: 12 }}>Không có đăng ký gửi xe</div>
+                                )}
+                                {/*//tải phí nước lên */}
+                                {waterLoading ? ( 
+                                    <div>Đang tải phí nước...</div>
+                                ) : waterFee !== null ? (
+                                    <div style={{ marginTop: 12 }}>
+                                        <strong>Phí nước:</strong> {waterFee.toLocaleString("vi-VN")} đ/tháng
+                                    </div>
+                                ) : (
+                                    <div style={{ marginTop: 12 }}>Không có dữ liệu phí nước</div>
                                 )}
                             </div>
                         )}

@@ -3,26 +3,27 @@ import axios from "axios";
 import StaffNavbar from "./staffNavbar";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Link } from "react-router-dom";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
+
 const TYPE_LABELS = {
-    1: "Chi phí bảo trì",
-    2: "Giá gửi xe",
-    3: "Phí dịch vụ khác",
-    4: "Phí tiện ích"
+    1: "Chi phí quản lý"
 };
 
 const Expenses = () => {
     const [expenses, setExpenses] = useState([]);
-    const [editing, setEditing] = useState(null);
-    const [newPrice, setNewPrice] = useState("");
     const [loading, setLoading] = useState(true);
     const [addType, setAddType] = useState("");
     const [addLabel, setAddLabel] = useState("");
     const [addPrice, setAddPrice] = useState("");
+    const [apartmentFees, setApartmentFees] = useState([]);
+    const [loadingFees, setLoadingFees] = useState(true);
+
 
     useEffect(() => {
         fetchExpenses();
+        fetchApartmentFees();
     }, []);
 
     const fetchExpenses = async () => {
@@ -31,33 +32,25 @@ const Expenses = () => {
             const res = await axios.get(`${API_URL}/api/expenses`);
             setExpenses(res.data);
         } catch (err) {
-            setExpenses([]);
             toast.error("Lỗi tải dữ liệu chi phí!");
         }
         setLoading(false);
     };
 
-    const handleEdit = (type, price) => {
-        setEditing(type);
-        setNewPrice(price);
-    };
-
-    const handleSave = async (type) => {
+    const fetchApartmentFees = async () => {
         try {
-            await axios.put(`${API_URL}/api/expenses/${type}`, { price: Number(newPrice) });
-            toast.success("Cập nhật giá thành công!");
-            setEditing(null);
-            setNewPrice("");
-            fetchExpenses();
+            const res = await axios.get(`${API_URL}/api/fees/apartments`);
+            setApartmentFees(res.data);
         } catch (err) {
-            toast.error("Cập nhật thất bại!");
+            console.error("Lỗi khi lấy dữ liệu chi phí căn hộ:", err);
         }
+        setLoadingFees(false);
     };
 
-    const handleDelete = async (type) => {
+    const handleDelete = async (id) => {
         if (window.confirm("Bạn có chắc muốn xóa loại chi phí này?")) {
             try {
-                await axios.delete(`${API_URL}/api/expenses/${type}`);
+                await axios.delete(`${API_URL}/api/expenses/${id}`);
                 toast.success("Đã xóa chi phí!");
                 fetchExpenses();
             } catch (err) {
@@ -89,7 +82,7 @@ const Expenses = () => {
         }
     };
 
-    // Group expenses by label (building)
+    // Gom nhóm expenses theo label (tòa nhà)
     const grouped = expenses.reduce((acc, exp) => {
         if (!acc[exp.label]) acc[exp.label] = [];
         acc[exp.label].push(exp);
@@ -150,57 +143,103 @@ const Expenses = () => {
                     </div>
                 </form>
 
+                {/* Hiển thị danh sách chi phí */}
                 {loading ? (
-                    <div>Đang tải dữ liệu...</div>
+                    <div className="text-center text-secondary">Đang tải dữ liệu...</div>
                 ) : expenses.length === 0 ? (
-                    <div>Không có dữ liệu chi phí.</div>
+                    <div className="text-center text-secondary">Không có dữ liệu chi phí.</div>
                 ) : (
-                    <div className="row g-4">
+                    <div className="d-flex flex-wrap gap-4 justify-content-center">
                         {Object.entries(grouped).map(([label, items]) => (
-                            <div key={label} className="col-12 col-md-6 col-lg-4">
-                                <div
-                                    className="bg-white rounded shadow-sm p-4 h-100"
-                                    style={{ minWidth: 260 }}
-                                >
-                                    <div className="fw-bold fs-5 mb-3 text-primary">{label}</div>
-                                    <table className="table table-sm mb-0">
-                                        <thead>
-                                            <tr className="table-light">
-                                                <th>Loại phí</th>
-                                                <th className="text-end">Giá</th>
-                                                <th></th>
+                            <div key={label} className="bg-white shadow-sm rounded p-4" style={{ minWidth: 320, maxWidth: 420 }}>
+                                <h5 className="text-primary fw-bold mb-3">{label}</h5>
+                                <table className="table table-bordered table-sm mb-0">
+                                    <thead className="table-light">
+                                        <tr>
+                                            <th>Loại phí</th>
+                                            <th className="text-end">Giá</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {items.map((exp) => (
+                                            <tr key={exp._id}>
+                                                <td>{TYPE_LABELS[exp.type] || `Loại ${exp.type}`}</td>
+                                                <td className="text-end text-primary fw-bold">
+                                                    {exp.price.toLocaleString()} {exp.type === 1 ? "VND/m²" : "VND/tháng"}
+                                                </td>
+                                                <td className="text-center">
+                                                    <button
+                                                        className="btn btn-danger btn-sm"
+                                                        onClick={() => handleDelete(exp._id)}
+                                                    >
+                                                        Xóa
+                                                    </button>
+                                                </td>
                                             </tr>
-                                        </thead>
-                                        <tbody>
-                                            {items.map(exp => (
-                                                <tr key={exp._id}>
-                                                    <td>{TYPE_LABELS[exp.type] || `Loại ${exp.type}`}</td>
-                                                    <td className="text-end text-primary fw-bold">
-                                                        {exp.price?.toLocaleString()} {exp.type === 1 ? "VND/m²" : "VND/tháng"}
-                                                    </td>
-                                                    <td>
-                                                        <button
-                                                            className="btn btn-danger btn-sm"
-                                                            onClick={() => handleDelete(exp._id)}
-                                                        >
-                                                            Xóa
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         ))}
                     </div>
                 )}
+
                 <p className="mt-4">
-                    <b>Ghi chú:</b> Giá quản lý căn hộ sẽ được tính tự động theo diện tích và loại tòa nhà.
+                    <strong>Ghi chú:</strong> Giá quản lý căn hộ được tính tự động theo diện tích và tòa nhà.
                 </p>
+                <hr className="my-4" />
+
+                <h4 className="fw-bold text-dark mb-3">Bảng chi phí tổng hợp từng căn hộ theo tháng</h4>
+
+                <div className="table-responsive">
+                    {loadingFees ? (
+                        <div className="text-secondary">Đang tải dữ liệu chi phí...</div>
+                    ) : apartmentFees.length === 0 ? (
+                        <div className="text-secondary">Không có dữ liệu chi phí căn hộ.</div>
+                    ) : (
+                        <table className="table table-bordered table-striped table-hover">
+                            <thead className="table-primary">
+                                <tr>
+                                    <th>Mã căn hộ</th>
+                                    <th>Chủ hộ</th>
+                                    <th>Tháng</th>
+                                    <th>Phí quản lý</th>
+                                    <th>Phí nước</th>
+                                    <th>Phí gửi xe</th>
+                                    <th className="text-end">Tổng cộng</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {apartmentFees.map((row, index) => {
+                                    const createdAt = row.createdAt ? new Date(row.createdAt) : null;
+                                    const displayedMonth = createdAt
+                                        ? `${createdAt.getMonth() + 1}`.padStart(2, "0") + "/" + createdAt.getFullYear()
+                                        : row.month || "---"; // fallback nếu không có createdAt
+
+                                    return (
+                                        <tr key={index}>
+                                            <td>{row.apartmentCode}</td>
+                                            <td>{row.ownerName}</td>
+                                            <td>{displayedMonth}</td>
+                                            <td>{row.managementFee?.toLocaleString()} đ</td>
+                                            <td>{row.waterFee?.toLocaleString()} đ</td>
+                                            <td>{row.parkingFee?.toLocaleString()} đ</td>
+                                            <td className="text-end fw-bold text-primary">
+                                                {row.total?.toLocaleString()} đ
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+
+                    )}
+                </div>
             </main>
         </div>
     );
+
 };
 
 export default Expenses;
