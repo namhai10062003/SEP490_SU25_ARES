@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const expenseSchema = new Schema({
+    apartment: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Apartment",
+        required: false, // hoặc false nếu không bắt buộc
+      },
     type: { type: Number, enum: [1, 2, 3, 4], required: true }, // 1: Maintenance, 2: Parking, etc.
     label: { type: String, required: true }, // e.g. "Plaza 1", "Xe máy"
     price: { type: Number, required: true },
