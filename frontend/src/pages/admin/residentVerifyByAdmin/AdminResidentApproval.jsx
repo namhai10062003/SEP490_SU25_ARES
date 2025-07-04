@@ -9,7 +9,7 @@ const AdminResidentApproval = () => {
   const fetchResidentsToApprove = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:4000/api/residents/residents/to-approve-by-admin', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/residents/residents/to-approve-by-admin`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -30,7 +30,7 @@ const AdminResidentApproval = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:4000/api/residents/verify-by-admin/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/residents/verify-by-admin/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -1,6 +1,5 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import StaffNavbar from "../staffNavbar";
 
 export default function ResidentVerificationForm() {
@@ -21,7 +20,7 @@ export default function ResidentVerificationForm() {
   useEffect(() => {
     const fetchApartments = async () => {
       try {
-        const res = await axios.get("http://localhost:4000/api/apartments");
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/apartments`);
         if (Array.isArray(res.data)) {
           setApartments(res.data);
         } else {
@@ -39,7 +38,7 @@ export default function ResidentVerificationForm() {
     setLoading(true);
     try {
       const res = await axios.get(
-        `http://localhost:4000/api/resident-verifications/search-user?keyword=${query}`
+        `${import.meta.env.VITE_API_URL}/api/resident-verifications/search-user?keyword=${query}`
       );
       setUser(res.data);
     } catch (err) {
@@ -96,7 +95,7 @@ export default function ResidentVerificationForm() {
 
     try {
       await axios.post(
-        "http://localhost:4000/api/resident-verifications/verification",
+        `${import.meta.env.VITE_API_URL}/api/resident-verifications/verification`,
         data,
         {
           headers: {

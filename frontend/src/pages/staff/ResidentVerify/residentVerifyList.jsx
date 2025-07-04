@@ -12,7 +12,7 @@ const ResidentVerifyList = () => {
   const fetchUnverifiedResidents = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:4000/api/residents/residents/unverified", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/residents/residents/unverified`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -34,7 +34,7 @@ const ResidentVerifyList = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `http://localhost:4000/api/residents/verify-by-staff/${confirmId}`,
+        `${import.meta.env.VITE_API_URL}/api/residents/verify-by-staff/${confirmId}`,
         {
           method: "PUT",
           headers: {
@@ -66,7 +66,7 @@ const ResidentVerifyList = () => {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
-        `http://localhost:4000/api/residents/reject-by-staff/${rejectId}`,
+        `${import.meta.env.VITE_API_URL}/api/residents/reject-by-staff/${rejectId}`,
         {
           method: "PUT",
           headers: {

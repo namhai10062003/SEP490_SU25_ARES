@@ -11,7 +11,7 @@ export const sendMessageWithSocket = async ({
   if (!content.trim() || senderId === receiverId) return;
 
   try {
-    const res = await axios.post("http://localhost:4000/api/messages", {
+    const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/messages`, {
       senderId,
       receiverId,
       content,

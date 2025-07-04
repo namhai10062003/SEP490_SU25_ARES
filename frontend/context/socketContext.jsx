@@ -17,7 +17,7 @@ const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         if (user?._id) {
-            socketRef.current = io("http://localhost:4000");
+            socketRef.current = io(import.meta.env.VITE_API_URL);
             socketRef.current.emit("register", user._id);
             socketRef.current.emit("register-user", user._id);
             setSocketConnected(true);

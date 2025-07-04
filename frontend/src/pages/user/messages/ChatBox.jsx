@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import { useVideoCall } from "../../../../context/VideoCallContext";
 import { sendMessageWithSocket } from "./utils/sendMessageWithSocket";
-const socket = io("http://localhost:4000", { withCredentials: true });
+const socket = io(`${import.meta.env.VITE_API_URL}`, { withCredentials: true });
 
 const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
   const [messages, setMessages] = useState([]);
@@ -55,7 +55,7 @@ const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
 
     const fetchMessages = async () => {
       try {
-        const res = await axios.get(`http://localhost:4000/api/messages/${currentUserId}/${receiverId}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messages/${currentUserId}/${receiverId}`);
         const normalized = res.data.data.map((msg) => ({
           _id: msg._id,
           senderId: msg.sender,

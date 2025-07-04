@@ -15,7 +15,7 @@ const ResidentList = () => {
     (async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:4000/api/residents/me/residents', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/residents/me/residents`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,

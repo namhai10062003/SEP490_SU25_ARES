@@ -11,6 +11,7 @@ import apartmentRouter from "./router/apartmentRoutes.js";
 import authRouter from "./router/auth.js";
 import contractRouter from "./router/contractRouter.js";
 import expenseRoutes from "./router/expenseRoutes.js";
+import feeRoutes from "./router/feeRoutes.js";
 import interationRouter from "./router/interactions.js";
 import messageRoutes from "./router/messageRoutes.js";
 import notificationRoutes from './router/notificationRoutes.js';
@@ -23,7 +24,6 @@ import residentVerificationRouter from "./router/residentVerificationRoutes.js";
 import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
 import waterRoutes from "./router/waterRoutes.js";
-import feeRoutes from "./router/feeRoutes.js";
 
 import { initSocket } from "./socket.js";
 
@@ -36,7 +36,12 @@ const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "https://ares.io.vn",
+      "http://ares.io.vn"
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     credentials: true
   }
@@ -46,7 +51,12 @@ initSocket(io);              // nếu bạn có file socket.js
 
 /* --------- Middleware --------- */
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://ares.io.vn",
+    "http://ares.io.vn"
+  ],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"]

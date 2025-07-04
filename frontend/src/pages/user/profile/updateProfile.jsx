@@ -31,7 +31,7 @@ const UpdateProfileForm = () => {
     const fetchUserProfile = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:4000/api/users/profile/${user._id}`,
+          `${import.meta.env.VITE_API_URL}/api/users/profile/${user._id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -95,7 +95,7 @@ const UpdateProfileForm = () => {
         formData.append("profileImage", profileImage);
       }
 
-      await axios.patch("http://localhost:4000/api/users/updateprofile", formData, {
+      await axios.patch(`${import.meta.env.VITE_API_URL}/api/users/updateprofile`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

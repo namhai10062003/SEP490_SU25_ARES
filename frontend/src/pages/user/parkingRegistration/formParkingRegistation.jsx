@@ -35,7 +35,7 @@ const FormParkingRegistration = () => {
     setName(user?.name || null);
     (async () => {
       try {
-        const r = await fetch('http://localhost:4000/api/apartments');
+        const r = await fetch(`${import.meta.env.VITE_API_URL}/api/apartments`);
         const data = await r.json();
 
         const userId = String(user._id);
@@ -130,7 +130,7 @@ const FormParkingRegistration = () => {
       if (formData.documentFront) submission.append('documentFront', formData.documentFront);
       if (formData.documentBack) submission.append('documentBack', formData.documentBack);
 
-      const res = await fetch('http://localhost:4000/api/parkinglot/create-parkinglot', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/create-parkinglot`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: submission

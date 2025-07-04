@@ -16,7 +16,7 @@ const ParkingRegistrationDetail = () => {
     const fetchDetail = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:4000/api/parkinglot/detail-parkinglot/${id}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/detail-parkinglot/${id}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

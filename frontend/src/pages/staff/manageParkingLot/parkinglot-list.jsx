@@ -33,7 +33,7 @@ const ParkingLotList = () => {
 
   const fetchParkingList = async (token) => {
     try {
-      const res = await fetch('http://localhost:4000/api/parkinglot/parkinglotall', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/parkinglotall`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -63,7 +63,7 @@ const ParkingLotList = () => {
 
   const fetchSlotInfo = async (token) => {
     try {
-      const res = await fetch('http://localhost:4000/api/parkinglot/parkinglot/available-slots', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/parkinglot/available-slots`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

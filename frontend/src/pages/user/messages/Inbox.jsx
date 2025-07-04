@@ -10,7 +10,7 @@ const Inbox = ({ currentUserId }) => {
   useEffect(() => {
     const fetchPartners = async () => {
       try {
-        const res = await axios.get(`http://localhost:4000/api/messages/recent-sender/${currentUserId}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messages/recent-sender/${currentUserId}`);
         const data = res.data.data || [];
         const filtered = data.filter(user => user._id !== currentUserId);
         setPartners(filtered);
