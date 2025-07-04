@@ -171,8 +171,8 @@ const Login = () => {
             minHeight: 480
           }}>
             <div className="text-white text-center" style={{ textShadow: "0 2px 8px #000" }}>
-              <h1 className="fw-bold mb-3">OFFICIAL</h1>
-              <p>Lorem Ipsum Dolor Sit Amet. Consectetur Adipiscing Elit.</p>
+              <h1 className="fw-bold mb-3">ARES - FPT CITY</h1>
+              <p>Giải pháp tối ưu, kiến tạo tương lai tại FPT City Đà Nẵng.</p>
               <hr className="border-light opacity-50" style={{ width: "60px", margin: "24px auto" }} />
             </div>
           </div>

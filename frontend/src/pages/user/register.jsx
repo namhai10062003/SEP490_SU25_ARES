@@ -203,7 +203,7 @@ const Register = () => {
             }}
           >
             <div className="text-white text-center" style={{ textShadow: "0 2px 8px #000", zIndex: 1 }}>
-              <h1 className="fw-bold mb-3 text-warning">ARES-FPTCITY</h1>
+              <h1 className="fw-bold mb-3">ARES - FPT CITY</h1>
               <p>Giải pháp tối ưu, kiến tạo tương lai tại FPT City Đà Nẵng.</p>
             </div>
             <div
@@ -300,14 +300,14 @@ const Register = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="btn btn-warning btn-lg w-100 fw-bold mb-3"
+                className="btn btn-primary btn-lg w-100 mb-2"
               >
                 {loading ? "Đang đăng ký..." : "Đăng ký"}
               </button>
             </form>
             <div className="text-center my-3">
               <span className="text-secondary">Bạn đã có tài khoản? </span>
-              <Link to="/login" className="fw-bold link-warning">Đăng nhập ngay</Link>
+              <Link to="/login" className="fw-bold">Đăng nhập ngay</Link>
             </div>
             <div className="d-flex align-items-center my-3">
               <hr className="flex-grow-1" />
