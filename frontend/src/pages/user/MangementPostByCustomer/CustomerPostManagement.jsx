@@ -9,13 +9,15 @@ import {
   updatePost,
 } from "../../../service/postService.js";
 
+const PAGE_SIZE = 5;
+
 const CustomerPostManagement = () => {
+  const { user, logout, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user, logout } = useAuth();
-  const [name, setName] = useState(null);
   const [editingPost, setEditingPost] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
 
   // Form state for editing
@@ -66,32 +68,31 @@ const CustomerPostManagement = () => {
     setLoading(true);
     try {
       const response = await getPostsByUser();
-      setPosts(response.data.data);
+      setPosts(Array.isArray(response.data.data) ? response.data.data : []);
     } catch (error) {
-      alert("Có lỗi xảy ra khi tải dữ liệu!");
+      setPosts([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) return;
     fetchPosts();
-  }, []);
+    // eslint-disable-next-line
+  }, [user, authLoading]);
 
   // Handle delete post
   const handleDelete = async (postId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa bài đăng này?")) {
       try {
         const response = await deletePost(postId);
-
         if (response.data.success) {
-          alert("Bài đăng đã được xóa!");
-          setPosts(posts.filter((post) => post._id !== postId));
-        } else {
-          alert("Xóa bài đăng không thành công!");
+          setPosts((prev) => prev.filter((post) => post._id !== postId));
         }
       } catch (error) {
-        alert("Có lỗi xảy ra khi xóa bài đăng!");
+        // ignore
       }
     }
   };
@@ -102,7 +103,6 @@ const CustomerPostManagement = () => {
       alert("Không thể chỉnh sửa bài đăng đã được duyệt!");
       return;
     }
-
     setEditingPost(post);
     setEditForm({
       title: post.title,
@@ -115,7 +115,7 @@ const CustomerPostManagement = () => {
       interiorStatus: post.interiorStatus,
       amenities: post.amenities,
       property: post.property,
-      postPackagename: post.postPackage._id,
+      postPackagename: post.postPackage?._id || "",
     });
     setShowEditModal(true);
   };
@@ -128,37 +128,29 @@ const CustomerPostManagement = () => {
       [name]: value,
     }));
   };
+
   // Handle save edit
   const handleSaveEdit = async () => {
     try {
       const response = await updatePost(editingPost._id, editForm);
       if (response.data.success) {
-        alert("Cập nhật bài đăng thành công!");
         setShowEditModal(false);
         setEditingPost(null);
         fetchPosts();
-      } else {
-        alert("Cập nhật bài đăng không thành công!");
       }
     } catch (error) {
-      alert("Có lỗi xảy ra khi cập nhật bài đăng!");
+      // ignore
     }
   };
 
   const handlePayment = async (postId) => {
     try {
       const response = await createPayment(postId);
-      if (response.data.success) {
-        if (response.data.data.paymentUrl) {
-          window.location.href = response.data.data.paymentUrl;
-        } else {
-          alert("Thanh toán thất bại. Vui lòng thử lại.");
-        }
-      } else {
-        alert("Cập nhật bài đăng không thành công!");
+      if (response.data.success && response.data.data.paymentUrl) {
+        window.location.href = response.data.data.paymentUrl;
       }
     } catch (error) {
-      alert("Có lỗi xảy ra khi cập nhật bài đăng!");
+      // ignore
     }
   };
 
@@ -172,7 +164,11 @@ const CustomerPostManagement = () => {
     return new Date(dateString).toLocaleDateString("vi-VN");
   };
 
-  if (loading) {
+  // Pagination logic
+  const totalPages = Math.ceil(posts.length / PAGE_SIZE);
+  const paginatedPosts = posts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  if (authLoading || loading) {
     return (
       <div className="d-flex justify-content-center align-items-center py-5">
         <div className="spinner-border text-primary me-2"></div>
@@ -183,22 +179,25 @@ const CustomerPostManagement = () => {
 
   return (
     <div className="bg-light min-vh-100">
-      <Header user={user} name={name} logout={logout} />
+      <Header user={user} name={user?.username || user?.name || ""} logout={logout} />
 
       <div className="container py-4">
         <div className="bg-primary text-white rounded-4 p-3 mb-4 text-center">
-          <h2 className="mb-0">Bài Đăng Của Tôi</h2>
+          <h2 className="mb-0">
+            <span className="material-symbols-rounded align-middle" style={{ fontSize: 32, verticalAlign: "middle" }}>library_books</span>
+            <span className="ms-2">Bài Đăng Của Tôi</span>
+          </h2>
         </div>
 
         {/* Post List */}
         <div className="row g-4">
-          {posts.map((post, index) => (
+          {(Array.isArray(paginatedPosts) ? paginatedPosts : []).map((post, index) => (
             <div key={post._id} className="col-12">
               <div className="card shadow-sm border-0 rounded-4 p-3">
-                <div className="row g-3 align-items-center">
+                <div className="row g-3 align-items-center flex-column flex-md-row">
                   {/* Post Number */}
                   <div className="col-auto">
-                    <span className="badge bg-secondary fs-6 px-3 py-2">{index + 1}</span>
+                    <span className="badge bg-secondary fs-6 px-3 py-2">{(currentPage - 1) * PAGE_SIZE + index + 1}</span>
                   </div>
                   {/* Post Image */}
                   <div className="col-auto">
@@ -206,7 +205,7 @@ const CustomerPostManagement = () => {
                       <img
                         src={post.images[0]}
                         alt="Post"
-                        className="rounded"
+                        className="rounded-3 shadow-sm"
                         style={{ width: 80, height: 60, objectFit: "cover" }}
                         onError={(e) => {
                           e.target.style.display = "none";
@@ -220,7 +219,16 @@ const CustomerPostManagement = () => {
                   </div>
                   {/* Post Info */}
                   <div className="col">
-                    <div className="fw-bold mb-1">
+                    <div className="fw-bold mb-1 d-flex align-items-center gap-2">
+                      <span className="material-symbols-rounded text-primary" style={{ fontSize: 20 }}>
+                        {post.type === "ban"
+                          ? "sell"
+                          : post.type === "dich_vu"
+                            ? "handyman"
+                            : post.type === "cho_thue"
+                              ? "home_work"
+                              : "article"}
+                      </span>
                       {(post.type === "ban"
                         ? "Bán"
                         : post.type === "dich_vu"
@@ -232,18 +240,21 @@ const CustomerPostManagement = () => {
                         post.title}
                     </div>
                     <div className="text-muted small mb-1">
+                      <span className="material-symbols-rounded align-middle" style={{ fontSize: 16, verticalAlign: "middle" }}>location_on</span>
                       {post.location} • {post.area}m² • {formatPrice(post.price)}{" "}
                       {post.type === "ban" ? "triệu" : "triệu/tháng"}
                     </div>
                     <div className="text-secondary small mb-1">
-                      Liên hệ: {post.contactInfo.name} - {post.contactInfo.phone}
+                      <span className="material-symbols-rounded align-middle" style={{ fontSize: 16, verticalAlign: "middle" }}>call</span>
+                      Liên hệ: {post.contactInfo?.name} - {post.contactInfo?.phone}
                     </div>
                     <div className="small">
+                      <span className="material-symbols-rounded align-middle" style={{ fontSize: 16, verticalAlign: "middle" }}>calendar_month</span>
                       Ngày đăng: {formatDate(post.createdAt)} •
-                      <span className={`badge ms-2 ${post.status === "pending" ? "bg-warning text-dark" : post.status === "approved" ? "bg-success" : "bg-danger"}`}>
+                      <span className={`badge ms-2 px-2 py-1 rounded-pill fw-normal ${post.status === "pending" ? "bg-warning text-dark" : post.status === "approved" ? "bg-success" : "bg-danger"}`}>
                         {postStatusLabels[post.status] || post.status}
                       </span>
-                      <span className={`badge ms-2 ${post.paymentStatus === "unpaid" ? "bg-light text-danger border" : "bg-success"}`}>
+                      <span className={`badge ms-2 px-2 py-1 rounded-pill fw-normal ${post.paymentStatus === "unpaid" ? "bg-light text-danger border" : "bg-success"}`}>
                         {post.paymentStatus === "unpaid"
                           ? "Chưa thanh toán"
                           : "Đã thanh toán"}
@@ -254,16 +265,11 @@ const CustomerPostManagement = () => {
                   <div className="col-auto d-flex flex-column gap-2">
                     <button
                       onClick={() => handleEdit(post)}
-                      className={`btn btn-success btn-sm rounded-pill ${!["pending", "rejected"].includes(post.status) ? "disabled" : ""}`}
+                      className={`btn btn-success btn-sm rounded-pill d-flex align-items-center gap-1 ${!["pending", "rejected"].includes(post.status) ? "disabled" : ""}`}
                       disabled={!["pending", "rejected"].includes(post.status)}
-                      title={
-                        post.status === "pending"
-                          ? "Chỉnh sửa bài đăng đang chờ duyệt"
-                          : post.status === "rejected"
-                            ? "Chỉnh sửa và gửi lại bài bị từ chối"
-                            : "Chỉ có thể chỉnh sửa bài đang chờ duyệt hoặc bị từ chối"
-                      }
+                      title="Chỉnh sửa"
                     >
+                      <span className="material-symbols-rounded" style={{ fontSize: 18 }}>edit</span>
                       {post.status === "rejected"
                         ? "Bị từ chối"
                         : post.status === "pending"
@@ -272,22 +278,19 @@ const CustomerPostManagement = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(post._id)}
-                      className="btn btn-danger btn-sm rounded-pill"
+                      className="btn btn-danger btn-sm rounded-pill d-flex align-items-center gap-1"
+                      title="Xóa"
                     >
+                      <span className="material-symbols-rounded" style={{ fontSize: 18 }}>delete</span>
                       Xóa
                     </button>
                     <button
                       onClick={() => handlePayment(post._id)}
-                      className={`btn btn-primary btn-sm rounded-pill ${post.paymentStatus !== "unpaid" || post.status !== "approved" ? "disabled" : ""}`}
+                      className={`btn btn-primary btn-sm rounded-pill d-flex align-items-center gap-1 ${post.paymentStatus !== "unpaid" || post.status !== "approved" ? "disabled" : ""}`}
                       disabled={post.paymentStatus !== "unpaid" || post.status !== "approved"}
-                      title={
-                        post.paymentStatus !== "unpaid"
-                          ? "Bài đăng đã được thanh toán"
-                          : post.status !== "approved"
-                            ? "Chỉ có thể thanh toán bài đăng đã được duyệt"
-                            : "Thanh toán ngay"
-                      }
+                      title="Thanh toán"
                     >
+                      <span className="material-symbols-rounded" style={{ fontSize: 18 }}>payments</span>
                       {post.paymentStatus !== "unpaid"
                         ? "Đã thanh toán"
                         : post.status !== "approved"
@@ -299,7 +302,7 @@ const CustomerPostManagement = () => {
                 {/* Lý do từ chối */}
                 {post.status === "rejected" && post.reasonreject && (
                   <div className="alert alert-danger mt-3 mb-0 py-2 px-3 d-flex align-items-center gap-2">
-                    <span style={{ fontSize: 18 }}>⚠️</span>
+                    <span className="material-symbols-rounded" style={{ fontSize: 20 }}>error</span>
                     <div>
                       <strong>Lý do từ chối:</strong> {post.reasonreject}
                     </div>
@@ -310,6 +313,31 @@ const CustomerPostManagement = () => {
           ))}
         </div>
 
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <nav className="d-flex justify-content-center mt-4">
+            <ul className="pagination">
+              <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                <button className="page-link" onClick={() => setCurrentPage(currentPage - 1)}>
+                  <span className="material-symbols-rounded" style={{ fontSize: 18 }}>chevron_left</span>
+                </button>
+              </li>
+              {Array.from({ length: totalPages }, (_, i) => (
+                <li key={i} className={`page-item ${currentPage === i + 1 ? "active" : ""}`}>
+                  <button className="page-link" onClick={() => setCurrentPage(i + 1)}>
+                    {i + 1}
+                  </button>
+                </li>
+              ))}
+              <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)}>
+                  <span className="material-symbols-rounded" style={{ fontSize: 18 }}>chevron_right</span>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        )}
+
         {posts.length === 0 && (
           <div className="text-center p-5 bg-white rounded-4 mt-4">
             <p className="mb-3">Bạn chưa có bài đăng nào</p>
@@ -317,7 +345,8 @@ const CustomerPostManagement = () => {
               className="btn btn-primary"
               onClick={() => navigate("/create-post")}
             >
-              Tạo bài đăng đầu tiên
+              <span className="material-symbols-rounded align-middle" style={{ fontSize: 20 }}>add_circle</span>
+              <span className="ms-1">Tạo bài đăng đầu tiên</span>
             </button>
           </div>
         )}

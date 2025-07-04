@@ -4,11 +4,11 @@ const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
 const token = localStorage.getItem("token");
 // 🟢 GET posts of current user
-export const getPostsByUser = async () => {
+export const getPostsByUser = () => {
+    const token = localStorage.getItem("token");
+    if (!token) return Promise.reject(new Error("No token"));
     return axios.get(`${API_BASE}/posts/get-postbyUser`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
     });
 };
 
@@ -37,6 +37,7 @@ export const createPayment = async (postId) => {
 };
 
 export const getAllPosts = async () => {
+    const token = localStorage.getItem("token");
     return axios.get(`${API_BASE}/posts/get-post`, {
         headers: {
             Authorization: `Bearer ${token}`,
@@ -45,6 +46,7 @@ export const getAllPosts = async () => {
 };
 
 export const getAllPostsActive = async () => {
+    const token = localStorage.getItem("token");
     return axios.get(`${API_BASE}/posts/get-post-active`, {
         headers: {
             Authorization: `Bearer ${token}`,
@@ -53,12 +55,13 @@ export const getAllPostsActive = async () => {
 };
 // ham chi tiet blog 
 export const getPostById = async (id) => {
+    const token = localStorage.getItem("token");
     return axios.get(`${import.meta.env.VITE_API_URL}/api/posts/postdetail/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
     });
-  };
+};
 export const createPost = async (updatedData) => {
     return axios.post(`${import.meta.env.VITE_API_URL}/api/posts/create-post`, updatedData, {
         headers: {
