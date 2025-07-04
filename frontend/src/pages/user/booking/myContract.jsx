@@ -63,7 +63,7 @@ useEffect(() => {
   const fetchContracts = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:4000/api/contracts/me", {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contracts/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setContracts(res.data.data);
@@ -88,7 +88,7 @@ useEffect(() => {
   const handleResubmit = async () => {
     try {
       await axios.put(
-        `http://localhost:4000/api/contracts/${editingContract._id}/resubmit`,
+        `${import.meta.env.VITE_API_URL}/api/contracts/${editingContract._id}/resubmit`,
         editForm,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -111,7 +111,7 @@ useEffect(() => {
   const handlePayment = async (id) => {
     try {
       const res = await axios.put(
-        `http://localhost:4000/api/contracts/${id}/pay`,
+        `${import.meta.env.VITE_API_URL}/api/contracts/${id}/pay`,
         {},
         {
           headers: {

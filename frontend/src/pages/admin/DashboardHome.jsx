@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { PieChart, Pie, Cell, Legend } from "recharts";
+import { Cell, Legend, Pie, PieChart } from "recharts";
 import AdminDashboard from "./adminDashboard";
 
 const data = [
@@ -23,9 +23,9 @@ export default function DashboardHome() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res1 = await fetch("http://localhost:4000/api/admin-dashboard/stats/UsersList");
-        const res2 = await fetch("http://localhost:4000/api/admin-dashboard/stats/StaffsList");
-        const res3 = await fetch("http://localhost:4000/api/admin-dashboard/stats/ApartmentsList");
+        const res1 = await fetch(`${import.meta.env.VITE_API_URL}/api/admin-dashboard/stats/UsersList`);
+        const res2 = await fetch(`${import.meta.env.VITE_API_URL}/api/admin-dashboard/stats/StaffsList`);
+        const res3 = await fetch(`${import.meta.env.VITE_API_URL}/api/admin-dashboard/stats/ApartmentsList`);
 
         const data1 = await res1.json();
         const data2 = await res2.json();

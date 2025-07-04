@@ -19,7 +19,7 @@ const ContractDetail = () => {
         const token = localStorage.getItem("token");
   
         // 👉 Gọi API lấy hợp đồng
-        const res = await axios.get(`http://localhost:4000/api/contracts/${id}`, {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contracts/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
   
@@ -29,7 +29,7 @@ const ContractDetail = () => {
         // ✅ Gọi thêm thông tin bài đăng bằng postId (với API mới)
         if (contractData.postId) {
           const postRes = await axios.get(
-            `http://localhost:4000/api/posts/postdetail/${contractData.postId}`,
+            `${import.meta.env.VITE_API_URL}/api/posts/postdetail/${contractData.postId}`,
             {
               headers: { Authorization: `Bearer ${token}` },
             }

@@ -72,7 +72,7 @@ useEffect(() => {
         status: "pending", // ✅ Thêm trạng thái khởi tạo là chờ duyệt
       };
   
-      await axios.post("http://localhost:4000/api/contracts", payload, {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/contracts`, payload, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },

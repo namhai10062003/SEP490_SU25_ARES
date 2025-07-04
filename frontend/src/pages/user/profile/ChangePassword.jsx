@@ -28,7 +28,7 @@ const ChangePassword = () => {
 
     try {
       await axios.patch(
-        "http://localhost:4000/api/users/changepassword",
+        `${import.meta.env.VITE_API_URL}/api/users/changepassword`,
         { oldPassword, newPassword },
         {
           headers: {

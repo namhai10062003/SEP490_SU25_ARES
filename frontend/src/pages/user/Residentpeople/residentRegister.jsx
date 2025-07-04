@@ -33,7 +33,7 @@ const ResidentRegister = () => {
     (async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:4000/api/apartments', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/apartments`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -82,7 +82,7 @@ const ResidentRegister = () => {
       const body = new FormData();
       Object.entries(form).forEach(([k, v]) => v && body.append(k, v));
 
-      const res = await fetch('http://localhost:4000/api/residents/create', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/residents/create`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body,

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = "http://localhost:4000/api";
+const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
 const token = localStorage.getItem("token");
 // 🟢 GET posts of current user
@@ -53,14 +53,14 @@ export const getAllPostsActive = async () => {
 };
 // ham chi tiet blog 
 export const getPostById = async (id) => {
-    return axios.get(`http://localhost:4000/api/posts/postdetail/${id}`, {
+    return axios.get(`${import.meta.env.VITE_API_URL}/api/posts/postdetail/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
   };
 export const createPost = async (updatedData) => {
-    return axios.post(`http://localhost:4000/api/posts/create-post`, updatedData, {
+    return axios.post(`${import.meta.env.VITE_API_URL}/api/posts/create-post`, updatedData, {
         headers: {
             Authorization: `Bearer ${token}`, // hoặc lấy từ context nếu muốn
         },

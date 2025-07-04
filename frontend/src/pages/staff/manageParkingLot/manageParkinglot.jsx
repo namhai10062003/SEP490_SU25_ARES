@@ -46,7 +46,7 @@ const ManageParkingLot = () => {
 
   const fetchParkingRequests = async (token) => {
     try {
-      const res = await fetch('http://localhost:4000/api/parkinglot/parkinglotall', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/parkinglotall`, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -54,6 +54,7 @@ const ManageParkingLot = () => {
       });
 
       const responseData = await res.json();
+      console.log(responseData);
       const rawList = Array.isArray(responseData.data) ? responseData.data : [];
 
       const mappedList = rawList
@@ -82,7 +83,7 @@ const ManageParkingLot = () => {
       return;
     }
 
-    const url = `http://localhost:4000/api/parkinglot/${action}/${id}`;
+    const url = `${import.meta.env.VITE_API_URL}/api/parkinglot/${action}/${id}`;
     const method = 'PATCH';
     const status = action === 'approve' ? 'approved' : 'rejected';
 

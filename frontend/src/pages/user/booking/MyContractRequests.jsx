@@ -17,7 +17,7 @@ const MyContractRequests = () => {
     const fetchRequests = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:4000/api/contracts/landlord", {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contracts/landlord`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setRequests(res.data.data);
@@ -30,7 +30,7 @@ const MyContractRequests = () => {
 
   const handleApprove = async (id) => {
     try {
-      await axios.put(`http://localhost:4000/api/contracts/${id}/approve`, {}, {
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/contracts/${id}/approve`, {}, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       toast.success("✅ Đã duyệt hợp đồng");
@@ -50,7 +50,7 @@ const MyContractRequests = () => {
       return toast.warn("⚠️ Vui lòng nhập lý do từ chối");
     }
     try {
-      await axios.put(`http://localhost:4000/api/contracts/${rejectPopup.contractId}/reject`, {
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/contracts/${rejectPopup.contractId}/reject`, {
         reason: rejectReason,
       }, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -68,7 +68,7 @@ const MyContractRequests = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn muốn xóa hợp đồng này?")) return;
     try {
-      await axios.delete(`http://localhost:4000/api/contracts/${id}`, {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/contracts/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       toast.success("🗑️ Đã xóa");

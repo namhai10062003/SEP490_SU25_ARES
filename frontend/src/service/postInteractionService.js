@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API = "http://localhost:4000/api/interaction";
+const API = `${import.meta.env.VITE_API_URL}/api/interaction`;
 
 // ✅ Chỉ trả về object headers như axios yêu cầu
 const getAuthHeader = () => ({

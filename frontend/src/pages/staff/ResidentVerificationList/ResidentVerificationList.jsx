@@ -16,7 +16,7 @@ export default function ResidentVerificationList() {
       try {
         setLoading(true);
         const res = await axios.get(
-          "http://localhost:4000/api/users/get-user-apartment"
+          `${import.meta.env.VITE_API_URL}/api/users/get-user-apartment`
         );
         setUsers(res.data.data || []);
       } catch (err) {

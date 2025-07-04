@@ -14,7 +14,7 @@ const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:4000";
+  const apiUrl = import.meta.env.VITE_API_URL || "https://api.ares.io.vn";
 
   // Xác minh token từ localStorage khi app load
   useEffect(() => {

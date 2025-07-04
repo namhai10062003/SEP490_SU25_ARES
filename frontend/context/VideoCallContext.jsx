@@ -32,7 +32,7 @@ export const VideoCallProvider = ({ userId, children }) => {
 
   const sendMessage = async (msg) => {
     try {
-      await fetch("http://localhost:4000/api/messages", {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(msg),
