@@ -39,7 +39,7 @@ const Register = () => {
         window.google.accounts.id.initialize({
           client_id:
             import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-            "282918167682-elp5kdkiutpitjc29s06v5aacavsiii6.apps.googleusercontent.com",
+            "315842115446-g9sss3lqo3b89vrdpqgd3iehgp1mvmh2.apps.googleusercontent.com",
           callback: handleGoogleResponse,
           auto_select: false,
           cancel_on_tap_outside: true,
