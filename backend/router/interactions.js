@@ -1,6 +1,6 @@
 import express from "express";
 import { createComment, getCommentsByPost } from "../controllers/commentController.js";
-import { checkIfLiked, toggleLike } from "../controllers/likeController.js";
+import { checkIfLiked, getLikedPostsByUser, toggleLike } from "../controllers/likeController.js";
 import {
   createReport,
   getReports,
@@ -13,6 +13,7 @@ const router = express.Router();
 
 router.post("/likes/:postId", verifysUser, toggleLike);
 router.get("/likes/:postId", verifysUser, checkIfLiked);
+router.get("/my-liked-posts", verifysUser, getLikedPostsByUser);
 router.get("/:postId/count", async (req, res) => {
     try {
       const count = await Like.countDocuments({ post: req.params.postId });

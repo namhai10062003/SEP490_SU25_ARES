@@ -1,4 +1,27 @@
 import Like from "../models/Like.js";
+// danh sach bài post đã like 
+
+export const getLikedPostsByUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Tìm tất cả bài user đã like và populate thông tin bài post + gói bài viết
+    const likes = await Like.find({ user: userId }).populate({
+      path: "post",
+      populate: { path: "postPackage" },
+    });
+
+    // Lấy ra các bài post từ danh sách like
+    const likedPosts = likes
+      .map((like) => like.post)
+      .filter((post) => post != null); // loại bỏ nếu bài post đã bị xóa
+
+    res.status(200).json({ success: true, data: likedPosts });
+  } catch (err) {
+    console.error("Lỗi khi lấy liked posts:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
 
 export const toggleLike = async (req, res) => {
   try {

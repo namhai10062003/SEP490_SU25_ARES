@@ -34,8 +34,10 @@ import DashboardPage from "./pages/staff/dashboardStatistics";
 import ManageExpense from "./pages/staff/manageExpense.jsx";
 import ManageParkingLot from "./pages/staff/manageParkingLot/manageParkinglot";
 import ParkingLotList from "./pages/staff/manageParkingLot/parkinglot-list";
+import WaterDataUpload from "./pages/staff/waterExpense.jsx";
 import BlogList from "./pages/user/BlogList/BlogList.jsx";
 import PostDetail from "./pages/user/BlogList/BlogListDetail";
+import LikedPosts from "./pages/user/BlogList/LikedPosts.jsx";
 import CustomerPostManagement from "./pages/user/MangementPostByCustomer/CustomerPostManagement.jsx";
 import RegistrationForm from "./pages/user/PostRegistration/registrationForm.jsx";
 import ResidentDetail from "./pages/user/Residentpeople/residentDetail";
@@ -58,7 +60,6 @@ import UpdateProfileForm from "./pages/user/profile/updateProfile";
 import Register from "./pages/user/register.jsx";
 import ResetPassword from "./pages/user/resetpassword";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
-import WaterDataUpload from "./pages/staff/waterExpense.jsx";
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
@@ -102,6 +103,7 @@ function AppRoutes() {
           <Route path="/my-contracts" element={<MyContracts />} />
           <Route path="/my-requests" element={<MyContractRequests />} />
           <Route path="/contracts/:id" element={<ContractDetail />} />
+          <Route path="/liked-posts" element={<LikedPosts />} />
 
           {/* Admin */}
           <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />

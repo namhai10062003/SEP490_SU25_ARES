@@ -22,6 +22,7 @@ import {
   reportPost,
   toggleLike,
 } from "../../../service/postInteractionService.js";
+import { getAllPosts } from "../../../service/postService";
 import { getPostById } from "../../../service/postService.js";
 const PostDetail = () => {
   const { id } = useParams();
@@ -40,6 +41,7 @@ const PostDetail = () => {
   const [reportDescription, setReportDescription] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [relatedPosts, setRelatedPosts] = useState([]);
   // const [showChat, setShowChat] = useState(false);
   const navigate = useNavigate();
   const { setReceiver } = useChat(); // THÊM
@@ -74,6 +76,50 @@ const PostDetail = () => {
 
     fetchData();
   }, [id, user]);
+  // xu li list ra 2-3 bài post 
+  useEffect(() => {
+    const fetchRelatedPosts = async () => {
+      try {
+        const res = await getAllPosts();
+        if (res.data.success) {
+          const allPosts = res.data.data;
+  
+          // ✅ Lọc ra các bài khác và sắp xếp theo ngày mới nhất
+          const filtered = allPosts
+            .filter((p) => p._id !== id)
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // mới nhất trước
+            .slice(0, 3); // lấy 3 bài mới nhất
+  
+          setRelatedPosts(filtered);
+        }
+      } catch (error) {
+        console.error("❌ Lỗi khi lấy bài viết gợi ý:", error);
+      }
+    };
+  
+    fetchRelatedPosts();
+  }, [id]);
+  // ham component xu li list 
+  const RelatedPostCard = ({ post }) => {
+    const navigate = useNavigate();
+  
+    return (
+      <div
+        style={styles.relatedCard}
+        onClick={() => navigate(`/postdetail/${post._id}`)} // 👉 chuyển hướng đến PostDetail mới
+      >
+        <img
+          src={post.images?.[0] || "https://via.placeholder.com/200"}
+          alt={post.title}
+          style={styles.relatedImage}
+        />
+        <div style={styles.relatedInfo}>
+          <h4 style={styles.relatedTitle}>{post.title}</h4>
+          <p style={styles.relatedPrice}>{formatPrice(post.price)}</p>
+        </div>
+      </div>
+    );
+  };
 // hàm xử lí like 
   const handleLike = async () => {
     try {
@@ -338,6 +384,16 @@ useEffect(() => {
 >
   📄 Đặt chỗ
 </button>
+{relatedPosts.length > 0 && (
+  <div style={styles.section}>
+    <h3 style={styles.sectionTitle}>🗂️ Bài viết gợi ý</h3>
+    <div style={styles.relatedList}>
+      {relatedPosts.map((p) => (
+        <RelatedPostCard key={p._id} post={p} />
+      ))}
+    </div>
+  </div>
+)}
             </div>
 
           </div>
@@ -381,6 +437,41 @@ const styles = {
   input: { width: "100%", padding: 10, borderRadius: 6, marginBottom: 10, border: "1px solid #ccc" },
   reportBtn: { padding: "8px 16px", background: "#e74c3c", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer" },
   interactionBox: { display: "flex", gap: 12, marginBottom: 24 },
+  relatedList: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 16,
+    overflowX: "auto",
+    paddingBottom: 10,
+    paddingTop: 5,
+    scrollSnapType: "x mandatory", // tự bắt dính từng bài
+  },
+  relatedCard: {
+    width: 250,
+    border: "1px solid #ddd",
+    borderRadius: 8,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+    cursor: "pointer",
+    transition: "0.3s",
+  },
+  relatedImage: {
+    width: "100%",
+    height: 140,
+    objectFit: "cover",
+  },
+  relatedInfo: {
+    padding: 10,
+  },
+  relatedTitle: {
+    fontSize: "1rem",
+    fontWeight: "bold",
+    marginBottom: 4,
+    color: "#333",
+  },
+  relatedPrice: {
+    color: "#e74c3c",
+  },
   // iconBtn: { display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: "#eee", borderRadius: 6, border: "1px solid #ccc", cursor: "pointer", fontSize: 14 },
   likeBtn: {
     backgroundColor: "#e74c3c", // đỏ

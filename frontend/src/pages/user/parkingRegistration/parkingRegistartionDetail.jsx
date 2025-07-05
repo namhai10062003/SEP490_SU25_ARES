@@ -94,14 +94,14 @@ const ParkingRegistrationDetail = () => {
                   <strong>Ngày đăng ký:</strong>
                   <span>{new Date(detail.ngàyĐăngKý).toLocaleDateString()}</span>
                 </li>
-                <li className="list-group-item d-flex justify-content-between">
+                {/* <li className="list-group-item d-flex justify-content-between">
                   <strong>Ngày hết hạn:</strong>
                   <span>
                     {detail.ngàyHếtHạn !== '---'
                       ? new Date(detail.ngàyHếtHạn).toLocaleDateString()
                       : '---'}
                   </span>
-                </li>
+                </li> */}
                 <li className="list-group-item d-flex justify-content-between">
                   <strong>Trạng thái:</strong>
                   <span>
