@@ -89,7 +89,7 @@ const Navbar = () => (
           </Link>
         </li>
         <li>
-          <Link className="dropdown-item" to="/can-ho/yeu-thich">
+          <Link className="dropdown-item" to="/liked-posts">
             Yêu thích
           </Link>
         </li>
