@@ -1,7 +1,7 @@
-import ResidentVerification from '../models/ResidentVerification.js';
 import Apartment from '../models/Apartment.js';
+import Notification from '../models/Notification.js';
+import ResidentVerification from '../models/ResidentVerification.js';
 import User from '../models/User.js';
-import Notification from '../models/Notification.js'
 // tạo một file ví dụ như config hay helper cho hai hàm này đi, đừng để ở đây rối
 export const searchUser = async (req, res) => {
   try {
@@ -183,4 +183,5 @@ const rejectResidentVerification = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-export { getAllResidentVerifications, getResidentVerificationById, approveResidentVerification, rejectResidentVerification };
+export { approveResidentVerification, getAllResidentVerifications, getResidentVerificationById, rejectResidentVerification };
+

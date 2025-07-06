@@ -17,6 +17,7 @@ import messageRoutes from "./router/messageRoutes.js";
 import notificationRoutes from './router/notificationRoutes.js';
 import parkingRouter from "./router/parkingRegistration.js";
 import paymentRouter from "./router/payment.js";
+import plazaRoutes from "./router/plazaRoutes.js";
 import postPackage from "./router/postPackage.js";
 import postRouter from "./router/postRouter.js";
 import residentRouter from "./router/residentRoutes.js";
@@ -95,6 +96,7 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/contracts", contractRouter);
 app.use("/api/water", waterRoutes); 
 app.use("/api/fees", feeRoutes); 
+app.use("/api/plaza", plazaRoutes); 
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);

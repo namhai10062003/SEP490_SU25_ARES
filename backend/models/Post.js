@@ -29,7 +29,11 @@ const PostSchema = new Schema({
     type: Schema.Types.ObjectId, ref: 'User',
     required: true
   },
-
+  // them plaza
+  toaPlaza: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Plaza' // trỏ tới model bạn vừa có
+  },
   images: [{ type: String }],
   // tiền gói đăng tin
   postPackage: {
