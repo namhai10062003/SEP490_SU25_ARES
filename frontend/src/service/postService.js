@@ -11,7 +11,18 @@ export const getPostsByUser = () => {
         headers: { Authorization: `Bearer ${token}` },
     });
 };
-
+// get Plaza để sửa 
+export const getPlazaList = async () => {
+      return axios.get(`${API_BASE}/plaza`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+  };
+  // get aparment ra á 
+  export const getApartmentList = async () => {
+    return await axios.get(`${API_BASE}/apartments`); // Giả sử route là đúng
+  };
 // 🔴 DELETE post
 export const deletePost = async (postId) => {
     return axios.delete(`${API_BASE}/posts/delete-posts/${postId}`, {

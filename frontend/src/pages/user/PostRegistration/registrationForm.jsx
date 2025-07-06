@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../../../../components/header.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
-import { createPost } from "../../../service/postService.js";
+import {
+  createPost,
+  getApartmentList,
+  getPlazaList,
+} from "../../../service/postService.js";
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -28,19 +32,114 @@ const RegistrationForm = () => {
   const [loaiBaiDang, setLoaiBaiDang] = useState("ban");
   const [loaiHinhCon, setLoaiHinhCon] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [plazaOptions, setPlazaOptions] = useState([]);
+  const [apartmentOptions, setApartmentOptions] = useState([]);
 
+  // hàm để xử lí lấy căn hộ ra á
+  useEffect(() => {
+    const fetchApartments = async () => {
+      try {
+        const response = await getApartmentList();
+        console.log("📦 Full response:", response); // log toàn bộ response
+
+        if (response?.data) {
+          const apartments = Array.isArray(response.data)
+            ? response.data
+            : response.data.data;
+          console.log("✅ Danh sách căn hộ:", apartments);
+          setApartmentOptions(apartments);
+        } else {
+          console.warn("⚠️ Không có dữ liệu căn hộ trong response");
+        }
+      } catch (error) {
+        console.error("❌ Không thể lấy danh sách căn hộ:", error);
+      }
+    };
+
+    fetchApartments();
+  }, []);
+
+  // ham de xu li get ra plazaNDate
+  useEffect(() => {
+    const fetchPlazas = async () => {
+      try {
+        const response = await getPlazaList();
+        console.log("📦 Dữ liệu plaza từ server:", response.data); // LOG ở đây
+
+        if (response?.data?.data) {
+          setPlazaOptions(response.data.data);
+        }
+      } catch (error) {
+        console.error("❌ Không thể lấy danh sách plaza:", error);
+      }
+    };
+
+    fetchPlazas();
+  }, []);
+  //
   useEffect(() => {
     setName(user?.name || null);
   }, [user]);
+// hàm xử lí tất cả dữ liệu input 
+const handleInputChange = (e) => {
+  const { name, value } = e.target;
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  // Nếu người dùng chọn loại hình là căn hộ
+  if (name === "loaiHinh") {
+    if (value === "nha_can_ho") {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        diaChiCuThe: "FPT City", // Gán mặc định
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        diaChiCuThe: "", // Xóa nếu chọn loại khác
+      }));
+    }
+  } else {
+    // Các trường khác giữ nguyên
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-  };
-
+  }
+};
+  // hàm xử lí diện tích và mấy thông tin khác 
+  useEffect(() => {
+    // Khi người dùng chọn một căn hộ, tự động gán các thông tin vào formData
+    if (formData.soCanHo && apartmentOptions.length > 0) {
+      const selectedApartment = apartmentOptions.find(
+        (apartment) => apartment._id === formData.soCanHo
+      );
+  
+      if (selectedApartment) {
+        setFormData((prev) => ({
+          ...prev,
+          dienTich: selectedApartment.area,// fallback nếu không có
+          giayto: selectedApartment.legalDocuments,
+          huongdat: selectedApartment.direction,
+          tinhtrang: selectedApartment.furniture,
+          diaChiCuThe: "FPT City", // Gán địa chỉ cố định
+        }));
+      }
+    }
+  }, [formData.soCanHo, apartmentOptions]);
+// hàm xử lí lấy sdt của user 
+useEffect(() => {
+  if (user?.phone && !formData.thongTinNguoiDangBan) {
+    setFormData((prev) => ({
+      ...prev,
+      thongTinNguoiDangBan: user.phone,
+    }));
+    console.log("📲 Gán SDT tự động:", user.phone);
+  }
+}, [user?.phone]);
+useEffect(() => {
+  console.log("👤 USER:", user);
+}, [user]);
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     setFormData((prev) => ({
@@ -138,7 +237,19 @@ const RegistrationForm = () => {
       setIsSubmitting(false);
     }
   };
+  // hàm xử lí lọc plaza vs căn hộ
+  const selectedPlaza = plazaOptions.find(
+    (plaza) => plaza._id === formData.toaPlaza
+  );
+  const selectedPlazaName = selectedPlaza?.name || "";
 
+  console.log("🧱 Tòa plaza đã chọn (_id):", formData.toaPlaza);
+  console.log("🏷️ Tên plaza đã chọn:", selectedPlazaName);
+  const filteredApartments = apartmentOptions.filter(
+    (apartment) => apartment.building === selectedPlazaName
+  );
+
+  console.log("🏘️ Danh sách căn hộ sau lọc theo plaza:", filteredApartments);
   return (
     <div className="bg-light min-vh-100">
       <Header user={user} name={name} logout={logout} />
@@ -155,7 +266,9 @@ const RegistrationForm = () => {
                 <h5 className="fw-bold mb-3">Chọn loại bài đăng</h5>
                 <ul className="list-group">
                   <li
-                    className={`list-group-item list-group-item-action ${loaiBaiDang === "ban" ? "active" : ""}`}
+                    className={`list-group-item list-group-item-action ${
+                      loaiBaiDang === "ban" ? "active" : ""
+                    }`}
                     style={{ cursor: "pointer" }}
                     onClick={() => {
                       setLoaiBaiDang("ban");
@@ -166,7 +279,9 @@ const RegistrationForm = () => {
                     Tin Bán
                   </li>
                   <li
-                    className={`list-group-item list-group-item-action ${loaiBaiDang === "cho_thue" ? "active" : ""}`}
+                    className={`list-group-item list-group-item-action ${
+                      loaiBaiDang === "cho_thue" ? "active" : ""
+                    }`}
                     style={{ cursor: "pointer" }}
                     onClick={() => {
                       setLoaiBaiDang("cho_thue");
@@ -177,7 +292,9 @@ const RegistrationForm = () => {
                     Tin Cho Thuê
                   </li>
                   <li
-                    className={`list-group-item list-group-item-action ${loaiBaiDang === "dich_vu" ? "active" : ""}`}
+                    className={`list-group-item list-group-item-action ${
+                      loaiBaiDang === "dich_vu" ? "active" : ""
+                    }`}
                     style={{ cursor: "pointer" }}
                     onClick={() => {
                       setLoaiBaiDang("dich_vu");
@@ -209,7 +326,7 @@ const RegistrationForm = () => {
                       required
                     >
                       <option value="">Chọn loại hình</option>
-                      <option value="nha_can_ho">Nhà / Căn hộ</option>
+                      <option value="nha_can_ho">Căn hộ</option>
                       <option value="nha_dat">BĐS</option>
                     </select>
                   )}
@@ -247,8 +364,12 @@ const RegistrationForm = () => {
                         required
                       >
                         <option value="">Chọn tòa plaza</option>
-                        <option value="plaza-a">Plaza A</option>
-                        <option value="plaza-b">Plaza B</option>
+                        {Array.isArray(plazaOptions) &&
+                          plazaOptions.map((plaza) => (
+                            <option key={plaza._id} value={plaza._id}>
+                              {plaza.name}
+                            </option>
+                          ))}
                       </select>
                     </div>
                     <div className="col-12 col-md-6">
@@ -268,9 +389,16 @@ const RegistrationForm = () => {
                         required
                       >
                         <option value="">Chọn số căn hộ</option>
-                        <option value="101">101</option>
-                        <option value="202">202</option>
-                        <option value="303">303</option>
+
+                        {filteredApartments.length === 0 && (
+                          <option disabled>Không có căn hộ phù hợp</option>
+                        )}
+
+                        {filteredApartments.map((apartment) => (
+                          <option key={apartment._id} value={apartment._id}>
+                            {apartment.apartmentCode}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </>
@@ -374,7 +502,8 @@ const RegistrationForm = () => {
                     </div>
                     <div className="col-12 col-md-6">
                       <label className="form-label">
-                        Tình trạng nổi bật <span className="text-danger">*</span>
+                        Tình trạng nổi bật{" "}
+                        <span className="text-danger">*</span>
                       </label>
                       <input
                         type="text"
@@ -404,7 +533,8 @@ const RegistrationForm = () => {
                 )}
                 <div className="col-12">
                   <label className="form-label">
-                    Thông tin người đăng bán <span className="text-danger">*</span>
+                    Thông tin người đăng bán{" "}
+                    <span className="text-danger">*</span>
                   </label>
                   <div className="input-group">
                     <span className="input-group-text">👤</span>
@@ -428,11 +558,15 @@ const RegistrationForm = () => {
                     style={{ cursor: "pointer" }}
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
-                    onClick={() => document.getElementById("imageInput").click()}
+                    onClick={() =>
+                      document.getElementById("imageInput").click()
+                    }
                   >
                     <div className="fs-2 mb-2 text-primary">📤</div>
                     <div className="fw-semibold">Upload Images</div>
-                    <div className="text-secondary small">Click để chọn nhiều ảnh</div>
+                    <div className="text-secondary small">
+                      Click để chọn nhiều ảnh
+                    </div>
                     <input
                       type="file"
                       id="imageInput"
@@ -457,7 +591,11 @@ const RegistrationForm = () => {
                               type="button"
                               className="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle"
                               onClick={() => removeImage(index)}
-                              style={{ width: 28, height: 28, lineHeight: "14px" }}
+                              style={{
+                                width: 28,
+                                height: 28,
+                                lineHeight: "14px",
+                              }}
                             >
                               ×
                             </button>
@@ -491,13 +629,19 @@ const RegistrationForm = () => {
                     ].map((option) => (
                       <div className="col-12 col-md-4" key={option.value}>
                         <div
-                          className={`card h-100 ${formData.postPackage === option.value ? "border-primary shadow" : ""}`}
+                          className={`card h-100 ${
+                            formData.postPackage === option.value
+                              ? "border-primary shadow"
+                              : ""
+                          }`}
                           style={{ cursor: "pointer" }}
                           onClick={() => handleGenderSelect(option.value)}
                         >
                           <div className="card-body text-center">
                             <div className="fw-bold">{option.title}</div>
-                            <div className="text-secondary">{option.subtitle}</div>
+                            <div className="text-secondary">
+                              {option.subtitle}
+                            </div>
                           </div>
                         </div>
                       </div>

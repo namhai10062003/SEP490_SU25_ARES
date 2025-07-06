@@ -1,10 +1,5 @@
 import express from "express";
-import { getAllResidentVerifications, getResidentVerificationById, approveResidentVerification, rejectResidentVerification } from "../controllers/residentVerificationController.js";
-import {
-  searchUser,
-  getApartments,
-  submitVerification
-} from '../controllers/residentVerificationController.js';
+import { approveResidentVerification, getAllResidentVerifications, getApartments, getResidentVerificationById, rejectResidentVerification, searchUser, submitVerification } from "../controllers/residentVerificationController.js";
 import { upload2 } from '../db/cloudinary.js';
 const router = express.Router();
 

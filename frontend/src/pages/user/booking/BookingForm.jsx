@@ -24,7 +24,30 @@ const getToday = () => {
     .toISOString()
     .split("T")[0];
 };
+const getAutoEndDateVN = (startDate, plusDays = 7) => {
+  if (!startDate) return "....../....../......";
+  const d = new Date(startDate);
+  d.setDate(d.getDate() + plusDays);
+  return formatVNDate(d.toISOString());
+};
 
+const formatVNDate = (dateStr) => {
+  if (!dateStr) return "....../....../......";
+  const d = new Date(dateStr);
+  return `${String(d.getDate()).padStart(2, "0")}/${String(
+    d.getMonth() + 1
+  ).padStart(2, "0")}/${d.getFullYear()}`;
+};
+// hàm thay đổi ngày 
+// useEffect(() => {
+//   if (form.startDate) {
+//     const autoEnd = getEndDateAuto(form.startDate, 3); // Có thể đổi thành 7 nếu bạn muốn
+//     setForm((prev) => ({
+//       ...prev,
+//       endDate: autoEnd,
+//     }));
+//   }
+// }, [form.startDate]);
 useEffect(() => {
   // Nếu startDate sau endDate thì auto cập nhật endDate bằng startDate
   if (form.endDate < form.startDate) {
@@ -130,7 +153,7 @@ if (user._id === post.contactInfo?._id) {
       <h2 className="contract-header">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h2>
       <p className="contract-sub">Độc lập - Tự do - Hạnh phúc</p>
       <hr className="contract-line" />
-      <h3 className="contract-title">HỢP ĐỒNG THUÊ CĂN HỘ CHUNG CƯ</h3>
+      <h3 className="contract-title">HỢP ĐỒNG ĐẶT CỌC GIỮ CHỖ CĂN HỘ / BẤT ĐỘNG SẢN</h3>
       <p className="contract-date">
         Hôm nay, ngày {today.getDate()} tháng {today.getMonth() + 1} năm {today.getFullYear()} tại TP. Đà Nẵng
       </p>
@@ -195,69 +218,40 @@ if (user._id === post.contactInfo?._id) {
             <li>Phương hướng: <strong>{post?.amenities || "..."}</strong></li>
           </ul>
 
-          <p><strong>2. Quyền và nghĩa vụ:</strong></p>
-
-<p><strong>ĐIỀU 1: QUYỀN VÀ NGHĨA VỤ CỦA BÊN A</strong></p>
-<p><strong>1.1. Quyền của Bên A:</strong></p>
+          <p><strong>2. Mục đích và nội dung đặt cọc:</strong></p>
 <ul>
-  <li>Nhận đúng và đầy đủ tiền thuê từ Bên B như quy định tại Điều 3 Hợp đồng.</li>
-  <li>Yêu cầu Bên B sửa chữa các hư hỏng và bồi thường thiệt hại do lỗi của Bên B gây ra.</li>
-  <li>Đơn phương chấm dứt hợp đồng nếu Bên B:
-    <ul>
-      <li>Không trả tiền thuê căn hộ liên tiếp trong 2 tháng trở lên;</li>
-      <li>Sử dụng căn hộ sai mục đích thỏa thuận;</li>
-      <li>Cố ý làm hư hỏng căn hộ hoặc tài sản;</li>
-      <li>Cho thuê lại căn hộ khi chưa có sự đồng ý;</li>
-      <li>Vi phạm nội quy chung cư hoặc các thỏa thuận khác.</li>
-    </ul>
-  </li>
-  <li>Yêu cầu Bên B bàn giao căn hộ khi hợp đồng chấm dứt.</li>
-  <li>Thông báo chấm dứt hợp đồng trước ít nhất 1 tháng.</li>
+  <li>Bên B đồng ý đặt cọc để giữ chỗ cho việc mua bán / cho thuê bất động sản được nêu tại Điều 1.</li>
+  <li>Số tiền đặt cọc: <strong>{post?.price ? `${(post.price * 0.1).toLocaleString("vi-VN")} VNĐ` : "..."}</strong></li>
+  {/* <li>Hình thức thanh toán: [ ] Tiền mặt &nbsp;&nbsp; [ ] Chuyển khoản</li> */}
+  <li>
+  Thời hạn giữ chỗ: từ ngày <strong>{formatVNDate(form.startDate)}</strong> 
+  đến ngày <strong>{getAutoEndDateVN(form.startDate)}</strong>
+</li>
 </ul>
 
-<p><strong>1.2. Nghĩa vụ của Bên A:</strong></p>
+<p><strong>3. Cam kết và nghĩa vụ:</strong></p>
+
+<p><strong>3.1. Cam kết của Bên A:</strong></p>
 <ul>
-  <li>Bàn giao căn hộ và trang thiết bị đúng như thỏa thuận tại Điều 1.</li>
-  <li>Bảo đảm cho Bên B sử dụng căn hộ ổn định trong thời gian thuê.</li>
-  <li>Đóng các loại thuế theo quy định pháp luật.</li>
+  <li>Giữ chỗ cho Bên B trong thời gian đặt cọc nêu trên.</li>
+  <li>Cung cấp đầy đủ và minh bạch thông tin liên quan đến bất động sản.</li>
+  <li>Thông báo và mời Bên B ký hợp đồng mua bán / thuê chính thức trong thời hạn giữ chỗ.</li>
+  <li>Hoàn lại toàn bộ tiền cọc nếu không thể thực hiện giao dịch do lỗi của Bên A.</li>
 </ul>
 
-<p><strong>ĐIỀU 2: QUYỀN VÀ NGHĨA VỤ CỦA BÊN B</strong></p>
-<p><strong>2.1. Quyền của Bên B:</strong></p>
+<p><strong>3.2. Cam kết của Bên B:</strong></p>
 <ul>
-  <li>Nhận bàn giao căn hộ và thiết bị như đã thỏa thuận.</li>
-  <li>Đơn phương chấm dứt hợp đồng nếu Bên A:
-    <ul>
-      <li>Tăng giá thuê bất hợp lý;</li>
-      <li>Làm hạn chế quyền sử dụng căn hộ do người thứ ba.</li>
-    </ul>
-  </li>
-  <li>Thông báo chấm dứt hợp đồng trước ít nhất 1 tháng.</li>
+  <li>Thanh toán đầy đủ và đúng hạn số tiền đặt cọc đã thỏa thuận.</li>
+  <li>Tiến hành ký hợp đồng mua bán / thuê chính thức đúng thời hạn nếu còn nhu cầu.</li>
+  <li>Chấp nhận mất toàn bộ tiền cọc nếu tự ý từ chối giao dịch mà không có lý do chính đáng.</li>
 </ul>
 
-<p><strong>2.2. Nghĩa vụ của Bên B:</strong></p>
+<p><strong>4. Điều khoản chung:</strong></p>
 <ul>
-  <li>Trả đủ tiền thuê đúng hạn.</li>
-  <li>Sử dụng căn hộ đúng mục đích, sửa chữa khi gây hư hỏng.</li>
-  <li>Tuân thủ nội quy chung cư, quy định vệ sinh, an ninh trật tự.</li>
+  <li>Hai bên cam kết thực hiện nghiêm túc các điều khoản của hợp đồng đặt cọc.</li>
+  <li>Mọi tranh chấp phát sinh sẽ được giải quyết trước hết bằng thương lượng, nếu không đạt thỏa thuận sẽ đưa ra Tòa án có thẩm quyền giải quyết.</li>
+  <li>Hợp đồng có hiệu lực kể từ ngày ký và được lập thành 02 bản gốc, mỗi bên giữ 01 bản, có giá trị pháp lý như nhau.</li>
 </ul>
-
-
-          <p><strong>3. Thanh toán:</strong></p>
-          <ul>
-            <li>Chuyển khoản hoặc tiền mặt mỗi tháng.</li>
-            <li>Phí thuê bao gồm: [ ] điện, [ ] nước, [ ] internet, [ ] dịch vụ</li>
-          </ul>
-
-          <p><strong>4. Đặt cọc:</strong> {post?.price ? `${(post.price * 0.1).toLocaleString("vi-VN")} VNĐ` : "..."}</p>
-          <p><strong>5. Quyền và nghĩa vụ:</strong></p>
-          <ul>
-            <li>Bên A bàn giao đúng hạn, đúng hiện trạng.</li>
-            <li>Bên B không tự ý chuyển nhượng, sửa chữa căn hộ.</li>
-          </ul>
-
-          <p><strong>6. Chấm dứt hợp đồng:</strong> Khi hết hạn hoặc hai bên thỏa thuận.</p>
-          <p><strong>7. Cam kết:</strong> Hợp đồng có hiệu lực từ ngày ký, lập thành 02 bản, mỗi bên giữ 01 bản.</p>
         </div>
 
         {/* Checkbox */}
