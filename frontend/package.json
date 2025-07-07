@@ -23,6 +23,7 @@
     "bootstrap": "^5.3.6",
     "chart.js": "^4.4.9",
     "emoji-picker-react": "^4.12.2",
+    "file-saver": "^2.0.5",
     "font-awesome": "^4.7.0",
     "jquery": "^3.7.1",
     "jwt-decode": "^4.0.0",
@@ -37,7 +38,8 @@
     "react-router-dom": "^7.6.0",
     "react-toastify": "^11.0.5",
     "recharts": "^2.15.3",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
