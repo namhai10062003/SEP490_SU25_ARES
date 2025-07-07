@@ -1,8 +1,9 @@
 import express from "express";
-import { getApartmentMonthlyFees } from "../controllers/feeController.js";
+import { calculateAndSaveFees, getAllFees } from "../controllers/feeController.js";
 
 const router = express.Router();
 
-router.get("/apartments", getApartmentMonthlyFees);
+router.post("/calculate", calculateAndSaveFees); // gọi tính toán & lưu
+router.get("/", getAllFees); // lấy danh sách đã lưu
 
 export default router;
