@@ -220,6 +220,11 @@ const Header = ({ user, name, logout }) => {
                     </Link>
                   </li>
                   <li>
+                    <Link className="dropdown-item" to="/my-verified" onClick={() => setShowProfileDropdown(false)}>
+                      Hợp Đồng Của Tôi
+                    </Link>
+                  </li>
+                  <li>
                     <Link className="dropdown-item" to="/my-contracts" onClick={() => setShowProfileDropdown(false)}>
                       Quản lí hợp đồng
                     </Link>

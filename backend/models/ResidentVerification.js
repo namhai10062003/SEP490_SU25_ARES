@@ -16,6 +16,6 @@ const ResidentVerificationSchema = new Schema({
     note: { type: String }
 }, { timestamps: true });
 
-const ResidentVerification = mongoose.model('ResidentVerification', ResidentVerificationSchema);
+const ResidentVerification = mongoose.models.ResidentVerification || mongoose.model('ResidentVerification', ResidentVerificationSchema);
 export default ResidentVerification;
 

@@ -1,5 +1,5 @@
 import express from "express";
-import { approveParkingRegistration, createParkingRegistration, getAvailableParkingSlots, getParkingRegistrationAll, getParkingRegistrationDetail, getParkingRegistrations, rejectParkingRegistration, getUserParkingRegistrations } from "../controllers/parkingRegistration.js";
+import { approveParkingRegistration, createParkingRegistration, getAvailableParkingSlots, getParkingRegistrationAll, getParkingRegistrationDetail, getParkingRegistrations, getUserParkingRegistrations, rejectParkingRegistration } from "../controllers/parkingRegistration.js";
 import verifyUser from "../middleware/authMiddleware.js";
 import isStaff from "../middleware/isStaff.js";
 import { uploadImage } from "../middleware/upload.js";
