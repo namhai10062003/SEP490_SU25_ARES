@@ -72,14 +72,27 @@ export const submitVerification = async (req, res) => {
   }
 };
 
+// const getAllResidentVerifications = async (req, res) => {
+//   try {
+//     const forms = await ResidentVerification.find()
+//       .populate('staff', 'name email')
+//       .populate('user', 'name email')
+//       .populate('apartment', 'apartmentCode name');
+//     res.json(forms);
+//   } catch (err) {
+//     res.status(500).json({ error: "Server error" });
+//   }
+// };
 const getAllResidentVerifications = async (req, res) => {
   try {
     const forms = await ResidentVerification.find()
       .populate('staff', 'name email')
-      .populate('user', 'name email')
+      .populate('user', '_id name email') // 👈 Bao gồm cả _id (userId)
       .populate('apartment', 'apartmentCode name');
-    res.json(forms);
+
+    res.status(200).json(forms);
   } catch (err) {
+    console.error("❌ Lỗi trong getAllResidentVerifications:", err.message);
     res.status(500).json({ error: "Server error" });
   }
 };

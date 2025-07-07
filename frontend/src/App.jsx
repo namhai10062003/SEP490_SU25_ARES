@@ -48,6 +48,7 @@ import BookingForm from "./pages/user/booking/BookingForm.jsx";
 import ContractDetail from "./pages/user/booking/ContractDetail.jsx";
 import MyContractRequests from "./pages/user/booking/MyContractRequests.jsx";
 import MyContracts from "./pages/user/booking/myContract.jsx";
+import MyVerifiedApplications from "./pages/user/contractofuser/MyVerifiedApplications.jsx";
 import ForgotPassword from "./pages/user/forgotpassword";
 import GoogleCallback from "./pages/user/google-callback.jsx";
 import Login from "./pages/user/login.jsx";
@@ -105,6 +106,7 @@ function AppRoutes() {
           <Route path="/my-requests" element={<MyContractRequests />} />
           <Route path="/contracts/:id" element={<ContractDetail />} />
           <Route path="/liked-posts" element={<LikedPosts />} />
+          <Route path="/my-verified" element={<MyVerifiedApplications/>} />
 
           {/* Admin */}
           <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
