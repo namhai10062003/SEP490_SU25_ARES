@@ -7,7 +7,9 @@ import StaffNavbar from "./staffNavbar";
 const API_URL = import.meta.env.VITE_API_URL || "https://api.ares.io.vn";
 
 const TYPE_LABELS = {
-    1: "Chi phí quản lý"
+    1: "Chi phí quản lý",
+    3: "Phí dịch vụ khác",
+    4: "Phí tiện ích",
 };
 
 const Expenses = () => {
@@ -18,7 +20,6 @@ const Expenses = () => {
     const [addPrice, setAddPrice] = useState("");
     const [apartmentFees, setApartmentFees] = useState([]);
     const [loadingFees, setLoadingFees] = useState(true);
-
 
     useEffect(() => {
         fetchExpenses();
@@ -38,10 +39,11 @@ const Expenses = () => {
 
     const fetchApartmentFees = async () => {
         try {
-            const res = await axios.get(`${API_URL}/api/fees/apartments`);
-            setApartmentFees(res.data);
+            const res = await axios.get(`${API_URL}/api/fees`);
+            setApartmentFees(res.data.data || []);
         } catch (err) {
             console.error("Lỗi khi lấy dữ liệu chi phí căn hộ:", err);
+            toast.error("Lỗi lấy dữ liệu phí tổng hợp!");
         }
         setLoadingFees(false);
     };
@@ -68,7 +70,7 @@ const Expenses = () => {
             await axios.post(`${API_URL}/api/expenses`, {
                 type: Number(addType),
                 label: addLabel,
-                price: Number(addPrice)
+                price: Number(addPrice),
             });
             toast.success("Thêm chi phí thành công!");
             setAddType("");
@@ -81,7 +83,6 @@ const Expenses = () => {
         }
     };
 
-    // Gom nhóm expenses theo label (tòa nhà)
     const grouped = expenses.reduce((acc, exp) => {
         if (!acc[exp.label]) acc[exp.label] = [];
         acc[exp.label].push(exp);
@@ -92,8 +93,11 @@ const Expenses = () => {
         <div className="d-flex min-vh-100 bg-light">
             <ToastContainer position="top-right" autoClose={2000} />
             <StaffNavbar />
+
             <main className="flex-grow-1 p-4">
                 <h2 className="fw-bold mb-4">Quản lý chi phí căn hộ</h2>
+
+                {/* Form Thêm Chi Phí */}
                 <form
                     onSubmit={handleAdd}
                     className="row g-2 align-items-center mb-4"
@@ -103,12 +107,11 @@ const Expenses = () => {
                         <select
                             className="form-select"
                             value={addType}
-                            onChange={e => setAddType(e.target.value)}
+                            onChange={(e) => setAddType(e.target.value)}
                             required
                         >
                             <option value="">Chọn loại chi phí</option>
-                            <option value="1">Chi phí bảo trì</option>
-                            <option value="2">Giá gửi xe</option>
+                            <option value="1">Chi phí quản lý</option>
                             <option value="3">Phí dịch vụ khác</option>
                             <option value="4">Phí tiện ích</option>
                         </select>
@@ -119,7 +122,7 @@ const Expenses = () => {
                             className="form-control"
                             placeholder="Tên Tòa nhà"
                             value={addLabel}
-                            onChange={e => setAddLabel(e.target.value)}
+                            onChange={(e) => setAddLabel(e.target.value)}
                             required
                         />
                     </div>
@@ -127,11 +130,10 @@ const Expenses = () => {
                         <input
                             type="number"
                             className="form-control"
-                            step="1"
                             placeholder="Giá (VND/m²)"
                             value={addPrice}
+                            onChange={(e) => setAddPrice(e.target.value)}
                             min={0}
-                            onChange={e => setAddPrice(e.target.value)}
                             required
                         />
                     </div>
@@ -142,15 +144,19 @@ const Expenses = () => {
                     </div>
                 </form>
 
-                {/* Hiển thị danh sách chi phí */}
+                {/* Danh sách chi phí */}
                 {loading ? (
-                    <div className="text-center text-secondary">Đang tải dữ liệu...</div>
+                    <div className="text-secondary">Đang tải dữ liệu...</div>
                 ) : expenses.length === 0 ? (
-                    <div className="text-center text-secondary">Không có dữ liệu chi phí.</div>
+                    <div className="text-secondary">Không có dữ liệu chi phí.</div>
                 ) : (
                     <div className="d-flex flex-wrap gap-4 justify-content-center">
                         {Object.entries(grouped).map(([label, items]) => (
-                            <div key={label} className="bg-white shadow-sm rounded p-4" style={{ minWidth: 320, maxWidth: 420 }}>
+                            <div
+                                key={label}
+                                className="bg-white shadow-sm rounded p-4"
+                                style={{ minWidth: 320, maxWidth: 420 }}
+                            >
                                 <h5 className="text-primary fw-bold mb-3">{label}</h5>
                                 <table className="table table-bordered table-sm mb-0">
                                     <thead className="table-light">
@@ -165,7 +171,8 @@ const Expenses = () => {
                                             <tr key={exp._id}>
                                                 <td>{TYPE_LABELS[exp.type] || `Loại ${exp.type}`}</td>
                                                 <td className="text-end text-primary fw-bold">
-                                                    {exp.price.toLocaleString()} {exp.type === 1 ? "VND/m²" : "VND/tháng"}
+                                                    {exp.price.toLocaleString()}{" "}
+                                                    {exp.type === 1 ? "VND/m²" : "VND/tháng"}
                                                 </td>
                                                 <td className="text-center">
                                                     <button
@@ -185,11 +192,30 @@ const Expenses = () => {
                 )}
 
                 <p className="mt-4">
-                    <strong>Ghi chú:</strong> Giá quản lý căn hộ được tính tự động theo diện tích và tòa nhà.
+                    <strong>Ghi chú:</strong> Giá quản lý căn hộ được tính tự động theo
+                    diện tích và tòa nhà.
                 </p>
+
+                <button
+                    className="btn btn-outline-warning mb-3"
+                    onClick={async () => {
+                        try {
+                            await axios.post(`${API_URL}/api/fees/calculate`);
+                            toast.success("Đã tính lại phí!");
+                            fetchApartmentFees(); // reload bảng
+                        } catch (err) {
+                            toast.error("Lỗi khi tính lại phí!");
+                        }
+                    }}
+                >
+                    Tính lại phí tổng hợp
+                </button>
+
                 <hr className="my-4" />
 
-                <h4 className="fw-bold text-dark mb-3">Bảng chi phí tổng hợp từng căn hộ theo tháng</h4>
+                <h4 className="fw-bold text-dark mb-3">
+                    Bảng chi phí tổng hợp từng căn hộ theo tháng
+                </h4>
 
                 <div className="table-responsive">
                     {loadingFees ? (
@@ -210,35 +236,33 @@ const Expenses = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {apartmentFees.map((row, index) => {
-                                    const createdAt = row.createdAt ? new Date(row.createdAt) : null;
-                                    const displayedMonth = createdAt
-                                        ? `${createdAt.getMonth() + 1}`.padStart(2, "0") + "/" + createdAt.getFullYear()
-                                        : row.month || "---"; // fallback nếu không có createdAt
-
-                                    return (
-                                        <tr key={index}>
-                                            <td>{row.apartmentCode}</td>
-                                            <td>{row.ownerName}</td>
-                                            <td>{displayedMonth}</td>
-                                            <td>{row.managementFee?.toLocaleString()} đ</td>
-                                            <td>{row.waterFee?.toLocaleString()} đ</td>
-                                            <td>{row.parkingFee?.toLocaleString()} đ</td>
-                                            <td className="text-end fw-bold text-primary">
-                                                {row.total?.toLocaleString()} đ
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                {apartmentFees.map((row, index) => (
+                                    <tr key={index}>
+                                        <td>{row.apartmentCode}</td>
+                                        <td>{row.ownerName}</td>
+                                        <td>
+                                            {(() => {
+                                                const m = new Date(row.month);
+                                                return isNaN(m)
+                                                    ? row.month
+                                                    : `${(m.getMonth() + 1).toString().padStart(2, "0")}/${m.getFullYear()}`;
+                                            })()}
+                                        </td>
+                                        <td>{row.managementFee?.toLocaleString()} đ</td>
+                                        <td>{row.waterFee?.toLocaleString()} đ</td>
+                                        <td>{row.parkingFee?.toLocaleString()} đ</td>
+                                        <td className="text-end fw-bold text-primary">
+                                            {row.total?.toLocaleString()} đ
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
-
                     )}
                 </div>
             </main>
         </div>
     );
-
 };
 
 export default Expenses;
