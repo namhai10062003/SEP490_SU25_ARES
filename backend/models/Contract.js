@@ -42,7 +42,7 @@ const contractSchema = new mongoose.Schema({
     paymentDate: {
       type: Date
     },
-    
+    apartmentCode: { type: String },
 }, { timestamps: true });
 
 export default mongoose.model("Contract", contractSchema);

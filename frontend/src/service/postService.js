@@ -12,11 +12,11 @@ export const getPostsByUser = () => {
     });
 };
 // get Plaza để sửa 
-export const getPlazaList = async () => {
-      return axios.get(`${API_BASE}/plaza`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+export const getPlazaList = async (token) => {
+    return axios.get(`${API_BASE}/plaza`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
   };
   // get aparment ra á 

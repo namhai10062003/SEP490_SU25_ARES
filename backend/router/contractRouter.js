@@ -50,4 +50,21 @@ router.delete("/:id", verifysUser,deleteContract);
 // xem chi tiết 
 router.get("/:id", verifysUser, getContractById); 
 router.put("/:id/resubmit", verifysUser, resubmitContract);
+// lấy hợp đồng theo user để bt kia max qua bên staff 
+router.get('/user/:userId', async (req, res) => {
+  try {
+    const contracts = await Contract.find({ userId: req.params.userId })
+      .sort({ startDate: -1 }); // sort mới nhất đầu tiên (nếu muốn)
+
+    res.json({
+      success: true,
+      data: contracts,
+    });
+  } catch (err) {
+    console.error("Lỗi lấy hợp đồng:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+});
+
+
 export default router;
