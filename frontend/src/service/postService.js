@@ -44,7 +44,7 @@ export const updatePost = async (postId, updatedData) => {
 
 // 🔵 CREATE payment for post
 export const createPayment = async (postId) => {
-    return axios.post(`${API_BASE}/payment/create-payment/${postId}`);
+    return axios.post(`https://api.ares.io.vn/api/payment/create-payment/${postId}`);
 };
 
 export const getAllPosts = async () => {
