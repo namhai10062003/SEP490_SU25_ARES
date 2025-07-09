@@ -2,32 +2,33 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "../../../../context/authContext";
 import Header from "../../../../components/header";
+import { useNavigate } from "react-router-dom";
 
 const MyApartment = () => {
     const { user, logout } = useAuth();
+    const navigate = useNavigate();
+
     const [apartment, setApartment] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [showExpenseModal, setShowExpenseModal] = useState(false);
-    const [maintenanceFee, setMaintenanceFee] = useState(null);
-    const [feeLoading, setFeeLoading] = useState(false);
+    const [maintenanceFee, setMaintenanceFee] = useState(0);
     const [parkingRegs, setParkingRegs] = useState([]);
-    const [parkingLoading, setParkingLoading] = useState(false);
-    const [waterFee, setWaterFee] = useState(null);
-    const [waterLoading, setWaterLoading] = useState(false);
-
+    const [waterFee, setWaterFee] = useState(0);
 
     useEffect(() => {
         if (user?._id) {
             fetchApartment();
-            fetchParkingRegs();
-            fetchWaterFee();
         }
     }, [user]);
+
+    useEffect(() => {
+        if (apartment?._id) {
+            fetchExpenses();
+        }
+    }, [apartment]);
+
     const fetchApartment = async () => {
         try {
-            const res = await axios.get(
-                `${import.meta.env.VITE_API_URL}/api/apartments/my-apartment/${user._id}`
-            );
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/apartments/my-apartment/${user._id}`);
             setApartment(res.data);
         } catch (err) {
             setApartment(null);
@@ -35,175 +36,92 @@ const MyApartment = () => {
             setLoading(false);
         }
     };
-    const fetchParkingRegs = async () => {
-        setParkingLoading(true);
+
+    const fetchExpenses = async () => {
         try {
-            const res = await axios.get(
-                `${import.meta.env.VITE_API_URL}/api/parkinglot/user/${user._id}`
+            const [feeRes, parkingRes, waterRes] = await Promise.all([
+                axios.get(`${import.meta.env.VITE_API_URL}/api/apartments/expense/${apartment._id}`),
+                axios.get(`${import.meta.env.VITE_API_URL}/api/parkinglot/user/${user._id}`),
+                axios.get(`${import.meta.env.VITE_API_URL}/api/water/usage`)
+            ]);
+
+            setMaintenanceFee(feeRes.data.maintenanceFee || 0);
+
+            const approvedParking = parkingRes.data.data.filter(item => item.status === "approved");
+            setParkingRegs(approvedParking);
+
+            const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+            const matched = waterRes.data.find(item =>
+                item.apartmentCode === apartment.apartmentCode && item.month === currentMonth
             );
-            // Lọc chỉ lấy trạng thái đã duyệt
-            setParkingRegs(res.data.data.filter(item => item.status === "approved"));
+            setWaterFee(matched?.total || 0);
+
+
+
         } catch (err) {
+            console.error("❌ Lỗi khi fetch chi phí:", err);
+            setMaintenanceFee(0);
             setParkingRegs([]);
-        } finally {
-            setParkingLoading(false);
+            setWaterFee(0);
         }
     };
-    //lấy phí nước
-    const fetchWaterFee = async () => {
-        setWaterLoading(true);
-        try {
-            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/water/usage`);
-            const waterList = res.data;
 
-            // Dữ liệu từ API có apartmentCode, ownerName... nhưng bạn có thể sửa API để trả thêm apartmentId
-            const matched = waterList.find(item => item.apartmentId === user.apartment); // user.apartment là ObjectId
+    if (loading) return (<><Header user={user} name={user?.name} logout={logout} /><div className="text-center py-5">Đang tải dữ liệu căn hộ...</div></>);
+    if (!apartment) return (<><Header user={user} name={user?.name} logout={logout} /><div className="text-center py-5">Bạn chưa sở hữu hoặc thuê căn hộ nào.</div></>);
 
-            if (matched) setWaterFee(matched.total);
-            else setWaterFee(null);
-        } catch (err) {
-            console.error("❌ Lỗi khi fetch water:", err);
-            setWaterFee(null);
-        } finally {
-            setWaterLoading(false);
-        }
-    };
-    const handleShowExpense = async () => {
-        if (!apartment?._id) return;
-        setFeeLoading(true);
-        setShowExpenseModal(true);
-        try {
-            const res = await axios.get(
-                `${import.meta.env.VITE_API_URL}/api/apartments/expense/${apartment._id}`
-            );
-            setMaintenanceFee(res.data.maintenanceFee);
-        } catch (err) {
-            setMaintenanceFee(null);
-        } finally {
-            setFeeLoading(false);
-        }
-        // Lấy phí gửi xe
-        await fetchParkingRegs();
-    };
-
-    if (loading) return (
-        <>
-            <Header user={user} name={user?.name} logout={logout} />
-            <div style={{ padding: 40, textAlign: "center" }}>Đang tải dữ liệu căn hộ...</div>
-        </>
-    );
-    if (!apartment)
-        return (
-            <>
-                <Header user={user} name={user?.name} logout={logout} />
-                <div style={{ padding: 40, textAlign: "center" }}>
-                    Bạn chưa sở hữu hoặc thuê căn hộ nào.
-                </div>
-            </>
-        );
+    const totalParking = parkingRegs.reduce((sum, reg) => sum + (reg.price || 0), 0);
+    const total = (maintenanceFee || 0) + (waterFee || 0) + totalParking;
 
     return (
-        <>
+        <div className="bg-light min-vh-100">
             <Header user={user} name={user?.name} logout={logout} />
-            <div style={{
-                maxWidth: 600,
-                margin: "40px auto",
-                background: "#fff",
-                borderRadius: 8,
-                boxShadow: "0 2px 8px #eee",
-                padding: 32
-            }}>
-                <h2 style={{ marginBottom: 24 }}>Căn hộ của tôi</h2>
-                <div>
-                    <strong>Mã căn hộ:</strong> {apartment?.apartmentCode || "Chưa có"}
-                </div>
-                <div>
-                    <strong>Chủ sở hữu:</strong> {apartment?.ownerName || "Chưa có"}
-                </div>
-                <div>
-                    <strong>Trạng thái:</strong> {apartment?.status || "Chưa có"}
-                </div>
-                {/* Thêm các thông tin khác nếu muốn */}
-                <div style={{ marginTop: 24 }}>
-                    <button
-                        style={{
-                            background: "#f2b600",
-                            color: "#fff",
-                            padding: "10px 22px",
-                            borderRadius: 6,
-                            textDecoration: "none",
-                            fontWeight: 600,
-                            border: "none",
-                            cursor: "pointer"
-                        }}
-                        onClick={handleShowExpense}
-                    >
-                        Xem chi phí/Hóa đơn
-                    </button>
-                </div>
-            </div>
-            {/* Modal hiển thị chi phí bảo trì */}
-            {showExpenseModal && (
-                <div style={{
-                    position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-                    background: "rgba(0,0,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999
-                }}>
-                    <div style={{
-                        background: "#fff", borderRadius: 8, minWidth: 320, maxWidth: 400,
-                        padding: 24, position: "relative", boxShadow: "0 4px 24px rgba(0,0,0,0.18)"
-                    }}>
-                        <h3>Chi phí/Hóa đơn bảo trì</h3>
-                        <div><strong>Tòa nhà:</strong> {apartment.building}</div>
-                        <div><strong>Diện tích:</strong> {apartment.area} m²</div>
-                        {feeLoading ? (
-                            <div>Đang tải phí bảo trì...</div>
-                        ) : (
-                            <div>
-                                <strong>Phí bảo trì:</strong>{" "}
-                                {maintenanceFee !== null
-                                    ? maintenanceFee.toLocaleString("vi-VN") + " đ/tháng"
-                                    : "Không có dữ liệu"}
-                                {/* Phần gửi xe */}
-                                {parkingLoading ? (
-                                    <div>Đang tải phí gửi xe...</div>
-                                ) : parkingRegs.length > 0 ? (
-                                    <div style={{ marginTop: 12 }}>
-                                        <strong>Phí gửi xe:</strong>
-                                        <ul style={{ margin: 0, paddingLeft: 20 }}>
-                                            {parkingRegs.map((reg, idx) => (
-                                                <li key={reg._id || idx}>
-                                                    {reg.vehicleType}
-                                                    {reg.licensePlate ? ` (${reg.licensePlate})` : ""}
-                                                    : {reg.price?.toLocaleString("vi-VN")} đ/tháng
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                ) : (
-                                    <div style={{ marginTop: 12 }}>Không có đăng ký gửi xe</div>
-                                )}
-                                {/*//tải phí nước lên */}
-                                {waterLoading ? ( 
-                                    <div>Đang tải phí nước...</div>
-                                ) : waterFee !== null ? (
-                                    <div style={{ marginTop: 12 }}>
-                                        <strong>Phí nước:</strong> {waterFee.toLocaleString("vi-VN")} đ/tháng
-                                    </div>
-                                ) : (
-                                    <div style={{ marginTop: 12 }}>Không có dữ liệu phí nước</div>
-                                )}
-                            </div>
-                        )}
-                        <div style={{ marginTop: 24, textAlign: "right" }}>
-                            <button onClick={() => setShowExpenseModal(false)} style={{
-                                background: "#f2b600", color: "#fff", border: "none", borderRadius: 6, padding: "8px 18px", fontWeight: 600, cursor: "pointer"
-                            }}>Đóng</button>
+            <div className="container py-5">
+                <h2 className="fw-bold text-center mb-4 text-primary">Quản Lý Chi Phí Căn Hộ</h2>
+
+                <div className="bg-white text-center rounded-4 shadow p-2 mb-4">
+                    <div className="row mb-2">
+                        <div className="col-md-3 mb-2">
+                            <span className="fw-bold">Mã căn hộ:</span> {apartment?.apartmentCode}
+                        </div>
+                        <div className="col-md-3 mb-2">
+                            <span className="fw-bold">Vai trò của bạn:</span> {user?.role === 'renter' ? 'Người thuê' : 'Chủ hộ'}
+                        </div>
+                        <div className="col-md-3 mb-2">
+                            <span className="fw-bold">Chủ căn hộ:</span> {apartment?.ownerName}
+                        </div>
+                        <div className="col-md-3 mb-2">
+                            <span className="fw-bold">Số hóa đơn:</span> 1
                         </div>
                     </div>
                 </div>
-            )}
 
-        </>
+                <div className="d-flex gap-4 overflow-auto">
+                    {["07/2025"].map((month, idx) => (
+                        <div key={idx} className="bg-white shadow rounded-4 p-4" style={{ minWidth: 300 }}>
+                            <h5 className="fw-bold mb-3">Tháng {month}</h5>
+                            <div><span className="fw-bold">Tòa nhà:</span> {apartment.building}</div>
+                            <div><span className="fw-bold">Diện tích:</span> {apartment.area} m²</div>
+                            <div><span className="fw-bold">Phí bảo trì:</span> {maintenanceFee.toLocaleString("vi-VN")} đ</div>
+                            <div><span className="fw-bold">Phí nước:</span> {waterFee.toLocaleString("vi-VN")} đ</div>
+                            <div><span className="fw-bold">Phí gửi xe:</span>
+                                <ul className="ps-3 mb-0">
+                                    {parkingRegs.length ? parkingRegs.map((reg, i) => (
+                                        <li key={i}>{reg.vehicleType} ({reg.licensePlate}): {reg.price?.toLocaleString("vi-VN")} đ</li>
+                                    )) : <li>Không có</li>}
+                                </ul>
+                            </div>
+                            <div className="mt-2 fw-bold">Tổng cộng: {total.toLocaleString("vi-VN")} đ</div>
+                            <button
+                                className="btn btn-success rounded-pill fw-semibold mt-3"
+                                onClick={() => navigate(`/thanh-toan?month=${month}`)}
+                            >
+                                Thanh toán
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
     );
 };
 
