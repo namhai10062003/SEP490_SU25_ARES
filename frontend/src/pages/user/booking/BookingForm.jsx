@@ -92,6 +92,7 @@ useEffect(() => {
         phoneA: post.contactInfo?.phone,
         contractTerms: "Các điều khoản đã đính kèm trong hợp đồng.",
         depositAmount: deposit,
+        apartmentCode: post.apartmentCode,
         status: "pending", // ✅ Thêm trạng thái khởi tạo là chờ duyệt
       };
   
@@ -210,6 +211,7 @@ if (user._id === post.contactInfo?._id) {
           <p><strong>1. Đối tượng hợp đồng:</strong></p>
           <p>Cho thuê căn hộ tại địa chỉ: <strong>{post?.location || "..."}</strong></p>
           <ul>
+            <p>Mã căn hộ: <strong>{post.apartmentCode || "..."}</strong></p>
             <li>Diện tích: <strong>{post?.area || "..."}</strong> m²</li>
             <li>Giá thuê: <strong>{post?.price?.toLocaleString("vi-VN") || "..."} VNĐ/tháng</strong></li>
             <li>Thuộc dự án: <strong>{post?.property || "..."}</strong></li>

@@ -19,7 +19,8 @@ export const createContract = async (req, res) => {
       phoneB,
       agreed,
       contractTerms,
-      depositAmount, // nếu frontend đã gửi
+      depositAmount,
+      apartmentCode, // nếu frontend đã gửi
     } = req.body;
 
     let finalDeposit = depositAmount;
@@ -49,6 +50,7 @@ export const createContract = async (req, res) => {
       phoneB,
       agreed,
       contractTerms,
+      apartmentCode,
       depositAmount: finalDeposit, // 💰 lưu tiền đặt cọc
     });
 

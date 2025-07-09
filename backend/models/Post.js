@@ -7,7 +7,7 @@ const PostSchema = new Schema({
     enum: ['ban', 'cho_thue', 'dich_vu'],
     required: true,
   },
-
+  apartmentCode: { type: String, required: true },
   title: { type: String, required: true },
   description: { type: String },
   // sửa lại thành address

@@ -107,6 +107,7 @@ const getAutoEndDateVN = (startDate, plusDays = 7) => {
       <div className="contract-terms">
         <p><strong>1. Đối tượng hợp đồng:</strong></p>
         <p>Cho thuê căn hộ tại địa chỉ: <strong>{post?.location || "..."}</strong></p>
+        <p>Mã căn hộ: <strong>{post?.apartmentCode || "..."}</strong></p>
         <ul>
   <li>Diện tích: <strong>{post?.area || "..."} m²</strong></li>
   <li>Giá thuê: <strong>{post?.price?.toLocaleString("vi-VN") || "..."} VNĐ/tháng</strong></li>

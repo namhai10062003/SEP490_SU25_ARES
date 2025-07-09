@@ -62,10 +62,14 @@ const RegistrationForm = () => {
   // ham de xu li get ra plazaNDate
   useEffect(() => {
     const fetchPlazas = async () => {
+      const token = localStorage.getItem("token"); // đảm bảo lấy được
+  
+      if (!token) return console.warn("⚠️ Token chưa có");
+  
       try {
-        const response = await getPlazaList();
-        console.log("📦 Dữ liệu plaza từ server:", response.data); // LOG ở đây
-
+        const response = await getPlazaList(token);
+        console.log("📦 Dữ liệu plaza từ server:", response.data);
+  
         if (response?.data?.data) {
           setPlazaOptions(response.data.data);
         }
@@ -73,7 +77,7 @@ const RegistrationForm = () => {
         console.error("❌ Không thể lấy danh sách plaza:", error);
       }
     };
-
+  
     fetchPlazas();
   }, []);
   //
@@ -109,7 +113,6 @@ const handleInputChange = (e) => {
 };
   // hàm xử lí diện tích và mấy thông tin khác 
   useEffect(() => {
-    // Khi người dùng chọn một căn hộ, tự động gán các thông tin vào formData
     if (formData.soCanHo && apartmentOptions.length > 0) {
       const selectedApartment = apartmentOptions.find(
         (apartment) => apartment._id === formData.soCanHo
@@ -118,11 +121,11 @@ const handleInputChange = (e) => {
       if (selectedApartment) {
         setFormData((prev) => ({
           ...prev,
-          dienTich: selectedApartment.area,// fallback nếu không có
+          dienTich: selectedApartment.area,
           giayto: selectedApartment.legalDocuments,
           huongdat: selectedApartment.direction,
           tinhtrang: selectedApartment.furniture,
-          diaChiCuThe: "FPT City", // Gán địa chỉ cố định
+          diaChiCuThe: "FPT City",
         }));
       }
     }
@@ -175,7 +178,10 @@ useEffect(() => {
       postPackage: postPackage,
     }));
   };
-
+  const selectedApartment = apartmentOptions.find(
+    (ap) => ap._id === formData.soCanHo
+  );
+  const apartmentCode = selectedApartment?.apartmentCode || "";
   const handleSubmit = async () => {
     setIsSubmitting(true);
 
@@ -198,7 +204,8 @@ useEffect(() => {
       submitData.append("amenities", formData.huongdat);
       submitData.append("postPackage", formData.postPackage);
       submitData.append("phone", formData.thongTinNguoiDangBan);
-
+      submitData.append("apartmentCode", apartmentCode);
+      
       formData.images.forEach((image) => {
         submitData.append("images", image);
       });

@@ -44,6 +44,7 @@ export const createPost = async (req, res) => {
             contactInfo: userID._id,
             images: imageUrls,
             postPackage: postData.postPackage,
+            apartmentCode: postData.apartmentCode, 
             status: 'pending',
             paymentStatus: 'unpaid',
             reasonreject: null
