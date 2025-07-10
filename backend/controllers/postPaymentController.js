@@ -77,8 +77,16 @@ export const createPostPayment = async (req, res) => {
 
 export const handlePostPaymentWebhook = async (req, res) => {
     try {
-        const webhookData = req.body;
+        const webhookData = req.body?.data; // ✅ FIXED
         console.log('Webhook received:', webhookData);
+
+        if (!webhookData) {
+            return res.status(400).json({
+                message: "Missing 'data' in webhook payload",
+                success: false,
+                error: true
+            });
+        }
 
         const isValid = payos.verifyPaymentWebhookData(webhookData);
         if (!isValid) {
@@ -93,7 +101,7 @@ export const handlePostPaymentWebhook = async (req, res) => {
         const post = await Post.findOne({ orderCode: webhookData.orderCode.toString() }).populate("postPackage");
 
         if (!post) {
-console.log('Post not found for order:', webhookData.orderCode);
+            console.log('Post not found for order:', webhookData.orderCode);
             return res.status(404).json({
                 message: "Post not found",
                 success: false,
