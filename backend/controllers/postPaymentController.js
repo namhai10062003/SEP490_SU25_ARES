@@ -77,17 +77,6 @@ export const createPostPayment = async (req, res) => {
 
 export const handlePostPaymentWebhook = async (req, res) => {
     try {
-        const webhookData = req.body?.data; // ✅ FIXED
-        console.log('Webhook received:', webhookData);
-
-        if (!webhookData) {
-            return res.status(400).json({
-                message: "Missing 'data' in webhook payload",
-                success: false,
-                error: true
-            });
-        }
-
         const isValid = payos.verifyPaymentWebhookData(webhookData);
         if (!isValid) {
             console.log('Invalid webhook data');
