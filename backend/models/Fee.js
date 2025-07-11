@@ -34,6 +34,20 @@ const feeSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  paymentStatus: {
+    type: String,
+    enum: ['unpaid', 'paid'],
+    default: 'unpaid'
+  },
+  orderCode: {
+    type: String,
+    default: null
+  },
+  paymentDate: {
+    type: Date,
+    default: null
+  },
+  
 }, { timestamps: true });
 
 feeSchema.index({ apartmentId: 1, month: 1 }, { unique: true }); // tránh trùng dữ liệu mỗi tháng

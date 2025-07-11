@@ -1,6 +1,6 @@
+import { calcMaintenanceFee } from "../helpers/calculateMaitainceApartmentPrice.js";
 import Apartment from '../models/Apartment.js';
 import User from '../models/User.js';
-import { calcMaintenanceFee } from "../helpers/calculateMaitainceApartmentPrice.js";
 
 // Thêm mới căn hộ
 export const createApartment = async (req, res) => {
@@ -81,8 +81,9 @@ export const assignUserToApartment = async (req, res) => {
 export const getUserApartment = async (req, res) => {
   try {
     const { userId } = req.params;
-    // Tìm căn hộ mà user là chủ sở hữu hoặc người thuê
-    const apartment = await Apartment.findOne({
+
+    // ✅ Lấy tất cả căn hộ mà user là chủ hoặc người thuê
+    const apartments = await Apartment.find({
       $or: [
         { isOwner: userId },
         { isRenter: userId }
@@ -90,10 +91,12 @@ export const getUserApartment = async (req, res) => {
     })
       .populate('isOwner', 'name phone email')
       .populate('isRenter', 'name phone email');
-    if (!apartment) {
+
+    if (!apartments || apartments.length === 0) {
       return res.status(404).json({ error: "Không tìm thấy căn hộ của bạn" });
     }
-    res.json(apartment);
+
+    res.json(apartments); // ✅ Trả về danh sách căn hộ
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

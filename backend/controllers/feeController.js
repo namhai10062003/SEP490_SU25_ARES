@@ -1,9 +1,9 @@
+import mongoose from "mongoose";
 import Apartment from "../models/Apartment.js";
 import Expense from "../models/Expense.js";
-import WaterUsage from "../models/WaterUsage.js";
-import ParkingRegistration from "../models/ParkingRegistration.js";
 import Fee from "../models/Fee.js"; // 🆕 Fee model mới
-
+import ParkingRegistration from "../models/ParkingRegistration.js";
+import WaterUsage from "../models/WaterUsage.js";
 const calculateAndSaveFees = async (req, res) => {
   try {
     const apartments = await Apartment.find().lean();
@@ -64,6 +64,10 @@ const calculateAndSaveFees = async (req, res) => {
           waterFee: 0,
           parkingFee: 0,
           total: managementFee,
+            // 👇 Thêm các trường này
+  paymentStatus: "unpaid",
+  orderCode: null,
+  paymentDate: null
         });
         continue;
       }
@@ -94,6 +98,10 @@ const calculateAndSaveFees = async (req, res) => {
           waterFee,
           parkingFee,
           total,
+            // 👇 Thêm các trường này
+  paymentStatus: "unpaid",
+  orderCode: null,
+  paymentDate: null
         });
       }
     }
@@ -123,5 +131,85 @@ const getAllFees = async (req, res) => {
     res.status(500).json({ error: "Lỗi server khi lấy danh sách phí" });
   }
 };
+// hàm lấy tiền theo tháng 
+export const getMonthlyFeeByApartment = async (req, res) => {
+  try {
+    const { apartmentId } = req.params;
 
+    if (!apartmentId) {
+      return res.status(400).json({ success: false, message: "Thiếu apartmentId" });
+    }
+
+    const fees = await Fee.aggregate([
+      {
+        $match: {
+          apartmentId: new mongoose.Types.ObjectId(apartmentId)
+        }
+      },
+      {
+        $group: {
+          _id: "$month",
+          total: { $sum: "$total" },
+          status: { $first: "$paymentStatus" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          month: "$_id",
+          total: 1,
+          paymentStatus: "$status"
+        }
+      },
+      { $sort: { month: 1 } }
+    ]);
+
+    res.json({ success: true, data: fees });
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy tổng phí từng tháng của căn hộ:", error);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+// get ra dữ liệu của các phí 
+export const getFeeByApartmentAndMonth = async (req, res) => {
+  try {
+    const { apartmentId, month } = req.params;
+
+    const fee = await Fee.findOne({ apartmentId, month });
+    if (!fee)
+      return res.status(404).json({ message: "Không tìm thấy phí", success: false });
+
+    res.json({
+      success: true,
+      managementFee: fee.managementFee,
+      waterFee: fee.waterFee,
+      parkingFee: fee.parkingFee,
+      total: fee.total,
+      paymentStatus: fee.paymentStatus || "unpaid",
+    });
+  } catch (error) {
+    console.error("❌ Lỗi getFeeByApartmentAndMonth:", error);
+    res.status(500).json({ message: "Lỗi server", success: false });
+  }
+};
+
+// tính phí gửi xe vào 
+export const updateParkingFee = async (req, res) => {
+  const { apartmentId, month } = req.params;
+  const { parkingFee } = req.body;
+
+  try {
+    const fee = await Fee.findOneAndUpdate(
+      { apartmentId, month }, // VD: month = "07/2025"
+      { $set: { parkingFee } },
+      { new: true, upsert: true } // tạo mới nếu chưa có
+    );
+
+    res.status(200).json({ success: true, data: fee });
+  } catch (err) {
+    console.error("❌ Lỗi cập nhật phí gửi xe:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
 export { calculateAndSaveFees, getAllFees };
+
