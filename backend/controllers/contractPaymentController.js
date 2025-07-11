@@ -78,30 +78,27 @@ export const createContractPayment = async (req, res) => {
 // 👉 Xử lý webhook thanh toán từ PayOS
 export const handleContractPaymentWebhook = async (req, res) => {
   try {
-    const rawBody = req.body;
-    const webhookData = rawBody?.data; // ✅ Lấy từ .data
-    const signature = rawBody?.signature;
+    const webhookData = req.body;
 
-    console.log("📩 Webhook nhận:", rawBody);
+    console.log("📩 Webhook RAW:", JSON.stringify(webhookData, null, 2));
 
-    if (!webhookData?.orderCode) {
+    const orderCode = webhookData?.data?.orderCode;
+
+    if (!orderCode) {
       return res.status(400).send("Missing orderCode");
     }
 
-    const contract = await Contract.findOne({
-      orderCode: webhookData.orderCode.toString(),
-    });
+    const contract = await Contract.findOne({ orderCode: orderCode.toString() });
 
     if (!contract) {
-      console.log("❌ Không tìm thấy hợp đồng với orderCode:", webhookData.orderCode);
+      console.log("❌ Không tìm thấy hợp đồng với orderCode:", orderCode);
       return res.status(404).send("Contract not found");
     }
 
-    // ✅ Nếu thanh toán thành công
+    // ✅ Thành công
     if (webhookData.code === "00") {
-      const paymentDate = new Date(webhookData.transactionDateTime || Date.now());
-      const expireDays = 30;
-      const expiredDate = new Date(paymentDate.getTime() + expireDays * 24 * 60 * 60 * 1000);
+      const paymentDate = new Date(webhookData.data.transactionDateTime || Date.now());
+      const expiredDate = new Date(paymentDate.getTime() + 30 * 24 * 60 * 60 * 1000);
 
       await Contract.findByIdAndUpdate(contract._id, {
         paymentStatus: "paid",
@@ -111,7 +108,7 @@ export const handleContractPaymentWebhook = async (req, res) => {
         isActive: true,
       });
 
-      console.log("✅ Đã cập nhật trạng thái thành paid:", contract._id);
+      console.log("✅ Đã cập nhật trạng thái paid:", contract._id);
     } else {
       await Contract.findByIdAndUpdate(contract._id, {
         paymentStatus: "unpaid",
@@ -119,7 +116,7 @@ export const handleContractPaymentWebhook = async (req, res) => {
         isActive: false,
       });
 
-      console.log("❌ Thanh toán thất bại hoặc bị hủy:", contract._id);
+      console.log("❌ Thanh toán thất bại:", contract._id);
     }
 
     return res.status(200).send("OK");
@@ -128,5 +125,6 @@ export const handleContractPaymentWebhook = async (req, res) => {
     return res.status(500).send("Internal Server Error");
   }
 };
+
 
 
