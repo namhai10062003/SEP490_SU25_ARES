@@ -112,8 +112,8 @@ export const handleContractPaymentWebhook = async (req, res) => {
       });
     }
 
-    // Nếu thanh toán thành công
-    if (webhookData.code === "00") {
+    // ✅ Sử dụng webhookData.status (ví dụ: "PAID", "CANCELED", "FAILED")
+    if (webhookData.status === "PAID") {
       const paymentDate = new Date(webhookData.transactionDateTime || Date.now());
       const expireDays = 30;
       const expiredDate = new Date(paymentDate.getTime() + expireDays * 24 * 60 * 60 * 1000);
@@ -126,16 +126,15 @@ export const handleContractPaymentWebhook = async (req, res) => {
         isActive: true,
       });
 
-      console.log("✅ Thanh toán thành công, hợp đồng đã active:", contract._id);
+      console.log("✅ Đã cập nhật trạng thái thành paid:", contract._id);
     } else {
-      // Trường hợp thất bại hoặc hủy
       await Contract.findByIdAndUpdate(contract._id, {
         paymentStatus: "unpaid",
         status: "canceled",
         isActive: false,
       });
 
-      console.log("❌ Thanh toán thất bại hoặc bị huỷ:", contract._id);
+      console.log("❌ Thanh toán thất bại hoặc bị hủy:", contract._id);
     }
 
     return res.status(200).json({
