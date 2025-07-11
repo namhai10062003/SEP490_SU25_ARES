@@ -76,6 +76,7 @@ export const createContractPayment = async (req, res) => {
 };
 
 // 👉 Xử lý webhook thanh toán từ PayOS
+// 👉 Xử lý webhook thanh toán từ PayOS
 export const handleContractPaymentWebhook = async (req, res) => {
   try {
     const webhookData = req.body;
@@ -83,22 +84,16 @@ export const handleContractPaymentWebhook = async (req, res) => {
     console.log("📩 Webhook nhận:", webhookData);
 
     if (!webhookData?.orderCode) {
-      return res.status(400).json({
-        message: "Không có orderCode trong webhook",
-        success: false,
-        error: true,
-      });
+      return res.status(400).send("Missing orderCode");
     }
 
-    const contract = await Contract.findOne({ orderCode: webhookData.orderCode.toString() });
+    const contract = await Contract.findOne({
+      orderCode: webhookData.orderCode.toString(),
+    });
 
     if (!contract) {
       console.log("❌ Không tìm thấy hợp đồng với orderCode:", webhookData.orderCode);
-      return res.status(404).json({
-        message: "Không tìm thấy hợp đồng",
-        success: false,
-        error: true,
-      });
+      return res.status(404).send("Contract not found");
     }
 
     // ✅ Thanh toán thành công
@@ -126,18 +121,11 @@ export const handleContractPaymentWebhook = async (req, res) => {
       console.log("❌ Thanh toán thất bại hoặc bị hủy:", contract._id);
     }
 
-    return res.status(200).json({
-      message: "Đã xử lý webhook",
-      success: true,
-      error: false,
-    });
+    // ✅ TRẢ VỀ 200 CHUẨN CHO PAYOS
+    return res.status(200).send("OK");
   } catch (error) {
     console.error("❌ Lỗi xử lý webhook:", error);
-    return res.status(500).json({
-      message: error.message,
-      success: false,
-      error: true,
-    });
+    return res.status(500).send("Internal Server Error");
   }
 };
 
