@@ -79,8 +79,7 @@ export const createContractPayment = async (req, res) => {
 export const handleContractPaymentWebhook = async (req, res) => {
   try {
     const rawBody = req.body;
-
-    const webhookData = rawBody?.data;
+    const webhookData = rawBody?.data; // ✅ Lấy từ .data
     const signature = rawBody?.signature;
 
     console.log("📩 Webhook nhận:", rawBody);
@@ -98,7 +97,7 @@ export const handleContractPaymentWebhook = async (req, res) => {
       return res.status(404).send("Contract not found");
     }
 
-    // ✅ Thanh toán thành công
+    // ✅ Nếu thanh toán thành công
     if (webhookData.code === "00") {
       const paymentDate = new Date(webhookData.transactionDateTime || Date.now());
       const expireDays = 30;
@@ -129,4 +128,5 @@ export const handleContractPaymentWebhook = async (req, res) => {
     return res.status(500).send("Internal Server Error");
   }
 };
+
 
