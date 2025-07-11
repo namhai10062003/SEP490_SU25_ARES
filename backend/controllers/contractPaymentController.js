@@ -76,12 +76,14 @@ export const createContractPayment = async (req, res) => {
 };
 
 // 👉 Xử lý webhook thanh toán từ PayOS
-// 👉 Xử lý webhook thanh toán từ PayOS
 export const handleContractPaymentWebhook = async (req, res) => {
   try {
-    const webhookData = req.body;
+    const rawBody = req.body;
 
-    console.log("📩 Webhook nhận:", webhookData);
+    const webhookData = rawBody?.data;
+    const signature = rawBody?.signature;
+
+    console.log("📩 Webhook nhận:", rawBody);
 
     if (!webhookData?.orderCode) {
       return res.status(400).send("Missing orderCode");
@@ -121,7 +123,6 @@ export const handleContractPaymentWebhook = async (req, res) => {
       console.log("❌ Thanh toán thất bại hoặc bị hủy:", contract._id);
     }
 
-    // ✅ TRẢ VỀ 200 CHUẨN CHO PAYOS
     return res.status(200).send("OK");
   } catch (error) {
     console.error("❌ Lỗi xử lý webhook:", error);
