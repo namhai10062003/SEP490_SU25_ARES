@@ -23,7 +23,7 @@ export const createContractPayment = async (req, res) => {
       });
     }
 
-    // Tạo orderCode: timestamp + random (tối đa 9-10 số)
+    // Tạo orderCode (timestamp + random)
     const timestamp = Date.now();
     const randomNum = Math.floor(Math.random() * 1000);
     const orderCode = parseInt(`${timestamp}${randomNum}`);
@@ -49,11 +49,11 @@ export const createContractPayment = async (req, res) => {
       });
     }
 
-    // Cập nhật trạng thái ban đầu
+    // Lưu thông tin đơn thanh toán
     await Contract.findByIdAndUpdate(contractId, {
       orderCode,
       paymentStatus: "unpaid",
-      status: "approved", // Chờ thanh toán
+      status: "approved", // Trạng thái chờ thanh toán
       isActive: false,
     });
 
@@ -78,13 +78,23 @@ export const createContractPayment = async (req, res) => {
 // 👉 Xử lý webhook thanh toán từ PayOS
 export const handleContractPaymentWebhook = async (req, res) => {
   try {
-    const webhookData = req.body;
+    const rawBody = req.body;
+    const webhookData = rawBody?.data;
+    const signature = rawBody?.signature;
+
     console.log("📩 Webhook nhận:", webhookData);
 
-    const isValid = payos.verifyPaymentWebhookData(webhookData);
-    console.log("✅ Dữ liệu webhook hợp lệ:", isValid);
+    if (!webhookData || !signature) {
+      return res.status(400).json({
+        message: "Thiếu 'data' hoặc 'signature' trong webhook payload",
+        success: false,
+        error: true,
+      });
+    }
 
+    const isValid = payos.verifyPaymentWebhookData(rawBody);
     if (!isValid) {
+      console.log("❌ Webhook không hợp lệ (sai signature)");
       return res.status(400).json({
         message: "Webhook không hợp lệ",
         success: false,
@@ -92,11 +102,9 @@ export const handleContractPaymentWebhook = async (req, res) => {
       });
     }
 
-    const { orderCode, status } = webhookData;
-    const contract = await Contract.findOne({ orderCode: orderCode.toString() });
-
+    const contract = await Contract.findOne({ orderCode: webhookData.orderCode.toString() });
     if (!contract) {
-      console.log("❌ Không tìm thấy hợp đồng với orderCode:", orderCode);
+      console.log("❌ Không tìm thấy hợp đồng với orderCode:", webhookData.orderCode);
       return res.status(404).json({
         message: "Không tìm thấy hợp đồng",
         success: false,
@@ -104,8 +112,9 @@ export const handleContractPaymentWebhook = async (req, res) => {
       });
     }
 
-    if (status === "PAID") {
-      const paymentDate = new Date();
+    // Nếu thanh toán thành công
+    if (webhookData.code === "00") {
+      const paymentDate = new Date(webhookData.transactionDateTime || Date.now());
       const expireDays = 30;
       const expiredDate = new Date(paymentDate.getTime() + expireDays * 24 * 60 * 60 * 1000);
 
@@ -117,13 +126,15 @@ export const handleContractPaymentWebhook = async (req, res) => {
         isActive: true,
       });
 
-      console.log("✅ Hợp đồng đã thanh toán thành công:", contract._id);
-    } else if (status === "CANCELED" || status === "FAILED") {
+      console.log("✅ Thanh toán thành công, hợp đồng đã active:", contract._id);
+    } else {
+      // Trường hợp thất bại hoặc hủy
       await Contract.findByIdAndUpdate(contract._id, {
         paymentStatus: "unpaid",
         status: "canceled",
         isActive: false,
       });
+
       console.log("❌ Thanh toán thất bại hoặc bị huỷ:", contract._id);
     }
 
