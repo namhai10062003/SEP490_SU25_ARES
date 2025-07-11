@@ -2,9 +2,9 @@ import PayOS from "@payos/node";
 import Contract from "../models/Contract.js";
 
 const payos = new PayOS(
-  process.env.CLIENTID,
-  process.env.APIKEY,
-  process.env.CHECKSUMKEY
+  process.env.CLIENTIDCONTRACT,
+  process.env.APIKEYCONTRACT,
+  process.env.CHECKSUMKEYCONTRACT
 );
 
 // 👉 Tạo link thanh toán cho hợp đồng
@@ -78,31 +78,20 @@ export const createContractPayment = async (req, res) => {
 // 👉 Xử lý webhook thanh toán từ PayOS
 export const handleContractPaymentWebhook = async (req, res) => {
   try {
-    const rawBody = req.body;
-    const webhookData = rawBody?.data;
-    const signature = rawBody?.signature;
+    const webhookData = req.body;
 
     console.log("📩 Webhook nhận:", webhookData);
 
-    if (!webhookData || !signature) {
+    if (!webhookData?.orderCode) {
       return res.status(400).json({
-        message: "Thiếu 'data' hoặc 'signature' trong webhook payload",
-        success: false,
-        error: true,
-      });
-    }
-
-    const isValid = payos.verifyPaymentWebhookData(rawBody);
-    if (!isValid) {
-      console.log("❌ Webhook không hợp lệ (sai signature)");
-      return res.status(400).json({
-        message: "Webhook không hợp lệ",
+        message: "Không có orderCode trong webhook",
         success: false,
         error: true,
       });
     }
 
     const contract = await Contract.findOne({ orderCode: webhookData.orderCode.toString() });
+
     if (!contract) {
       console.log("❌ Không tìm thấy hợp đồng với orderCode:", webhookData.orderCode);
       return res.status(404).json({
@@ -112,8 +101,8 @@ export const handleContractPaymentWebhook = async (req, res) => {
       });
     }
 
-    // ✅ Sử dụng webhookData.status (ví dụ: "PAID", "CANCELED", "FAILED")
-    if (webhookData.status === "PAID") {
+    // ✅ Thanh toán thành công
+    if (webhookData.code === "00") {
       const paymentDate = new Date(webhookData.transactionDateTime || Date.now());
       const expireDays = 30;
       const expiredDate = new Date(paymentDate.getTime() + expireDays * 24 * 60 * 60 * 1000);
@@ -151,3 +140,4 @@ export const handleContractPaymentWebhook = async (req, res) => {
     });
   }
 };
+
