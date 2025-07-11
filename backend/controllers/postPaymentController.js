@@ -73,24 +73,25 @@ export const createPostPayment = async (req, res) => {
     }
 };
 
-
-
 export const handlePostPaymentWebhook = async (req, res) => {
     try {
-        const webhookData = req.body?.data || req.body;
+        const rawBody = req.body;
+        const webhookData = rawBody?.data;
+        const signature = rawBody?.signature;
 
-        console.log('Webhook received:', webhookData);
+        console.log('📩 Webhook received:', webhookData);
 
-        if (!webhookData || !webhookData.orderCode) {
-            return res.status(200).json({
-              message: "Webhook test OK",
-              success: true,
-              error: false
+        if (!webhookData || !signature) {
+            return res.status(400).json({
+                message: "Thiếu 'data' hoặc 'signature' trong webhook payload",
+                success: false,
+                error: true
             });
-          }
-        const isValid = payos.verifyPaymentWebhookData(webhookData);
+        }
+
+        const isValid = payos.verifyPaymentWebhookData(rawBody);
         if (!isValid) {
-            console.log('Invalid webhook data');
+            console.log('❌ Webhook không hợp lệ (sai signature)');
             return res.status(400).json({
                 message: "Webhook không hợp lệ",
                 success: false,
@@ -99,7 +100,6 @@ export const handlePostPaymentWebhook = async (req, res) => {
         }
 
         const post = await Post.findOne({ orderCode: webhookData.orderCode.toString() }).populate("postPackage");
-
         if (!post) {
             console.log('Post not found for order:', webhookData.orderCode);
             return res.status(404).json({
@@ -109,8 +109,8 @@ export const handlePostPaymentWebhook = async (req, res) => {
             });
         }
 
-        if (webhookData.status === "PAID") {
-            const paymentDate = new Date();
+        if (webhookData.code === "00") {
+            const paymentDate = new Date(webhookData.transactionDateTime || Date.now());
             const expireDays = post.postPackage?.expireAt || 7;
             const expiredDate = new Date(paymentDate.getTime() + expireDays * 24 * 60 * 60 * 1000);
 
@@ -123,7 +123,7 @@ export const handlePostPaymentWebhook = async (req, res) => {
             });
 
             console.log('✅ Payment confirmed and post activated:', post._id);
-        } else if (webhookData.status === "CANCELED" || webhookData.status === "FAILED") {
+        } else {
             await Post.findByIdAndUpdate(post._id, {
                 paymentStatus: 'unpaid',
                 isActive: false,
@@ -136,6 +136,7 @@ export const handlePostPaymentWebhook = async (req, res) => {
             success: true,
             error: false
         });
+
     } catch (error) {
         console.error('Webhook error:', error);
         return res.status(500).json({
