@@ -26,8 +26,8 @@ import ManageApplicationForm from "./pages/admin/manage-application-form.jsx";
 import ManageStaff from "./pages/admin/manage-staff.jsx";
 import ManageUser from "./pages/admin/manage-user.jsx";
 import AdminReportPage from "./pages/admin/report/AdminReportPage";
-import AdminRevenuePage from "./pages/admin/revenue.jsx";
 import AdminResidentApproval from "./pages/admin/residentVerifyByAdmin/AdminResidentApproval";
+import AdminRevenuePage from "./pages/admin/revenue.jsx";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
 import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
 import ResidentVerifyList from "./pages/staff/ResidentVerify/residentVerifyList";
@@ -39,6 +39,7 @@ import WaterDataUpload from "./pages/staff/waterExpense.jsx";
 import BlogList from "./pages/user/BlogList/BlogList.jsx";
 import PostDetail from "./pages/user/BlogList/BlogListDetail";
 import LikedPosts from "./pages/user/BlogList/LikedPosts.jsx";
+import Introduce from "./pages/user/Introduce/Introduce.jsx";
 import CustomerPostManagement from "./pages/user/MangementPostByCustomer/CustomerPostManagement.jsx";
 import RegistrationForm from "./pages/user/PostRegistration/registrationForm.jsx";
 import ResidentDetail from "./pages/user/Residentpeople/residentDetail";
@@ -107,6 +108,7 @@ function AppRoutes() {
           <Route path="/contracts/:id" element={<ContractDetail />} />
           <Route path="/liked-posts" element={<LikedPosts />} />
           <Route path="/my-verified" element={<MyVerifiedApplications/>} />
+          <Route path="/gioi-thieu" element={<Introduce/>} />
 
           {/* Admin */}
           <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
