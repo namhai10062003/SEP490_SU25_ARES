@@ -99,37 +99,37 @@ export const handlePostPaymentWebhook = async (req, res) => {
             });
         }
 
-        // const post = await Post.findOne({ orderCode: webhookData.orderCode.toString() }).populate("postPackage");
-        // if (!post) {
-        //     console.log('Post not found for order:', webhookData.orderCode);
-        //     return res.status(404).json({
-        //         message: "Post not found",
-        //         success: false,
-        //         error: true
-        //     });
-        // }
+        const post = await Post.findOne({ orderCode: webhookData.orderCode.toString() }).populate("postPackage");
+        if (!post) {
+            console.log('Post not found for order:', webhookData.orderCode);
+            return res.status(404).json({
+                message: "Post not found",
+                success: false,
+                error: true
+            });
+        }
 
-        // if (webhookData.code === "00") {
-        //     const paymentDate = new Date(webhookData.transactionDateTime || Date.now());
-        //     const expireDays = post.postPackage?.expireAt || 7;
-        //     const expiredDate = new Date(paymentDate.getTime() + expireDays * 24 * 60 * 60 * 1000);
+        if (webhookData.code === "00") {
+            const paymentDate = new Date(webhookData.transactionDateTime || Date.now());
+            const expireDays = post.postPackage?.expireAt || 7;
+            const expiredDate = new Date(paymentDate.getTime() + expireDays * 24 * 60 * 60 * 1000);
 
-        //     await Post.findByIdAndUpdate(post._id, {
-        //         status: 'active',
-        //         paymentStatus: 'paid',
-        //         paymentDate,
-        //         expiredDate,
-        //         isActive: true,
-        //     });
+            await Post.findByIdAndUpdate(post._id, {
+                status: 'active',
+                paymentStatus: 'paid',
+                paymentDate,
+                expiredDate,
+                isActive: true,
+            });
 
-        //     console.log('✅ Payment confirmed and post activated:', post._id);
-        // } else {
-        //     await Post.findByIdAndUpdate(post._id, {
-        //         paymentStatus: 'unpaid',
-        //         isActive: false,
-        //     });
-        //     console.log('❌ Payment failed/canceled:', post._id);
-        // }
+            console.log('✅ Payment confirmed and post activated:', post._id);
+        } else {
+            await Post.findByIdAndUpdate(post._id, {
+                paymentStatus: 'unpaid',
+                isActive: false,
+            });
+            console.log('❌ Payment failed/canceled:', post._id);
+        }
 
         return res.status(200).json({
             message: "Webhook processed",
