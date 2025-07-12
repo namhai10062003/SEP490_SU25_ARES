@@ -64,16 +64,17 @@ const calculateAndSaveFees = async (req, res) => {
           waterFee: 0,
           parkingFee: 0,
           total: managementFee,
-            // 👇 Thêm các trường này
-  paymentStatus: "unpaid",
-  orderCode: null,
-  paymentDate: null
+          // 👇 Thêm các trường này
+          paymentStatus: "unpaid",
+          orderCode: null,
+          paymentDate: null
         });
         continue;
       }
 
       for (const month of months) {
-        const waterFee = waterForApt.find((w) => {const [year, mon] = w.month.split("-");
+        const waterFee = waterForApt.find((w) => {
+          const [year, mon] = w.month.split("-");
           const formatted = `${mon}/${year}`;
           return formatted === month;
         })?.total || 0;
@@ -98,16 +99,16 @@ const calculateAndSaveFees = async (req, res) => {
           waterFee,
           parkingFee,
           total,
-            // 👇 Thêm các trường này
-  paymentStatus: "unpaid",
-  orderCode: null,
-  paymentDate: null
+          // 👇 Thêm các trường này
+          paymentStatus: "unpaid",
+          orderCode: null,
+          paymentDate: null
         });
       }
     }
 
     // 🧹 Xoá dữ liệu cũ để tránh trùng lặp
-     // 🧹 Xoá dữ liệu cũ để tránh trùng lặp
+    // 🧹 Xoá dữ liệu cũ để tránh trùng lặp
     await Fee.deleteMany({});
     await Fee.insertMany(feeDocs);
 
@@ -175,23 +176,35 @@ export const getFeeByApartmentAndMonth = async (req, res) => {
   try {
     const { apartmentId, month } = req.params;
 
-    const fee = await Fee.findOne({ apartmentId, month });
-    if (!fee)
+    // ✅ Chuyển "2025-07" thành "07/2025"
+    const formattedMonth = `${month.slice(5, 7)}/${month.slice(0, 4)}`;
+
+    // ✅ Tìm theo đúng trường "apartmentId" (chứ không phải "apartment")
+    const fee = await Fee.findOne({ apartmentId: apartmentId, month: formattedMonth });
+
+    if (!fee) {
       return res.status(404).json({ message: "Không tìm thấy phí", success: false });
+    }
 
     res.json({
       success: true,
+      _id: fee._id,
+      orderCode: fee.orderCode || null,
+      ownerName: fee.ownerName || "Không rõ",
+      month: fee.month,
       managementFee: fee.managementFee,
       waterFee: fee.waterFee,
       parkingFee: fee.parkingFee,
       total: fee.total,
       paymentStatus: fee.paymentStatus || "unpaid",
     });
+    
   } catch (error) {
     console.error("❌ Lỗi getFeeByApartmentAndMonth:", error);
     res.status(500).json({ message: "Lỗi server", success: false });
   }
 };
+
 
 // tính phí gửi xe vào 
 export const updateParkingFee = async (req, res) => {
