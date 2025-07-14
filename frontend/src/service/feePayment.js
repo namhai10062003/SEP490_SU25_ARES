@@ -7,3 +7,6 @@ export const createFeePayment = async (apartmentId, month) => {
     month,
   });
 };
+export const getAllFees = async () => {
+  return axios.get(`${import.meta.env.VITE_API_URL}/api/fees`);
+};

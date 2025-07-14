@@ -27,7 +27,8 @@ import ManageStaff from "./pages/admin/manage-staff.jsx";
 import ManageUser from "./pages/admin/manage-user.jsx";
 import AdminReportPage from "./pages/admin/report/AdminReportPage";
 import AdminResidentApproval from "./pages/admin/residentVerifyByAdmin/AdminResidentApproval";
-import AdminRevenuePage from "./pages/admin/revenue.jsx";
+import AdminRevenuePost from "./pages/admin/revenue/posts.jsx";
+import AdminRevenueApartment from "./pages/admin/revenue/apartment.jsx";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
 import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
 import ResidentVerifyList from "./pages/staff/ResidentVerify/residentVerifyList";
@@ -107,8 +108,8 @@ function AppRoutes() {
           <Route path="/my-requests" element={<MyContractRequests />} />
           <Route path="/contracts/:id" element={<ContractDetail />} />
           <Route path="/liked-posts" element={<LikedPosts />} />
-          <Route path="/my-verified" element={<MyVerifiedApplications/>} />
-          <Route path="/gioi-thieu" element={<Introduce/>} />
+          <Route path="/my-verified" element={<MyVerifiedApplications />} />
+          <Route path="/gioi-thieu" element={<Introduce />} />
 
           {/* Admin */}
           <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
@@ -119,7 +120,8 @@ function AppRoutes() {
           <Route path="/admin-dashboard/manage-resident-verification" element={<ProtectedRoute element={<ManageApplicationForm />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/resident-verify-admin" element={<ProtectedRoute element={<AdminResidentApproval />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/report" element={<ProtectedRoute element={<AdminReportPage />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/revenue" element={<ProtectedRoute element={<AdminRevenuePage />} allowedRoles={["admin"]} />} />
+          <Route path="/admin-dashboard/revenue/post" element={<ProtectedRoute element={<AdminRevenuePost />} allowedRoles={["admin"]} />} />
+          <Route path="/admin-dashboard/revenue/apartment" element={<ProtectedRoute element={<AdminRevenueApartment />} allowedRoles={["admin"]} />} />
           {/* Staff */}
           <Route path="/staff-dashboard" element={<ProtectedRoute element={<DashboardPage />} allowedRoles={["staff"]} />} />
           <Route path="staff-expenses" element={<ProtectedRoute element={<ManageExpense />} allowedRoles={["staff"]} />} />

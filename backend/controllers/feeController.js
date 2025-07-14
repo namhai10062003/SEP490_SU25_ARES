@@ -73,6 +73,8 @@ const calculateAndSaveFees = async (req, res) => {
       }
 
       for (const month of months) {
+        const [m, y] = month.split("/");
+        const monthDate = new Date(`${y}-${m}-01`);
         const waterFee = waterForApt.find((w) => {
           const [year, mon] = w.month.split("-");
           const formatted = `${mon}/${year}`;
@@ -95,6 +97,7 @@ const calculateAndSaveFees = async (req, res) => {
           apartmentCode: aptCode,
           ownerName,
           month,
+          monthDate,
           managementFee,
           waterFee,
           parkingFee,
@@ -125,7 +128,7 @@ const calculateAndSaveFees = async (req, res) => {
 
 const getAllFees = async (req, res) => {
   try {
-    const data = await Fee.find().sort({ month: -1 });
+    const data = await Fee.find().sort({ monthDate: -1 });
     res.json({ data });
   } catch (err) {
     console.error("❌ Lỗi khi lấy danh sách phí:", err);
@@ -198,13 +201,12 @@ export const getFeeByApartmentAndMonth = async (req, res) => {
       total: fee.total,
       paymentStatus: fee.paymentStatus || "unpaid",
     });
-    
+
   } catch (error) {
     console.error("❌ Lỗi getFeeByApartmentAndMonth:", error);
     res.status(500).json({ message: "Lỗi server", success: false });
   }
 };
-
 
 // tính phí gửi xe vào 
 export const updateParkingFee = async (req, res) => {
@@ -224,5 +226,7 @@ export const updateParkingFee = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+
 export { calculateAndSaveFees, getAllFees };
 
