@@ -37,7 +37,7 @@ const Navbar = () => (
         </li>
       </ul>
     </li>
-    <li className="nav-item dropdown mx-3">
+    {/* <li className="nav-item dropdown mx-3">
       <span
         className="nav-link dropdown-toggle link-dark"
         id="hoadonDropdown"
@@ -65,7 +65,7 @@ const Navbar = () => (
           </Link>
         </li>
       </ul>
-    </li>
+    </li> */}
     <li className="nav-item dropdown mx-3">
       <span
         className="nav-link dropdown-toggle link-dark"

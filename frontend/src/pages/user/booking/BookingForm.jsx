@@ -75,6 +75,7 @@ useEffect(() => {
       return toast.error("❌ Ngày kết thúc phải sau ngày bắt đầu ít nhất 1 ngày");
     }
     try {
+      // hàm xử lí tính tiền lấy giá bài post 10% 
       const deposit = Math.floor(post.price * 0.1);
   
       const payload = {
@@ -91,7 +92,7 @@ useEffect(() => {
         addressA: post.contactInfo?.address,
         phoneA: post.contactInfo?.phone,
         contractTerms: "Các điều khoản đã đính kèm trong hợp đồng.",
-        depositAmount: deposit,
+        depositAmount: deposit,// lưu vào db khi thực hiện
         apartmentCode: post.apartmentCode,
         status: "pending", // ✅ Thêm trạng thái khởi tạo là chờ duyệt
       };

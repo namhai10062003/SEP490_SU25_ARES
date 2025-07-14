@@ -11,7 +11,13 @@ const BlogList = () => {
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  const [name, setName] = useState(null);
+  
+  useEffect(() => {
+    if (user && user.name) {
+      setName(user.name); // ✅ cập nhật tên từ user
+    }
+  }, [user]);
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -84,7 +90,7 @@ const BlogList = () => {
 
   return (
     <div>
-      <Header user={user} logout={logout} />
+      <Header user={user} name={name} logout={logout} />
       <div className="container py-4">
         <div className="text-center mb-4">
           <h1>📋 Danh sách bài đăng</h1>
