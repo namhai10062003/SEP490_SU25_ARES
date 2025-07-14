@@ -221,7 +221,7 @@ const Header = ({ user, name, logout }) => {
                   </li>
                   <li>
                     <Link className="dropdown-item" to="/my-verified" onClick={() => setShowProfileDropdown(false)}>
-                      Hợp Đồng Của Tôi
+                      Lịch Sử Xác Nhận Cư Dân
                     </Link>
                   </li>
                   <li>
@@ -239,7 +239,7 @@ const Header = ({ user, name, logout }) => {
                       Quản lí tin đăng
                     </Link>
                   </li>
-                  <li>
+                  {/* <li>
                     <Link className="dropdown-item" to="/profile/settings" onClick={() => setShowProfileDropdown(false)}>
                       Settings
                     </Link>
@@ -248,7 +248,7 @@ const Header = ({ user, name, logout }) => {
                     <Link className="dropdown-item" to="/profile/security" onClick={() => setShowProfileDropdown(false)}>
                       Security
                     </Link>
-                  </li>
+                  </li> */}
                 </ul>
               </div>
               <button onClick={logout} className="btn btn-outline-warning ms-2">

@@ -125,7 +125,7 @@ const MyContractRequests = () => {
                         {index + 1}
                       </div>
                       <div>
-                        <h5 className="fw-bold mb-1">👤 Người thuê: {contract.fullNameB}</h5>
+                        <h5 className="fw-bold mb-1">👤 Người đặt cọc: {contract.fullNameB}</h5>
                         <div className="mb-1"><span className="fw-semibold">📍 Địa chỉ:</span> {contract.addressB}</div>
                         <div className="mb-1"><span className="fw-semibold">📞 SĐT:</span> {contract.phoneB}</div>
                         <div className="mb-1"><span className="fw-semibold">📅</span> {contract.startDate?.slice(0, 10)} - {contract.endDate?.slice(0, 10)}</div>

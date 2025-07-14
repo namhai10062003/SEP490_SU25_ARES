@@ -59,7 +59,7 @@ useEffect(() => {
 
     handlePaymentReturn();
   }, [location.search, navigate]);
-
+// xử lý hợp đồng
   const fetchContracts = async () => {
     try {
       const token = localStorage.getItem("token");
