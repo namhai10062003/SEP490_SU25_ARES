@@ -1,15 +1,24 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 export default function AdminDashboard({ children }) {
   const location = useLocation();
+
+  const [showRevenueSub, setShowRevenueSub] = useState(
+    location.pathname.startsWith("/admin-dashboard/revenue")
+  );
+
+  useEffect(() => {
+    if (location.pathname.startsWith("/admin-dashboard/revenue")) {
+      setShowRevenueSub(true);
+    }
+  }, [location.pathname]);
 
   const navItems = [
     { to: "/admin-dashboard", label: "Tổng quan" },
     { to: "/admin-dashboard/report", label: "Quản lí bài Report" },
     { to: "/admin-dashboard/create-account", label: "Tạo tài khoản" },
     { to: "/admin-dashboard/posts", label: "Quản lí bài Post" },
-    { to: "/admin-dashboard/revenue", label: "Phân tích doanh thu" },
     { to: "/admin-dashboard/notifications", label: "Gửi thông báo" },
     { to: "/admin-dashboard/manage-user", label: "Quản lí User" },
     { to: "/admin-dashboard/manage-staff", label: "Quản lí Staff" },
@@ -23,13 +32,13 @@ export default function AdminDashboard({ children }) {
         {/* Sidebar */}
         <aside
           className="col-12 col-md-3 col-lg-2 bg-primary text-white d-flex flex-column p-0 shadow"
-          style={{
-            minHeight: "100vh",
-            zIndex: 100,
-          }}
+          style={{ minHeight: "100vh", zIndex: 100 }}
         >
           <div className="py-4 px-3 border-bottom border-2 border-warning bg-gradient">
-            <h5 className="fw-bold text-uppercase mb-0 text-warning text-center" style={{ letterSpacing: 1 }}>
+            <h5
+              className="fw-bold text-uppercase mb-0 text-warning text-center"
+              style={{ letterSpacing: 1 }}
+            >
               ADMIN PANEL
             </h5>
           </div>
@@ -43,19 +52,70 @@ export default function AdminDashboard({ children }) {
                       ? "active bg-white text-primary fw-bold shadow-sm"
                       : "text-white"
                       }`}
-                    style={{
-                      background:
-                        location.pathname === item.to
-                          ? "white"
-                          : "transparent",
-                      transition: "all .15s",
-                    }}
                   >
                     <span style={{ fontWeight: 500 }}>•</span>
                     <span className="ms-2">{item.label}</span>
                   </Link>
                 </li>
               ))}
+              {/* Revenue submenu */}
+              <li className="nav-item">
+                <div>
+                  <button
+                    type="button"
+                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center w-100 border-0 ${showRevenueSub
+                      ? "bg-white text-primary fw-bold shadow-sm"
+                      : "text-white"
+                      }`}
+                    style={{
+                      cursor: "pointer",
+                      userSelect: "none",
+                      textAlign: "left",
+                      background: "transparent",
+                    }}
+                    onClick={() => setShowRevenueSub((v) => !v)}
+                    aria-expanded={showRevenueSub}
+                  >
+                    <span style={{ fontWeight: 500 }}>•</span>
+                    <span className="ms-2">Phân tích doanh thu</span>
+                    <span className="ms-auto">{showRevenueSub ? "▲" : "▼"}</span>
+                  </button>
+
+                  {showRevenueSub && (
+                    <ul
+                      className="nav flex-column ps-4 mt-1"
+                      style={{
+                        borderLeft: "2px solid #fff3",
+                        transition: "all .2s",
+                      }}
+                    >
+                      <li className="nav-item">
+                        <Link
+                          to="/admin-dashboard/revenue/post"
+                          className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/admin-dashboard/revenue/post"
+                            ? "active bg-white text-primary fw-bold shadow-sm"
+                            : "text-white"
+                            }`}
+                        >
+                          • <span className="ms-2">Post</span>
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          to="/admin-dashboard/revenue/apartment"
+                          className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/admin-dashboard/revenue/apartment"
+                            ? "active bg-white text-primary fw-bold shadow-sm"
+                            : "text-white"
+                            }`}
+                        >
+                          • <span className="ms-2">Căn hộ</span>
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </div>
+              </li>
+
               <li className="nav-item mt-3">
                 <Link
                   to="/login"
@@ -68,16 +128,14 @@ export default function AdminDashboard({ children }) {
                   <span className="material-icons me-2" style={{ fontSize: 20 }}>
                     Đăng xuất
                   </span>
-
                 </Link>
               </li>
             </ul>
           </nav>
         </aside>
+
         {/* Main Content */}
-        <main className="col-12 col-md-9 col-lg-10 p-4">
-          {children}
-        </main>
+        <main className="col-12 col-md-9 col-lg-10 p-4">{children}</main>
       </div>
     </div>
   );

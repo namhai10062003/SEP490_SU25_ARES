@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getAllPosts } from "../../service/postService";
-import AdminDashboard from "./adminDashboard";
+import { getAllPosts } from "../../../service/postService";
+import AdminDashboard from "../adminDashboard";
 import * as XLSX from "xlsx";
 import { Bar } from "react-chartjs-2";
 import {
@@ -15,9 +15,8 @@ import {
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend);
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
-// Hardcoded package prices
 const PACKAGE_PRICES = {
     VIP1: 10000,
     VIP2: 20000,
@@ -27,32 +26,58 @@ const PACKAGE_PRICES = {
 
 const RevenueManagement = () => {
     const [posts, setPosts] = useState([]);
+    const [filteredPosts, setFilteredPosts] = useState([]);
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
+    const formatDate = (d) => new Date(d).toLocaleDateString("vi-VN");
+    const formatPrice = (p) => new Intl.NumberFormat("vi-VN").format(p) + " đ";
+    useEffect(() => {
+        const now = new Date();
+
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+        // Convert to YYYY-MM-DD string for input fields
+        const toInputDate = (date) => {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        };
+
+        setStartDate(toInputDate(firstDayOfMonth));
+        setEndDate(toInputDate(lastDayOfMonth));
+    }, []);
     useEffect(() => {
         getAllPosts()
             .then((res) => {
-                const paidPosts = (res.data.data || []).filter(
+                const allPaidPosts = (res.data.data || []).filter(
                     (p) => p.paymentStatus === "paid" && p.paymentDate
                 );
-                setPosts(paidPosts);
-                setTotalPages(Math.ceil(paidPosts.length / PAGE_SIZE));
+                setPosts(allPaidPosts);
             })
             .catch(console.error);
     }, []);
 
-    const formatDate = (d) => new Date(d).toLocaleDateString("vi-VN");
-    const formatPrice = (p) => new Intl.NumberFormat("vi-VN").format(p) + " đ";
+    useEffect(() => {
+        const filtered = posts.filter((p) => {
+            const paid = new Date(p.paymentDate);
+            if (startDate && paid < new Date(startDate)) return false;
+            if (endDate && paid > new Date(endDate)) return false;
+            return true;
+        });
+        setFilteredPosts(filtered);
 
-    const filteredPosts = posts.filter((p) => {
-        const paid = new Date(p.paymentDate);
-        if (startDate && paid < new Date(startDate)) return false;
-        if (endDate && paid > new Date(endDate)) return false;
-        return true;
-    });
+        const newTotalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+        setTotalPages(newTotalPages);
+
+        if (page > newTotalPages) {
+            setPage(1);
+        }
+    }, [posts, startDate, endDate, page]);
 
     const filteredRevenue = filteredPosts.reduce(
         (sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0),
@@ -63,11 +88,6 @@ const RevenueManagement = () => {
         (page - 1) * PAGE_SIZE,
         page * PAGE_SIZE
     );
-
-    useEffect(() => {
-        setPage(1);
-        setTotalPages(Math.ceil(filteredPosts.length / PAGE_SIZE));
-    }, [filteredPosts]);
 
     const exportToExcel = () => {
         const data = filteredPosts.map((p) => ({
@@ -192,7 +212,6 @@ const RevenueManagement = () => {
                     </table>
                 </div>
 
-                {/* Pagination */}
                 <div className="d-flex justify-content-center align-items-center mt-3">
                     <button
                         className="btn btn-outline-secondary mr-2"
@@ -213,7 +232,6 @@ const RevenueManagement = () => {
                     </button>
                 </div>
 
-                {/* Chart */}
                 <div className="mt-5">
                     <h5>📅 Thống kê theo tháng</h5>
                     <Bar data={monthlyChartData} />
