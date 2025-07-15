@@ -152,7 +152,7 @@ const RevenueApartment = () => {
                             className="form-control"
                         />
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                         <select
                             className="form-select"
                             value={statusFilter}
@@ -163,7 +163,17 @@ const RevenueApartment = () => {
                             <option value="unpaid">Chưa thanh toán</option>
                         </select>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-4 d-flex gap-2">
+                        <button
+                            className="btn btn-secondary w-50"
+                            onClick={() => {
+                                setStartDate("");
+                                setEndDate("");
+                                setStatusFilter("all");
+                            }}
+                        >
+                            Xóa bộ lọc
+                        </button>
                         <button
                             className="btn btn-success w-100"
                             onClick={exportToExcel}

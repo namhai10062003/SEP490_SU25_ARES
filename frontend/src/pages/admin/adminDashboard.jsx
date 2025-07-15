@@ -111,6 +111,17 @@ export default function AdminDashboard({ children }) {
                           • <span className="ms-2">Căn hộ</span>
                         </Link>
                       </li>
+                      <li className="nav-item">
+                        <Link
+                          to="/admin-dashboard/revenue/apartment-deposit"
+                          className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/admin-dashboard/revenue/apartment-deposit"
+                            ? "active bg-white text-primary fw-bold shadow-sm"
+                            : "text-white"
+                            }`}
+                        >
+                          • <span className="ms-2">Đặt cọc căn hộ</span>
+                        </Link>
+                      </li>
                     </ul>
                   )}
                 </div>
