@@ -1,5 +1,5 @@
 import express from "express";
-import { approveContract, createContract, deleteContract, getContractById, getMyContracts, rejectContract, resubmitContract } from "../controllers/contractController.js";
+import { approveContract, createContract, deleteContract, getContractById, getMyContracts, rejectContract, resubmitContract, getAllPaidContracts } from "../controllers/contractController.js";
 import {
   createContractPayment,
   handleContractPaymentWebhook
@@ -18,37 +18,38 @@ router.post("/payment-webhook", handleContractPaymentWebhook);
 // router.get("/payment/return", handlePaymentReturn);
 
 // bên contract
-router.post("/", verifysUser,createContract);
+router.post("/", verifysUser, createContract);
 router.get("/me", verifysUser, getMyContracts);
+router.get("/paid", getAllPaidContracts);
 router.get("/landlord", verifysUser, async (req, res) => {
-    try {
-      const contracts = await Contract.find({ landlordId: req.user._id });
-  
-      const now = new Date();
-      const updatedContracts = await Promise.all(
-        contracts.map(async (contract) => {
-          if (
-            contract.status === "approved" &&
-            new Date(contract.endDate) < now
-          ) {
-            contract.status = "expired";
-            await contract.save();  
-          }
-          return contract;
-        })
-      );
-  
-      res.json({ data: updatedContracts });
-    } catch (err) {
-      res.status(500).json({ message: "Lỗi khi lấy hợp đồng của chủ nhà" });
-    }
-  });
-  
-  router.put("/:id/approve", verifysUser,approveContract);
+  try {
+    const contracts = await Contract.find({ landlordId: req.user._id });
+
+    const now = new Date();
+    const updatedContracts = await Promise.all(
+      contracts.map(async (contract) => {
+        if (
+          contract.status === "approved" &&
+          new Date(contract.endDate) < now
+        ) {
+          contract.status = "expired";
+          await contract.save();
+        }
+        return contract;
+      })
+    );
+
+    res.json({ data: updatedContracts });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi khi lấy hợp đồng của chủ nhà" });
+  }
+});
+
+router.put("/:id/approve", verifysUser, approveContract);
 router.put("/:id/reject", verifysUser, rejectContract);
-router.delete("/:id", verifysUser,deleteContract);
+router.delete("/:id", verifysUser, deleteContract);
 // xem chi tiết 
-router.get("/:id", verifysUser, getContractById); 
+router.get("/:id", verifysUser, getContractById);
 router.put("/:id/resubmit", verifysUser, resubmitContract);
 // lấy hợp đồng theo user để bt kia max qua bên staff 
 router.get('/user/:userId', async (req, res) => {
