@@ -7,6 +7,7 @@ import {
   getPlazaList,
 } from "../../../service/postService.js";
 
+
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
     loaiHinh: "",
@@ -63,13 +64,13 @@ const RegistrationForm = () => {
   useEffect(() => {
     const fetchPlazas = async () => {
       const token = localStorage.getItem("token"); // đảm bảo lấy được
-  
+
       if (!token) return console.warn("⚠️ Token chưa có");
-  
+
       try {
         const response = await getPlazaList(token);
         console.log("📦 Dữ liệu plaza từ server:", response.data);
-  
+
         if (response?.data?.data) {
           setPlazaOptions(response.data.data);
         }
@@ -77,47 +78,76 @@ const RegistrationForm = () => {
         console.error("❌ Không thể lấy danh sách plaza:", error);
       }
     };
-  
+
     fetchPlazas();
   }, []);
   //
   useEffect(() => {
     setName(user?.name || null);
   }, [user]);
-// hàm xử lí tất cả dữ liệu input 
-const handleInputChange = (e) => {
-  const { name, value } = e.target;
+  // hàm xử lí tất cả dữ liệu input 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
 
-  // Nếu người dùng chọn loại hình là căn hộ
-  if (name === "loaiHinh") {
-    if (value === "nha_can_ho") {
+    // Validate số điện thoại
+    if (name === "thongTinNguoiDangBan") {
+      // Chỉ cho nhập số
+      if (!/^\d*$/.test(value)) return;
+
       setFormData((prev) => ({
         ...prev,
         [name]: value,
-        diaChiCuThe: "FPT City", // Gán mặc định
       }));
+
+      // Kiểm tra đúng 10 chữ số
+      if (value.length !== 10) {
+        setFormErrors((prev) => ({
+          ...prev,
+          [name]: "Số điện thoại phải gồm đúng 10 chữ số",
+        }));
+      } else {
+        setFormErrors((prev) => ({
+          ...prev,
+          [name]: "",
+        }));
+      }
+
+      return; // Dừng tại đây
+    }
+
+    // Nếu chọn loại hình là căn hộ
+    if (name === "loaiHinh") {
+      if (value === "nha_can_ho") {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: value,
+          diaChiCuThe: "FPT City",
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          [name]: value,
+          diaChiCuThe: "",
+        }));
+      }
     } else {
+      // Trường còn lại
       setFormData((prev) => ({
         ...prev,
         [name]: value,
-        diaChiCuThe: "", // Xóa nếu chọn loại khác
       }));
     }
-  } else {
-    // Các trường khác giữ nguyên
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  }
-};
+  };
+
+  const [formErrors, setFormErrors] = useState({});
+
   // hàm xử lí diện tích và mấy thông tin khác 
   useEffect(() => {
     if (formData.soCanHo && apartmentOptions.length > 0) {
       const selectedApartment = apartmentOptions.find(
         (apartment) => apartment._id === formData.soCanHo
       );
-  
+
       if (selectedApartment) {
         setFormData((prev) => ({
           ...prev,
@@ -130,19 +160,19 @@ const handleInputChange = (e) => {
       }
     }
   }, [formData.soCanHo, apartmentOptions]);
-// hàm xử lí lấy sdt của user 
-useEffect(() => {
-  if (user?.phone && !formData.thongTinNguoiDangBan) {
-    setFormData((prev) => ({
-      ...prev,
-      thongTinNguoiDangBan: user.phone,
-    }));
-    console.log("📲 Gán SDT tự động:", user.phone);
-  }
-}, [user?.phone]);
-useEffect(() => {
-  console.log("👤 USER:", user);
-}, [user]);
+  // hàm xử lí lấy sdt của user 
+  useEffect(() => {
+    if (user?.phone && !formData.thongTinNguoiDangBan) {
+      setFormData((prev) => ({
+        ...prev,
+        thongTinNguoiDangBan: user.phone,
+      }));
+      console.log("📲 Gán SDT tự động:", user.phone);
+    }
+  }, [user?.phone]);
+  useEffect(() => {
+    console.log("👤 USER:", user);
+  }, [user]);
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     setFormData((prev) => ({
@@ -205,7 +235,7 @@ useEffect(() => {
       submitData.append("postPackage", formData.postPackage);
       submitData.append("phone", formData.thongTinNguoiDangBan);
       submitData.append("apartmentCode", apartmentCode);
-      
+
       formData.images.forEach((image) => {
         submitData.append("images", image);
       });
@@ -273,9 +303,8 @@ useEffect(() => {
                 <h5 className="fw-bold mb-3">Chọn loại bài đăng</h5>
                 <ul className="list-group">
                   <li
-                    className={`list-group-item list-group-item-action ${
-                      loaiBaiDang === "ban" ? "active" : ""
-                    }`}
+                    className={`list-group-item list-group-item-action ${loaiBaiDang === "ban" ? "active" : ""
+                      }`}
                     style={{ cursor: "pointer" }}
                     onClick={() => {
                       setLoaiBaiDang("ban");
@@ -286,9 +315,8 @@ useEffect(() => {
                     Tin Bán
                   </li>
                   <li
-                    className={`list-group-item list-group-item-action ${
-                      loaiBaiDang === "cho_thue" ? "active" : ""
-                    }`}
+                    className={`list-group-item list-group-item-action ${loaiBaiDang === "cho_thue" ? "active" : ""
+                      }`}
                     style={{ cursor: "pointer" }}
                     onClick={() => {
                       setLoaiBaiDang("cho_thue");
@@ -299,9 +327,8 @@ useEffect(() => {
                     Tin Cho Thuê
                   </li>
                   <li
-                    className={`list-group-item list-group-item-action ${
-                      loaiBaiDang === "dich_vu" ? "active" : ""
-                    }`}
+                    className={`list-group-item list-group-item-action ${loaiBaiDang === "dich_vu" ? "active" : ""
+                      }`}
                     style={{ cursor: "pointer" }}
                     onClick={() => {
                       setLoaiBaiDang("dich_vu");
@@ -319,7 +346,7 @@ useEffect(() => {
               <div className="row g-3">
                 <div className="col-12 col-md-6">
                   <label className="form-label">
-                    Loại hình <span className="text-danger">*</span>
+                    Dịch Vụ <span className="text-danger">*</span>
                   </label>
                   {["ban", "cho_thue"].includes(loaiBaiDang) && (
                     <select
@@ -332,7 +359,7 @@ useEffect(() => {
                       className="form-select"
                       required
                     >
-                      <option value="">Chọn loại hình</option>
+                      <option value="">Chọn dịch vụ</option>
                       <option value="nha_can_ho">Căn hộ</option>
                       <option value="nha_dat">BĐS</option>
                     </select>
@@ -412,7 +439,7 @@ useEffect(() => {
                 )}
                 <div className="col-12">
                   <label className="form-label">
-                    Địa chỉ cụ thể <span className="text-danger">*</span>
+                    Địa chỉ <span className="text-danger">*</span>
                   </label>
                   <div className="input-group">
                     <span className="input-group-text">📍</span>
@@ -495,7 +522,7 @@ useEffect(() => {
                   <>
                     <div className="col-12 col-md-6">
                       <label className="form-label">
-                        Giấy tờ pháp lí <span className="text-danger">*</span>
+                        Giấy tờ pháp lý <span className="text-danger">*</span>
                       </label>
                       <input
                         type="text"
@@ -540,8 +567,7 @@ useEffect(() => {
                 )}
                 <div className="col-12">
                   <label className="form-label">
-                    Thông tin người đăng bán{" "}
-                    <span className="text-danger">*</span>
+                    Thông tin người đăng bán <span className="text-danger">*</span>
                   </label>
                   <div className="input-group">
                     <span className="input-group-text">👤</span>
@@ -551,11 +577,18 @@ useEffect(() => {
                       value={formData.thongTinNguoiDangBan}
                       onChange={handleInputChange}
                       placeholder="Số điện thoại"
-                      className="form-control"
+                      className={`form-control ${formErrors.thongTinNguoiDangBan ? "is-invalid" : ""}`}
+                      maxLength={10}
                       required
                     />
+                    {formErrors.thongTinNguoiDangBan && (
+                      <div className="invalid-feedback">
+                        {formErrors.thongTinNguoiDangBan}
+                      </div>
+                    )}
                   </div>
                 </div>
+
                 <div className="col-12">
                   <label className="form-label">
                     Upload ảnh <span className="text-danger">*</span>
@@ -620,27 +653,42 @@ useEffect(() => {
                     {[
                       {
                         value: "685039e4f8f1552c6378a7a5",
-                        title: "VIP1 - Tin sẽ tồn tại trên Blog 3 ngày",
-                        subtitle: "10000đ/tin",
+                        title: (
+                          <div>
+                            <div className="fw-bold">VIP 1</div>
+                            <div>Hiển thị Blog 3 ngày</div>
+                            <div>10.000đ/tin</div>
+                          </div>
+                        )
                       },
+
                       {
                         value: "685174b550c6fbcbc4efbe87",
-                        title: "VIP2 - Tin sẽ tồn tại trên Blog 5 ngày",
-                        subtitle: "20000đ/tin",
+                        title: (
+                          <div>
+                            <div className="fw-bold">VIP 2</div>
+                            <div>Hiển thị Blog 5 ngày</div>
+                            <div>20.000đ/tin</div>
+                          </div>
+                        )
                       },
                       {
                         value: "685174db50c6fbcbc4efbe88",
-                        title: "VIP3 - Tin sẽ tồn tại trên Blog 7 ngày",
-                        subtitle: "30000đ/tin",
+                        title: (
+                          <div>
+                            <div className="fw-bold">VIP 3</div>
+                            <div>Hiển thị Blog 7 ngày</div>
+                            <div>30.000đ/tin</div>
+                          </div>
+                        )
                       },
                     ].map((option) => (
                       <div className="col-12 col-md-4" key={option.value}>
                         <div
-                          className={`card h-100 ${
-                            formData.postPackage === option.value
+                          className={`card h-100 ${formData.postPackage === option.value
                               ? "border-primary shadow"
                               : ""
-                          }`}
+                            }`}
                           style={{ cursor: "pointer" }}
                           onClick={() => handleGenderSelect(option.value)}
                         >
