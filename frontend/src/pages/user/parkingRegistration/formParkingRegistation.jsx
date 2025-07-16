@@ -182,12 +182,18 @@ const validateDates = () => {
     type="tel"
     name="ownerPhone"
     value={formData.ownerPhone}
-    onChange={handleChangeIphone}
-    className="form-control"
+    onChange={handleChange}
+    className={`form-control ${formData.ownerPhone && !/^[0-9]{9,11}$/.test(formData.ownerPhone) ? 'is-invalid' : ''}`}
     required
     pattern="^[0-9]{9,11}$"
     title="Số điện thoại phải là số và từ 9 đến 11 chữ số"
   />
+  {/* Thông báo lỗi */}
+  {formData.ownerPhone && !/^[0-9]{9,11}$/.test(formData.ownerPhone) && (
+    <div className="text-danger mt-1 small">
+      Số điện thoại phải là số và từ 9 đến 11 chữ số
+    </div>
+  )}
 </div>
 
 
