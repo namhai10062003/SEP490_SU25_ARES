@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 export default function AdminDashboard({ children }) {
@@ -24,6 +24,7 @@ export default function AdminDashboard({ children }) {
     { to: "/admin-dashboard/manage-staff", label: "Quản lí Staff" },
     { to: "/admin-dashboard/manage-apartment", label: "Quản lí Căn hộ" },
     { to: "/admin-dashboard/manage-resident-verification", label: "Quản lý xác nhận cư dân" },
+    { to: "/admin-dashboard/revenue/user", label: "Quản lý Doanh Thu Của User" },
   ];
 
   return (

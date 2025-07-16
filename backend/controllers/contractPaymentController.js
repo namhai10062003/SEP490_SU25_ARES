@@ -104,7 +104,7 @@ export const handleContractPaymentWebhook = async (req, res) => {
         paymentStatus: "paid",
         paymentDate,
         expiredDate,
-        status: "active",
+        status: "approved",
         isActive: true,
       });
 

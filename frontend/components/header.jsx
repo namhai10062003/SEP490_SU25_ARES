@@ -239,6 +239,11 @@ const Header = ({ user, name, logout }) => {
                       Quản lí tin đăng
                     </Link>
                   </li>
+                  <li>
+                    <Link className="dropdown-item" to="/my-revenue" onClick={() => setShowProfileDropdown(false)}>
+                      Doanh Thu Của Tôi
+                    </Link>
+                  </li>
                   {/* <li>
                     <Link className="dropdown-item" to="/profile/settings" onClick={() => setShowProfileDropdown(false)}>
                       Settings
