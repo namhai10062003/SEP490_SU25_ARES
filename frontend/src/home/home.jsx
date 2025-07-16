@@ -102,7 +102,7 @@ const Home = () => {
               <button
                 type="submit"
                 style={{
-                  fontSize: 18, 
+                  fontSize: 18,
                   height: 60,
                   width: "50%",
                   border: "none",
@@ -173,7 +173,7 @@ const Home = () => {
                 <img src={p.img} className="card-img-top" alt={p.name} style={{ height: 220, objectFit: "cover" }} />
                 <div className="card-body text-center bg-white">
                   <p className="card-title fw-bold text-uppercase mb-2 text-dark">{p.name}</p>
-                  <button className="btn btn-outline-warning btn-sm">Xem dự án</button>
+                  <button className="btn btn-outline-warning btn-sm">Chi tiết </button>
                 </div>
               </div>
             </div>
@@ -195,7 +195,7 @@ const Home = () => {
                 <div className="card-body d-flex flex-column bg-white">
                   <h5 className="card-title fw-bold">{title}</h5>
                   <p className="card-text flex-grow-1">{description}</p>
-                  <a href={`/detail/${id}`} className="btn btn-warning mt-auto rounded-pill">Xem chi tiết</a>
+                  <a href={`/detail/${id}`} className="btn btn-warning mt-auto rounded-pill">Chi tiết</a>
                 </div>
               </div>
             </div>
@@ -237,20 +237,30 @@ const Home = () => {
             <div className="col-md-4 mb-4">
               <h4 className="fw-bold mb-3 text-warning">Liên kết nhanh</h4>
               <ul className="list-unstyled">
-                <li><a href="/" className="text-light text-decoration-none">Trang chủ</a></li>
-                <li><a href="/blog" className="text-light text-decoration-none">Bài viết nổi bật</a></li>
-                <li><a href="/gioi-thieu" className="text-light text-decoration-none">Về chúng tôi</a></li>
-                <li><a href="#" className="text-light text-decoration-none">Liên hệ</a></li>
+                <p><a href="/" className="text-light text-decoration-none">Trang chủ</a></p>
+                <p><a href="/blog" className="text-light text-decoration-none">Bài viết nổi bật</a></p>
+                <p><a href="/gioi-thieu" className="text-light text-decoration-none">Về chúng tôi</a></p>
+                <p><a href="#" className="text-light text-decoration-none">Liên hệ</a></p>
               </ul>
             </div>
             <div className="col-md-4 mb-4">
               <h4 className="fw-bold mb-3 text-warning">Kết nối với chúng tôi</h4>
               <div className="d-flex gap-3">
-                <a aria-label="Facebook" href="#" className="text-light fs-4"><i className="fab fa-facebook-f"></i></a>
-                <a aria-label="Twitter" href="#" className="text-light fs-4"><i className="fab fa-twitter"></i></a>
-                <a aria-label="Instagram" href="#" className="text-light fs-4"><i className="fab fa-instagram"></i></a>
-                <a aria-label="LinkedIn" href="#" className="text-light fs-4"><i className="fab fa-linkedin-in"></i></a>
+                <a aria-label="Facebook" href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="text-light fs-4">
+                  <i className="fab fa-facebook-f"></i>
+                </a>
+                <a aria-label="Instagram" href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="text-light fs-4">
+                  <i className="fab fa-instagram"></i>
+                </a>
+                <a aria-label="TikTok" href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer" className="text-light fs-4">
+                  <i className="fab fa-tiktok"></i>
+                </a>
+                <a aria-label="Zalo" href="https://zalo.me" target="_blank" rel="noopener noreferrer" className="text-light fs-4">
+                  <i className="fas fa-comment-dots"></i> 
+                </a>
               </div>
+              <h4 className="fw-bold mb-3"></h4>
+              <h4 className="fw-bold mb-3">Hotline: +84 833 48 22 55 </h4>
             </div>
           </div>
           <div className="text-center mt-4 text-secondary small">
