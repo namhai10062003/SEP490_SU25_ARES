@@ -74,14 +74,14 @@ const ParkingRegistrationDetail = () => {
                   <strong>Biển số xe:</strong>
                   <span>{detail.biểnSốXe}</span>
                 </li>
-                <li className="list-group-item d-flex justify-content-between">
+                {/* <li className="list-group-item d-flex justify-content-between">
                   <strong>Số khung:</strong>
                   <span>{detail.sốKhung}</span>
                 </li>
                 <li className="list-group-item d-flex justify-content-between">
                   <strong>Số máy:</strong>
                   <span>{detail.sốMáy}</span>
-                </li>
+                </li> */}
                 <li className="list-group-item d-flex justify-content-between">
                   <strong>Giá:</strong>
                   <span>{detail.giá || '---'}</span>
