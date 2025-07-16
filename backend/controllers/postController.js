@@ -6,13 +6,12 @@ export const createPost = async (req, res) => {
     try {
         const postData = req.body;
         const imageUrls = req.files.map((file) => file.path); // nếu dùng Cloudinary
-        console.log(imageUrls);
 
+        console.log(imageUrls);
         console.log(postData);
 
-        const userID = await User.findOne({
-            phone: postData.phone
-        })
+        // Tìm user theo số điện thoại
+        const userID = await User.findOne({ phone: postData.phone });
         if (!userID) {
             return res.status(400).json({
                 message: "User không tồn tại",
@@ -20,7 +19,8 @@ export const createPost = async (req, res) => {
                 error: true
             });
         }
-        // Kiểm tra package có tồn tại không
+
+        // Kiểm tra gói đăng tin có tồn tại không
         const postPackage = await PostPackage.findById(postData.postPackage);
         if (!postPackage) {
             return res.status(400).json({
@@ -30,6 +30,7 @@ export const createPost = async (req, res) => {
             });
         }
 
+        // Tạo đối tượng post mới
         const post = new Post({
             type: postData.type,
             title: postData.title,
@@ -44,16 +45,20 @@ export const createPost = async (req, res) => {
             contactInfo: userID._id,
             images: imageUrls,
             postPackage: postData.postPackage,
-            apartmentCode: postData.apartmentCode,
             status: 'pending',
             paymentStatus: 'unpaid',
             reasonreject: null
         });
 
+        // Nếu có apartmentCode thì thêm vào post
+        if (postData.apartmentCode) {
+            post.apartmentCode = postData.apartmentCode;
+        }
+
         await post.save();
 
         return res.status(201).json({
-            message: "Post created successfully. Please proceed to payment to activate your post.",
+            message: "Tạo bài đăng thành công. Vui lòng thanh toán để kích hoạt bài đăng.",
             success: true,
             error: false,
             data: {
@@ -70,6 +75,7 @@ export const createPost = async (req, res) => {
         });
     }
 };
+
 
 export const getPost = async (req, res) => {
     try {

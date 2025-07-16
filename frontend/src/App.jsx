@@ -27,9 +27,10 @@ import ManageStaff from "./pages/admin/manage-staff.jsx";
 import ManageUser from "./pages/admin/manage-user.jsx";
 import AdminReportPage from "./pages/admin/report/AdminReportPage";
 import AdminResidentApproval from "./pages/admin/residentVerifyByAdmin/AdminResidentApproval";
-import AdminRevenuePost from "./pages/admin/revenue/posts.jsx";
+import AdminWithdrawPage from "./pages/admin/revenue/AdminWithdrawRequests.jsx";
 import AdminRevenueApartment from "./pages/admin/revenue/apartment.jsx";
 import AdminRevenueApartmentDeposit from "./pages/admin/revenue/apartmentDeposit.jsx";
+import AdminRevenuePost from "./pages/admin/revenue/posts.jsx";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
 import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
 import ResidentVerifyList from "./pages/staff/ResidentVerify/residentVerifyList";
@@ -64,6 +65,7 @@ import Profile from "./pages/user/profile/profile";
 import UpdateProfileForm from "./pages/user/profile/updateProfile";
 import Register from "./pages/user/register.jsx";
 import ResetPassword from "./pages/user/resetpassword";
+import UserRevenue from "./pages/user/revenuer/UserRevenue.jsx";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
@@ -111,6 +113,7 @@ function AppRoutes() {
           <Route path="/liked-posts" element={<LikedPosts />} />
           <Route path="/my-verified" element={<MyVerifiedApplications />} />
           <Route path="/gioi-thieu" element={<Introduce />} />
+          <Route path="/my-revenue" element={<UserRevenue />} />
 
           {/* Admin */}
           <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
@@ -124,6 +127,7 @@ function AppRoutes() {
           <Route path="/admin-dashboard/revenue/post" element={<ProtectedRoute element={<AdminRevenuePost />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/revenue/apartment" element={<ProtectedRoute element={<AdminRevenueApartment />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/revenue/apartment-deposit" element={<ProtectedRoute element={<AdminRevenueApartmentDeposit />} allowedRoles={["admin"]} />} />
+          <Route path="/admin-dashboard/revenue/user" element={<ProtectedRoute element={<AdminWithdrawPage />} allowedRoles={["admin"]} />} />
           {/* Staff */}
           <Route path="/staff-dashboard" element={<ProtectedRoute element={<DashboardPage />} allowedRoles={["staff"]} />} />
           <Route path="staff-expenses" element={<ProtectedRoute element={<ManageExpense />} allowedRoles={["staff"]} />} />
