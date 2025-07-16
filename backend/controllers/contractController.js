@@ -52,6 +52,7 @@ export const createContract = async (req, res) => {
       contractTerms,
       apartmentCode,
       depositAmount: finalDeposit, // 💰 lưu tiền đặt cọc
+      withdrawableAmount: Math.round(finalDeposit * 0.9),
     });
 
     await contract.save();
@@ -175,5 +176,31 @@ export const getAllPaidContracts = async (req, res) => {
   } catch (error) {
     console.error("❌ Lỗi getAllPaidContracts:", error);
     res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+// hàm thực hiện cập nhật lại bản hợp đồng nếu mấy hợp đồng cũ muốn cập nhật cái số tiền nhận dc 
+export const updateWithdrawableForAll = async (req, res) => {
+  try {
+    const contracts = await Contract.find();
+
+    for (const contract of contracts) {
+      if (contract.depositAmount && !contract.withdrawableAmount) {
+        contract.withdrawableAmount = Math.round(contract.depositAmount * 0.9);
+
+        // ⚠️ Nếu status không hợp lệ thì sửa lại trước khi lưu
+        if (!["pending", "approved", "rejected", "expired"].includes(contract.status)) {
+          console.warn(`⚠️ Hợp đồng ${contract._id} có status không hợp lệ: ${contract.status} → đang sửa về 'approved'`);
+          contract.status = "approved"; // hoặc giá trị phù hợp
+        }
+
+        await contract.save();
+      }
+    }
+
+    res.json({ message: "✅ Đã cập nhật withdrawableAmount cho tất cả hợp đồng" });
+  } catch (error) {
+    console.error("❌ Error:", error);
+    res.status(500).json({ message: "❌ Server error" });
   }
 };

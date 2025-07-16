@@ -43,6 +43,10 @@ const contractSchema = new mongoose.Schema({
       type: Date
     },
     apartmentCode: { type: String },
+    withdrawableAmount: {
+  type: Number,
+  default: 0, // mặc định là 0 cho hợp đồng mới
+},
 }, { timestamps: true });
 
 export default mongoose.model("Contract", contractSchema);

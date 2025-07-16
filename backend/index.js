@@ -25,7 +25,7 @@ import residentVerificationRouter from "./router/residentVerificationRoutes.js";
 import staffRouter from "./router/staff.js";
 import userRouter from "./router/user.js";
 import waterRoutes from "./router/waterRoutes.js";
-
+import withdrawalRouter from "./router/withdrawalRouter.js";
 import { initSocket } from "./socket.js";
 
 dotenv.config();
@@ -97,6 +97,7 @@ app.use("/api/contracts", contractRouter);
 app.use("/api/water", waterRoutes); 
 app.use("/api/fees", feeRoutes); 
 app.use("/api/plaza", plazaRoutes); 
+app.use("/api/withdrawals", withdrawalRouter);
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);
