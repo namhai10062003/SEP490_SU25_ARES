@@ -84,6 +84,7 @@ const getParkingRegistrations = async (req, res) => {
 
 
 // Hiển thị chi tiết xe đã đăng ký
+// Hiển thị chi tiết xe đã đăng ký
 const getParkingRegistrationDetail = async (req, res) => {
   try {
     const { id } = req.params;
@@ -94,7 +95,7 @@ const getParkingRegistrationDetail = async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy thông tin đăng ký xe' });
     }
 
-    // 👉 Định dạng giá theo vehicleType (nếu muốn hiển thị text)
+    // 👉 Định dạng giá theo vehicleType
     let formattedPrice = '---';
     if (registration.vehicleType === 'ô tô') {
       formattedPrice = '800.000đ / tháng';
@@ -108,14 +109,17 @@ const getParkingRegistrationDetail = async (req, res) => {
       tênChủSởHữu: registration.owner,
       sđtChủSởHữu: registration.ownerPhone || '',
       biểnSốXe: registration.licensePlate,
-      sốKhung: registration.chassisNumber || '---',
-      sốMáy: registration.engineNumber || '---',
-      ngàyĐăngKý: registration.registerDate,
-      ngàyHếtHạn: registration.expireDate || '---',
+      // ❌ Loại bỏ số khung, số máy
+      ngàyĐăngKý: registration.registerDate
+        ? registration.registerDate.toISOString().split('T')[0]
+        : '---',
+      ngàyHếtHạn: registration.expireDate
+        ? registration.expireDate.toISOString().split('T')[0]
+        : '---',
       trạngThái: registration.status,
       ảnhTrước: registration.documentFront,
       ảnhSau: registration.documentBack,
-      giá: formattedPrice // 🆕 Trường giá đã định dạng
+      giá: formattedPrice
     };
 
     res.status(200).json({
@@ -131,7 +135,7 @@ const getParkingRegistrationDetail = async (req, res) => {
 
 
 
-// đăng ký bãi gữi xe
+// đăng ký bãi gửi xe
 const PARKING_CAPACITY = parseInt(process.env.PARKING_CAPACITY || '150', 10);
 
 const createParkingRegistration = async (req, res) => {
@@ -144,8 +148,6 @@ const createParkingRegistration = async (req, res) => {
       ownerPhone,
       vehicleType,
       licensePlate,
-      chassisNumber,
-      engineNumber,
       registeredCity,
       registeredDistrict,
       registerDate,
@@ -153,7 +155,6 @@ const createParkingRegistration = async (req, res) => {
     } = req.body;
 
     // 2. Kiểm tra quyền người dùng: là chủ hộ hoặc người thuê
-    /* 2. Căn hộ phải thuộc quyền user hiện tại */
     const apartment = await Apartment.findOne({
       _id: apartmentId,
       $or: [
@@ -165,7 +166,8 @@ const createParkingRegistration = async (req, res) => {
     if (!apartment) {
       return res.status(403).json({ message: 'Bạn không có quyền đăng ký gửi xe cho căn hộ này.' });
     }
-    /* 3. CHỐT 1: Kiểm tra dung lượng bãi (global) */
+
+    /* 3. Kiểm tra dung lượng bãi */
     const globalCount = await ParkingRegistration.countDocuments({
       status: { $in: ['approved'] }
     });
@@ -173,9 +175,9 @@ const createParkingRegistration = async (req, res) => {
       return res.status(400).json({ message: 'Bãi đỗ xe đã đầy, không thể đăng ký thêm.' });
     }
 
-    /* 4. CHỐT 2: Giới hạn theo nhân khẩu (2 xe / 1 nhân khẩu) */
+    /* 4. Giới hạn theo nhân khẩu */
     const residentCount = await Resident.countDocuments({ apartmentId });
-    const maxAllowed = residentCount * 2;   // 👈 Mỗi nhân khẩu 2 xe
+    const maxAllowed = residentCount * 2;
 
     const activeByApartment = await ParkingRegistration.countDocuments({
       apartmentId,
@@ -188,31 +190,48 @@ const createParkingRegistration = async (req, res) => {
       });
     }
 
-    /* 5. Kiểm tra ngày hợp lệ */
-    const now = new Date();
-    const reg = new Date(registerDate);
-    if (isNaN(reg) || reg > now) {
-      return res.status(400).json({ message: 'Ngày đăng ký không hợp lệ hoặc nằm trong tương lai.' });
-    }
-    let exp = null;
-    if (expireDate) {
-      exp = new Date(expireDate);
-      if (isNaN(exp) || exp <= reg) {
-        return res.status(400).json({ message: 'Ngày hết hạn phải sau ngày đăng ký.' });
-      }
-    }
+/* 5. Kiểm tra ngày hợp lệ */
+const now = new Date();
+const reg = new Date(registerDate);
+
+// ❌ Không cho phép ngày đăng ký trong quá khứ
+if (isNaN(reg) || reg < now.setHours(0, 0, 0, 0)) {
+  return res.status(400).json({ message: 'Ngày đăng ký không hợp lệ hoặc không được nằm trong quá khứ.' });
+}
+
+let exp = null;
+if (expireDate) {
+  exp = new Date(expireDate);
+  if (isNaN(exp) || exp <= reg) {
+    return res.status(400).json({ message: 'Ngày hết hạn phải sau ngày đăng ký.' });
+  }
+}
+
 
     /* 6. Upload ảnh (nếu có) */
-    let documentFrontUrl = '';
-    let documentBackUrl = '';
-    if (req.files?.documentFront?.[0]) {
-      const up = await cloudinary.uploader.upload(req.files.documentFront[0].path, { folder: 'papers' });
-      documentFrontUrl = up.secure_url;
-    }
-    if (req.files?.documentBack?.[0]) {
-      const up = await cloudinary.uploader.upload(req.files.documentBack[0].path, { folder: 'papers' });
-      documentBackUrl = up.secure_url;
-    }
+let documentFrontUrl = '';
+let documentBackUrl = '';
+
+const plateFolder = `papers/${licensePlate?.trim().replace(/\s+/g, '_') || 'unknown'}`; // e.g. papers/79A_12345
+
+if (req.files?.documentFront?.[0]) {
+  const up = await cloudinary.uploader.upload(req.files.documentFront[0].path, {
+    folder: plateFolder,
+    public_id: '1',
+    overwrite: true
+  });
+  documentFrontUrl = up.secure_url;
+}
+
+if (req.files?.documentBack?.[0]) {
+  const up = await cloudinary.uploader.upload(req.files.documentBack[0].path, {
+    folder: plateFolder,
+    public_id: '2',
+    overwrite: true
+  });
+  documentBackUrl = up.secure_url;
+}
+
 
     /* 7. Giá theo loại xe */
     let price;
@@ -231,8 +250,6 @@ const createParkingRegistration = async (req, res) => {
       ownerPhone,
       vehicleType,
       licensePlate,
-      chassisNumber,
-      engineNumber,
       registeredCity,
       registeredDistrict,
       registerDate: reg,
@@ -258,10 +275,22 @@ const createParkingRegistration = async (req, res) => {
       }
     });
 
-    /* 10. Trả về client */
+    /* 10. Trả về client (ẩn các field không cần thiết) */
     return res.status(201).json({
       message: 'Đăng ký gửi xe đã được gửi, vui lòng chờ nhân viên duyệt.',
-      data: saved
+      data: {
+        id: saved._id,
+        apartmentCode: saved.apartmentCode,
+        owner: saved.owner,
+        vehicleType: saved.vehicleType,
+        licensePlate: saved.licensePlate,
+        registerDate: saved.registerDate,
+        expireDate: saved.expireDate,
+        documentFront: saved.documentFront,
+        documentBack: saved.documentBack,
+        status: saved.status,
+        price: saved.price
+      }
     });
 
   } catch (err) {
@@ -269,6 +298,7 @@ const createParkingRegistration = async (req, res) => {
     return res.status(500).json({ message: 'Lỗi server', error: err.message });
   }
 };
+
 
 
 
@@ -350,5 +380,5 @@ const getUserParkingRegistrations = async (req, res) => {
   }
 };
 
-export { approveParkingRegistration, createParkingRegistration, getAvailableParkingSlots, getParkingRegistrationAll, getParkingRegistrationDetail, getParkingRegistrations, rejectParkingRegistration, getUserParkingRegistrations };
+export { approveParkingRegistration, createParkingRegistration, getAvailableParkingSlots, getParkingRegistrationAll, getParkingRegistrationDetail, getParkingRegistrations, getUserParkingRegistrations, rejectParkingRegistration };
 

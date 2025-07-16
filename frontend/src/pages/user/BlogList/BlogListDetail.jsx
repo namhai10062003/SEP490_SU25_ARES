@@ -354,9 +354,9 @@ useEffect(() => {
 
 
 
-              <p>📧 {post.contactInfo?.email}</p>
+              {/* <p>📧 {post.contactInfo?.email}</p> */}
               {/* <p>📱 {post.contactInfo?.phone}</p> */}
-              {user && post.contactInfo?.userId && (
+              {/* {user && post.contactInfo?.userId && (
   <div>
     <span
       className="material-symbols-rounded"
@@ -377,7 +377,7 @@ useEffect(() => {
       chat
     </span>
   </div>
-)}
+)} */}
 <button
   style={{ ...styles.contactBtn, backgroundColor: "#27ae60" }}
   onClick={() => navigate(`/booking/${post._id}`)}

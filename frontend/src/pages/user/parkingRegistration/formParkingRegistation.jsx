@@ -18,8 +18,6 @@ const FormParkingRegistration = () => {
     apartmentId: '',
     vehicleType: '',
     licensePlate: '',
-    chassisNumber: '',
-    engineNumber: '',
     registeredCity: '',
     registeredDistrict: '',
     registerDate: '',
@@ -73,35 +71,47 @@ const FormParkingRegistration = () => {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
+// xu lí sdt 
+const handleChangeIphone = (e) => {
+  const { name, value, files } = e.target;
 
-  // Validate ngày
-  const validateDates = () => {
-    const now = new Date();
-    const reg = new Date(formData.registerDate);
+  // 👉 Chỉ cho nhập số nếu là ô số điện thoại
+  if (name === 'ownerPhone') {
+    if (!/^\d*$/.test(value)) return; // Không cho nhập nếu không phải số
+  }
 
-    if (isNaN(reg)) {
-      toast.error('Vui lòng chọn ngày đăng ký hợp lệ!');
-      return false;
-    }
-    if (reg > now) {
-      toast.error('Ngày đăng ký không được nằm trong tương lai!');
-      return false;
-    }
+  if (files && files.length > 0) {
+    const file = files[0];
+    const previewUrl = URL.createObjectURL(file);
 
-    if (!formData.expireDate) return true;
+    setFormData(prev => ({
+      ...prev,
+      [name]: file,
+      [`preview${name === 'documentFront' ? 'Front' : 'Back'}`]: previewUrl
+    }));
+  } else {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  }
+};
 
+// Validate ngày
+const validateDates = () => {
+  const reg = new Date(formData.registerDate);
+  if (isNaN(reg)) {
+    toast.error('Vui lòng chọn ngày đăng ký hợp lệ!');
+    return false;
+  }
+
+  if (formData.expireDate) {
     const exp = new Date(formData.expireDate);
     if (isNaN(exp)) {
       toast.error('Ngày hết hạn không hợp lệ!');
       return false;
     }
-    if (exp <= reg) {
-      toast.error('Ngày hết hạn phải sau ngày đăng ký!');
-      return false;
-    }
+  }
 
-    return true;
-  };
+  return true;
+};
 
   // Submit
   const handleSubmit = async (e) => {
@@ -117,8 +127,8 @@ const FormParkingRegistration = () => {
       submission.append('ownerPhone', formData.ownerPhone);
       submission.append('vehicleType', formData.vehicleType);
       submission.append('licensePlate', formData.licensePlate);
-      submission.append('chassisNumber', formData.chassisNumber);
-      submission.append('engineNumber', formData.engineNumber);
+      // submission.append('chassisNumber', formData.chassisNumber);
+      // submission.append('engineNumber', formData.engineNumber);
       submission.append('registeredCity', formData.registeredCity);
       submission.append('registeredDistrict', formData.registeredDistrict);
       submission.append('registerDate', formData.registerDate);
@@ -167,9 +177,19 @@ const FormParkingRegistration = () => {
 
             {/* SĐT chủ sở hữu */}
             <div className="col-md-6">
-              <label className="form-label">Số điện thoại chủ sở hữu *</label>
-              <input type="tel" name="ownerPhone" value={formData.ownerPhone} onChange={handleChange} className="form-control" required />
-            </div>
+  <label className="form-label">Số điện thoại *</label>
+  <input
+    type="tel"
+    name="ownerPhone"
+    value={formData.ownerPhone}
+    onChange={handleChangeIphone}
+    className="form-control"
+    required
+    pattern="^[0-9]{9,11}$"
+    title="Số điện thoại phải là số và từ 9 đến 11 chữ số"
+  />
+</div>
+
 
             {/* Căn hộ */}
             <div className="col-md-6">
@@ -199,16 +219,16 @@ const FormParkingRegistration = () => {
             </div>
 
             {/* Số khung */}
-            <div className="col-md-6">
+            {/* <div className="col-md-6">
               <label className="form-label">Số khung</label>
               <input type="text" name="chassisNumber" value={formData.chassisNumber} onChange={handleChange} className="form-control" />
-            </div>
+            </div> */}
 
             {/* Số máy */}
-            <div className="col-md-6">
+            {/* <div className="col-md-6">
               <label className="form-label">Số máy</label>
               <input type="text" name="engineNumber" value={formData.engineNumber} onChange={handleChange} className="form-control" />
-            </div>
+            </div> */}
 
             {/* Đăng ký tại */}
             <div className="col-md-6">
