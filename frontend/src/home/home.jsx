@@ -66,8 +66,8 @@ const Home = () => {
         <img src="/images/banner.jpg" alt="Banner" className="w-100" style={{ height: 420, objectFit: "cover", filter: "brightness(0.7)" }} />
         <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
           <div className="text-center text-white">
-            <h1 className="display-4 fw-bold mb-3">Tìm căn hộ mơ ước của bạn</h1>
-            <p className="lead mb-4">Nền tảng thuê & mua căn hộ chuyên nghiệp, minh bạch, uy tín tại TP.HCM</p>
+            <h1 className="display-4 fw-bold mb-3">Căn hộ mơ ước của bạn</h1>
+            <p className="lead mb-4">Hệ thống cho thuê & mua bán căn hộ chuyên nghiệp, uy tín tại FPT City</p>
             <form
               style={{
                 display: "flex",
@@ -102,7 +102,7 @@ const Home = () => {
               <button
                 type="submit"
                 style={{
-                  fontSize: 18,
+                  fontSize: 18, 
                   height: 60,
                   width: "50%",
                   border: "none",
@@ -229,17 +229,17 @@ const Home = () => {
           <div className="row">
             <div className="col-md-4 mb-4">
               <h4 className="fw-bold mb-3 text-warning">Liên hệ</h4>
-              <p>1234 Apartment St.</p>
-              <p>TP. Hồ Chí Minh</p>
-              <p>Email: info@apartments.com</p>
-              <p>Phone: (123) 456-7890</p>
+              <p>FPT City</p>
+              <p>TP. Đà Nẫng</p>
+              <p>Email: SupportFPTCity@gmail.com</p>
+              <p>Phone: (+84) 833-48-2255</p>
             </div>
             <div className="col-md-4 mb-4">
               <h4 className="fw-bold mb-3 text-warning">Liên kết nhanh</h4>
               <ul className="list-unstyled">
-                <li><a href="#" className="text-light text-decoration-none">Trang chủ</a></li>
-                <li><a href="#" className="text-light text-decoration-none">Căn hộ nổi bật</a></li>
-                <li><a href="#" className="text-light text-decoration-none">Về chúng tôi</a></li>
+                <li><a href="/" className="text-light text-decoration-none">Trang chủ</a></li>
+                <li><a href="/blog" className="text-light text-decoration-none">Bài viết nổi bật</a></li>
+                <li><a href="/gioi-thieu" className="text-light text-decoration-none">Về chúng tôi</a></li>
                 <li><a href="#" className="text-light text-decoration-none">Liên hệ</a></li>
               </ul>
             </div>
