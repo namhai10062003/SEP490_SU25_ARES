@@ -212,7 +212,9 @@ if (expireDate) {
 let documentFrontUrl = '';
 let documentBackUrl = '';
 
-const plateFolder = `papers/${licensePlate?.trim().replace(/\s+/g, '_') || 'unknown'}`; // e.g. papers/79A_12345
+const cleanedPlate = licensePlate?.trim().replace(/\s+/g, '_') || 'unknown';
+const plateFolder = `papers/${cleanedPlate}`;
+
 
 if (req.files?.documentFront?.[0]) {
   const up = await cloudinary.uploader.upload(req.files.documentFront[0].path, {
