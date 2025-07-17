@@ -16,7 +16,7 @@ import SocketListener from "../components/SocketListener.jsx";
 import VideoPlayer from "../src/pages/user/messages/VideoPlayer.jsx";
 import GlobalChatBox from "./pages/user/messages/GlobalChatBox.jsx";
 import VideoCallPopup from "./pages/user/messages/VideoCallPopup";
-
+import ScrollButtons from "../components/ScrollButton.jsx";
 // Các trang
 import Home from "./home/home";
 import DashboardHome from "./pages/admin/DashboardHome.jsx";
@@ -145,6 +145,7 @@ function AppRoutes() {
         <SocketListener />
         <ToastContainer position="top-right" autoClose={1500} theme="light" />
         <GlobalChatBox />
+        <ScrollButtons />
         <VideoCallPopup />
         {(callActive || incomingCall) && <VideoPlayer />}
       </BrowserRouter>
