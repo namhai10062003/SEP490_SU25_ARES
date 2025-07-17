@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Header from "../../components/header";
 import { useAuth } from "../../context/authContext";
+import Footer from "../../components/footer";
 
 const CountUpOnView = ({ end, duration = 2000 }) => {
   const [count, setCount] = useState(0);
@@ -224,50 +225,7 @@ const Home = () => {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-dark text-light py-5 mt-5">
-        <div className="container">
-          <div className="row">
-            <div className="col-md-4 mb-4">
-              <h4 className="fw-bold mb-3 text-warning">Liên hệ</h4>
-              <p>FPT City</p>
-              <p>TP. Đà Nẫng</p>
-              <p>Email: SupportFPTCity@gmail.com</p>
-              <p>Phone: (+84) 833-48-2255</p>
-            </div>
-            <div className="col-md-4 mb-4">
-              <h4 className="fw-bold mb-3 text-warning">Liên kết nhanh</h4>
-              <ul className="list-unstyled">
-                <p><a href="/" className="text-light text-decoration-none">Trang chủ</a></p>
-                <p><a href="/blog" className="text-light text-decoration-none">Bài viết nổi bật</a></p>
-                <p><a href="/gioi-thieu" className="text-light text-decoration-none">Về chúng tôi</a></p>
-                <p><a href="#" className="text-light text-decoration-none">Liên hệ</a></p>
-              </ul>
-            </div>
-            <div className="col-md-4 mb-4">
-              <h4 className="fw-bold mb-3 text-warning">Kết nối với chúng tôi</h4>
-              <div className="d-flex gap-3">
-                <a aria-label="Facebook" href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="text-light fs-4">
-                  <i className="fab fa-facebook-f"></i>
-                </a>
-                <a aria-label="Instagram" href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="text-light fs-4">
-                  <i className="fab fa-instagram"></i>
-                </a>
-                <a aria-label="TikTok" href="https://www.tiktok.com" target="_blank" rel="noopener noreferrer" className="text-light fs-4">
-                  <i className="fab fa-tiktok"></i>
-                </a>
-                <a aria-label="Zalo" href="https://zalo.me" target="_blank" rel="noopener noreferrer" className="text-light fs-4">
-                  <i className="fas fa-comment-dots"></i> 
-                </a>
-              </div>
-              <h4 className="fw-bold mb-3"></h4>
-              <h4 className="fw-bold mb-3">Hotline: +84 833 48 22 55 </h4>
-            </div>
-          </div>
-          <div className="text-center mt-4 text-secondary small">
-            © {new Date().getFullYear()} Ares Apartment. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };
