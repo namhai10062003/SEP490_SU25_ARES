@@ -13,12 +13,14 @@ const contractSchema = new mongoose.Schema({
   cmndA: String,
   addressA: String,
   phoneA: String,
+  emailA: String,
 
   fullNameB: String,
   cmndB: String,
   addressB: String,
   phoneB: String,
-
+  emailB: String,
+  
   contractTerms: String, // chứa nội dung điều khoản hợp đồng
   depositAmount: {
     type: Number,

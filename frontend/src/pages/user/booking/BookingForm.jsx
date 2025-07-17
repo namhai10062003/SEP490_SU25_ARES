@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from "react";
+import axios from "axios";
+import React, { useEffect, useRef, useState } from "react";
+import { Button, Modal } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import axios from "axios";
+import ContractForm from "../../../../components/contractForm";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
 import { getPostById } from "../../../service/postService";
-import { Modal, Button } from "react-bootstrap";
-import ContractForm from "../../../../components/contractForm";
 
 const BookingForm = () => {
   const { postId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const hasWarned = useRef(false); 
   const [post, setPost] = useState(null);
   const [form, setForm] = useState({
     startDate: "",
@@ -32,6 +33,20 @@ const BookingForm = () => {
     };
     fetchPost();
   }, [postId]);
+
+  //kiểm tra xem thử có cccd hay ko
+  useEffect(() => {
+    if (user && Object.keys(user).length > 0 && !hasWarned.current) {
+      if (!user.identityNumber || !user.address) {
+        toast.error("❌ Bạn cần cập nhật CMND/CCCD và địa chỉ trước khi tạo hợp đồng");
+        hasWarned.current = true;
+  
+        setTimeout(() => {
+          navigate("/profile");
+        }, 1000); // ⏱ Chờ 3 giây rồi mới chuyển trang
+      }
+    }
+  }, [user]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -57,10 +72,12 @@ const BookingForm = () => {
       cmndB: user.identityNumber,
       addressB: user.address,
       phoneB: user.phone,
+      emailB: user.email,
       fullNameA: post.contactInfo.name,
       cmndA: post.contactInfo.identityNumber,
       addressA: post.contactInfo.address,
       phoneA: post.contactInfo.phone,
+      emailA: post.contactInfo.email,
       depositAmount: Math.floor(post.price * 0.1),
       apartmentCode: post.apartmentCode,
       contractTerms: "Các điều khoản đã đính kèm trong hợp đồng.",
