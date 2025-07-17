@@ -17,21 +17,22 @@ export const createContract = async (req, res) => {
       addressB,
       phoneA,
       phoneB,
+      emailA,  // ✅ thêm dòng này
+      emailB,  // ✅ thêm dòng này
       agreed,
       contractTerms,
       depositAmount,
-      apartmentCode, // nếu frontend đã gửi
+      apartmentCode,
     } = req.body;
 
     let finalDeposit = depositAmount;
 
-    // Nếu không gửi sẵn từ frontend thì tính ở backend
     if (!finalDeposit) {
       const post = await Post.findById(postId);
       if (!post) {
         return res.status(404).json({ success: false, message: "Không tìm thấy bài đăng." });
       }
-      finalDeposit = Math.floor(post.price * 0.1); // tính 10% giá thuê
+      finalDeposit = Math.floor(post.price * 0.1);
     }
 
     const contract = new Contract({
@@ -48,10 +49,12 @@ export const createContract = async (req, res) => {
       addressB,
       phoneA,
       phoneB,
+      emailA,      // ✅ gán vào schema
+      emailB,      // ✅ gán vào schema
       agreed,
       contractTerms,
       apartmentCode,
-      depositAmount: finalDeposit, // 💰 lưu tiền đặt cọc
+      depositAmount: finalDeposit,
       withdrawableAmount: Math.round(finalDeposit * 0.9),
     });
 
@@ -63,6 +66,7 @@ export const createContract = async (req, res) => {
     res.status(500).json({ success: false, message: "Tạo hợp đồng thất bại", error });
   }
 };
+
 
 // Lấy hợp đồng của người dùng hiện tại
 export const getMyContracts = async (req, res) => {

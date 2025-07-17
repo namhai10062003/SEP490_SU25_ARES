@@ -8,7 +8,20 @@ const ContractForm = ({
     readOnly = false,
     headerDate,
 }) => {
-
+    
+    // Hàm lấy ngày hôm nay dạng yyyy-MM-dd (theo UTC)
+// const getToday = () => {
+//     const today = new Date();
+//     return new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+//       .toISOString()
+//       .split("T")[0];
+//   };
+    const getAutoEndDateVN = (startDate, plusDays = 7) => {
+        if (!startDate) return "....../....../......";
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + plusDays);
+        return formatVNDate(d.toISOString());
+      };
     const formatVNDate = (dateStr) => {
         if (!dateStr) return "....../....../......";
         const d = new Date(dateStr);
@@ -120,28 +133,70 @@ const ContractForm = ({
 
                 {/* Thời gian + tiền */}
                 <div className="mt-3">
-                    <h6><strong>Thời gian:</strong> {formatVNDate(startDate)} → {formatVNDate(endDate)}</h6>
+                <h6>
+  <strong>Thời hạn giữ chỗ:</strong> từ ngày <strong>{formatVNDate(startDate)}</strong> 
+  đến ngày <strong>{getAutoEndDateVN(startDate)}</strong>
+</h6>
                     <h6><strong>Tiền đặt cọc:</strong> {depositAmount.toLocaleString("vi-VN")} VNĐ</h6>
                 </div>
 
                 {/* only show this if readOnly */}
                 {readOnly && (
                     <div className="mt-3">
-                        <p><strong>Trạng thái thanh toán:</strong> {post?.paymentStatus === "paid" ? "✅ Đã thanh toán" : "⏳ Chưa thanh toán"}</p>
-                        <p><strong>Mã thanh toán:</strong> {post?.orderCode}</p>
+                        <p><strong>Trạng thái thanh toán:</strong> {contractData?.paymentStatus === "paid" ? "✅ Đã thanh toán" : "⏳ Chưa thanh toán"}</p>
+                        <p><strong>Mã thanh toán:</strong> {contractData?.orderCode}</p>
                     </div>
                 )}
 
-                {/* Điều khoản */}
-                <div className="mt-4">
-                    <h6 className="fw-bold text-decoration-underline mb-2">
-                        📄 ĐIỀU KHOẢN
-                    </h6>
-                    <p>{terms}</p>
-                    <p>- Hai bên cam kết thực hiện đúng điều khoản trong hợp đồng.</p>
-                    <p>- Mọi tranh chấp sẽ được giải quyết theo pháp luật.</p>
-                    <p>- Hợp đồng có hiệu lực từ ngày ký.</p>
-                </div>
+               {/* Điều khoản */}
+        <h3 className="contract-subtitle">📌 ĐIỀU KHOẢN HỢP ĐỒNG</h3>
+        <div className="contract-terms">
+          <p><strong>1. Đối tượng hợp đồng:</strong></p>
+          <p>Cho thuê căn hộ tại địa chỉ: <strong>{post?.location || "..."}</strong></p>
+          <ul>
+          {post && (
+  <h6><strong>Mã căn hộ:</strong> {post.apartmentCode}</h6>
+)}
+            <li>Diện tích: <strong>{post?.area || "..."}</strong> m²</li>
+            <li>Giá thuê: <strong>{post?.price?.toLocaleString("vi-VN") || "..."} VNĐ/tháng</strong></li>
+            <li>Thuộc dự án: <strong>{post?.property || "..."}</strong></li>
+            <li>Pháp lý: <strong>{post?.legalDocument || "..."}</strong></li>
+            <li>Nội thất: <strong>{post?.interiorStatus || "..."}</strong></li>
+            <li>Phương hướng: <strong>{post?.amenities || "..."}</strong></li>
+          </ul>
+
+          <p><strong>2. Mục đích và nội dung đặt cọc:</strong></p>
+<ul>
+  <li>Bên B đồng ý đặt cọc để giữ chỗ cho việc mua bán / cho thuê bất động sản được nêu tại Điều 1.</li>
+  <h6><strong>Tiền đặt cọc:</strong> {depositAmount.toLocaleString("vi-VN")} VNĐ</h6>
+  {/* <li>Hình thức thanh toán: [ ] Tiền mặt &nbsp;&nbsp; [ ] Chuyển khoản</li> */}
+  
+</ul>
+
+<p><strong>3. Cam kết và nghĩa vụ:</strong></p>
+
+<p><strong>3.1. Cam kết của Bên A:</strong></p>
+<ul>
+  <li>Giữ chỗ cho Bên B trong thời gian đặt cọc nêu trên.</li>
+  <li>Cung cấp đầy đủ và minh bạch thông tin liên quan đến bất động sản.</li>
+  <li>Thông báo và mời Bên B ký hợp đồng mua bán / thuê chính thức trong thời hạn giữ chỗ.</li>
+  <li>Hoàn lại toàn bộ tiền cọc nếu không thể thực hiện giao dịch do lỗi của Bên A.</li>
+</ul>
+
+<p><strong>3.2. Cam kết của Bên B:</strong></p>
+<ul>
+  <li>Thanh toán đầy đủ và đúng hạn số tiền đặt cọc đã thỏa thuận.</li>
+  <li>Tiến hành ký hợp đồng mua bán / thuê chính thức đúng thời hạn nếu còn nhu cầu.</li>
+  <li>Chấp nhận mất toàn bộ tiền cọc nếu tự ý từ chối giao dịch mà không có lý do chính đáng.</li>
+</ul>
+
+<p><strong>4. Điều khoản chung:</strong></p>
+<ul>
+  <li>Hai bên cam kết thực hiện nghiêm túc các điều khoản của hợp đồng đặt cọc.</li>
+  <li>Mọi tranh chấp phát sinh sẽ được giải quyết trước hết bằng thương lượng, nếu không đạt thỏa thuận sẽ đưa ra Tòa án có thẩm quyền giải quyết.</li>
+  <li>Hợp đồng có hiệu lực kể từ ngày ký và được lập thành 02 bản gốc, mỗi bên giữ 01 bản, có giá trị pháp lý như nhau.</li>
+</ul>
+        </div>
 
                 {/* Ký tên */}
                 <div className="row text-center mt-5 mb-5">
