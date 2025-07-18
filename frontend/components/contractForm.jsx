@@ -1,219 +1,329 @@
 import React from "react";
 
 const ContractForm = ({
-    contractData,
-    post,
-    user,
-    landlord,
-    readOnly = false,
-    headerDate,
+  contractData,
+  post,
+  user,
+  landlord,
+  readOnly = false,
+  headerDate,
 }) => {
-    
-    // Hàm lấy ngày hôm nay dạng yyyy-MM-dd (theo UTC)
-// const getToday = () => {
-//     const today = new Date();
-//     return new Date(today.getTime() - today.getTimezoneOffset() * 60000)
-//       .toISOString()
-//       .split("T")[0];
-//   };
-    const getAutoEndDateVN = (startDate, plusDays = 7) => {
-        if (!startDate) return "....../....../......";
-        const d = new Date(startDate);
-        d.setDate(d.getDate() + plusDays);
-        return formatVNDate(d.toISOString());
-      };
-    const formatVNDate = (dateStr) => {
-        if (!dateStr) return "....../....../......";
-        const d = new Date(dateStr);
-        return `${String(d.getDate()).padStart(2, "0")}/${String(
-            d.getMonth() + 1
-        )}/${d.getFullYear()}`;
-    };
+  const getAutoEndDateVN = (startDate, plusDays = 7) => {
+    if (!startDate) return "....../....../......";
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + plusDays);
+    return formatVNDate(d.toISOString());
+  };
 
-    const formatVNDayOfWeek = (dateStr) => {
-        if (!dateStr) return "....../....../......";
-        const d = new Date(dateStr);
-        const days = [
-            "Chủ nhật",
-            "Thứ 2",
-            "Thứ 3",
-            "Thứ 4",
-            "Thứ 5",
-            "Thứ 6",
-            "Thứ 7",
-        ];
-        return `${days[d.getDay()]}, ngày ${String(d.getDate()).padStart(
-            2,
-            "0"
-        )} tháng ${String(d.getMonth() + 1).padStart(2, "0")} năm ${d.getFullYear()}`;
-    };
+  const formatVNDate = (dateStr) => {
+    if (!dateStr) return "....../....../......";
+    const d = new Date(dateStr);
+    return `${String(d.getDate()).padStart(2, "0")}/${String(
+      d.getMonth() + 1
+    ).padStart(2, "0")}/${d.getFullYear()}`;
+  };
 
-    const startDate = contractData?.startDate || "";
-    const endDate = contractData?.endDate || "";
-    const depositAmount =
-        contractData?.depositAmount || Math.floor((post?.price || 0) * 0.1);
-    const terms =
-        contractData?.terms || "Các điều khoản đã đính kèm trong hợp đồng.";
+  const formatVNDayOfWeek = (dateStr) => {
+    if (!dateStr) return "....../....../......";
+    const d = new Date(dateStr);
+    const days = [
+      "Chủ nhật",
+      "Thứ 2",
+      "Thứ 3",
+      "Thứ 4",
+      "Thứ 5",
+      "Thứ 6",
+      "Thứ 7",
+    ];
+    return `${days[d.getDay()]}, ngày ${String(d.getDate()).padStart(
+      2,
+      "0"
+    )} tháng ${String(d.getMonth() + 1).padStart(
+      2,
+      "0"
+    )} năm ${d.getFullYear()}`;
+  };
 
-    const landlordInfo = landlord || post?.contactInfo || {};
+  const startDate = contractData?.startDate || "";
+  const depositAmount =
+    contractData?.depositAmount || Math.floor((post?.price || 0) * 0.1);
+  const terms =
+    contractData?.terms || "Các điều khoản đã đính kèm trong hợp đồng.";
+  const landlordInfo = landlord || post?.contactInfo || {};
 
-    return (
-        <div className="container py-4">
-            {readOnly === false && (
-                <div className=" mb-2">
-                    <span className="badge bg-warning text-dark">Đang xem trước</span>
-                </div>
-            )}
+  return (
+    <div className="container py-4">
+      {!readOnly && (
+        <div className="mb-2">
+          <span className="badge bg-warning text-dark">Đang xem trước</span>
+        </div>
+      )}
 
-            <div className="card shadow p-3">
-                <div className="text-center mb-4">
-                    <h5 className="fw-bold text-uppercase">
-                        CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
-                    </h5>
-                    <div className="fst-italic text-muted">Độc lập - Tự do - Hạnh phúc</div>
-                    <div
-                        className="border-top border-dark my-1 mx-auto"
-                        style={{ width: "150px" }}
-                    ></div>
-                    <h6 className="fw-bold text-primary mt-3">
-                        HỢP ĐỒNG ĐẶT CỌC GIỮ CHỖ CĂN HỘ
-                    </h6>
-                    <small className="text-muted d-block text-end">
-                        {formatVNDayOfWeek(headerDate || new Date())}
-                    </small>
-                </div>
+      <div className="card shadow p-3">
+        <div className="text-center mb-4">
+          <h5 className="fw-bold text-uppercase">
+            CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+          </h5>
+          <div className="fst-italic text-muted">
+            Độc lập - Tự do - Hạnh phúc
+          </div>
+          <div
+            className="border-top border-dark my-1 mx-auto"
+            style={{ width: "150px" }}
+          ></div>
+          <h6 className="fw-bold text-primary mt-3">
+            HỢP ĐỒNG ĐẶT CỌC GIỮ CHỖ CĂN HỘ
+          </h6>
+          <small className="text-muted d-block text-end">
+            {formatVNDayOfWeek(headerDate || new Date())}
+          </small>
+        </div>
 
-                {/* Parties */}
-                <div className="row g-3">
-                    <div className="col-md-6">
-                        <div className="card shadow-sm h-100">
-                            <div className="card-header bg-light fw-bold">BÊN A (Chủ nhà)</div>
-                            <div className="card-body small">
-                                <p><strong>Họ tên:</strong> {landlordInfo.name}</p>
-                                <p><strong>CMND/CCCD:</strong> {landlordInfo.identityNumber}</p>
-                                <p><strong>Địa chỉ:</strong> {landlordInfo.address}</p>
-                                <p><strong>Số điện thoại:</strong> {landlordInfo.phone}</p>
-                                <p><strong>Email:</strong> {landlordInfo.email}</p>
-                            </div>
-                        </div>
-                    </div>
+        {/* Thông tin 2 bên */}
+        <div className="row g-3">
+          <div className="col-md-6">
+            <div className="card shadow-sm h-100">
+              <div className="card-header bg-light fw-bold">
+                BÊN A (Chủ nhà)
+              </div>
+              <div className="card-body small">
+                <p>
+                  <strong>Họ tên:</strong> {landlordInfo.name}
+                </p>
+                <p>
+                  <strong>CMND/CCCD:</strong> {landlordInfo.identityNumber}
+                </p>
+                <p>
+                  <strong>Địa chỉ:</strong> {landlordInfo.address}
+                </p>
+                <p>
+                  <strong>Số điện thoại:</strong> {landlordInfo.phone}
+                </p>
+                <p>
+                  <strong>Email:</strong> {landlordInfo.email}
+                </p>
+              </div>
+            </div>
+          </div>
 
-                    <div className="col-md-6">
-                        <div className="card shadow-sm h-100">
-                            <div className="card-header bg-light fw-bold">BÊN B (Khách hàng)</div>
-                            <div className="card-body small">
-                                <p><strong>Họ tên:</strong> {user?.name}</p>
-                                <p><strong>CMND/CCCD:</strong> {user?.identityNumber}</p>
-                                <p><strong>Địa chỉ:</strong> {user?.address}</p>
-                                <p><strong>Số điện thoại:</strong> {user?.phone}</p>
-                                <p><strong>Email:</strong> {user?.email}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+          <div className="col-md-6">
+            <div className="card shadow-sm h-100">
+              <div className="card-header bg-light fw-bold">
+                BÊN B (Khách hàng)
+              </div>
+              <div className="card-body small">
+                <p>
+                  <strong>Họ tên:</strong> {user?.name}
+                </p>
+                <p>
+                  <strong>CMND/CCCD:</strong> {user?.identityNumber}
+                </p>
+                <p>
+                  <strong>Địa chỉ:</strong> {user?.address}
+                </p>
+                <p>
+                  <strong>Số điện thoại:</strong> {user?.phone}
+                </p>
+                <p>
+                  <strong>Email:</strong> {user?.email}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-                {/* Bất động sản */}
-                <div className="card my-3 shadow-sm">
-                    <div className="card-header bg-light fw-bold">📌 THÔNG TIN BẤT ĐỘNG SẢN</div>
-                    <div className="card-body small row g-3">
-                        <div className="col-md-6">
-                            <p><strong>Mã căn hộ:</strong> {post?.apartmentCode}</p>
-                            <p><strong>Vị trí:</strong> {post?.location}</p>
-                            <p><strong>Diện tích:</strong> {post?.area} m²</p>
-                            <p><strong>Giá thuê/bán:</strong> {post?.price?.toLocaleString("vi-VN")} VNĐ</p>
-                        </div>
-                        <div className="col-md-6">
-                            <p><strong>Dự án:</strong> {post?.property}</p>
-                            <p><strong>Pháp lý:</strong> {post?.legalDocument}</p>
-                            <p><strong>Nội thất:</strong> {post?.interiorStatus}</p>
-                            <p><strong>Tiện ích:</strong> {post?.amenities?.join(", ")}</p>
-                        </div>
-                    </div>
-                </div>
+        {/* Thông tin bất động sản */}
+        <div className="card my-3 shadow-sm">
+          <div className="card-header bg-light fw-bold">
+            📌 THÔNG TIN BẤT ĐỘNG SẢN
+          </div>
+          <div className="card-body small row g-3">
+            <div className="col-md-6">
+              <p>
+                <strong>Mã căn hộ:</strong> {post?.apartmentCode}
+              </p>
+              <p>
+                <strong>Vị trí:</strong> {post?.location}
+              </p>
+              <p>
+                <strong>Diện tích:</strong> {post?.area} m²
+              </p>
+              <p>
+                <strong>Giá thuê/bán:</strong>{" "}
+                {post?.price?.toLocaleString("vi-VN")} VNĐ
+              </p>
+            </div>
+            <div className="col-md-6">
+              <p>
+                <strong>Dự án:</strong> {post?.property}
+              </p>
+              <p>
+                <strong>Pháp lý:</strong> {post?.legalDocument}
+              </p>
+              <p>
+                <strong>Nội thất:</strong> {post?.interiorStatus}
+              </p>
+              <p>
+                <strong>Tiện ích:</strong> {post?.amenities?.join(", ")}
+              </p>
+            </div>
+          </div>
+        </div>
 
-                {/* Thời gian + tiền */}
-                <div className="mt-3">
-                <h6>
-  <strong>Thời hạn giữ chỗ:</strong> từ ngày <strong>{formatVNDate(startDate)}</strong> 
-  đến ngày <strong>{getAutoEndDateVN(startDate)}</strong>
-</h6>
-                    <h6><strong>Tiền đặt cọc:</strong> {depositAmount.toLocaleString("vi-VN")} VNĐ</h6>
-                </div>
+        {/* Thời gian và tiền */}
+        <div className="mt-3">
+          <h6>
+            <strong>Thời hạn giữ chỗ:</strong> từ ngày{" "}
+            <strong>{formatVNDate(startDate)}</strong>
+            đến ngày <strong>{getAutoEndDateVN(startDate)}</strong>
+          </h6>
+          <h6>
+            <strong>Tiền đặt cọc:</strong>{" "}
+            {depositAmount.toLocaleString("vi-VN")} VNĐ
+          </h6>
+            <h6>
+            <li className="list-group-item">
+            <strong>Mã đơn hàng:</strong> {contractData?.orderCode || "Chưa có"}
+          </li>
+          <li className="list-group-item">
+            <strong>Trạng thái thanh toán:</strong>{" "}
+            {contractData?.paymentStatus === "paid"
+              ? "✅ Đã thanh toán"
+              : contractData?.paymentStatus === "pending"
+              ? "⏳ Chờ thanh toán"
+              : "❌ Chưa thanh toán"}
+          </li>
+            </h6>
+         
+        </div>
 
-                {/* only show this if readOnly */}
-                {readOnly && (
-                    <div className="mt-3">
-                        <p><strong>Trạng thái thanh toán:</strong> {contractData?.paymentStatus === "paid" ? "✅ Đã thanh toán" : "⏳ Chưa thanh toán"}</p>
-                        <p><strong>Mã thanh toán:</strong> {contractData?.orderCode}</p>
-                    </div>
-                )}
-
-               {/* Điều khoản */}
-        <h3 className="contract-subtitle">📌 ĐIỀU KHOẢN HỢP ĐỒNG</h3>
+        {/* Điều khoản */}
+        <h3 className="contract-subtitle mt-4">📌 ĐIỀU KHOẢN HỢP ĐỒNG</h3>
         <div className="contract-terms">
-          <p><strong>1. Đối tượng hợp đồng:</strong></p>
-          <p>Cho thuê căn hộ tại địa chỉ: <strong>{post?.location || "..."}</strong></p>
+          <p>
+            <strong>1. Đối tượng hợp đồng:</strong>
+          </p>
+          <p>
+            Cho thuê căn hộ tại địa chỉ:{" "}
+            <strong>{post?.location || "..."}</strong>
+          </p>
           <ul>
-          {post && (
-  <h6><strong>Mã căn hộ:</strong> {post.apartmentCode}</h6>
-)}
-            <li>Diện tích: <strong>{post?.area || "..."}</strong> m²</li>
-            <li>Giá thuê: <strong>{post?.price?.toLocaleString("vi-VN") || "..."} VNĐ/tháng</strong></li>
-            <li>Thuộc dự án: <strong>{post?.property || "..."}</strong></li>
-            <li>Pháp lý: <strong>{post?.legalDocument || "..."}</strong></li>
-            <li>Nội thất: <strong>{post?.interiorStatus || "..."}</strong></li>
-            <li>Phương hướng: <strong>{post?.amenities || "..."}</strong></li>
+            <li>
+              Diện tích: <strong>{post?.area || "..."}</strong> m²
+            </li>
+            <li>
+              Giá thuê:{" "}
+              <strong>
+                {post?.price?.toLocaleString("vi-VN") || "..."} VNĐ/tháng
+              </strong>
+            </li>
+            <li>
+              Thuộc dự án: <strong>{post?.property || "..."}</strong>
+            </li>
+            <li>
+              Pháp lý: <strong>{post?.legalDocument || "..."}</strong>
+            </li>
+            <li>
+              Nội thất: <strong>{post?.interiorStatus || "..."}</strong>
+            </li>
+            <li>
+              Tiện ích: <strong>{post?.amenities?.join(", ") || "..."}</strong>
+            </li>
           </ul>
 
-          <p><strong>2. Mục đích và nội dung đặt cọc:</strong></p>
-<ul>
-  <li>Bên B đồng ý đặt cọc để giữ chỗ cho việc mua bán / cho thuê bất động sản được nêu tại Điều 1.</li>
-  <h6><strong>Tiền đặt cọc:</strong> {depositAmount.toLocaleString("vi-VN")} VNĐ</h6>
-  {/* <li>Hình thức thanh toán: [ ] Tiền mặt &nbsp;&nbsp; [ ] Chuyển khoản</li> */}
-  
-</ul>
+          <p>
+            <strong>2. Mục đích và nội dung đặt cọc:</strong>
+          </p>
+          <ul>
+            <li>
+              Bên B đồng ý đặt cọc để giữ chỗ cho việc mua bán / cho thuê bất
+              động sản được nêu tại Điều 1.
+            </li>
+            <li>
+              Tiền đặt cọc:{" "}
+              <strong>{depositAmount.toLocaleString("vi-VN")} VNĐ</strong>
+            </li>
+          </ul>
 
-<p><strong>3. Cam kết và nghĩa vụ:</strong></p>
+          <p>
+            <strong>3. Cam kết và nghĩa vụ:</strong>
+          </p>
+          <p>
+            <strong>3.1. Cam kết của Bên A:</strong>
+          </p>
+          <ul>
+            <li>Giữ chỗ cho Bên B trong thời gian đặt cọc nêu trên.</li>
+            <li>
+              Cung cấp đầy đủ và minh bạch thông tin liên quan đến bất động sản.
+            </li>
+            <li>
+              Thông báo và mời Bên B ký hợp đồng mua bán / thuê chính thức trong
+              thời hạn giữ chỗ.
+            </li>
+            <li>
+              Hoàn lại toàn bộ tiền cọc nếu không thể thực hiện giao dịch do lỗi
+              của Bên A.
+            </li>
+          </ul>
 
-<p><strong>3.1. Cam kết của Bên A:</strong></p>
-<ul>
-  <li>Giữ chỗ cho Bên B trong thời gian đặt cọc nêu trên.</li>
-  <li>Cung cấp đầy đủ và minh bạch thông tin liên quan đến bất động sản.</li>
-  <li>Thông báo và mời Bên B ký hợp đồng mua bán / thuê chính thức trong thời hạn giữ chỗ.</li>
-  <li>Hoàn lại toàn bộ tiền cọc nếu không thể thực hiện giao dịch do lỗi của Bên A.</li>
-</ul>
+          <p>
+            <strong>3.2. Cam kết của Bên B:</strong>
+          </p>
+          <ul>
+            <li>
+              Thanh toán đầy đủ và đúng hạn số tiền đặt cọc đã thỏa thuận.
+            </li>
+            <li>
+              Tiến hành ký hợp đồng mua bán / thuê chính thức đúng thời hạn nếu
+              còn nhu cầu.
+            </li>
+            <li>
+              Chấp nhận mất toàn bộ tiền cọc nếu tự ý từ chối giao dịch mà không
+              có lý do chính đáng.
+            </li>
+          </ul>
 
-<p><strong>3.2. Cam kết của Bên B:</strong></p>
-<ul>
-  <li>Thanh toán đầy đủ và đúng hạn số tiền đặt cọc đã thỏa thuận.</li>
-  <li>Tiến hành ký hợp đồng mua bán / thuê chính thức đúng thời hạn nếu còn nhu cầu.</li>
-  <li>Chấp nhận mất toàn bộ tiền cọc nếu tự ý từ chối giao dịch mà không có lý do chính đáng.</li>
-</ul>
-
-<p><strong>4. Điều khoản chung:</strong></p>
-<ul>
-  <li>Hai bên cam kết thực hiện nghiêm túc các điều khoản của hợp đồng đặt cọc.</li>
-  <li>Mọi tranh chấp phát sinh sẽ được giải quyết trước hết bằng thương lượng, nếu không đạt thỏa thuận sẽ đưa ra Tòa án có thẩm quyền giải quyết.</li>
-  <li>Hợp đồng có hiệu lực kể từ ngày ký và được lập thành 02 bản gốc, mỗi bên giữ 01 bản, có giá trị pháp lý như nhau.</li>
-</ul>
+          <p>
+            <strong>4. Điều khoản chung:</strong>
+          </p>
+          <ul>
+            <li>
+              Hai bên cam kết thực hiện nghiêm túc các điều khoản của hợp đồng
+              đặt cọc.
+            </li>
+            <li>
+              Mọi tranh chấp phát sinh sẽ được giải quyết trước hết bằng thương
+              lượng, nếu không được sẽ đưa ra Tòa án.
+            </li>
+            <li>
+              Hợp đồng có hiệu lực kể từ ngày ký và được lập thành 02 bản gốc,
+              mỗi bên giữ 01 bản, có giá trị pháp lý như nhau.
+            </li>
+          </ul>
         </div>
 
-                {/* Ký tên */}
-                <div className="row text-center mt-5 mb-5">
-                    <div className="col">
-                        <strong>BÊN A</strong>
-                        <div>(Ký và ghi rõ họ tên)</div>
-                        <div className="border-bottom mt-5 mx-auto" style={{ width: "60%" }}></div>
-                    </div>
-                    <div className="col">
-                        <strong>BÊN B</strong>
-                        <div>(Ký và ghi rõ họ tên)</div>
-                        <div className="border-bottom mt-5 mx-auto" style={{ width: "60%" }}></div>
-                    </div>
-                </div>
-            </div>
+        {/* Ký tên */}
+        <div className="row text-center mt-5 mb-5">
+          <div className="col">
+            <strong>BÊN A</strong>
+            <div>(Ký và ghi rõ họ tên)</div>
+            <div
+              className="border-bottom mt-5 mx-auto"
+              style={{ width: "60%" }}
+            ></div>
+          </div>
+          <div className="col">
+            <strong>BÊN B</strong>
+            <div>(Ký và ghi rõ họ tên)</div>
+            <div
+              className="border-bottom mt-5 mx-auto"
+              style={{ width: "60%" }}
+            ></div>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default ContractForm;
