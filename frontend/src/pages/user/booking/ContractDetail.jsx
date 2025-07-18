@@ -1,11 +1,11 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { FaArrowCircleLeft } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
+import ContractForm from "../../../../components/contractForm";
+import Footer from "../../../../components/footer";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
-import Footer from "../../../../components/footer";
-import ContractForm from "../../../../components/contractForm";
-import { FaArrowCircleLeft } from "react-icons/fa";
 const ContractDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -34,7 +34,7 @@ const ContractDetail = () => {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contracts/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
+        console.log("✅ Contract Data: ", res.data.data);
         const contractData = res.data.data;
         setContract(contractData);
 
@@ -83,6 +83,8 @@ const ContractDetail = () => {
           endDate: contract.endDate,
           depositAmount: contract.depositAmount,
           terms: contract.contractTerms,
+          orderCode: contract.orderCode,        // ✅ phải có
+          paymentStatus: contract.paymentStatus,    // ✅ phải có
         }}
         post={post}
         user={user}
