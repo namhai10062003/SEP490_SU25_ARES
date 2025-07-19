@@ -266,19 +266,23 @@ const StaffNavbar = () => {
                         </Link>
                     </li>
                     <li className="nav-item mt-3">
-                        <Link
-                            to="/login"
-                            className="nav-link rounded-3 px-3 py-2 d-flex align-items-center text-white"
-                            style={{
-                                background: "rgba(255,255,255,0.07)",
-                                transition: "all .15s",
-                            }}
-                        >
-                            <span className="material-icons me-2" style={{ fontSize: 20 }}>
-                                Đăng Xuất
-                            </span>
-                        </Link>
-                    </li>
+  <button
+    className="nav-link rounded-3 px-3 py-2 d-flex align-items-center text-white bg-transparent border-0"
+    style={{
+      background: "rgba(255,255,255,0.07)",
+      transition: "all .15s",
+    }}
+    onClick={() => {
+      localStorage.removeItem('token');  // Xoá token
+      window.location.href = '/login';   // Redirect
+    }}
+  >
+    <span className="material-icons me-2" style={{ fontSize: 20 }}>
+      Đăng Xuất
+    </span>
+    {/* <span>Đăng Xuất</span> */}
+  </button>
+</li>
                 </ul>
             </nav>
         </aside>

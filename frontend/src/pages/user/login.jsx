@@ -26,7 +26,11 @@ const Login = () => {
         navigate("/");
     }
   };
-
+  // fix lại thông báo lỗi
+  useEffect(() => {
+    toast.dismiss("login-error"); // reset bất kỳ lỗi trước đó
+  }, []);
+  //
   useEffect(() => {
     const loadGoogleScript = () => {
       const script = document.createElement("script");
@@ -90,39 +94,57 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     if (!validateEmail(formData.email)) {
       toast.error("Email không hợp lệ.");
       return;
     }
-
+  
     setLoading(true);
+  
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
+  
       const data = await response.json();
+  
       if (response.status === 403 && data.error) {
         setBlockedMsg(data.error);
         setShowBlockedModal(true);
         return;
       }
+  
+      // ✅ Hiển thị lỗi sai mật khẩu rõ ràng
+      if (response.status === 401 && data.error) {
+        toast.dismiss("login-error");
+        toast.error(data.error || "Sai mật khẩu!", { toastId: "login-error" });
+        setLoading(false); // 💥 THÊM DÒNG NÀY
+        return;
+      }
+      
       if (response.ok && data.token && data.user) {
         login(data.user, data.token);
         toast.success("🎉 Đăng nhập thành công!");
-        redirectByRole(data.user.role);
+  
+        setTimeout(() => {
+          redirectByRole(data.user.role);
+        }, 100);
       } else {
-        toast.error(data.error || "Login failed!");
+        // ✅ Phòng trường hợp response không có status 401 nhưng vẫn lỗi
+        toast.error(data.error || "Đăng nhập thất bại!");
       }
+  
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("Network error.");
+      toast.error("Lỗi kết nối máy chủ.");
     } finally {
       setLoading(false);
     }
   };
+  
 
   const handleGoogleLogin = () => {
     if (!window.google) {
