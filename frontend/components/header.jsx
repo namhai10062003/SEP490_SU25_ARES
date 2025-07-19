@@ -77,7 +77,7 @@ const Header = ({ user, name, logout }) => {
         <div className="d-flex align-items-center gap-3 ms-auto">
           {user ? (
             <>
-              <span className="fw-semibold text-secondary">Hello, {name}</span>
+              <span className="fw-semibold text-secondary">Hello,  {name || user?.name || "Người dùng"}</span>
               {/* Notification bell */}
               <div className="d-flex align-items-center" style={{ minWidth: 40 }}>
                 <button

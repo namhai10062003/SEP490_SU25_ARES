@@ -11,6 +11,7 @@ import { getPostById } from "../../../service/postService";
 const BookingForm = () => {
   const { postId } = useParams();
   const { user } = useAuth();
+  const [name, setName] = useState("");
   const navigate = useNavigate();
   const hasWarned = useRef(false); 
   const [post, setPost] = useState(null);
@@ -33,6 +34,12 @@ const BookingForm = () => {
     };
     fetchPost();
   }, [postId]);
+//set ten
+useEffect(() => {
+  if (user?.name) {
+    setName(user.name);
+  }
+}, [user]);
 
   //kiểm tra xem thử có cccd hay ko
   useEffect(() => {
@@ -108,7 +115,7 @@ const BookingForm = () => {
 
     return (
       <div className="bg-light min-vh-100">
-        <Header user={user} name={user?.name} logout={handleLogout} />
+        <Header user={user} name={name} logout={handleLogout} />
         <div className="container py-5">
           <div className="card shadow-sm text-center p-4">
             <div className="text-danger fs-4 mb-3">
