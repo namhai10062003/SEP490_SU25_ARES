@@ -21,7 +21,11 @@ const LikedPosts = () => {
       const res = await axios.get(`${API_BASE}/api/interaction/my-liked-posts`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setPosts(res.data.data || []);
+      const now = new Date();
+const filteredPosts = (res.data.data || []).filter(post => {
+  return !post.expiredDate || new Date(post.expiredDate) > now;
+});
+setPosts(filteredPosts);
     } catch (err) {
       console.error("Lỗi khi load bài đã like", err);
       setPosts([]);

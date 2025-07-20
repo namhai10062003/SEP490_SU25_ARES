@@ -5,16 +5,22 @@ export const getLikedPostsByUser = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Tìm tất cả bài user đã like và populate thông tin bài post + gói bài viết
+    // Tìm tất cả like của user, populate bài viết và gói bài viết
     const likes = await Like.find({ user: userId }).populate({
       path: "post",
       populate: { path: "postPackage" },
     });
 
-    // Lấy ra các bài post từ danh sách like
+    const currentDate = new Date();
+
+    // Lọc bài viết còn tồn tại và chưa hết hạn theo expiredDate
     const likedPosts = likes
       .map((like) => like.post)
-      .filter((post) => post != null); // loại bỏ nếu bài post đã bị xóa
+      .filter(
+        (post) =>
+          post !== null &&
+          (!post.expiredDate || new Date(post.expiredDate) > currentDate)
+      );
 
     res.status(200).json({ success: true, data: likedPosts });
   } catch (err) {
@@ -22,6 +28,8 @@ export const getLikedPostsByUser = async (req, res) => {
     res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };
+
+
 
 export const toggleLike = async (req, res) => {
   try {
