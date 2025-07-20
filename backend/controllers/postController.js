@@ -104,6 +104,37 @@ export const getPost = async (req, res) => {
         });
     }
 };
+// list ra all post have status active
+export const getActivePosts = async (req, res) => {
+    try {
+        const activePosts = await Post.find({ status: "active", isActive: true }) // thêm điều kiện isActive
+            .populate('contactInfo', 'name email phone')
+            .populate('postPackage', 'type price expireAt') 
+            .sort({ createdAt: -1 });
+
+        if (activePosts.length === 0) {
+            return res.status(404).json({
+                message: "No active posts found",
+                success: false,
+                error: true
+            });
+        }
+
+        return res.status(200).json({
+            message: "Active posts retrieved successfully",
+            success: true,
+            error: false,
+            data: activePosts
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+            error: true
+        });
+    }
+};
+
 
 export const getPostbyUser = async (req, res) => {
     try {

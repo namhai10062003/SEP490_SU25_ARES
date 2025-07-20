@@ -1,7 +1,8 @@
+import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
+import Footer from "../../components/footer";
 import Header from "../../components/header";
 import { useAuth } from "../../context/authContext";
-import Footer from "../../components/footer";
 
 const CountUpOnView = ({ end, duration = 2000 }) => {
   const [count, setCount] = useState(0);
@@ -46,18 +47,91 @@ const apartments = [
   { id: 8, beds: 1, title: "Sunny Balcony", description: "Great for morning coffee", imgSrc: "https://storage.googleapis.com/a1aa/image/a671ed03-7bea-40ef-8b7a-e7a4a98b42dd.jpg" },
 ];
 
-const projects = [
-  { name: "VINHOMES GOLDEN RIVER (BASON)", img: "https://storage.googleapis.com/a1aa/image/3330f0b3-8f9a-4e92-3d3e-ab12bb98ccfb.jpg" },
-  { name: "THE RIVER", img: "https://storage.googleapis.com/a1aa/image/9a2e90db-d729-4da2-de9d-236607c00ba3.jpg" },
-  { name: "SUNWAH PEARL", img: "https://storage.googleapis.com/a1aa/image/020040dc-03a9-4614-4b67-a18a349d6467.jpg" },
-  { name: "EMPIRE CITY", img: "https://storage.googleapis.com/a1aa/image/1e81d478-dc97-458d-1895-7134e4a97cbf.jpg" },
-  { name: "METROPOLE THẢO ĐIỀN", img: "https://storage.googleapis.com/a1aa/image/1bd24d96-4833-4ef5-ee96-e889bfe8c849.jpg" },
-  { name: "GRAND MARINA SAIGON", img: "https://storage.googleapis.com/a1aa/image/e26568dc-2865-4718-8ef4-07f2948aad7b.jpg" },
+const plazas = [
+  {
+    name: "Plaza 1",
+    address: "Số 2 Tôn Đức Thắng, Quận 1, TP.HCM",
+    img: "https://storage.googleapis.com/a1aa/image/3330f0b3-8f9a-4e92-3d3e-ab12bb98ccfb.jpg"
+  },
+  {
+    name: "Plaza 2",
+    address: "Thủ Thiêm, TP. Thủ Đức, TP.HCM",
+    img: "https://storage.googleapis.com/a1aa/image/9a2e90db-d729-4da2-de9d-236607c00ba3.jpg"
+  },
+  {
+    name: "Plaza 3",
+    address: "90 Nguyễn Hữu Cảnh, Bình Thạnh, TP.HCM",
+    img: "https://storage.googleapis.com/a1aa/image/020040dc-03a9-4614-4b67-a18a349d6467.jpg"
+  },
+  {
+    name: "Plaza 4",
+    address: "Thủ Thiêm, TP. Thủ Đức, TP.HCM",
+    img: "https://storage.googleapis.com/a1aa/image/1e81d478-dc97-458d-1895-7134e4a97cbf.jpg"
+  },
+  {
+    name: "Plaza 5",
+    address: "Thảo Điền, TP. Thủ Đức, TP.HCM",
+    img: "https://storage.googleapis.com/a1aa/image/1bd24d96-4833-4ef5-ee96-e889bfe8c849.jpg"
+  },
+  {
+    name: "Plaza 6",
+    address: "Số 2 Tôn Đức Thắng, Quận 1, TP.HCM",
+    img: "https://storage.googleapis.com/a1aa/image/e26568dc-2865-4718-8ef4-07f2948aad7b.jpg"
+  },
 ];
+
 
 const Home = () => {
   const { user, logout } = useAuth();
+  const [posts, setPosts] = useState([]);
+  const listRef = useRef(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 6;
+  
+  const totalPages = Math.ceil(posts.length / postsPerPage);
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const selectedPosts = posts.slice(startIndex, startIndex + postsPerPage);
+  
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+  
+      // Scroll đến phần danh sách thay vì về đầu trang
+      listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        // Lấy token từ localStorage (bạn có thể đổi theo cách bạn lưu token)
+        const token = localStorage.getItem("token");
+  
+        const res = await axios.get("http://localhost:4000/api/posts/active", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+  
+        setPosts(res.data.data); // data là mảng các bài viết
+      } catch (err) {
+        console.error("❌ Error fetching posts:", err.response?.data || err.message);
+      }
+    };
+  
+    fetchPosts();
+  }, []);
+  // hàm thay đổi màu sắc gói
+  const getPackageBadgeClass = (type) => {
+    switch ((type || "").toUpperCase()) {
+      case "VIP1": return "badge bg-primary";       // Xanh
+      case "VIP2": return "badge bg-danger";        // Đỏ
+      case "VIP3": return "badge bg-warning text-dark"; // Vàng
+      default: return "badge bg-secondary";         // Xám
+    }
+  };
+  
   return (
     <div style={{ background: "#f8fafc" }}>
       <Header user={user} name={user?.name} logout={logout} />
@@ -165,44 +239,92 @@ const Home = () => {
       </section>
 
       {/* PROJECTS */}
+      {/* PLAZAS - DỰ ÁN NỔI BẬT */}
       <section className="container py-5">
-        <h2 className="fw-bold text-uppercase mb-4 text-center">Dự án nổi bật</h2>
-        <div className="row g-4">
-          {projects.map((p, i) => (
+  <h2 className="fw-bold text-uppercase mb-4 text-center">Tòa nhà nổi bật</h2>
+  <div className="row g-4">
+    {plazas.map((p, i) => (
             <div className="col-12 col-sm-6 col-lg-4" key={i}>
-              <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
-                <img src={p.img} className="card-img-top" alt={p.name} style={{ height: 220, objectFit: "cover" }} />
-                <div className="card-body text-center bg-white">
-                  <p className="card-title fw-bold text-uppercase mb-2 text-dark">{p.name}</p>
-                  <button className="btn btn-outline-warning btn-sm">Chi tiết </button>
+            <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
+              <img
+                src={p.img}
+                className="card-img-top"
+                alt={p.name}
+                style={{ height: 220, objectFit: "cover" }}
+              />
+              <div className="card-body bg-white">
+                <h5 className="card-title fw-bold text-dark">{p.name}</h5>
+                <p className="text-muted mb-2">
+                  <i className="fa fa-map-marker-alt me-2 text-warning"></i>{p.address}
+                </p>
+                <div className="d-flex justify-content-center">
+                  <button className="btn btn-outline-warning btn-sm">Chi tiết</button>
                 </div>
               </div>
             </div>
+          </div>
           ))}
         </div>
       </section>
 
       {/* FEATURED APARTMENTS */}
-      <section className="container py-5">
-        <h2 className="fw-bold text-uppercase mb-4 text-center">Căn hộ nổi bật</h2>
-        <div className="row g-4">
-          {apartments.map(({ id, beds, title, description, imgSrc }) => (
-            <div className="col-12 col-sm-6 col-lg-4" key={id}>
-              <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
-                <div className="position-relative">
-                  <img src={imgSrc} className="card-img-top" alt={title} style={{ height: 220, objectFit: "cover" }} />
-                  <span className="badge bg-warning text-dark position-absolute top-0 end-0 m-2">{beds} PHÒNG</span>
-                </div>
-                <div className="card-body d-flex flex-column bg-white">
-                  <h5 className="card-title fw-bold">{title}</h5>
-                  <p className="card-text flex-grow-1">{description}</p>
-                  <a href={`/detail/${id}`} className="btn btn-warning mt-auto rounded-pill">Chi tiết</a>
-                </div>
-              </div>
-            </div>
-          ))}
+      <section className="container py-5" ref={listRef}>
+  <h2 className="fw-bold text-uppercase mb-4 text-center">Căn hộ nổi bật</h2>
+  <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+    {selectedPosts.map((post) => (
+      <div className="col" key={post._id}>
+        <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
+          <div className="position-relative">
+            <img
+              src={post.images[0]}
+              className="card-img-top"
+              alt={post.title}
+              style={{ height: 200, objectFit: "cover" }}
+            />
+           <span
+  className={`${getPackageBadgeClass(post.postPackage?.type)} position-absolute top-0 end-0 m-2 px-3 py-2 rounded-pill shadow`}
+  style={{ fontSize: "0.9rem", fontWeight: "bold" }}
+>
+  {post.postPackage?.type?.toUpperCase() || "KHÔNG CÓ GÓI"}
+</span>
+          </div>
+          <div className="card-body d-flex flex-column bg-white">
+            <h5 className="card-title fw-bold">{post.title}</h5>
+            <p className="card-text flex-grow-1">{post.address}</p>
+            <a href={`/postdetail/${post._id}`} className="btn btn-warning mt-auto rounded-pill">
+              Chi tiết
+            </a>
+          </div>
         </div>
-      </section>
+      </div>
+    ))}
+  </div>
+
+  {/* PAGINATION */}
+  <div className="d-flex justify-content-center mt-4">
+    <nav>
+      <ul className="pagination">
+        <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+          <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Trước</button>
+        </li>
+        {[...Array(totalPages)].map((_, index) => (
+          <li
+            key={index}
+            className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
+          >
+            <button className="page-link" onClick={() => handlePageChange(index + 1)}>
+              {index + 1}
+            </button>
+          </li>
+        ))}
+        <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+          <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Sau</button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</section>
+
 
       {/* INFO BANNER */}
       <section className="my-5">

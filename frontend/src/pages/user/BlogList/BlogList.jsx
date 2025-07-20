@@ -70,7 +70,13 @@ const BlogList = () => {
       default: return "badge bg-secondary";
     }
   };
+  //hàm để description ngắn gọn lại 
+  const truncateText = (text, maxLength = 100) => {
+    if (!text) return "";
+    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+  };
 
+  
   if (authLoading || isLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
@@ -160,8 +166,8 @@ const BlogList = () => {
                           </span>
                         </h5>
                         <p className="card-text small text-muted mb-2">
-                          {post.description}
-                        </p>
+  {truncateText(post.description, 100)}
+</p>
                         <ul className="list-unstyled small mb-2">
                           <li><i className="bi bi-geo-alt"></i> {post.location}</li>
                           <li><i className="bi bi-aspect-ratio"></i> {post.area} m²</li>
