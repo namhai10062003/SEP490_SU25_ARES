@@ -50,53 +50,125 @@ const apartments = [
 const plazas = [
   {
     name: "Plaza 1",
-    address: "Số 2 Tôn Đức Thắng, Quận 1, TP.HCM",
-    img: "https://storage.googleapis.com/a1aa/image/3330f0b3-8f9a-4e92-3d3e-ab12bb98ccfb.jpg"
+    address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
+    img: "https://chungcufptplaza.com/watermarks/900x450x1/upload/product/z60043682176611910475ee051c7749d09453e87cd4973-1730865005.jpg",
+    info: {
+      investor: "Công ty Cổ phần Đô thị FPT Đà Nẵng",
+      totalCapital: "750 tỷ",
+      scale: "600 căn",
+      type: "Căn hộ chung cư",
+      location: "Đường Võ Chí Công, Khu Đô thị công nghệ FPT Đà Nẵng",
+      floors: 15,
+      contractor: "Công ty TNHH Tập đoàn XD Delta",
+      totalArea: "71.796m²",
+      constructionDensity: "49,83%",
+      completion: "Đã bàn giao năm 2021"
+    }
   },
   {
     name: "Plaza 2",
-    address: "Thủ Thiêm, TP. Thủ Đức, TP.HCM",
-    img: "https://storage.googleapis.com/a1aa/image/9a2e90db-d729-4da2-de9d-236607c00ba3.jpg"
+    address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
+    img: "https://hoanggiaminh.com/uploads/images/FPT%20PLAZA%202%20(2).png",
+    info: {
+      investor: "Công ty Cổ phần FPT City",
+      totalCapital: "920 tỷ",
+      scale: "800 căn",
+      type: "Căn hộ cao cấp",
+      location: "Nguyễn Văn Tạo, FPT City",
+      floors: 18,
+      contractor: "Tập đoàn Hòa Bình",
+      totalArea: "85.000m²",
+      constructionDensity: "52%",
+      completion: "Dự kiến hoàn thành Q4/2025"
+    }
   },
   {
     name: "Plaza 3",
-    address: "90 Nguyễn Hữu Cảnh, Bình Thạnh, TP.HCM",
-    img: "https://storage.googleapis.com/a1aa/image/020040dc-03a9-4614-4b67-a18a349d6467.jpg"
+    address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
+    img: "https://fptplaza3.fptcity.vn/wp-content/uploads/2024/05/nen-sang-min.png",
+    info: {
+      investor: "Tập đoàn Bất Động Sản Ares",
+      totalCapital: "1.100 tỷ",
+      scale: "900 căn",
+      type: "Chung cư cao tầng + Shophouse",
+      location: "Trục Võ Chí Công, sát sông Cổ Cò",
+      floors: 20,
+      contractor: "Coteccons",
+      totalArea: "90.000m²",
+      constructionDensity: "48%",
+      completion: "Khởi công 2024 – hoàn thiện 2026"
+    }
   },
   {
     name: "Plaza 4",
-    address: "Thủ Thiêm, TP. Thủ Đức, TP.HCM",
-    img: "https://storage.googleapis.com/a1aa/image/1e81d478-dc97-458d-1895-7134e4a97cbf.jpg"
+    address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
+    img: "https://phungbds.cdn.vccloud.vn/wp-content/uploads/2022/06/fpt-city-plaza-4-1240x672.jpeg",
+    info: {
+      investor: "Công ty Cổ phần Đầu tư An Gia",
+      totalCapital: "680 tỷ",
+      scale: "500 căn",
+      type: "Căn hộ dịch vụ & nghỉ dưỡng",
+      location: "FPT Plaza Zone 4, ven hồ sinh thái",
+      floors: 12,
+      contractor: "Delta Group",
+      totalArea: "55.000m²",
+      constructionDensity: "42%",
+      completion: "Đã hoàn thành 2023"
+    }
   },
   {
     name: "Plaza 5",
-    address: "Thảo Điền, TP. Thủ Đức, TP.HCM",
-    img: "https://storage.googleapis.com/a1aa/image/1bd24d96-4833-4ef5-ee96-e889bfe8c849.jpg"
+    address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
+    img: "https://chungcuhanoixanh.net/wp-content/uploads/2017/01/toan-canh-imperial-plaza.jpg",
+    info: {
+      investor: "SunLand Đà Nẵng",
+      totalCapital: "820 tỷ",
+      scale: "720 căn",
+      type: "Căn hộ thông minh (Smart Home)",
+      location: "Cạnh làng đại học FPT",
+      floors: 17,
+      contractor: "Tập đoàn Phúc Khang",
+      totalArea: "68.000m²",
+      constructionDensity: "47%",
+      completion: "Dự kiến bàn giao đầu 2025"
+    }
   },
   {
     name: "Plaza 6",
-    address: "Số 2 Tôn Đức Thắng, Quận 1, TP.HCM",
-    img: "https://storage.googleapis.com/a1aa/image/e26568dc-2865-4718-8ef4-07f2948aad7b.jpg"
+    address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
+    img: "https://thangmaygiadinh.edu.vn/images/bai_toan_chung_cu_moi_va_nha_tap_the_cu_1.jpg",
+    info: {
+      investor: "Tập đoàn Hưng Thịnh",
+      totalCapital: "990 tỷ",
+      scale: "850 căn",
+      type: "Chung cư cao cấp + căn hộ studio",
+      location: "Kế bên cầu Cổ Cò, FPT City",
+      floors: 19,
+      contractor: "Ricons",
+      totalArea: "78.500m²",
+      constructionDensity: "51%",
+      completion: "Đang xây dựng, bàn giao Q3/2025"
+    }
   },
 ];
-
 
 const Home = () => {
   const { user, logout } = useAuth();
   const [posts, setPosts] = useState([]);
   const listRef = useRef(null);
+  const [selectedPlaza, setSelectedPlaza] = useState(null);
 
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6;
-  
+
   const totalPages = Math.ceil(posts.length / postsPerPage);
   const startIndex = (currentPage - 1) * postsPerPage;
   const selectedPosts = posts.slice(startIndex, startIndex + postsPerPage);
-  
+
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-  
+
       // Scroll đến phần danh sách thay vì về đầu trang
       listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -107,19 +179,19 @@ const Home = () => {
       try {
         // Lấy token từ localStorage (bạn có thể đổi theo cách bạn lưu token)
         const token = localStorage.getItem("token");
-  
+
         const res = await axios.get("http://localhost:4000/api/posts/active", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-  
+
         setPosts(res.data.data); // data là mảng các bài viết
       } catch (err) {
         console.error("❌ Error fetching posts:", err.response?.data || err.message);
       }
     };
-  
+
     fetchPosts();
   }, []);
   // hàm thay đổi màu sắc gói
@@ -131,7 +203,7 @@ const Home = () => {
       default: return "badge bg-secondary";         // Xám
     }
   };
-  
+
   return (
     <div style={{ background: "#f8fafc" }}>
       <Header user={user} name={user?.name} logout={logout} />
@@ -241,10 +313,10 @@ const Home = () => {
       {/* PROJECTS */}
       {/* PLAZAS - DỰ ÁN NỔI BẬT */}
       <section className="container py-5">
-  <h2 className="fw-bold text-uppercase mb-4 text-center">Tòa nhà nổi bật</h2>
-  <div className="row g-4">
-    {plazas.map((p, i) => (
-            <div className="col-12 col-sm-6 col-lg-4" key={i}>
+      <h2 className="fw-bold text-uppercase mb-4 text-center">Dự án nổi bật</h2>
+      <div className="row g-4">
+        {plazas.map((p, i) => (
+          <div className="col-12 col-sm-6 col-lg-4" key={i}>
             <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
               <img
                 src={p.img}
@@ -258,72 +330,115 @@ const Home = () => {
                   <i className="fa fa-map-marker-alt me-2 text-warning"></i>{p.address}
                 </p>
                 <div className="d-flex justify-content-center">
-                  <button className="btn btn-outline-warning btn-sm">Chi tiết</button>
+                  <button
+                    className="btn btn-outline-warning btn-sm"
+                    onClick={() => setSelectedPlaza(p)}
+                  >
+                    Chi tiết
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-          ))}
+        ))}
+      </div>
+
+      {selectedPlaza && (
+  <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
+    <div className="modal-dialog modal-lg modal-dialog-centered">
+      <div className="modal-content p-3 rounded-4 shadow">
+        <div className="modal-header">
+          <h5 className="modal-title">{selectedPlaza.name}</h5>
+          <button type="button" className="btn-close" onClick={() => setSelectedPlaza(null)}></button>
         </div>
-      </section>
+        <div className="modal-body">
+          <img src={selectedPlaza.img} alt={selectedPlaza.name} className="img-fluid rounded mb-3" />
+          <p><strong>Địa chỉ:</strong> {selectedPlaza.address}</p>
+          <p><strong>Chủ đầu tư:</strong> {selectedPlaza.info.investor}</p>
+          <p><strong>Vị trí:</strong> {selectedPlaza.info.location}</p>
+          <div className="row">
+            <div className="col-md-6">
+              <p><strong>Tổng vốn đầu tư:</strong> {selectedPlaza.info.totalCapital}</p>
+              <p><strong>Quy mô:</strong> {selectedPlaza.info.scale}</p>
+              <p><strong>Loại hình phát triển:</strong> {selectedPlaza.info.type}</p>
+              <p><strong>Số tầng:</strong> {selectedPlaza.info.floors}</p>
+            </div>
+            <div className="col-md-6">
+              <p><strong>Tổng thầu:</strong> {selectedPlaza.info.contractor}</p>
+              <p><strong>Tổng diện tích sàn:</strong> {selectedPlaza.info.totalArea}</p>
+              <p><strong>Mật độ xây dựng:</strong> {selectedPlaza.info.constructionDensity}</p>
+              <p><strong>Tiến độ:</strong> {selectedPlaza.info.completion}</p>
+            </div>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={() => setSelectedPlaza(null)}>Đóng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+    </section>
+
 
       {/* FEATURED APARTMENTS */}
       <section className="container py-5" ref={listRef}>
-  <h2 className="fw-bold text-uppercase mb-4 text-center">Căn hộ nổi bật</h2>
-  <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
-    {selectedPosts.map((post) => (
-      <div className="col" key={post._id}>
-        <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
-          <div className="position-relative">
-            <img
-              src={post.images[0]}
-              className="card-img-top"
-              alt={post.title}
-              style={{ height: 200, objectFit: "cover" }}
-            />
-           <span
-  className={`${getPackageBadgeClass(post.postPackage?.type)} position-absolute top-0 end-0 m-2 px-3 py-2 rounded-pill shadow`}
-  style={{ fontSize: "0.9rem", fontWeight: "bold" }}
->
-  {post.postPackage?.type?.toUpperCase() || "KHÔNG CÓ GÓI"}
-</span>
-          </div>
-          <div className="card-body d-flex flex-column bg-white">
-            <h5 className="card-title fw-bold">{post.title}</h5>
-            <p className="card-text flex-grow-1">{post.address}</p>
-            <a href={`/postdetail/${post._id}`} className="btn btn-warning mt-auto rounded-pill">
-              Chi tiết
-            </a>
-          </div>
+        <h2 className="fw-bold text-uppercase mb-4 text-center">Căn hộ nổi bật</h2>
+        <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+          {selectedPosts.map((post) => (
+            <div className="col" key={post._id}>
+              <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
+                <div className="position-relative">
+                  <img
+                    src={post.images[0]}
+                    className="card-img-top"
+                    alt={post.title}
+                    style={{ height: 200, objectFit: "cover" }}
+                  />
+                  <span
+                    className={`${getPackageBadgeClass(post.postPackage?.type)} position-absolute top-0 end-0 m-2 px-3 py-2 rounded-pill shadow`}
+                    style={{ fontSize: "0.9rem", fontWeight: "bold" }}
+                  >
+                    {post.postPackage?.type?.toUpperCase() || "KHÔNG CÓ GÓI"}
+                  </span>
+                </div>
+                <div className="card-body d-flex flex-column bg-white">
+                  <h5 className="card-title fw-bold">{post.title}</h5>
+                  <p className="card-text flex-grow-1">{post.address}</p>
+                  <a href={`/postdetail/${post._id}`} className="btn btn-warning mt-auto rounded-pill">
+                    Chi tiết
+                  </a>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-    ))}
-  </div>
 
-  {/* PAGINATION */}
-  <div className="d-flex justify-content-center mt-4">
-    <nav>
-      <ul className="pagination">
-        <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-          <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Trước</button>
-        </li>
-        {[...Array(totalPages)].map((_, index) => (
-          <li
-            key={index}
-            className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
-          >
-            <button className="page-link" onClick={() => handlePageChange(index + 1)}>
-              {index + 1}
-            </button>
-          </li>
-        ))}
-        <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-          <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Sau</button>
-        </li>
-      </ul>
-    </nav>
-  </div>
-</section>
+        {/* PAGINATION */}
+        <div className="d-flex justify-content-center mt-4">
+          <nav>
+            <ul className="pagination">
+              <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>Trước</button>
+              </li>
+              {[...Array(totalPages)].map((_, index) => (
+                <li
+                  key={index}
+                  className={`page-item ${currentPage === index + 1 ? "active" : ""}`}
+                >
+                  <button className="page-link" onClick={() => handlePageChange(index + 1)}>
+                    {index + 1}
+                  </button>
+                </li>
+              ))}
+              <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>Sau</button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </section>
 
 
       {/* INFO BANNER */}
