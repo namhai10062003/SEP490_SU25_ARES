@@ -101,7 +101,7 @@ const Navbar = () => (
       </Link>
     </li>
     <li className="nav-item mx-3">
-      <Link className="nav-link link-dark" to="/lien-he">
+      <Link className="nav-link link-dark" to="/contact">
         LIÊN HỆ
       </Link>
     </li>

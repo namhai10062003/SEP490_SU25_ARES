@@ -67,6 +67,7 @@ import Register from "./pages/user/register.jsx";
 import ResetPassword from "./pages/user/resetpassword";
 import UserRevenue from "./pages/user/revenuer/UserRevenue.jsx";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
+import Contact from "./pages/user/Contact/Contact.jsx";
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
@@ -114,6 +115,7 @@ function AppRoutes() {
           <Route path="/my-verified" element={<MyVerifiedApplications />} />
           <Route path="/gioi-thieu" element={<Introduce />} />
           <Route path="/my-revenue" element={<UserRevenue />} />
+          <Route path="/contact" element={<Contact />} />
 
           {/* Admin */}
           <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
