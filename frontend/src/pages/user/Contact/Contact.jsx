@@ -1,10 +1,42 @@
-import React from "react";
+import React, {useState} from "react";
 import Header from "../../../../components/header";
-import { useAuth } from "../../../../context/authContext";
+import { useAuth} from "../../../../context/authContext";
 import Footer from "../../../../components/footer";
+import axios from "axios";
 
 const Contact = () => {
-  const { user, logout } = useAuth();
+    const { user, logout } = useAuth();
+    const [formData, setFormData] = useState({
+      name: "",
+      email: "",
+      message: "",
+    });
+  
+    const [submitted, setSubmitted] = useState(false);
+  
+    const handleChange = (e) => {
+      setFormData((prev) => ({
+        ...prev,
+        [e.target.name]: e.target.value,
+      }));
+    };
+  
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+          await axios.post(`${import.meta.env.VITE_API_URL}/api/contact`, formData);
+          setSubmitted(true);
+          setFormData({ name: "", email: "", message: "" });
+          console.log("✅ Form data đã gửi:", formData);
+        } catch (error) {
+          console.error("❌ Error when sending contact:", error);
+          console.error("🔍 Response data:", error?.response?.data);
+          console.error("🔍 Status:", error?.response?.status);
+          console.error("🔍 Headers:", error?.response?.headers);
+          alert("❌ Gửi thất bại! Vui lòng thử lại.");
+        }
+      };
+      
 
   return (
     <div style={{ background: "#f8fafc", fontFamily: "Segoe UI, sans-serif" }}>
@@ -34,18 +66,43 @@ const Contact = () => {
       <section className="container py-5">
         <div className="bg-white p-4 shadow rounded-4">
           <h3 className="text-warning fw-bold mb-4">📬 Gửi tin nhắn đến Admin</h3>
-          <form>
+          {submitted && <div className="alert alert-success">✅ Gửi thành công!</div>}
+          <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <label className="form-label fw-semibold">Họ và tên</label>
-              <input type="text" className="form-control" placeholder="Nguyễn Văn A" />
+              <input
+                type="text"
+                name="name"
+                className="form-control"
+                placeholder="Nguyễn Văn A"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
             </div>
             <div className="mb-3">
               <label className="form-label fw-semibold">Email</label>
-              <input type="email" className="form-control" placeholder="email@example.com" />
+              <input
+                type="email"
+                name="email"
+                className="form-control"
+                placeholder="email@example.com"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
             </div>
             <div className="mb-3">
               <label className="form-label fw-semibold">Nội dung liên hệ</label>
-              <textarea className="form-control" rows="5" placeholder="Tôi cần hỗ trợ về..."></textarea>
+              <textarea
+                name="message"
+                className="form-control"
+                rows="5"
+                placeholder="Tôi cần hỗ trợ về..."
+                value={formData.message}
+                onChange={handleChange}
+                required
+              ></textarea>
             </div>
             <button type="submit" className="btn btn-warning px-4 fw-bold">
               Gửi yêu cầu
