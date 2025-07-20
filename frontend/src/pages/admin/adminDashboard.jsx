@@ -8,23 +8,33 @@ export default function AdminDashboard({ children }) {
     location.pathname.startsWith("/admin-dashboard/revenue")
   );
 
+  const [showFeedbackSub, setShowFeedbackSub] = useState(
+    location.pathname.startsWith("/admin-dashboard/report") ||
+    location.pathname.startsWith("/admin-dashboard/contact")
+  );
+
   useEffect(() => {
     if (location.pathname.startsWith("/admin-dashboard/revenue")) {
       setShowRevenueSub(true);
     }
+    if (
+      location.pathname.startsWith("/admin-dashboard/report") ||
+      location.pathname.startsWith("/admin-dashboard/contact")
+    ) {
+      setShowFeedbackSub(true);
+    }
   }, [location.pathname]);
 
   const navItems = [
-    { to: "/admin-dashboard", label: "Tổng quan" },
-    { to: "/admin-dashboard/report", label: "Quản lí bài Report" },
-    { to: "/admin-dashboard/create-account", label: "Tạo tài khoản" },
-    { to: "/admin-dashboard/posts", label: "Quản lí bài Post" },
-    { to: "/admin-dashboard/notifications", label: "Gửi thông báo" },
-    { to: "/admin-dashboard/manage-user", label: "Quản lí User" },
-    { to: "/admin-dashboard/manage-staff", label: "Quản lí Staff" },
-    { to: "/admin-dashboard/manage-apartment", label: "Quản lí Căn hộ" },
-    { to: "/admin-dashboard/manage-resident-verification", label: "Quản lý xác nhận cư dân" },
-    { to: "/admin-dashboard/revenue/user", label: "Quản lý Doanh Thu Của User" },
+    { to: "/admin-dashboard", label: "Tổng Quan" },
+    { to: "/admin-dashboard/create-account", label: "Tạo Tài Khoản" },
+    { to: "/admin-dashboard/posts", label: "Quản Lý Bài Post" },
+    { to: "/admin-dashboard/notifications", label: "Gửi Thông Báo" },
+    { to: "/admin-dashboard/manage-user", label: "Quản Lý User" },
+    { to: "/admin-dashboard/manage-staff", label: "Quản Lý Staff" },
+    { to: "/admin-dashboard/manage-apartment", label: "Quản Lý Căn hộ" },
+    { to: "/admin-dashboard/manage-resident-verification", label: "Quản Lý Xác Nhận Cư Dân" },
+    { to: "/admin-dashboard/user-revenue", label: "Quản Lý Doanh Thu Của User" },
   ];
 
   return (
@@ -45,6 +55,7 @@ export default function AdminDashboard({ children }) {
           </div>
           <nav className="flex-grow-1">
             <ul className="nav flex-column gap-1 px-2 py-3">
+              {/* Danh mục chính */}
               {navItems.map((item) => (
                 <li className="nav-item" key={item.to}>
                   <Link
@@ -59,7 +70,66 @@ export default function AdminDashboard({ children }) {
                   </Link>
                 </li>
               ))}
-              {/* Revenue submenu */}
+
+              {/* Submenu Quản lý Phản Hồi */}
+              <li className="nav-item">
+                <div>
+                  <button
+                    type="button"
+                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center w-100 border-0 ${showFeedbackSub
+                      ? "bg-white text-primary fw-bold shadow-sm"
+                      : "text-white"
+                      }`}
+                    style={{
+                      cursor: "pointer",
+                      userSelect: "none",
+                      textAlign: "left",
+                      background: "transparent",
+                    }}
+                    onClick={() => setShowFeedbackSub((v) => !v)}
+                    aria-expanded={showFeedbackSub}
+                  >
+                    <span style={{ fontWeight: 500 }}>•</span>
+                    <span className="ms-2">Quản Lý Phản Hồi</span>
+                    <span className="ms-auto">{showFeedbackSub ? "▲" : "▼"}</span>
+                  </button>
+
+                  {showFeedbackSub && (
+                    <ul
+                      className="nav flex-column ps-4 mt-1"
+                      style={{
+                        borderLeft: "2px solid #fff3",
+                        transition: "all .2s",
+                      }}
+                    >
+                      <li className="nav-item">
+                        <Link
+                          to="/admin-dashboard/report"
+                          className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/admin-dashboard/report"
+                            ? "active bg-white text-primary fw-bold shadow-sm"
+                            : "text-white"
+                            }`}
+                        >
+                          • <span className="ms-2">Báo Cáo</span>
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          to="/admin-dashboard/contact"
+                          className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/admin-dashboard/contact"
+                            ? "active bg-white text-primary fw-bold shadow-sm"
+                            : "text-white"
+                            }`}
+                        >
+                          • <span className="ms-2">Liên Hệ</span>
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
+                </div>
+              </li>
+
+              {/* Submenu Phân Tích Doanh Thu */}
               <li className="nav-item">
                 <div>
                   <button
@@ -78,7 +148,7 @@ export default function AdminDashboard({ children }) {
                     aria-expanded={showRevenueSub}
                   >
                     <span style={{ fontWeight: 500 }}>•</span>
-                    <span className="ms-2">Phân tích doanh thu</span>
+                    <span className="ms-2">Phân Tích Doanh Thu</span>
                     <span className="ms-auto">{showRevenueSub ? "▲" : "▼"}</span>
                   </button>
 
@@ -109,7 +179,7 @@ export default function AdminDashboard({ children }) {
                             : "text-white"
                             }`}
                         >
-                          • <span className="ms-2">Căn hộ</span>
+                          • <span className="ms-2">Căn Hộ</span>
                         </Link>
                       </li>
                       <li className="nav-item">
@@ -120,7 +190,7 @@ export default function AdminDashboard({ children }) {
                             : "text-white"
                             }`}
                         >
-                          • <span className="ms-2">Đặt cọc căn hộ</span>
+                          • <span className="ms-2">Đặt Cọc Căn Hộ</span>
                         </Link>
                       </li>
                     </ul>
@@ -128,6 +198,7 @@ export default function AdminDashboard({ children }) {
                 </div>
               </li>
 
+              {/* Logout */}
               <li className="nav-item mt-3">
                 <Link
                   to="/login"

@@ -68,6 +68,7 @@ import ResetPassword from "./pages/user/resetpassword";
 import UserRevenue from "./pages/user/revenuer/UserRevenue.jsx";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
 import Contact from "./pages/user/Contact/Contact.jsx";
+import AdminContactPage from "./pages/admin/contactPage/adminContactPage.jsx";
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
@@ -129,7 +130,10 @@ function AppRoutes() {
           <Route path="/admin-dashboard/revenue/post" element={<ProtectedRoute element={<AdminRevenuePost />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/revenue/apartment" element={<ProtectedRoute element={<AdminRevenueApartment />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/revenue/apartment-deposit" element={<ProtectedRoute element={<AdminRevenueApartmentDeposit />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/revenue/user" element={<ProtectedRoute element={<AdminWithdrawPage />} allowedRoles={["admin"]} />} />
+          <Route path="/admin-dashboard/user-revenue" element={<ProtectedRoute element={<AdminWithdrawPage />} allowedRoles={["admin"]} />} />
+          <Route path="/admin-dashboard/contact" element={<ProtectedRoute element={<AdminContactPage />} allowedRoles={["admin"]} />} />
+
+          
           {/* Staff */}
           <Route path="/staff-dashboard" element={<ProtectedRoute element={<DashboardPage />} allowedRoles={["staff"]} />} />
           <Route path="staff-expenses" element={<ProtectedRoute element={<ManageExpense />} allowedRoles={["staff"]} />} />

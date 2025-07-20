@@ -27,6 +27,7 @@ import userRouter from "./router/user.js";
 import waterRoutes from "./router/waterRoutes.js";
 import withdrawalRouter from "./router/withdrawalRouter.js";
 import { initSocket } from "./socket.js";
+import contactRoutes from "./router/contactRoutes.js";
 
 dotenv.config();
 
@@ -98,6 +99,7 @@ app.use("/api/water", waterRoutes);
 app.use("/api/fees", feeRoutes); 
 app.use("/api/plaza", plazaRoutes); 
 app.use("/api/withdrawals", withdrawalRouter);
+app.use("/api/contact", contactRoutes);
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {
   console.log("🟢 Socket connected:", socket.id);

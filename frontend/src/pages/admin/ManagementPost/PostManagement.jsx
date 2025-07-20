@@ -26,11 +26,11 @@ const PostManagement = () => {
   const handleViewPostDetail = (post) => {
     setSelectedPostDetail(post);
   };
-  
+
   const handleClosePostDetailModal = () => {
     setSelectedPostDetail(null);
   };
-  
+
   const fetchPosts = async () => {
     setLoading(true);
     try {
@@ -184,10 +184,10 @@ const PostManagement = () => {
                     </div>
                     {/* Post Info */}
                     <div
-  className="flex-grow-1"
-  onClick={() => handleViewPostDetail(post)}
-  style={{ cursor: "pointer" }}
->
+                      className="flex-grow-1"
+                      onClick={() => handleViewPostDetail(post)}
+                      style={{ cursor: "pointer" }}
+                    >
                       <div className="fw-bold mb-1">
                         {post.type === "ban"
                           ? "Bán"
@@ -303,60 +303,60 @@ const PostManagement = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                 )}
               </div>
             ))}
           </div>
         )}
         {selectedPostDetail && (
-  <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
-    <div className="modal-dialog modal-lg modal-dialog-centered">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title">Chi tiết bài đăng</h5>
-          <button type="button" className="btn-close" onClick={handleClosePostDetailModal}></button>
-        </div>
-        <div className="modal-body">
-          <h5 className="mb-3">{selectedPostDetail.title}</h5>
-          <p><strong>Loại:</strong> {selectedPostDetail.type === "ban" ? "Bán" : selectedPostDetail.type === "dich_vu" ? "Cho thuê" : selectedPostDetail.type}</p>
-          <p><strong>Vị trí:</strong> {selectedPostDetail.location}</p>
-          <p><strong>Diện tích:</strong> {selectedPostDetail.area} m²</p>
-          <p><strong>Giá:</strong> {formatPrice(selectedPostDetail.price)} {selectedPostDetail.type === "ban" ? "triệu" : "triệu/tháng"}</p>
-          <p><strong>Liên hệ:</strong> {selectedPostDetail.contactInfo?.name} - {selectedPostDetail.contactInfo?.phone}</p>
-          <p><strong>Trạng thái:</strong> {selectedPostDetail.status}</p>
-          {selectedPostDetail.rejectReason && (
-            <p className="text-danger"><strong>Lý do từ chối:</strong> {selectedPostDetail.rejectReason}</p>
-          )}
-         {selectedPostDetail.description && (
-  <div>
-    <h6 className="fw-bold text-primary mb-2">📝 Mô tả</h6>
-    {selectedPostDetail.description
-      .split('.')
-      .map((sentence, index) => {
-        const trimmed = sentence.trim();
-        if (!trimmed) return null;
-        return <p key={index} className="mb-1">• {trimmed}.</p>;
-      })}
-  </div>
-)}
+          <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
+            <div className="modal-dialog modal-lg modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Chi tiết bài đăng</h5>
+                  <button type="button" className="btn-close" onClick={handleClosePostDetailModal}></button>
+                </div>
+                <div className="modal-body">
+                  <h5 className="mb-3">{selectedPostDetail.title}</h5>
+                  <p><strong>Loại:</strong> {selectedPostDetail.type === "ban" ? "Bán" : selectedPostDetail.type === "dich_vu" ? "Cho thuê" : selectedPostDetail.type}</p>
+                  <p><strong>Vị trí:</strong> {selectedPostDetail.location}</p>
+                  <p><strong>Diện tích:</strong> {selectedPostDetail.area} m²</p>
+                  <p><strong>Giá:</strong> {formatPrice(selectedPostDetail.price)} {selectedPostDetail.type === "ban" ? "triệu" : "triệu/tháng"}</p>
+                  <p><strong>Liên hệ:</strong> {selectedPostDetail.contactInfo?.name} - {selectedPostDetail.contactInfo?.phone}</p>
+                  <p><strong>Trạng thái:</strong> {selectedPostDetail.status}</p>
+                  {selectedPostDetail.rejectReason && (
+                    <p className="text-danger"><strong>Lý do từ chối:</strong> {selectedPostDetail.rejectReason}</p>
+                  )}
+                  {selectedPostDetail.description && (
+                    <div>
+                      <h6 className="fw-bold text-primary mb-2">📝 Mô tả</h6>
+                      {selectedPostDetail.description
+                        .split('.')
+                        .map((sentence, index) => {
+                          const trimmed = sentence.trim();
+                          if (!trimmed) return null;
+                          return <p key={index} className="mb-1">• {trimmed}.</p>;
+                        })}
+                    </div>
+                  )}
 
 
-          {selectedPostDetail.images?.length > 0 && (
-            <div className="d-flex gap-2 mt-3 flex-wrap">
-              {selectedPostDetail.images.map((img, i) => (
-                <img key={i} src={img} alt={`img-${i}`} style={{ width: 100, height: 80, objectFit: "cover" }} className="rounded border" />
-              ))}
+                  {selectedPostDetail.images?.length > 0 && (
+                    <div className="d-flex gap-2 mt-3 flex-wrap">
+                      {selectedPostDetail.images.map((img, i) => (
+                        <img key={i} src={img} alt={`img-${i}`} style={{ width: 100, height: 80, objectFit: "cover" }} className="rounded border" />
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={handleClosePostDetailModal}>Đóng</button>
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={handleClosePostDetailModal}>Đóng</button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+          </div>
+        )}
       </div>
     </AdminDashboard>
   );
