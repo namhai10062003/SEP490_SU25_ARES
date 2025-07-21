@@ -126,7 +126,8 @@ const getParkingRegistrationDetail = async (req, res) => {
       message: 'Lấy thông tin đăng ký thành công',
       data: detail
     });
-
+console.log('documentFront:', registration.documentFront);
+console.log('documentBack:', registration.documentBack);
   } catch (error) {
     console.error('❌ Lỗi khi lấy thông tin đăng ký:', error);
     res.status(500).json({ message: 'Lỗi server', error: error.message });

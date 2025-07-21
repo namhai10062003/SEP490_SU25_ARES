@@ -16,6 +16,32 @@ export default function ResidentVerificationForm() {
   const [user, setUser] = useState(null);
   const [apartments, setApartments] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+// list ra all users
+useEffect(() => {
+  const fetchAllUsers = async () => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/users?limit=1000`);
+
+      // Kiểm tra kỹ dữ liệu trả về
+      if (res.data && Array.isArray(res.data)) {
+        setAllUsers(res.data);
+        setFilteredUsers(res.data); // ✅ thêm dòng này để khởi tạo
+      } else if (res.data && res.data.users && Array.isArray(res.data.users)) {
+        setAllUsers(res.data.users);
+        setFilteredUsers(res.data.users); // ✅ Sửa chỗ này
+      } else {
+        console.error("❌ API không trả về danh sách người dùng hợp lệ:", res.data);
+      }
+    } catch (err) {
+      console.error("❌ Lỗi khi gọi API lấy tất cả người dùng:", err.message);
+    }
+  };
+
+  fetchAllUsers();
+}, []);
+
 
   useEffect(() => {
     const fetchApartments = async () => {
@@ -33,21 +59,36 @@ export default function ResidentVerificationForm() {
     fetchApartments();
   }, []);
 
-  const handleSearch = async () => {
-    if (!query) return;
-    setLoading(true);
-    try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/resident-verifications/search-user?keyword=${query}`
-      );
-      setUser(res.data);
-    } catch (err) {
-      setUser(null);
-      alert("Không tìm thấy người dùng");
+  // const handleSearch = async () => {
+  //   if (!query) return;
+  //   setLoading(true);
+  //   try {
+  //     const res = await axios.get(
+  //       `${import.meta.env.VITE_API_URL}/api/resident-verifications/search-user?keyword=${query}`
+  //     );
+  //     setUser(res.data);
+  //   } catch (err) {
+  //     setUser(null);
+  //     alert("Không tìm thấy người dùng");
+  //   }
+  //   setLoading(false);
+  // };
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const keyword = query.trim().toLowerCase();
+    if (!keyword) {
+      setFilteredUsers(allUsers);
+      return;
     }
-    setLoading(false);
+  
+    const filtered = allUsers.filter((u) =>
+      u.name?.toLowerCase().includes(keyword) ||
+      u.email?.toLowerCase().includes(keyword) ||
+      u.phone?.includes(keyword)
+    );
+  
+    setFilteredUsers(filtered);
   };
-
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
@@ -132,7 +173,7 @@ export default function ResidentVerificationForm() {
       <StaffNavbar />
       <main className="flex-grow-1 p-4">
         <div className="container" style={{ maxWidth: 900 }}>
-          {!user && (
+          {/* {!user && (
             <div className="bg-white rounded-4 shadow p-4 mx-auto mb-4">
               <h2 className="fw-bold text-center mb-4">Tìm kiếm người dùng</h2>
               <form
@@ -165,7 +206,59 @@ export default function ResidentVerificationForm() {
                 </div>
               </form>
             </div>
-          )}
+          )} */}
+<div className="table-responsive mt-4">
+  <h4 className="fw-bold mb-3">Danh sách tất cả người dùng</h4>
+  <form onSubmit={handleSearch} className="mb-3 row g-2">
+    <div className="col-md-10">
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        className="form-control"
+        placeholder="Tìm theo tên, email hoặc số điện thoại"
+      />
+    </div>
+    <div className="col-md-2 d-grid">
+      <button className="btn btn-primary" type="submit">Tìm kiếm</button>
+    </div>
+  </form>
+  <table className="table table-bordered table-striped">
+    <thead className="table-light">
+      <tr>
+        <th>#</th>
+        <th>Họ và tên</th>
+        <th>Email</th>
+        <th>Số điện thoại</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      {filteredUsers.length === 0 ? (
+        <tr>
+          <td colSpan="5" className="text-center">Không có người dùng phù hợp.</td>
+        </tr>
+      ) : (
+        filteredUsers.map((u, index) => (
+          <tr key={u._id}>
+            <td>{index + 1}</td>
+            <td>{u.name}</td>
+            <td>{u.email}</td>
+            <td>{u.phone}</td>
+            <td>
+              <button
+                className="btn btn-sm btn-outline-primary"
+                onClick={() => setUser(u)}
+              >
+                Xác thực
+              </button>
+            </td>
+          </tr>
+        ))
+      )}
+    </tbody>
+  </table>
+</div>
 
           {user && (
             <div className="bg-white rounded-4 shadow p-4 mx-auto">
