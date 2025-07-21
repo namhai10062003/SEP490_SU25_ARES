@@ -20,6 +20,35 @@ const Expenses = () => {
     const [addPrice, setAddPrice] = useState("");
     const [apartmentFees, setApartmentFees] = useState([]);
     const [loadingFees, setLoadingFees] = useState(true);
+    const [filterMonth, setFilterMonth] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const rowsPerPage = 10;
+
+    const formattedFilterMonth = filterMonth
+  ? (() => {
+      const [year, month] = filterMonth.split("-");
+      return `${month}/${year}`; // thành "06/2025"
+    })()
+  : null;
+
+const filteredFees = formattedFilterMonth
+  ? apartmentFees.filter((f) => f.month === formattedFilterMonth)
+  : apartmentFees;
+
+
+  console.log("Filter month:", formattedFilterMonth);
+  console.log("All fee months:", apartmentFees.map((f) => f.month));
+  console.log("Filtered fee months:", filteredFees.map((f) => f.month));
+  
+
+
+
+const totalPages = Math.ceil(filteredFees.length / rowsPerPage);
+const paginatedFees = filteredFees.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+);
+
 
     useEffect(() => {
         fetchExpenses();
@@ -93,10 +122,11 @@ const Expenses = () => {
         <div className="d-flex min-vh-100 bg-light">
             <ToastContainer position="top-right" autoClose={2000} />
             <StaffNavbar />
-
+    
             <main className="flex-grow-1 p-4">
                 <h2 className="fw-bold mb-4">Quản lý chi phí căn hộ</h2>
-
+                
+    
                 {/* Form Thêm Chi Phí */}
                 <form
                     onSubmit={handleAdd}
@@ -143,7 +173,7 @@ const Expenses = () => {
                         </button>
                     </div>
                 </form>
-
+    
                 {/* Danh sách chi phí */}
                 {loading ? (
                     <div className="text-secondary">Đang tải dữ liệu...</div>
@@ -190,19 +220,18 @@ const Expenses = () => {
                         ))}
                     </div>
                 )}
-
+    
                 <p className="mt-4">
-                    <strong>Ghi chú:</strong> Giá quản lý căn hộ được tính tự động theo
-                    diện tích và tòa nhà.
+                    <strong>Ghi chú:</strong> Giá quản lý căn hộ được tính tự động theo diện tích và tòa nhà.
                 </p>
-
+    
                 <button
                     className="btn btn-outline-warning mb-3"
                     onClick={async () => {
                         try {
                             await axios.post(`${API_URL}/api/fees/calculate`);
                             toast.success("Đã tính lại phí!");
-                            fetchApartmentFees(); // reload bảng
+                            fetchApartmentFees();
                         } catch (err) {
                             toast.error("Lỗi khi tính lại phí!");
                         }
@@ -210,59 +239,110 @@ const Expenses = () => {
                 >
                     Tính lại phí tổng hợp
                 </button>
-
+    
                 <hr className="my-4" />
-
+    
                 <h4 className="fw-bold text-dark mb-3">
                     Bảng chi phí tổng hợp từng căn hộ theo tháng
                 </h4>
-
+    
+                {/* Bộ lọc tháng */}
+                <div className="d-flex align-items-center gap-3 mb-2">
+                    <label className="fw-semibold mb-0">Lọc theo tháng:</label>
+                    <input
+                        type="month"
+                        className="form-control w-auto"
+                        value={filterMonth}
+                        onChange={(e) => {
+                            setFilterMonth(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                    />
+                </div>
+    
                 <div className="table-responsive">
                     {loadingFees ? (
                         <div className="text-secondary">Đang tải dữ liệu chi phí...</div>
-                    ) : apartmentFees.length === 0 ? (
+                    ) : filteredFees.length === 0 ? (
                         <div className="text-secondary">Không có dữ liệu chi phí căn hộ.</div>
                     ) : (
-                        <table className="table table-bordered table-striped table-hover">
-                            <thead className="table-primary">
-                                <tr>
-                                    <th>Mã căn hộ</th>
-                                    <th>Chủ hộ</th>
-                                    <th>Tháng</th>
-                                    <th>Phí quản lý</th>
-                                    <th>Phí nước</th>
-                                    <th>Phí gửi xe</th>
-                                    <th className="text-end">Tổng cộng</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {apartmentFees.map((row, index) => (
-                                    <tr key={index}>
-                                        <td>{row.apartmentCode}</td>
-                                        <td>{row.ownerName}</td>
-                                        <td>
-                                            {(() => {
-                                                const m = new Date(row.month);
-                                                return isNaN(m)
-                                                    ? row.month
-                                                    : `${(m.getMonth() + 1).toString().padStart(2, "0")}/${m.getFullYear()}`;
-                                            })()}
-                                        </td>
-                                        <td>{row.managementFee?.toLocaleString()} đ</td>
-                                        <td>{row.waterFee?.toLocaleString()} đ</td>
-                                        <td>{row.parkingFee?.toLocaleString()} đ</td>
-                                        <td className="text-end fw-bold text-primary">
-                                            {row.total?.toLocaleString()} đ
-                                        </td>
+                        <>
+                            <table className="table table-bordered table-striped table-hover">
+                                <thead className="table-primary">
+                                    <tr>
+                                        <th>Mã căn hộ</th>
+                                        <th>Chủ hộ</th>
+                                        <th>Tháng</th>
+                                        <th>Phí quản lý</th>
+                                        <th>Phí nước</th>
+                                        <th>Phí gửi xe</th>
+                                        <th className="text-end">Tổng cộng</th>
+                                        <th className="text-end">Trạng thái</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {paginatedFees.map((row, index) => (
+                                        <tr key={index}>
+                                            <td>{row.apartmentCode}</td>
+                                            <td>{row.ownerName}</td>
+                                            <td>
+                                                {(() => {
+                                                    const m = new Date(row.month);
+                                                    return isNaN(m)
+                                                        ? row.month
+                                                        : `${(m.getMonth() + 1)
+                                                              .toString()
+                                                              .padStart(2, "0")}/${m.getFullYear()}`;
+                                                })()}
+                                            </td>
+                                            <td>{row.managementFee?.toLocaleString()} đ</td>
+                                            <td>{row.waterFee?.toLocaleString()} đ</td>
+                                            <td>{row.parkingFee?.toLocaleString()} đ</td>
+                                            <td className="text-end fw-bold text-primary">
+                                                {row.total?.toLocaleString()} đ
+                                            </td>
+                                            <td className="text-end">
+                                                {row.paymentStatus === "paid" ? (
+                                                    <span className="text-success">✔️ Đã thanh toán</span>
+                                                ) : (
+                                                    <span className="text-danger">❌ Chưa thanh toán</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+    
+                            {/* Phân trang */}
+                            {totalPages > 1 && (
+                                <div className="d-flex justify-content-center mt-3">
+                                    <nav>
+                                        <ul className="pagination">
+                                            {Array.from({ length: totalPages }, (_, i) => (
+                                                <li
+                                                    key={i}
+                                                    className={`page-item ${
+                                                        currentPage === i + 1 ? "active" : ""
+                                                    }`}
+                                                >
+                                                    <button
+                                                        className="page-link"
+                                                        onClick={() => setCurrentPage(i + 1)}
+                                                    >
+                                                        {i + 1}
+                                                    </button>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </nav>
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </main>
         </div>
-    );
+    );    
 };
 
 export default Expenses;
