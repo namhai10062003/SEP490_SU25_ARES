@@ -8,6 +8,44 @@ const ManageParkingLot = () => {
   const [parkingRequests, setParkingRequests] = useState([]);
   const [role, setRole] = useState('');
   const isMountedRef = useRef(true);
+  //search
+  const [searchTerm, setSearchTerm] = useState('');
+// hàm thực hiện popup chi tiết 
+const [selectedRequest, setSelectedRequest] = useState(null);
+const [showDetailModal, setShowDetailModal] = useState(false);
+
+const handleRowClick = async (id) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    toast.error('Không có token. Vui lòng đăng nhập lại.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/detail-parkinglot/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const json = await res.json();
+    setSelectedRequest(json.data);
+    setShowDetailModal(true);
+  } catch (err) {
+    toast.error(`Không lấy được chi tiết: ${err.message}`);
+  }
+};
+
+useEffect(() => {
+  if (showDetailModal) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'auto';
+  }
+  return () => {
+    document.body.style.overflow = 'auto';
+  };
+}, [showDetailModal]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -125,7 +163,13 @@ const ManageParkingLot = () => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('vi-VN');
   };
-
+  const filteredRequests = parkingRequests.filter((item) =>
+  item.licensePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  item.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  item.apartmentCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  item.vehicleType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  formatDate(item.registerDate).includes(searchTerm)
+);
   return (
     <div className="d-flex min-vh-100 bg-light">
       {/* ✅ Thay aside bằng component StaffNavbar */}
@@ -136,6 +180,16 @@ const ManageParkingLot = () => {
         <div className="bg-white rounded-4 shadow p-4 mb-4">
           <h2 className="fw-bold mb-3">Quản lý yêu cầu gửi xe</h2>
           <div className="table-responsive">
+          <div className="d-flex justify-content-end mb-3">
+          <input
+  type="text"
+  className="form-control w-25"
+  placeholder="Tìm kiếm..."
+  value={searchTerm}
+  onChange={(e) => setSearchTerm(e.target.value)}
+/>
+</div>
+
             <table className="table table-bordered align-middle bg-white rounded-4 shadow">
               <thead className="table-primary">
                 <tr>
@@ -149,46 +203,115 @@ const ManageParkingLot = () => {
                 </tr>
               </thead>
               <tbody>
-                {parkingRequests.length > 0 ? (
-                  parkingRequests.map((item, idx) => (
-                    <tr key={item._id}>
-                      <td>{idx + 1}</td>
-                      <td>{item.apartmentCode}</td>
-                      <td>{item.owner}</td>
-                      <td>{item.licensePlate}</td>
-                      <td>{item.vehicleType}</td>
-                      <td>{formatDate(item.registerDate)}</td>
-                      <td>
-                        {role === 'staff' ? (
-                          <div className="d-flex gap-2">
-                            <button
-                              onClick={() => handleStatusChange(item._id, 'approve')}
-                              className="btn btn-success btn-sm"
-                            >
-                              Phê duyệt
-                            </button>
-                            <button
-                              onClick={() => handleStatusChange(item._id, 'reject')}
-                              className="btn btn-danger btn-sm"
-                            >
-                              Từ chối
-                            </button>
-                          </div>
-                        ) : (
-                          <i>Chỉ xem</i>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="text-center">Không có yêu cầu nào.</td>
-                  </tr>
-                )}
-              </tbody>
+  {filteredRequests.length > 0 ? (
+    filteredRequests.map((item, idx) => (
+      <tr key={item._id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(item._id)}>
+        <td>{idx + 1}</td>
+        <td>{item.apartmentCode}</td>
+        <td>{item.owner}</td>
+        <td>{item.licensePlate}</td>
+        <td>{item.vehicleType}</td>
+        <td>{formatDate(item.registerDate)}</td>
+        <td>
+          {role === 'staff' ? (
+            <div className="d-flex gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStatusChange(item._id, 'approve');
+                }}
+                className="btn btn-success btn-sm"
+              >
+                Phê duyệt
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStatusChange(item._id, 'reject');
+                }}
+                className="btn btn-danger btn-sm"
+              >
+                Từ chối
+              </button>
+            </div>
+          ) : (
+            <i>Chỉ xem</i>
+          )}
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="7" className="text-center">Không có kết quả phù hợp.</td>
+    </tr>
+  )}
+</tbody>
             </table>
           </div>
         </div>
+        {showDetailModal && selectedRequest && (
+  <div
+    className="modal fade show"
+    style={{ display: 'block', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+    tabIndex="-1"
+    role="dialog"
+  >
+    <div className="modal-dialog modal-dialog-centered" role="document">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">Chi tiết yêu cầu gửi xe</h5>
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setShowDetailModal(false)}
+          ></button>
+        </div>
+        <div className="modal-body">
+          <p><strong>Tên căn hộ:</strong> {selectedRequest.tênCănHộ}</p>
+          <p><strong>Chủ sở hữu:</strong> {selectedRequest.tênChủSởHữu}</p>
+          <p><strong>SĐT chủ sở hữu:</strong> {selectedRequest.sđtChủSởHữu}</p>
+          <p><strong>Biển số xe:</strong> {selectedRequest.biểnSốXe}</p>
+          <p><strong>Loại xe:</strong> {selectedRequest.loạiXe}</p>
+          <p><strong>Giá:</strong> {selectedRequest.giá}</p>
+          <p><strong>Ngày đăng ký:</strong> {formatDate(selectedRequest.ngàyĐăngKý)}</p>
+          <p><strong>Trạng thái:</strong>
+            <span className={
+              selectedRequest.trạngThái === 'approved' ? 'badge bg-success ms-2'
+              : selectedRequest.trạngThái === 'rejected' ? 'badge bg-danger ms-2'
+              : 'badge bg-secondary ms-2'
+            }>
+              {selectedRequest.trạngThái === 'approved' ? 'Đã phê duyệt'
+                : selectedRequest.trạngThái === 'rejected' ? 'Đã từ chối'
+                : selectedRequest.trạngThái}
+            </span>
+          </p>
+
+          {(selectedRequest['ảnhTrước'] || selectedRequest['ảnhSau']) && (
+            <div className="row row-cols-2 mt-3">
+              {selectedRequest['ảnhTrước'] && (
+                <div className="col">
+                  <strong>Ảnh trước:</strong>
+                  <img src={selectedRequest['ảnhTrước']} alt="Ảnh trước" className="img-fluid rounded" />
+                </div>
+              )}
+              {selectedRequest['ảnhSau'] && (
+                <div className="col">
+                  <strong>Ảnh sau:</strong>
+                  <img src={selectedRequest['ảnhSau']} alt="Ảnh sau" className="img-fluid rounded" />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="modal-footer">
+          <button type="button" className="btn btn-secondary" onClick={() => setShowDetailModal(false)}>
+            Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
       </main>
     </div>
   );
