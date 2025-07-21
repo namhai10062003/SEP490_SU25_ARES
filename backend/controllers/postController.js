@@ -109,7 +109,7 @@ export const getActivePosts = async (req, res) => {
     try {
         const activePosts = await Post.find({ status: "active", isActive: true }) // thêm điều kiện isActive
             .populate('contactInfo', 'name email phone')
-            .populate('postPackage', 'type price expireAt') 
+            .populate('postPackage', 'type price expireAt')
             .sort({ createdAt: -1 });
 
         if (activePosts.length === 0) {
@@ -328,6 +328,52 @@ export const updatePostStatusByAdmin = async (req, res) => {
             message: error.message,
             success: false,
             error: true
+        });
+    }
+};
+export const getPostDetailForAdmin = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                message: "Invalid post ID",
+                success: false,
+                error: true,
+            });
+        }
+
+        const post = await Post.findById(id)
+            .populate("contactInfo", "name email phone identityNumber address")
+            .populate("postPackage", "type price expireAt")
+            .lean();
+
+        if (!post) {
+            return res.status(404).json({
+                message: "Post not found",
+                success: false,
+                error: true,
+            });
+        }
+
+        // ✅ No status check here
+        return res.status(200).json({
+            message: "Post details retrieved successfully",
+            success: true,
+            error: false,
+            data: {
+                ...post,
+                contactInfo: {
+                    ...post.contactInfo,
+                    userId: post.contactInfo._id,
+                },
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+            error: true,
         });
     }
 };

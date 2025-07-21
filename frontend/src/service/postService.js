@@ -14,15 +14,15 @@ export const getPostsByUser = () => {
 // get Plaza để sửa 
 export const getPlazaList = async (token) => {
     return axios.get(`${API_BASE}/plaza`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
     });
-  };
-  // get aparment ra á 
-  export const getApartmentList = async () => {
+};
+// get aparment ra á 
+export const getApartmentList = async () => {
     return await axios.get(`${API_BASE}/apartments`); // Giả sử route là đúng
-  };
+};
 // 🔴 DELETE post
 export const deletePost = async (postId) => {
     return axios.delete(`${API_BASE}/posts/delete-posts/${postId}`, {
@@ -68,6 +68,14 @@ export const getAllPostsActive = async () => {
 export const getPostById = async (id) => {
     const token = localStorage.getItem("token");
     return axios.get(`${import.meta.env.VITE_API_URL}/api/posts/postdetail/${id}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+};
+export const getPostByIdForAdmin = async (id) => {
+    const token = localStorage.getItem("token");
+    return axios.get(`${import.meta.env.VITE_API_URL}/api/posts/admin/postdetail/${id}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
