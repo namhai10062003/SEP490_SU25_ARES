@@ -24,16 +24,24 @@ useEffect(() => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/users?limit=1000`);
 
-      // Kiểm tra kỹ dữ liệu trả về
-      if (res.data && Array.isArray(res.data)) {
-        setAllUsers(res.data);
-        setFilteredUsers(res.data); // ✅ thêm dòng này để khởi tạo
+      let users = [];
+
+      if (Array.isArray(res.data)) {
+        users = res.data;
       } else if (res.data && res.data.users && Array.isArray(res.data.users)) {
-        setAllUsers(res.data.users);
-        setFilteredUsers(res.data.users); // ✅ Sửa chỗ này
+        users = res.data.users;
       } else {
         console.error("❌ API không trả về danh sách người dùng hợp lệ:", res.data);
+        return;
       }
+
+      // 🔥 Lọc ra chỉ những user không phải admin hoặc staff
+      const filtered = users.filter(
+        (u) => u.role !== "admin" && u.role !== "staff"
+      );
+
+      setAllUsers(filtered);
+      setFilteredUsers(filtered);
     } catch (err) {
       console.error("❌ Lỗi khi gọi API lấy tất cả người dùng:", err.message);
     }
@@ -82,9 +90,11 @@ useEffect(() => {
     }
   
     const filtered = allUsers.filter((u) =>
-      u.name?.toLowerCase().includes(keyword) ||
-      u.email?.toLowerCase().includes(keyword) ||
-      u.phone?.includes(keyword)
+      (u.name?.toLowerCase().includes(keyword) ||
+        u.email?.toLowerCase().includes(keyword) ||
+        u.phone?.includes(keyword)) &&
+      u.role !== "admin" &&
+      u.role !== "staff"
     );
   
     setFilteredUsers(filtered);
