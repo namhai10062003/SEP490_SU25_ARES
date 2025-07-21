@@ -27,12 +27,12 @@ const Navbar = () => (
       <ul className="dropdown-menu" aria-labelledby="dichvuDropdown">
         <li>
           <Link className="dropdown-item" to="/dichvu/baidoxe">
-            Dịch vụ đăng ký bãi đỗ xe
+            Dịch Vụ Đăng Ký Bãi Đỗ Xe
           </Link>
         </li>
         <li>
           <Link className="dropdown-item" to="/dichvu/dangtin">
-            Dịch vụ đăng tin
+            Dịch Vụ Đăng Tin
           </Link>
         </li>
       </ul>
@@ -80,17 +80,17 @@ const Navbar = () => (
       <ul className="dropdown-menu" aria-labelledby="canhoDropdown">
         <li>
           <Link className="dropdown-item" to="/canho/nhaukhau">
-            Danh sách nhân khẩu
+            Danh Sách Nhân Khẩu
           </Link>
         </li>
-        <li>
+        {/* <li>
           <Link className="dropdown-item" to="/can-ho/chi-tiet">
             Chi tiết
           </Link>
-        </li>
+        </li> */}
         <li>
           <Link className="dropdown-item" to="/liked-posts">
-            Yêu thích
+            Yêu Thích
           </Link>
         </li>
       </ul>

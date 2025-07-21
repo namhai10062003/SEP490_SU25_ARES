@@ -8,6 +8,7 @@ import { VideoCallProvider, useVideoCall } from "../context/VideoCallContext.jsx
 // import '@fortawesome/fontawesome-free/css/all.min.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import "react-datepicker/dist/react-datepicker.css";
 
 import AuthProvider, { useAuth } from "../context/authContext";
 import SocketProvider from "../context/socketContext";

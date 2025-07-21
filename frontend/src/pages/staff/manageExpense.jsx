@@ -248,18 +248,41 @@ const paginatedFees = filteredFees.slice(
     
                 {/* Bộ lọc tháng */}
                 <div className="d-flex align-items-center gap-3 mb-2">
-                    <label className="fw-semibold mb-0">Lọc theo tháng:</label>
-                    <input
-                        type="month"
-                        className="form-control w-auto"
-                        value={filterMonth}
-                        onChange={(e) => {
-                            setFilterMonth(e.target.value);
-                            setCurrentPage(1);
-                        }}
-                    />
-                </div>
-    
+  <label className="fw-semibold mb-0">Lọc theo tháng:</label>
+  <div style={{ position: "relative", display: "inline-block" }}>
+    <input
+      type="month"
+      className="form-control w-auto"
+      value={filterMonth}
+      onChange={(e) => {
+        setFilterMonth(e.target.value);
+        setCurrentPage(1);
+      }}
+      style={{
+        position: "relative",
+        zIndex: 2,
+        backgroundColor: "transparent",
+      }}
+    />
+    {filterMonth === "" && (
+      <span
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "12px",
+          transform: "translateY(-50%)",
+          color: "#6c757d",
+          fontSize: "0.875rem",
+          pointerEvents: "none",
+          zIndex: 1,
+        }}
+      >
+        VD: chọn 07/2025
+      </span>
+    )}
+  </div>
+</div>
+
                 <div className="table-responsive">
                     {loadingFees ? (
                         <div className="text-secondary">Đang tải dữ liệu chi phí...</div>
