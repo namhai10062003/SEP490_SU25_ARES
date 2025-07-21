@@ -216,7 +216,7 @@ const Header = ({ user, name, logout }) => {
                   </li>
                   <li>
                     <Link className="dropdown-item" to="/my-apartment" onClick={() => setShowProfileDropdown(false)}>
-                      Căn hộ của tôi
+                      Căn Hộ Của Tôi
                     </Link>
                   </li>
                   <li>
@@ -226,7 +226,7 @@ const Header = ({ user, name, logout }) => {
                   </li>
                   <li>
                     <Link className="dropdown-item" to="/my-contracts" onClick={() => setShowProfileDropdown(false)}>
-                      Quản lí hợp đồng
+                      Quản Lý Hợp Đồng
                     </Link>
                   </li>
                   <li>
@@ -236,7 +236,7 @@ const Header = ({ user, name, logout }) => {
                   </li>
                   <li>
                     <Link className="dropdown-item" to="/profile/quanlipostcustomer" onClick={() => setShowProfileDropdown(false)}>
-                      Quản lí tin đăng
+                      Quản lí Tin Đăng
                     </Link>
                   </li>
                   <li>
@@ -257,7 +257,7 @@ const Header = ({ user, name, logout }) => {
                 </ul>
               </div>
               <button onClick={logout} className="btn btn-outline-warning ms-2">
-                Logout
+                Log out
               </button>
             </>
           ) : (
