@@ -25,29 +25,30 @@ const Expenses = () => {
     const rowsPerPage = 10;
 
     const formattedFilterMonth = filterMonth
-  ? (() => {
-      const [year, month] = filterMonth.split("-");
-      return `${month}/${year}`; // thành "06/2025"
-    })()
-  : null;
+        ? (() => {
+            const [year, month] = filterMonth.split("-");
+            return `${month}/${year}`; // thành "06/2025"
+        })()
+        : null;
 
-const filteredFees = formattedFilterMonth
-  ? apartmentFees.filter((f) => f.month === formattedFilterMonth)
-  : apartmentFees;
+        const filteredFees = (formattedFilterMonth
+            ? apartmentFees.filter((f) => f.month === formattedFilterMonth)
+            : apartmentFees
+        ).sort((a, b) => {
+            const dateA = new Date(`01/${a.month}`); // thêm ngày để parse đúng
+            const dateB = new Date(`01/${b.month}`);
+            return dateB - dateA; // Giảm dần: gần nhất trên
+        });
 
+    // console.log("Filter month:", formattedFilterMonth);
+    // console.log("All fee months:", apartmentFees.map((f) => f.month));
+    // console.log("Filtered fee months:", filteredFees.map((f) => f.month));
 
-  console.log("Filter month:", formattedFilterMonth);
-  console.log("All fee months:", apartmentFees.map((f) => f.month));
-  console.log("Filtered fee months:", filteredFees.map((f) => f.month));
-  
-
-
-
-const totalPages = Math.ceil(filteredFees.length / rowsPerPage);
-const paginatedFees = filteredFees.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-);
+    const totalPages = Math.ceil(filteredFees.length / rowsPerPage);
+    const paginatedFees = filteredFees.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
 
 
     useEffect(() => {
@@ -122,11 +123,11 @@ const paginatedFees = filteredFees.slice(
         <div className="d-flex min-vh-100 bg-light">
             <ToastContainer position="top-right" autoClose={2000} />
             <StaffNavbar />
-    
+
             <main className="flex-grow-1 p-4">
                 <h2 className="fw-bold mb-4">Quản lý chi phí căn hộ</h2>
-                
-    
+
+
                 {/* Form Thêm Chi Phí */}
                 <form
                     onSubmit={handleAdd}
@@ -173,7 +174,7 @@ const paginatedFees = filteredFees.slice(
                         </button>
                     </div>
                 </form>
-    
+
                 {/* Danh sách chi phí */}
                 {loading ? (
                     <div className="text-secondary">Đang tải dữ liệu...</div>
@@ -220,11 +221,11 @@ const paginatedFees = filteredFees.slice(
                         ))}
                     </div>
                 )}
-    
+
                 <p className="mt-4">
                     <strong>Ghi chú:</strong> Giá quản lý căn hộ được tính tự động theo diện tích và tòa nhà.
                 </p>
-    
+
                 <button
                     className="btn btn-outline-warning mb-3"
                     onClick={async () => {
@@ -239,49 +240,49 @@ const paginatedFees = filteredFees.slice(
                 >
                     Tính lại phí tổng hợp
                 </button>
-    
+
                 <hr className="my-4" />
-    
+
                 <h4 className="fw-bold text-dark mb-3">
                     Bảng chi phí tổng hợp từng căn hộ theo tháng
                 </h4>
-    
+
                 {/* Bộ lọc tháng */}
                 <div className="d-flex align-items-center gap-3 mb-2">
-  <label className="fw-semibold mb-0">Lọc theo tháng:</label>
-  <div style={{ position: "relative", display: "inline-block" }}>
-    <input
-      type="month"
-      className="form-control w-auto"
-      value={filterMonth}
-      onChange={(e) => {
-        setFilterMonth(e.target.value);
-        setCurrentPage(1);
-      }}
-      style={{
-        position: "relative",
-        zIndex: 2,
-        backgroundColor: "transparent",
-      }}
-    />
-    {filterMonth === "" && (
-      <span
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "12px",
-          transform: "translateY(-50%)",
-          color: "#6c757d",
-          fontSize: "0.875rem",
-          pointerEvents: "none",
-          zIndex: 1,
-        }}
-      >
-        VD: chọn 07/2025
-      </span>
-    )}
-  </div>
-</div>
+                    <label className="fw-semibold mb-0">Lọc theo tháng:</label>
+                    <div style={{ position: "relative", display: "inline-block" }}>
+                        <input
+                            type="month"
+                            className="form-control w-auto"
+                            value={filterMonth}
+                            onChange={(e) => {
+                                setFilterMonth(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            style={{
+                                position: "relative",
+                                zIndex: 2,
+                                backgroundColor: "transparent",
+                            }}
+                        />
+                        {filterMonth === "" && (
+                            <span
+                                style={{
+                                    position: "absolute",
+                                    top: "50%",
+                                    left: "12px",
+                                    transform: "translateY(-50%)",
+                                    color: "#6c757d",
+                                    fontSize: "0.875rem",
+                                    pointerEvents: "none",
+                                    zIndex: 1,
+                                }}
+                            >
+                                VD: chọn 07/2025
+                            </span>
+                        )}
+                    </div>
+                </div>
 
                 <div className="table-responsive">
                     {loadingFees ? (
@@ -308,16 +309,16 @@ const paginatedFees = filteredFees.slice(
                                         <tr key={index}>
                                             <td>{row.apartmentCode}</td>
                                             <td>{row.ownerName}</td>
-                                            <td>
-                                                {(() => {
-                                                    const m = new Date(row.month);
-                                                    return isNaN(m)
-                                                        ? row.month
-                                                        : `${(m.getMonth() + 1)
-                                                              .toString()
-                                                              .padStart(2, "0")}/${m.getFullYear()}`;
-                                                })()}
-                                            </td>
+                                                <td>
+                                                    {(() => {
+                                                        const m = new Date(row.month);
+                                                        return isNaN(m)
+                                                            ? row.month
+                                                            : `${(m.getMonth() + 1)
+                                                                .toString()
+                                                                .padStart(2, "0")}/${m.getFullYear()}`;
+                                                    })()}
+                                                </td>
                                             <td>{row.managementFee?.toLocaleString()} đ</td>
                                             <td>{row.waterFee?.toLocaleString()} đ</td>
                                             <td>{row.parkingFee?.toLocaleString()} đ</td>
@@ -335,7 +336,7 @@ const paginatedFees = filteredFees.slice(
                                     ))}
                                 </tbody>
                             </table>
-    
+
                             {/* Phân trang */}
                             {totalPages > 1 && (
                                 <div className="d-flex justify-content-center mt-3">
@@ -344,9 +345,8 @@ const paginatedFees = filteredFees.slice(
                                             {Array.from({ length: totalPages }, (_, i) => (
                                                 <li
                                                     key={i}
-                                                    className={`page-item ${
-                                                        currentPage === i + 1 ? "active" : ""
-                                                    }`}
+                                                    className={`page-item ${currentPage === i + 1 ? "active" : ""
+                                                        }`}
                                                 >
                                                     <button
                                                         className="page-link"
@@ -365,7 +365,7 @@ const paginatedFees = filteredFees.slice(
                 </div>
             </main>
         </div>
-    );    
+    );
 };
 
 export default Expenses;

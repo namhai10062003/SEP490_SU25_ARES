@@ -18,23 +18,51 @@ export default function DashboardHome() {
     customers: 0,
     staffs: 0,
     apartments: 0,
+    posts: 0,
+    residentVerifications: 0,
+    withdrawRequests: 0,
+    feedbacks: 0,
+    revenue: 0,
   });
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res1 = await fetch(`${import.meta.env.VITE_API_URL}/api/admin-dashboard/stats/UsersList`);
-        const res2 = await fetch(`${import.meta.env.VITE_API_URL}/api/admin-dashboard/stats/StaffsList`);
-        const res3 = await fetch(`${import.meta.env.VITE_API_URL}/api/admin-dashboard/stats/ApartmentsList`);
+        const urls = [
+          "UsersList",
+          "StaffsList",
+          "ApartmentsList",
+          "PostsList",
+          "ResidentVerificationsList",
+          "WithdrawRequestsList",
+          "ReportsAndContactsList",
+          "Revenue",
+        ];
 
-        const data1 = await res1.json();
-        const data2 = await res2.json();
-        const data3 = await res3.json();
+        const [
+          usersRes,
+          staffsRes,
+          apartmentsRes,
+          postsRes,
+          residentVerificationsRes,
+          withdrawRequestsRes,
+          feedbacksRes,
+          revenueRes,
+        ] = await Promise.all(
+          urls.map((url) =>
+            fetch(`${import.meta.env.VITE_API_URL}/api/admin-dashboard/stats/${url}`).then((res) => res.json())
+          )
+        );
 
         setStats({
-          customers: data1.total,
-          staffs: data2.total,
-          apartments: data3.total,
+          customers: usersRes.total || 0,
+          staffs: staffsRes.total || 0,
+          apartments: apartmentsRes.total || 0,
+          posts: postsRes.total || 0,
+          residentVerifications: residentVerificationsRes.total || 0,
+          withdrawRequests: withdrawRequestsRes.total || 0,
+          feedbacks: feedbacksRes.total || 0,
+          revenue: revenueRes.total || 0,
         });
       } catch (err) {
         console.error("Lỗi khi fetch dữ liệu:", err);
@@ -44,6 +72,7 @@ export default function DashboardHome() {
     fetchStats();
   }, []);
 
+
   return (
     <AdminDashboard>
       <div className="container-fluid px-0">
@@ -51,31 +80,75 @@ export default function DashboardHome() {
 
         {/* Stats Cards */}
         <div className="row g-4 mb-4">
-          <div className="col-12 col-md-4">
-            <div className="card shadow-sm border-0 text-center h-100">
-              <div className="card-body">
-                <h6 className="mb-2">🔢 Tổng Apartment</h6>
-                <div className="fs-2 fw-bold text-primary">{stats.apartments}</div>
-              </div>
-            </div>
-          </div>
-          <div className="col-12 col-md-4">
-            <div className="card shadow-sm border-0 text-center h-100">
-              <div className="card-body">
-                <h6 className="mb-2">👥 Tổng User</h6>
-                <div className="fs-2 fw-bold text-primary">{stats.customers}</div>
-              </div>
-            </div>
-          </div>
-          <div className="col-12 col-md-4">
-            <div className="card shadow-sm border-0 text-center h-100">
-              <div className="card-body">
-                <h6 className="mb-2">🧑‍💼 Tổng Staff</h6>
-                <div className="fs-2 fw-bold text-primary">{stats.staffs}</div>
-              </div>
-            </div>
-          </div>
-        </div>
+  <div className="col-12 col-md-4">
+    <div className="card shadow-sm border-0 text-center h-100">
+      <div className="card-body">
+        <h6 className="mb-2">🏢 Tổng Apartment</h6>
+        <div className="fs-2 fw-bold text-primary">{stats.apartments}</div>
+      </div>
+    </div>
+  </div>
+  <div className="col-12 col-md-4">
+    <div className="card shadow-sm border-0 text-center h-100">
+      <div className="card-body">
+        <h6 className="mb-2">👥 Tổng User</h6>
+        <div className="fs-2 fw-bold text-primary">{stats.customers}</div>
+      </div>
+    </div>
+  </div>
+  <div className="col-12 col-md-4">
+    <div className="card shadow-sm border-0 text-center h-100">
+      <div className="card-body">
+        <h6 className="mb-2">🧑‍💼 Tổng Staff</h6>
+        <div className="fs-2 fw-bold text-primary">{stats.staffs}</div>
+      </div>
+    </div>
+  </div>
+
+  <div className="col-12 col-md-4">
+    <div className="card shadow-sm border-0 text-center h-100">
+      <div className="card-body">
+        <h6 className="mb-2">📝 Tổng Bài Post</h6>
+        <div className="fs-2 fw-bold text-primary">{stats.posts}</div>
+      </div>
+    </div>
+  </div>
+  <div className="col-12 col-md-4">
+    <div className="card shadow-sm border-0 text-center h-100">
+      <div className="card-body">
+        <h6 className="mb-2">✅ Đơn Xác Nhận Cư Dân</h6>
+        <div className="fs-2 fw-bold text-primary">{stats.residentVerifications}</div>
+      </div>
+    </div>
+  </div>
+  <div className="col-12 col-md-4">
+    <div className="card shadow-sm border-0 text-center h-100">
+      <div className="card-body">
+        <h6 className="mb-2">💸 Đơn Rút Tiền</h6>
+        <div className="fs-2 fw-bold text-primary">{stats.withdrawRequests}</div>
+      </div>
+    </div>
+  </div>
+
+  <div className="col-12 col-md-6">
+    <div className="card shadow-sm border-0 text-center h-100">
+      <div className="card-body">
+        <h6 className="mb-2">📣 Tổng Phản Hồi (Báo cáo & Liên hệ)</h6>
+        <div className="fs-2 fw-bold text-primary">{stats.feedbacks}</div>
+      </div>
+    </div>
+  </div>
+
+  <div className="col-12 col-md-6">
+    <div className="card shadow-sm border-0 text-center h-100">
+      <div className="card-body">
+        <h6 className="mb-2">💰 Doanh Thu Hiện Tại ($)</h6>
+        <div className="fs-2 fw-bold text-primary">{stats.revenue}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
         {/* Revenue Table & Chart */}
         <div className="row g-4">
