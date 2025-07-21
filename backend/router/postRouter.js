@@ -1,5 +1,5 @@
 import express from "express";
-import { createPost, deletePost, getActivePosts, getPost, getPostActive, getPostDetail, getPostbyUser, updatePost, updatePostStatusByAdmin } from "../controllers/postController.js";
+import { createPost, deletePost, getActivePosts, getPost, getPostActive, getPostDetail, getPostbyUser, updatePost, updatePostStatusByAdmin, getPostDetailForAdmin } from "../controllers/postController.js";
 import { upload } from "../db/cloudinary.js";
 import verifyUser from "../middleware/authMiddleware.js";
 const router = express.Router();
@@ -7,9 +7,10 @@ const router = express.Router();
 router.post("/create-post", verifyUser, upload.array("images"), createPost);
 router.get("/get-post", verifyUser, getPost);
 router.get("/get-post-active", verifyUser, getPostActive);
-router.get("/active", verifyUser,getActivePosts); 
+router.get("/active", verifyUser, getActivePosts);
 //post detail 
-router.get("/postdetail/:id",verifyUser ,getPostDetail);
+router.get("/postdetail/:id", verifyUser, getPostDetail);
+router.get("/admin/postdetail/:id", verifyUser, getPostDetailForAdmin);
 router.get("/get-postbyUser", verifyUser, getPostbyUser);
 router.put("/update-posts/:id", updatePost);
 router.delete("/delete-posts/:id", deletePost);
