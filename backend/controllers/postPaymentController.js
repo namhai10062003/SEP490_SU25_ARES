@@ -115,7 +115,7 @@ export const handlePostPaymentWebhook = async (req, res) => {
             const expiredDate = new Date(paymentDate.getTime() + expireDays * 24 * 60 * 60 * 1000);
 
             await Post.findByIdAndUpdate(post._id, {
-                status: 'active',
+                status: 'approved',
                 paymentStatus: 'paid',
                 paymentDate,
                 expiredDate,
