@@ -27,7 +27,7 @@ export default function AdminDashboard({ children }) {
 
   const navItems = [
     { to: "/admin-dashboard", label: "Tổng Quan" },
-    { to: "/admin-dashboard/create-account", label: "Tạo Tài Khoản" },
+    // { to: "/admin-dashboard/create-account", label: "Tạo Tài Khoản" },
     { to: "/admin-dashboard/posts", label: "Quản Lý Bài Post" },
     { to: "/admin-dashboard/notifications", label: "Gửi Thông Báo" },
     { to: "/admin-dashboard/manage-user", label: "Quản Lý User" },
