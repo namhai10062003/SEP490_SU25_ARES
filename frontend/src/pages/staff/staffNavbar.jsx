@@ -5,8 +5,8 @@ const StaffNavbar = () => {
   const location = useLocation();
   // khai bao quan li cu dan
   const isResidentActive =
-  location.pathname === "/staff-resident-register" ||
-  location.pathname === "/staff-resident-verification";
+    location.pathname === "/staff-resident-register" ||
+    location.pathname === "/staff-resident-verification";
 
   const [showResidentSub, setShowResidentSub] = useState(isResidentActive);
   const isParkingActive =
@@ -46,11 +46,10 @@ const StaffNavbar = () => {
           <li className="nav-item">
             <Link
               to="/staff-dashboard"
-              className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${
-                location.pathname === "/staff-dashboard"
+              className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-dashboard"
                   ? "active bg-white text-primary fw-bold shadow-sm"
                   : "text-white"
-              }`}
+                }`}
               style={{
                 background:
                   location.pathname === "/staff-dashboard"
@@ -82,11 +81,10 @@ const StaffNavbar = () => {
           <li className="nav-item">
             {/* Không dùng nav-link cho div cha để tránh lỗi mất label */}
             <div
-              className={`rounded-3 px-3 py-2 d-flex align-items-center w-100 border-0 ${
-                isParkingActive
+              className={`rounded-3 px-3 py-2 d-flex align-items-center w-100 border-0 ${isParkingActive
                   ? "bg-white text-primary fw-bold shadow-sm"
                   : "text-white"
-              }`}
+                }`}
               style={{
                 cursor: "pointer",
                 userSelect: "none",
@@ -96,7 +94,7 @@ const StaffNavbar = () => {
               onClick={() => setShowParkingSub((v) => !v)}
               aria-expanded={showParkingSub}
             >
-              <span>Quản lý bãi đỗ xe</span>
+              <span>Quản Lý Bãi Đỗ Xe</span>
               <span className="ms-auto">{showParkingSub ? "▲" : "▼"}</span>
             </div>
             <div
@@ -111,11 +109,10 @@ const StaffNavbar = () => {
                 <li className="nav-item">
                   <Link
                     to="/staff-parkinglot-list"
-                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${
-                      location.pathname === "/staff-parkinglot-list"
+                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-parkinglot-list"
                         ? "active bg-white text-primary fw-bold shadow-sm"
                         : "text-white"
-                    }`}
+                      }`}
                     style={{
                       background:
                         location.pathname === "/staff-parkinglot-list"
@@ -123,17 +120,16 @@ const StaffNavbar = () => {
                           : "transparent",
                     }}
                   >
-                    Danh sách bãi đỗ xe
+                    Danh Sách Bãi Đỗ Xe
                   </Link>
                 </li>
                 <li className="nav-item">
                   <Link
                     to="/staff-manage-parkinglot"
-                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${
-                      location.pathname === "/staff-manage-parkinglot"
+                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-manage-parkinglot"
                         ? "active bg-white text-primary fw-bold shadow-sm"
                         : "text-white"
-                    }`}
+                      }`}
                     style={{
                       background:
                         location.pathname === "/staff-manage-parkinglot"
@@ -141,7 +137,7 @@ const StaffNavbar = () => {
                           : "transparent",
                     }}
                   >
-                    Quản lý yêu cầu gửi xe
+                    Quản Lý Yêu Cầu Gửi Xe
                   </Link>
                 </li>
               </ul>
@@ -150,30 +146,29 @@ const StaffNavbar = () => {
 
           <li className="nav-item">
             <div
-              className={`rounded-3 px-3 py-2 d-flex align-items-center w-100 border-0 ${
-                location.pathname === "/staff-expenses" ||
-                location.pathname === "/staff-water-data-upload"
+              className={`rounded-3 px-3 py-2 d-flex align-items-center w-100 border-0 ${location.pathname === "/staff-expenses" ||
+                  location.pathname === "/staff-water-data-upload"
                   ? "bg-white text-primary fw-bold shadow-sm"
                   : "text-white"
-              }`}
+                }`}
               style={{
                 cursor: "pointer",
                 userSelect: "none",
                 background:
                   location.pathname === "/staff-expenses" ||
-                  location.pathname === "/staff-water-data-upload"
+                    location.pathname === "/staff-water-data-upload"
                     ? "white"
                     : "transparent",
                 fontWeight:
                   location.pathname === "/staff-expenses" ||
-                  location.pathname === "/staff-water-data-upload"
+                    location.pathname === "/staff-water-data-upload"
                     ? 600
                     : 400,
               }}
               onClick={() => setShowExpenseSub((v) => !v)}
               aria-expanded={showExpenseSub}
             >
-              <span>Quản lý chi phí</span>
+              <span>Quản Lý Chi Phí</span>
               <span className="ms-auto">{showExpenseSub ? "▲" : "▼"}</span>
             </div>
             <div
@@ -188,25 +183,23 @@ const StaffNavbar = () => {
                 <li className="nav-item">
                   <Link
                     to="/staff-expenses"
-                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${
-                      location.pathname === "/staff-expenses"
+                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-expenses"
                         ? "active bg-white text-primary fw-bold shadow-sm"
                         : "text-white"
-                    }`}
+                      }`}
                   >
-                    Tổng hợp chi phí
+                    Tổng Hợp Chi Phí
                   </Link>
                 </li>
                 <li className="nav-item">
                   <Link
                     to="/staff-water-data-upload"
-                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${
-                      location.pathname === "/staff-water-data-upload"
+                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-water-data-upload"
                         ? "active bg-white text-primary fw-bold shadow-sm"
                         : "text-white"
-                    }`}
+                      }`}
                   >
-                    Quản lý chi phí nước
+                    Quản Lý Chi Phí Nước
                   </Link>
                 </li>
               </ul>
@@ -234,11 +227,10 @@ const StaffNavbar = () => {
           <li className="nav-item">
             <Link
               to="/staff-resident-verify"
-              className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${
-                location.pathname === "/staff-resident-verify"
+              className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-resident-verify"
                   ? "active bg-white text-primary fw-bold shadow-sm"
                   : "text-white"
-              }`}
+                }`}
               style={{
                 background:
                   location.pathname === "/staff-resident-verify"
@@ -246,81 +238,78 @@ const StaffNavbar = () => {
                     : "transparent",
               }}
             >
-              Quản lý nhân khẩu
+              Quản Lý Nhân Khẩu
             </Link>
           </li>
           {/* Dropdown quản lý cư dân */}
-<li className="nav-item">
-  {/* Không dùng nav-link cho div cha để tránh lỗi mất label */}
-  <div
-    className={`rounded-3 px-3 py-2 d-flex align-items-center w-100 border-0 ${
-      isResidentActive
-        ? "bg-white text-primary fw-bold shadow-sm"
-        : "text-white"
-    }`}
-    style={{
-      cursor: "pointer",
-      userSelect: "none",
-      background: isResidentActive ? "white" : "transparent",
-      fontWeight: isResidentActive ? 600 : 400,
-    }}
-    onClick={() => setShowResidentSub((v) => !v)}
-    aria-expanded={showResidentSub}
-  >
-    <span>Quản lý cư dân</span>
-    <span className="ms-auto">{showResidentSub ? "▲" : "▼"}</span>
-  </div>
-  <div
-    className={`collapse${showResidentSub ? " show" : ""}`}
-    style={{
-      marginLeft: "0.5rem",
-      borderLeft: "2px solid #fff3",
-      transition: "all .2s",
-    }}
-  >
-    <ul className="nav flex-column ps-3 mt-1">
-      <li className="nav-item">
-        <Link
-          to="/staff-resident-register"
-          className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${
-            location.pathname === "/staff-resident-register"
-              ? "active bg-white text-primary fw-bold shadow-sm"
-              : "text-white"
-          }`}
-          style={{
-            background:
-              location.pathname === "/staff-resident-register"
-                ? "white"
-                : "transparent",
-          }}
-        >
-          Xác Nhận Cư Dân
-        </Link>
-      </li>
-      <li className="nav-item">
-        <Link
-          to="/staff-resident-verification"
-          className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${
-            location.pathname === "/staff-resident-verification"
-              ? "active bg-white text-primary fw-bold shadow-sm"
-              : "text-white"
-          }`}
-          style={{
-            background:
-              location.pathname === "/staff-resident-verification"
-                ? "white"
-                : "transparent",
-          }}
-        >
-          Quản lý danh sách cư dân
-        </Link>
-      </li>
-    </ul>
-  </div>
-</li>
+          <li className="nav-item">
+            {/* Không dùng nav-link cho div cha để tránh lỗi mất label */}
+            <div
+              className={`rounded-3 px-3 py-2 d-flex align-items-center w-100 border-0 ${isResidentActive
+                  ? "bg-white text-primary fw-bold shadow-sm"
+                  : "text-white"
+                }`}
+              style={{
+                cursor: "pointer",
+                userSelect: "none",
+                background: isResidentActive ? "white" : "transparent",
+                fontWeight: isResidentActive ? 600 : 400,
+              }}
+              onClick={() => setShowResidentSub((v) => !v)}
+              aria-expanded={showResidentSub}
+            >
+              <span>Quản Lý Cư Dân</span>
+              <span className="ms-auto">{showResidentSub ? "▲" : "▼"}</span>
+            </div>
+            <div
+              className={`collapse${showResidentSub ? " show" : ""}`}
+              style={{
+                marginLeft: "0.5rem",
+                borderLeft: "2px solid #fff3",
+                transition: "all .2s",
+              }}
+            >
+              <ul className="nav flex-column ps-3 mt-1">
+                <li className="nav-item">
+                  <Link
+                    to="/staff-resident-register"
+                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-resident-register"
+                        ? "active bg-white text-primary fw-bold shadow-sm"
+                        : "text-white"
+                      }`}
+                    style={{
+                      background:
+                        location.pathname === "/staff-resident-register"
+                          ? "white"
+                          : "transparent",
+                    }}
+                  >
+                    Xác Nhận Cư Dân
+                  </Link>
+                </li>
+                <li className="nav-item">
+                  <Link
+                    to="/staff-resident-verification"
+                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-resident-verification"
+                        ? "active bg-white text-primary fw-bold shadow-sm"
+                        : "text-white"
+                      }`}
+                    style={{
+                      background:
+                        location.pathname === "/staff-resident-verification"
+                          ? "white"
+                          : "transparent",
+                    }}
+                  >
+                    Quản Lý Danh Sách Cư Dân
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </li>
 
-          
-          
+
+
           <li className="nav-item mt-3">
             <button
               className="nav-link rounded-3 px-3 py-2 d-flex align-items-center text-white bg-transparent border-0"
