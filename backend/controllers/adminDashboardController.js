@@ -8,6 +8,7 @@ import Contact from "../models/Contact.js";
 import PostPackage from "../models/PostPackage.js";
 import Contract from "../models/Contract.js";
 import Fee from "../models/Fee.js";
+import { countTodayAndYesterday } from "../helpers/countByDateHelper.js";
 
 // Đếm Customers
 export const countCustomers = async (req, res) => {
@@ -182,3 +183,183 @@ export const calculateRevenue = async (req, res) => {
     res.status(500).json({ message: "Lỗi server khi tính revenue" });
   }
 };
+
+export const getAllPosts = async (req, res) => {
+  try {
+    const posts = await Post.find(); // hoặc logic theo yêu cầu
+    res.status(200).json({ success: true, data: posts });
+  } catch (err) {
+    console.error("Lỗi khi lấy danh sách posts:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+// Lấy tất cả Users (role customer)
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({ role: "customer" });
+    res.status(200).json({ success: true, data: users });
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy all users:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+// Lấy tất cả Staffs
+export const getAllStaffs = async (req, res) => {
+  try {
+    const staffs = await User.find({ role: "staff" });
+    res.status(200).json({ success: true, data: staffs });
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy all staffs:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+// Lấy tất cả Apartments
+export const getAllApartments = async (req, res) => {
+  try {
+    const apartments = await Apartment.find();
+    res.status(200).json({ success: true, data: apartments });
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy all apartments:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+// Lấy tất cả Resident Verifications
+export const getAllResidentVerifications = async (req, res) => {
+  try {
+    const verifications = await ResidentVerification.find();
+    res.status(200).json({ success: true, data: verifications });
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy all resident verifications:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+// Lấy tất cả Withdraw Requests
+export const getAllWithdrawRequests = async (req, res) => {
+  try {
+    const requests = await WithdrawRequest.find();
+    res.status(200).json({ success: true, data: requests });
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy all withdraw requests:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+// Lấy tất cả Reports
+export const getAllReports = async (req, res) => {
+  try {
+    const reports = await Report.find();
+    res.status(200).json({ success: true, data: reports });
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy all reports:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+// Lấy tất cả Contacts
+export const getAllContacts = async (req, res) => {
+  try {
+    const contacts = await Contact.find();
+    res.status(200).json({ success: true, data: contacts });
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy all contacts:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+// 👥 User (Customers)
+export const countCustomersTodayAndYesterday = async (req, res) => {
+  try {
+    const counts = await countTodayAndYesterday(User, {
+      role: "customer",
+      $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }],
+    });
+    res.status(200).json(counts);
+  } catch (err) {
+    console.error("❌ Lỗi countCustomersTodayAndYesterday:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+// 🧑‍💼 Staff
+export const countStaffsTodayAndYesterday = async (req, res) => {
+  try {
+    const counts = await countTodayAndYesterday(User, { role: "staff" });
+    res.status(200).json(counts);
+  } catch (err) {
+    console.error("❌ Lỗi countStaffsTodayAndYesterday:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+// 🏢 Apartment
+export const countApartmentsTodayAndYesterday = async (req, res) => {
+  try {
+    const counts = await countTodayAndYesterday(Apartment);
+    res.status(200).json(counts);
+  } catch (err) {
+    console.error("❌ Lỗi countApartmentsTodayAndYesterday:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+// 📝 Post
+export const countPostsTodayAndYesterday = async (req, res) => {
+  try {
+    const counts = await countTodayAndYesterday(Post);
+    res.status(200).json(counts);
+  } catch (err) {
+    console.error("❌ Lỗi countPostsTodayAndYesterday:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+// ✅ Resident Verification
+export const countResidentVerificationsTodayAndYesterday = async (req, res) => {
+  try {
+    const counts = await countTodayAndYesterday(ResidentVerification);
+    res.status(200).json(counts);
+  } catch (err) {
+    console.error("❌ Lỗi countResidentVerificationsTodayAndYesterday:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+// 💸 Withdraw Request
+export const countWithdrawRequestsTodayAndYesterday = async (req, res) => {
+  try {
+    const counts = await countTodayAndYesterday(WithdrawRequest);
+    res.status(200).json(counts);
+  } catch (err) {
+    console.error("❌ Lỗi countWithdrawRequestsTodayAndYesterday:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+// 📣 Report
+export const countReportsTodayAndYesterday = async (req, res) => {
+  try {
+    const counts = await countTodayAndYesterday(Report);
+    res.status(200).json(counts);
+  } catch (err) {
+    console.error("❌ Lỗi countReportsTodayAndYesterday:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+// 📩 Contact
+export const countContactsTodayAndYesterday = async (req, res) => {
+  try {
+    const counts = await countTodayAndYesterday(Contact);
+    res.status(200).json(counts);
+  } catch (err) {
+    console.error("❌ Lỗi countContactsTodayAndYesterday:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+
