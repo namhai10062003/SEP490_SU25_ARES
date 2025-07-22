@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../../../context/authContext";
 import { getAllPosts } from "../../../service/postService";
 import AdminDashboard from "../adminDashboard";
@@ -96,9 +96,9 @@ const PostManagement = () => {
   const latestPosts = posts
     .slice()
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 5);
+    .slice(0, 3);
 
-  const expiringPosts = posts.filter((p) => expiringSoon(p.expiredDate));
+  const expiringPosts = posts.filter((p) => expiringSoon(p.expiredDate)).slice(0, 3);
 
   return (
     <AdminDashboard>
@@ -219,8 +219,8 @@ const PostItemButton = ({ p, navigate, formatSmartTime, tagLabel, isSmall }) => 
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <button
-      onClick={() => navigate(`/admin-dashboard/posts/${p._id}`)}
+    <Link
+      to={`/admin-dashboard/posts/${p._id}`}
       className={`list-group-item list-group-item-action ${isSmall ? "small" : ""} mb-2 shadow-sm`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -228,6 +228,9 @@ const PostItemButton = ({ p, navigate, formatSmartTime, tagLabel, isSmall }) => 
         backgroundColor: isHovered ? "#f8f9fa" : "",
         transform: isHovered ? "scale(1.02)" : "",
         transition: "all 0.2s ease",
+        cursor: "pointer",
+        textDecoration: "none",
+        color: "inherit",
       }}
     >
       <div className="fw-bold">
@@ -236,8 +239,9 @@ const PostItemButton = ({ p, navigate, formatSmartTime, tagLabel, isSmall }) => 
       <div className="small text-muted">
         👤 {p.contactInfo?.name} • ⏱ {formatSmartTime(p.createdAt)} • 📍 {p.location}
       </div>
-    </button>
+    </Link>
   );
 };
+
 
 export default PostManagement;

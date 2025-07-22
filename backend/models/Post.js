@@ -7,7 +7,7 @@ const PostSchema = new Schema({
     enum: ['ban', 'cho_thue', 'dich_vu'],
     required: true,
   },
-  apartmentCode: { type: String},
+  apartmentCode: { type: String },
   title: { type: String, required: true },
   description: { type: String },
   // sửa lại thành address
@@ -43,7 +43,7 @@ const PostSchema = new Schema({
   // trạng thái của bài post
   status: {
     type: String,
-    enum: ['pending', 'active', 'approved', 'rejected'],
+    enum: ['pending', 'active', 'approved', 'rejected', 'deleted'],
     default: 'pending'
   },
   paymentStatus: {
@@ -64,6 +64,7 @@ const PostSchema = new Schema({
     type: Boolean,
     default: false
   },
+  deletedAt: { type: Date, default: null },
   expiredDate: { type: Date },
 
 }, {

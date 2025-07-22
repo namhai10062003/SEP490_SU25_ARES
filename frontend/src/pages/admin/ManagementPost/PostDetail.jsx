@@ -18,7 +18,9 @@ import { useAuth } from "../../../../context/authContext.jsx";
 import {
     getPostByIdForAdmin,
     updatePostStatus,
-    deletePost,
+    deletePostByAdmin,
+    rejectPostByAdmin,
+    verifyPostByAdmin,
 } from "../../../service/postService.js";
 import AdminDashboard from "../adminDashboard.jsx";
 
@@ -54,7 +56,7 @@ const AdminPostDetail = () => {
 
     const handleApprove = async () => {
         try {
-            await updatePostStatus(id, { status: "approved" });
+            await verifyPostByAdmin(id, { status: "approved" });
             toast.success("✅ Đã duyệt bài đăng.");
             navigate(-1);
         } catch {
@@ -66,7 +68,7 @@ const AdminPostDetail = () => {
         const reason = prompt("📌 Nhập lý do từ chối:");
         if (!reason) return;
         try {
-            await updatePostStatus(id, { status: "rejected", reasonreject: reason });
+            await rejectPostByAdmin(id, { status: "rejected", reasonreject: reason });
             toast.success("🚫 Đã từ chối bài đăng.");
             navigate(-1);
         } catch {
@@ -77,7 +79,7 @@ const AdminPostDetail = () => {
     const handleDelete = async () => {
         if (!window.confirm("Xác nhận xoá bài đăng?")) return;
         try {
-            await deletePost(id);
+            await deletePostByAdmin(id);
             toast.success("🗑️ Đã xoá bài đăng.");
             navigate(-1);
         } catch {
@@ -146,18 +148,29 @@ const AdminPostDetail = () => {
                                 </p>
                             </div>
                             <div className="card-footer d-flex justify-content-between">
-                                <button className="btn btn-success" onClick={handleApprove}>
-                                    <FaCheck /> Duyệt
+                                <button
+                                    className="btn btn-success"
+                                    onClick={handleApprove}
+                                    disabled={post.status !== "pending"}
+                                >
+                                    <FaCheck /> {post.status === "approved" ? "Đã duyệt" : "Duyệt"}
                                 </button>
+
                                 <button
                                     className="btn btn-warning"
                                     onClick={handleReject}
+                                    disabled={post.status !== "pending"}
                                 >
-                                    <FaTimes /> Từ chối
+                                    <FaTimes /> {post.status === "rejected" ? "Đã từ chối" : "Từ chối"}
                                 </button>
-                                <button className="btn btn-danger" onClick={handleDelete}>
-                                    <FaTrash /> Xoá
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={handleDelete}
+                                    disabled={post.isActive && post.status !== "rejected"}
+                                >
+                                    <FaTrash /> {post.status == "deleted" ? "Đã xoá" : "Xoá"}
                                 </button>
+
                             </div>
                         </div>
                     </div>

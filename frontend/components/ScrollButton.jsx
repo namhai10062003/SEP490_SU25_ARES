@@ -1,7 +1,35 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 
 const ScrollButtons = () => {
+    const [visible, setVisible] = useState(true);
+    const [canScrollUp, setCanScrollUp] = useState(false);
+    const [canScrollDown, setCanScrollDown] = useState(true);
+    const timeoutRef = useRef(null);
+
+    const handleScroll = () => {
+        const scrollTop = window.scrollY;
+        const windowHeight = window.innerHeight;
+        const fullHeight = document.body.scrollHeight;
+
+        setCanScrollUp(scrollTop > 50);
+        setCanScrollDown(scrollTop + windowHeight < fullHeight - 50);
+
+        setVisible(true);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => setVisible(false), 1000);
+    };
+
+    useEffect(() => {
+        handleScroll();
+        window.addEventListener("scroll", handleScroll);
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+    }, []);
+
     const scrollToTop = () => {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -14,24 +42,29 @@ const ScrollButtons = () => {
         <div
             style={{
                 position: "fixed",
-                bottom: "100px", // 🪄 higher
-                right: "0px",    // 🪄 stick to right edge
+                bottom: "80px",
+                right: "20px",
                 display: "flex",
                 flexDirection: "column",
-                gap: "5px",
+                gap: "6px",
                 zIndex: 2000,
+                transition: "opacity 0.3s ease",
+                opacity: visible ? 1 : 0,
+                pointerEvents: visible ? "auto" : "none",
             }}
         >
             <button
                 onClick={scrollToTop}
-                className="btn btn-outline-primary btn-sm shadow"
+                disabled={!canScrollUp}
+                className="btn btn-light shadow-sm"
                 title="Lên đầu trang"
                 style={{
-                    backgroundColor: "#f8f9fa", // 🪄 light background
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "0",  // 🟥 square
-                    marginRight: "0",
+                    width: "42px",
+                    height: "42px",
+                    borderRadius: "0",
+                    backgroundColor: "#f8f9fa",
+                    opacity: canScrollUp ? 1 : 0,
+                    transition: "opacity 0.3s ease",
                 }}
             >
                 <FaArrowUp />
@@ -39,14 +72,16 @@ const ScrollButtons = () => {
 
             <button
                 onClick={scrollToBottom}
-                className="btn btn-outline-primary btn-sm shadow"
+                disabled={!canScrollDown}
+                className="btn btn-light shadow-sm"
                 title="Xuống cuối trang"
                 style={{
-                    backgroundColor: "#f8f9fa", // 🪄 light background
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "0",  // 🟥 square
-                    marginRight: "0",
+                    width: "42px",
+                    height: "42px",
+                    borderRadius: "0",
+                    backgroundColor: "#f8f9fa",
+                    opacity: canScrollDown ? 1 : 0,
+                    transition: "opacity 0.3s ease",
                 }}
             >
                 <FaArrowDown />
