@@ -135,6 +135,18 @@ export default function DashboardHome() {
           contacts: fetchCommonStats[7].total || 0,
         });
 
+        const revenueSummaryRes = await fetch(`${API_URL}/api/admin-dashboard/stats/revenue-summary`);
+        const revenueSummaryData = await revenueSummaryRes.json();
+
+        setRevenueStats({
+          postRevenue: revenueSummaryData.postRevenue || 0,
+          apartmentRevenue: revenueSummaryData.apartmentRevenue || 0,
+          contractRevenue: revenueSummaryData.contractRevenue || 0,
+          totalRevenue: revenueSummaryData.totalRevenue || 0,
+          postRevenueYesterday: revenueSummaryData.postRevenueYesterday || 0,
+          totalRevenueYesterday: revenueSummaryData.totalRevenueYesterday || 0,
+        });
+
         const revenueRes = await fetch(`${API_URL}/api/admin-dashboard/stats/RevenueMonthly?year=${selectedYear}`);
         const revenueData = await revenueRes.json();
         setMonthlyRevenue(revenueData.monthlyData || []);
@@ -156,18 +168,46 @@ export default function DashboardHome() {
             .filter((p) => filterFn(new Date(p.paymentDate)))
             .reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
 
+        const apartmentRevenueToday = calcRevenue(
+          (d) => isSameDay(d, today) && p.postPackage?.type === "VIP2"
+        );
+        const apartmentRevenueYesterday = calcRevenue(
+          (d) => isSameDay(d, yesterday) && p.postPackage?.type === "VIP2"
+        );
+
+        const contractRevenueToday = calcRevenue(
+          (d) => isSameDay(d, today) && p.postPackage?.type === "VIP3"
+        );
+        const contractRevenueYesterday = calcRevenue(
+          (d) => isSameDay(d, yesterday) && p.postPackage?.type === "VIP3"
+        );
+
+
         const todayRevenue = calcRevenue((d) => isSameDay(d, today));
         const yesterdayRevenue = calcRevenue((d) => isSameDay(d, yesterday));
+
+        const apartmentRevenue = paidPosts
+          .filter((p) => p.postPackage?.type === "VIP2")
+          .reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
+
+        const contractRevenue = paidPosts
+          .filter((p) => p.postPackage?.type === "VIP3")
+          .reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
 
         setRevenueStats((prev) => ({
           ...prev,
           postRevenue: totalPostRevenue,
+          apartmentRevenue,
+          contractRevenue,
           postRevenueYesterday: yesterdayRevenue,
+          apartmentRevenueYesterday,
+          contractRevenueYesterday,
           todayRevenue,
           yesterdayRevenue,
-          totalRevenue: totalPostRevenue + (prev.apartmentRevenue || 0) + (prev.contractRevenue || 0),
-          totalRevenueYesterday: yesterdayRevenue + (prev.apartmentRevenue || 0) + (prev.contractRevenue || 0),
+          totalRevenue: totalPostRevenue,
+          totalRevenueYesterday: yesterdayRevenue,
         }));
+
 
         const [staffsRes, apartmentsRes, residentRes, withdrawRes, reportsRes, contactsRes] = await Promise.all([
           fetch(`${API_URL}/api/admin-dashboard/get-all-staffs`).then((res) => res.json()),
@@ -311,9 +351,11 @@ export default function DashboardHome() {
                   </div>
                   <div className="col-md-4">
                     Quản lý Căn hộ: <span className="fw-bold text-primary">{(revenueStats.apartmentRevenue ?? 0).toLocaleString()}</span>
+                    {renderChange(revenueStats.apartmentRevenue ?? 0, revenueStats.apartmentRevenueYesterday ?? 0)}
                   </div>
                   <div className="col-md-4">
                     Hợp đồng: <span className="fw-bold text-primary">{(revenueStats.contractRevenue ?? 0).toLocaleString()}</span>
+                    {renderChange(revenueStats.contractRevenue ?? 0, revenueStats.contractRevenueYesterday ?? 0)}
                   </div>
                 </div>
                 <hr />
