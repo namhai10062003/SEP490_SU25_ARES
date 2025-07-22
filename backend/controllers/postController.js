@@ -331,6 +331,137 @@ export const updatePostStatusByAdmin = async (req, res) => {
         });
     }
 };
+export const verifyPostByAdmin = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        // Kiểm tra xem bài đăng có tồn tại không                   
+        const existingPost = await Post.findById(postId);
+        if (!existingPost) {
+            return res.status(404).json({
+                message: "Post not found",
+                success: false,
+                error: true
+            });
+        }
+        // Kiểm tra trạng thái bài đăng
+        if (existingPost.status !== "pending") {
+            return res.status(400).json({
+                message: "Bài đăng không ở trạng thái chờ duyệt.",
+                success: false,
+                error: true
+            });
+        }
+        // Cập nhật trạng thái bài đăng thành "active"
+        existingPost.status = "active";
+        existingPost.isActive = true; // Đảm bảo isActive được đặt thành true   
+        // Lưu các thay đổi
+        await existingPost.save();
+        return res.status(200).json({
+            message: "Post verified and activated successfully",
+            success: true,
+            error: false,
+            data: existingPost
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+            error: true
+        });
+    }
+};
+export const rejectPostByAdmin = async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const reasonreject = req.body.reasonreject;
+        // Kiểm tra xem bài đăng có tồn tại không
+        const existingPost = await Post.findById(postId);
+        if (!existingPost) {
+            return res.status(404).json({
+                message: "Post not found",
+                success: false,
+                error: true
+            });
+        }
+        // Kiểm tra trạng thái bài đăng
+        if (existingPost.status !== "pending") {
+            return res.status(400).json({
+                message: "Bài đăng không ở trạng thái chờ duyệt.",
+                success: false,
+                error: true
+            });
+        }
+        // Cập nhật trạng thái bài đăng thành "rejected"
+        existingPost.status = "rejected";
+        existingPost.reasonreject = reasonreject;
+        // Lưu các thay đổi
+        await existingPost.save();
+        return res.status(200).json({
+            message: "Post rejected successfully",
+            success: true,
+            error: false,
+            data: existingPost
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+            error: true
+        });
+    }
+};
+export const deletePostByAdmin = async (req, res) => {
+    try {
+        const postId = req.params.id;
+
+        const existingPost = await Post.findById(postId);
+        if (!existingPost) {
+            return res.status(404).json({
+                message: "Post not found",
+                success: false,
+                error: true
+            });
+        }
+
+        // Cannot allow deleting posts that are rejected or inactive
+        if (existingPost.status === "active" || existingPost.status === "pending") {
+            return res.status(400).json({
+                message: `Cannot delete a post that is ${existingPost.status}`,
+                success: false,
+                error: true
+            });
+        }
+
+        if (existingPost.status === "deleted") {
+            return res.status(400).json({
+                message: "Post is already deleted",
+                success: false,
+                error: true
+            });
+        }
+
+        // Soft delete
+        existingPost.isActive = false;
+        existingPost.deletedAt = new Date();
+        existingPost.status = "deleted";
+        await existingPost.save();
+
+        return res.status(200).json({
+            message: "Post deleted successfully.",
+            success: true,
+            error: false
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+            error: true
+        });
+    }
+};
+
+
 export const getPostDetailForAdmin = async (req, res) => {
     try {
         const { id } = req.params;

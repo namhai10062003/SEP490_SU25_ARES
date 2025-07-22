@@ -81,6 +81,45 @@ export const getPostByIdForAdmin = async (id) => {
         },
     });
 };
+export const verifyPostByAdmin = async (postId) => {
+    const token = localStorage.getItem("token");
+    return axios.put(
+        `${API_BASE}/posts/verify-post/${postId}`,
+        {},
+        {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+};
+export const rejectPostByAdmin = async (postId, reasonReject) => {
+    const token = localStorage.getItem("token");
+    return axios.put(
+        `${API_BASE}/posts/reject-post/${postId}`,
+        { reasonReject },
+        {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+};
+export const deletePostByAdmin = async (postId) => {
+    const token = localStorage.getItem("token");
+    return axios.put(
+        `${API_BASE}/posts/delete-post/${postId}`,
+        {},
+        {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+}
 export const createPost = async (updatedData) => {
     return axios.post(`${import.meta.env.VITE_API_URL}/api/posts/create-post`, updatedData, {
         headers: {
