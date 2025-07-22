@@ -8,7 +8,13 @@ import Contact from "../models/Contact.js";
 import PostPackage from "../models/PostPackage.js";
 import Contract from "../models/Contract.js";
 import Fee from "../models/Fee.js";
-import { countTodayAndYesterday } from "../helpers/countByDateHelper.js";
+import {
+  countTodayAndYesterday,
+  calculatePostRevenue,
+  calculateApartmentRevenue,
+  calculateContractRevenue,
+} from "../helpers/countByDateHelper.js";
+
 
 // Đếm Customers
 export const countCustomers = async (req, res) => {
@@ -361,5 +367,46 @@ export const countContactsTodayAndYesterday = async (req, res) => {
     res.status(500).json({ message: "Lỗi server" });
   }
 };
+
+export const getRevenueSummary = async (req, res) => {
+  try {
+    const posts = await Post.find({ paymentStatus: "paid" }).populate("postPackage");
+    const PACKAGE_PRICES = { VIP1: 10000, VIP2: 20000, VIP3: 30000 };
+
+    console.log("📊 Bắt đầu tính toán doanh thu bài đăng:");
+
+    const vip2Posts = posts.filter((p) => p.postPackage?.type === "VIP2");
+    const vip3Posts = posts.filter((p) => p.postPackage?.type === "VIP3");
+
+    vip2Posts.forEach((p) => {
+      console.log(`✅ VIP2 | Post: ${p._id} | +${PACKAGE_PRICES.VIP2} | Ngày: ${new Date(p.paymentDate).toLocaleDateString()}`);
+    });
+
+    vip3Posts.forEach((p) => {
+      console.log(`✅ VIP3 | Post: ${p._id} | +${PACKAGE_PRICES.VIP3} | Ngày: ${new Date(p.paymentDate).toLocaleDateString()}`);
+    });
+
+    const sumByType = (type) =>
+      posts.filter((p) => p.postPackage?.type === type).reduce((sum, p) => sum + (PACKAGE_PRICES[type] || 0), 0);
+
+    console.log(`💰 Tổng tiền Quản lý căn hộ (VIP2): ${sumByType("VIP2").toLocaleString()}`);
+    console.log(`💰 Tổng tiền Hợp đồng (VIP3): ${sumByType("VIP3").toLocaleString()}`);
+
+    // ... tính toán doanh thu trả về client như cũ
+    return res.status(200).json({
+      postRevenue: sumByType("VIP1") + sumByType("VIP2") + sumByType("VIP3"),
+      apartmentRevenue: sumByType("VIP2"),
+      contractRevenue: sumByType("VIP3"),
+      totalRevenue: sumByType("VIP1") + sumByType("VIP2") + sumByType("VIP3"),
+    });
+  } catch (err) {
+    console.error("❌ Lỗi khi tính doanh thu:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+
+
+
 
 

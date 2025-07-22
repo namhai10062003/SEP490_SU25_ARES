@@ -31,6 +31,7 @@ import {
   getAllWithdrawRequests,
   getAllReports,
   getAllContacts,
+  getRevenueSummary,
 } from "../controllers/adminDashboardController.js";
 
 const router = express.Router();
@@ -46,6 +47,9 @@ router.get("/stats/ContactsList", countContacts);
 router.get("/stats/ReportsList", countReports);
 router.get("/stats/RevenueMonthly", countRevenueMonthly);
 router.get("/stats/Revenue", calculateRevenue);
+
+router.get("/stats/revenue-summary", getRevenueSummary);
+router.get("/ping", (req, res) => res.send("pong"));
 
 // ----------- 📆 Đếm theo ngày (so sánh) ----------- //
 router.get("/stats/customers-today-and-yesterday", countCustomersTodayAndYesterday);
