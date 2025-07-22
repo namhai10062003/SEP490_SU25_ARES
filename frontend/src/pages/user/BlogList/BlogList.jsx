@@ -12,12 +12,16 @@ const BlogList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [name, setName] = useState(null);
-  
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const postsPerPage = 10;
+
   useEffect(() => {
     if (user && user.name) {
-      setName(user.name); // ✅ cập nhật tên từ user
+      setName(user.name);
     }
   }, [user]);
+
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -49,18 +53,15 @@ const BlogList = () => {
   };
 
   const filterPosts = () => {
-    if (selectedFilter === "all") {
-      setFilteredPosts(posts);
-    } else {
-      setFilteredPosts(posts.filter((p) => p.postPackage?.type === selectedFilter));
-    }
+    const filtered = selectedFilter === "all"
+      ? posts
+      : posts.filter((p) => p.postPackage?.type === selectedFilter);
+    setFilteredPosts(filtered);
+    setCurrentPage(1);
   };
 
   const formatPrice = (price) =>
     new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
-
-  const getTypeLabel = (t) =>
-    ({ ban: "Bán", cho_thue: "Cho thuê", dich_vu: "Dịch vụ" }[t] || t);
 
   const getPackageBadgeClass = (type) => {
     switch (type) {
@@ -70,13 +71,24 @@ const BlogList = () => {
       default: return "badge bg-secondary";
     }
   };
-  //hàm để description ngắn gọn lại 
+
   const truncateText = (text, maxLength = 100) => {
     if (!text) return "";
     return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
   };
 
-  
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   if (authLoading || isLoading) {
     return (
       <div className="d-flex justify-content-center align-items-center vh-100">
@@ -104,7 +116,6 @@ const BlogList = () => {
         </div>
 
         <div className="row g-4">
-          {/* SIDEBAR FILTER */}
           <div className="col-lg-3">
             <div className="card shadow-sm">
               <div className="card-header fw-bold">Lọc theo gói</div>
@@ -128,65 +139,79 @@ const BlogList = () => {
             </div>
           </div>
 
-          {/* POSTS GRID */}
           <div className="col-lg-9">
-            <div className="row row-cols-1 row-cols-md-2 g-4">
-              {filteredPosts.length === 0 && (
+            <div className="row g-4">
+              {currentPosts.length === 0 ? (
                 <div className="text-center py-5">
                   <p className="text-muted">Không có bài đăng</p>
                 </div>
-              )}
-              {filteredPosts.map((post) => (
-                <div key={post._id} className="col">
-                  <Link
-                    to={`/postdetail/${post._id}`}
-                    className="text-decoration-none text-dark"
-                  >
-                    <div className="card h-100 shadow-sm">
-                      {post.images?.[0] ? (
-                        <img
-                          src={post.images[0]}
-                          alt={post.title}
-                          className="card-img-top"
-                          style={{ height: "200px", objectFit: "cover" }}
-                        />
-                      ) : (
-                        <div
-                          className="card-img-top bg-light d-flex align-items-center justify-content-center"
-                          style={{ height: "200px" }}
-                        >
-                          <span className="fs-1 text-muted">🏠</span>
+              ) : (
+                currentPosts.map((post) => (
+                  <div key={post._id} className="col-12">
+                    <Link to={`/postdetail/${post._id}`} className="text-decoration-none text-dark">
+                      <div className="card h-100 shadow-sm d-flex flex-row" style={{ minHeight: '200px' }}>
+                        <div style={{ width: "35%", height: "200px", overflow: "hidden" }}>
+                          {post.images?.[0] ? (
+                            <img
+                              src={post.images[0]}
+                              alt={post.title}
+                              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            />
+                          ) : (
+                            <div className="d-flex align-items-center justify-content-center bg-light" style={{ width: "100%", height: "100%" }}>
+                              <span className="fs-1 text-muted">🏠</span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                      <div className="card-body">
-                        <h5 className="card-title d-flex justify-content-between align-items-center">
-                          {post.title}
-                          <span className={getPackageBadgeClass(post.postPackage?.type)}>
-                            {post.postPackage?.type || "Standard"}
-                          </span>
-                        </h5>
-                        <p className="card-text small text-muted mb-2">
-  {truncateText(post.description, 100)}
-</p>
-                        <ul className="list-unstyled small mb-2">
-                          <li><i className="bi bi-geo-alt"></i> {post.location}</li>
-                          <li><i className="bi bi-aspect-ratio"></i> {post.area} m²</li>
-                          <li><i className="bi bi-cash"></i> {formatPrice(post.price)}</li>
-                        </ul>
-                        <div className="d-flex justify-content-between align-items-center">
-                          <span className="small">
-                            👤 {post.contactInfo?.name}
-                          </span>
-                          <span className={`badge ${post.status === "active" ? "bg-success" : "bg-danger"}`}>
-                            {post.status === "active" ? "Đang hoạt động" : "Không hoạt động"}
-                          </span>
+                        <div className="card-body d-flex flex-column justify-content-between" style={{ width: "65%" }}>
+                          <div>
+                            <h5 className="card-title d-flex justify-content-between align-items-center">
+                              {post.title}
+                              <span className={getPackageBadgeClass(post.postPackage?.type)}>
+                                {post.postPackage?.type || "Standard"}
+                              </span>
+                            </h5>
+                            <p className="card-text small text-muted mb-2">
+                              {truncateText(post.description, 120)}
+                            </p>
+                            <ul className="list-unstyled small mb-2">
+                              <li><i className="bi bi-geo-alt"></i> {post.location}</li>
+                              <li><i className="bi bi-aspect-ratio"></i> {post.area} m²</li>
+                              <li className="fw-bold fs-5">
+                                <i className="bi bi-cash"></i> {formatPrice(post.price)}
+                              </li>
+                            </ul>
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center">
+                            <span className="small">👤 {post.contactInfo?.name}</span>
+                            <span className={`badge ${post.status === "active" ? "bg-success" : "bg-danger"}`}>
+                              {post.status === "active" ? "Đang hoạt động" : "Không hoạt động"}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
-                </div>
-              ))}
+                    </Link>
+                  </div>
+                ))
+              )}
             </div>
+
+            {totalPages > 1 && (
+              <div className="d-flex justify-content-center mt-4">
+                <nav>
+                  <ul className="pagination">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <li key={page} className={`page-item ${page === currentPage ? "active" : ""}`}>
+                        <button className="page-link" onClick={() => handlePageChange(page)}>
+                          {page}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              </div>
+            )}
+
           </div>
         </div>
       </div>
