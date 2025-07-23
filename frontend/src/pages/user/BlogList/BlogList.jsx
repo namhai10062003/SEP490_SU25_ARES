@@ -1,25 +1,33 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState, useRef } from "react";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
 import { getAllPostsActive } from "../../../service/postService";
-
+import { FaFilter, FaMoneyBill, FaTimes } from "react-icons/fa";
+import { Link } from "react-router-dom";
 const BlogList = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
-  const [selectedFilter, setSelectedFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [name, setName] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-
-  const postsPerPage = 10;
+  const [showFilter, setShowFilter] = useState(false);
+  const [filter, setFilter] = useState({
+    minPrice: "",
+    maxPrice: "",
+    minArea: "",
+    maxArea: "",
+    location: "",
+    status: "all",
+  });
+  const postsPerPage = 9;
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [hoveredImageIdx, setHoveredImageIdx] = useState(0);
+  const hoverTimer = useRef(null);
 
   useEffect(() => {
-    if (user && user.name) {
-      setName(user.name);
-    }
+    if (user && user.name) setName(user.name);
   }, [user]);
 
   useEffect(() => {
@@ -27,8 +35,9 @@ const BlogList = () => {
   }, []);
 
   useEffect(() => {
-    filterPosts();
-  }, [posts, selectedFilter]);
+    applyFilter();
+    setCurrentPage(1);
+  }, [posts, filter]);
 
   const fetchPosts = async () => {
     setIsLoading(true);
@@ -36,12 +45,8 @@ const BlogList = () => {
     try {
       const response = await getAllPostsActive();
       if (response.data.success) {
-        const sortedPosts = response.data.data.sort((a, b) => {
-          const priceA = a.postPackage?.price || 0;
-          const priceB = b.postPackage?.price || 0;
-          return priceB - priceA;
-        });
-        setPosts(sortedPosts);
+        const sorted = response.data.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setPosts(sorted);
       } else {
         setError("Không thể tải dữ liệu bài đăng");
       }
@@ -52,32 +57,30 @@ const BlogList = () => {
     }
   };
 
-  const filterPosts = () => {
-    const filtered = selectedFilter === "all"
-      ? posts
-      : posts.filter((p) => p.postPackage?.type === selectedFilter);
+  const applyFilter = () => {
+    let filtered = posts;
+    if (filter.minPrice)
+      filtered = filtered.filter((p) => p.price >= Number(filter.minPrice));
+    if (filter.maxPrice)
+      filtered = filtered.filter((p) => p.price <= Number(filter.maxPrice));
+    if (filter.minArea)
+      filtered = filtered.filter((p) => p.area >= Number(filter.minArea));
+    if (filter.maxArea)
+      filtered = filtered.filter((p) => p.area <= Number(filter.maxArea));
+    if (filter.location)
+      filtered = filtered.filter((p) =>
+        p.location?.toLowerCase().includes(filter.location.toLowerCase())
+      );
+    if (filter.status !== "all")
+      filtered = filtered.filter((p) => p.status === filter.status);
     setFilteredPosts(filtered);
-    setCurrentPage(1);
   };
 
   const formatPrice = (price) =>
     new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
 
-  const getPackageBadgeClass = (type) => {
-    switch (type) {
-      case "VIP1": return "badge bg-primary";
-      case "VIP2": return "badge bg-danger";
-      case "VIP3": return "badge bg-warning text-dark";
-      default: return "badge bg-secondary";
-    }
-  };
-
-  const truncateText = (text, maxLength = 100) => {
-    if (!text) return "";
-    return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
-  };
-
-  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  // Pagination logic
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / postsPerPage));
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
@@ -86,6 +89,42 @@ const BlogList = () => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
       window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  // Pagination UI logic (max 5 page numbers, ... for jump)
+  const getPageNumbers = () => {
+    const pages = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, "...", totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages);
+      }
+    }
+    return pages;
+  };
+
+  // Image hover effect logic (2s per image, smooth, no lag)
+  const handleMouseEnter = (idx, images) => {
+    setHoveredIndex(idx);
+    setHoveredImageIdx(0);
+    if (images && images.length > 1 && !hoverTimer.current) {
+      hoverTimer.current = setInterval(() => {
+        setHoveredImageIdx((prev) => (prev + 1) % images.length);
+      }, 2000);
+    }
+  };
+  const handleMouseLeave = () => {
+    setHoveredIndex(null);
+    setHoveredImageIdx(0);
+    if (hoverTimer.current) {
+      clearInterval(hoverTimer.current);
+      hoverTimer.current = null;
     }
   };
 
@@ -109,53 +148,162 @@ const BlogList = () => {
   return (
     <div>
       <Header user={user} name={name} logout={logout} />
-      <div className="container py-4">
-        <div className="text-center mb-4">
-          <h1>📋 Danh sách bài đăng</h1>
-          <p className="text-muted">Tổng cộng {filteredPosts.length} bài đăng</p>
-        </div>
+      <div className="container py-4 position-relative">
+        {/* Filter icon */}
+        <button
+          className="btn btn-light shadow rounded-circle position-absolute"
+          style={{
+            top: 10,
+            left: 10,
+            zIndex: 20,
+            width: 48,
+            height: 48,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            border: "1px solid #ddd",
+          }}
+          onClick={() => setShowFilter((v) => !v)}
+          aria-label="Bộ lọc"
+        >
+          <FaFilter size={22} color={showFilter ? "#1976d2" : "#888"} />
+        </button>
 
-        <div className="row g-4">
-          <div className="col-lg-3">
-            <div className="card shadow-sm">
-              <div className="card-header fw-bold">Lọc theo gói</div>
-              <ul className="list-group list-group-flush">
-                {["all", "VIP1", "VIP2", "VIP3"].map((v) => (
-                  <li
-                    key={v}
-                    className={`list-group-item d-flex justify-content-between align-items-center ${selectedFilter === v ? 'active text-white bg-primary' : ''}`}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => setSelectedFilter(v)}
-                  >
-                    {v === "all" ? "Tất cả" : v}
-                    <span className="badge bg-light text-dark">
-                      {v === "all"
-                        ? posts.length
-                        : posts.filter((p) => p.postPackage?.type === v).length}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+        <div className="mx-auto" style={{ maxWidth: 1300 }}>
+          <div className="text-center mb-4">
+            <h1>📋 Danh sách bài đăng</h1>
+            <p className="text-muted">Tổng cộng {filteredPosts.length} bài đăng</p>
           </div>
+          <div className="row g-4">
+            {/* Filter Sidebar */}
+            {showFilter && (
+              <div className="col-12 col-lg-3">
+                <div className="card shadow-sm border-0 p-3 mb-3 mb-lg-0">
+                  <div className="row g-2 align-items-center">
+                    <div className="col-6 col-lg-12">
+                      <input
+                        type="number"
+                        className="form-control mb-2"
+                        placeholder="Giá từ (VNĐ)"
+                        value={filter.minPrice}
+                        onChange={e => setFilter(f => ({ ...f, minPrice: e.target.value }))}
+                      />
+                    </div>
 
-          <div className="col-lg-9">
-            <div className="row g-4">
-              {currentPosts.length === 0 ? (
-                <div className="text-center py-5">
-                  <p className="text-muted">Không có bài đăng</p>
+                    <div className="col-6 col-lg-12">
+                      <input
+                        type="number"
+                        className="form-control mb-2"
+                        placeholder="Đến (VNĐ)"
+                        value={filter.maxPrice}
+                        onChange={e => setFilter(f => ({ ...f, maxPrice: e.target.value }))}
+                      />
+                    </div>
+                    <div className="col-6 col-lg-12">
+                      <input
+                        type="number"
+                        className="form-control mb-2"
+                        placeholder="Diện tích từ (m²)"
+                        value={filter.minArea}
+                        onChange={e => setFilter(f => ({ ...f, minArea: e.target.value }))}
+                      />
+                    </div>
+                    <div className="col-6 col-lg-12">
+                      <input
+                        type="number"
+                        className="form-control mb-2"
+                        placeholder="Đến (m²)"
+                        value={filter.maxArea}
+                        onChange={e => setFilter(f => ({ ...f, maxArea: e.target.value }))}
+                      />
+                    </div>
+                    <div className="col-6 col-lg-12">
+                      <input
+                        type="text"
+                        className="form-control mb-2"
+                        placeholder="Vị trí"
+                        value={filter.location}
+                        onChange={e => setFilter(f => ({ ...f, location: e.target.value }))}
+                      />
+                    </div>
+                    <div className="col-6 col-lg-12">
+                      <select
+                        className="form-select mb-2"
+                        value={filter.status}
+                        onChange={e => setFilter(f => ({ ...f, status: e.target.value }))}
+                      >
+                        <option value="all">Tất cả</option>
+                        <option value="active">Đang hoạt động</option>
+                        <option value="pending">Chờ duyệt</option>
+                        <option value="rejected">Từ chối</option>
+                      </select>
+                    </div>
+                    <div className="col-12 d-flex gap-2">
+                      <button
+                        className="btn btn-outline-secondary w-100"
+                        onClick={() =>
+                          setFilter({
+                            minPrice: "",
+                            maxPrice: "",
+                            minArea: "",
+                            maxArea: "",
+                            location: "",
+                            status: "all",
+                          })
+                        }
+                      >
+                        Xoá bộ lọc
+                      </button>
+                      <button className="btn btn-light" onClick={() => setShowFilter(false)}>
+                        <FaTimes />
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              ) : (
-                currentPosts.map((post) => (
-                  <div key={post._id} className="col-12">
-                    <Link to={`/postdetail/${post._id}`} className="text-decoration-none text-dark">
-                      <div className="card h-100 shadow-sm d-flex flex-row" style={{ minHeight: '200px' }}>
-                        <div style={{ width: "35%", height: "200px", overflow: "hidden" }}>
-                          {post.images?.[0] ? (
+              </div>
+            )}
+
+            {/* Posts Grid */}
+            <div className={showFilter ? "col-12 col-lg-9" : "col-12"}>
+              <div className="row g-4">
+                {currentPosts.length === 0 ? (
+                  <div className="text-center py-5">
+                    <p className="text-muted">Không có bài đăng</p>
+                  </div>
+                ) : (
+                  currentPosts.map((post, idx) => (
+                    <div key={post._id} className="col-12 col-md-6 col-lg-4 d-flex">
+                      <Link
+                        to={`/postdetail/${post._id}`}
+                        className="card h-100 shadow-sm border-0 text-decoration-none text-dark w-100"
+                        style={{
+                          minHeight: '260px',
+                          outline: "none",
+                          cursor: "pointer",
+                          transition: "transform 0.22s cubic-bezier(.4,2,.3,1), box-shadow 0.22s cubic-bezier(.4,2,.3,1)",
+                          transform: hoveredIndex === idx ? "scale(1.03)" : "none",
+                          boxShadow: hoveredIndex === idx ? "0 8px 32px rgba(25,118,210,0.13)" : undefined,
+                          border: hoveredIndex === idx ? "1.5px solid #1976d2" : "1px solid #eee",
+                          zIndex: hoveredIndex === idx ? 2 : 1,
+                          display: "block"
+                        }}
+                        onMouseEnter={() => handleMouseEnter(idx, post.images)}
+                        onMouseLeave={handleMouseLeave}
+                      >
+                        <div style={{ width: "100%", height: "180px", overflow: "hidden", borderTopLeftRadius: 8, borderTopRightRadius: 8, position: "relative" }}>
+                          {post.images?.length ? (
                             <img
-                              src={post.images[0]}
+                              src={hoveredIndex === idx && post.images.length > 1
+                                ? post.images[hoveredImageIdx % post.images.length]
+                                : post.images[0]}
                               alt={post.title}
-                              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                opacity: 1,
+                                transition: "opacity 0.5s cubic-bezier(.4,2,.3,1)"
+                              }}
                             />
                           ) : (
                             <div className="d-flex align-items-center justify-content-center bg-light" style={{ width: "100%", height: "100%" }}>
@@ -163,59 +311,136 @@ const BlogList = () => {
                             </div>
                           )}
                         </div>
-                        <div className="card-body d-flex flex-column justify-content-between" style={{ width: "65%" }}>
-                          <div>
-                            <h5 className="card-title d-flex justify-content-between align-items-center">
+                        <div className="card-body d-flex flex-column justify-content-between" style={{ minHeight: 120 }}>
+                          <div className="d-flex align-items-center mb-2" style={{ minHeight: 56 }}>
+                            <span
+                              className="fw-semibold"
+                              style={{
+                                fontSize: 20,
+                                lineHeight: "1.2",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap", // <-- THIS is the key for 1 line
+                                flex: 1,
+                                marginRight: 8
+                              }}
+                              title={post.title}
+                            >
                               {post.title}
-                              <span className={getPackageBadgeClass(post.postPackage?.type)}>
-                                {post.postPackage?.type || "Standard"}
-                              </span>
-                            </h5>
-                            <p className="card-text small text-muted mb-2">
-                              {truncateText(post.description, 120)}
-                            </p>
-                            <ul className="list-unstyled small mb-2">
-                              <li><i className="bi bi-geo-alt"></i> {post.location}</li>
-                              <li><i className="bi bi-aspect-ratio"></i> {post.area} m²</li>
-                              <li className="fw-bold fs-5">
-                                <i className="bi bi-cash"></i> {formatPrice(post.price)}
-                              </li>
-                            </ul>
-                          </div>
-                          <div className="d-flex justify-content-between align-items-center">
-                            <span className="small">👤 {post.contactInfo?.name}</span>
-                            <span className={`badge ${post.status === "active" ? "bg-success" : "bg-danger"}`}>
-                              {post.status === "active" ? "Đang hoạt động" : "Không hoạt động"}
                             </span>
+                            <span className="badge bg-primary  flex-shrink-0">{post.postPackage?.type || "Standard"}</span>
+                          </div>
+                          {/* Practical info grid */}
+                          <div className="row g-1 small mb-2">
+                            <div className="col-12">
+                              <span
+                                className="fw-bold"
+                                style={{
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                  display: "inline-block",
+                                  maxWidth: "80px", // adjust as needed for label width
+                                  verticalAlign: "middle"
+                                }}
+                              >
+                                Địa chỉ:
+                              </span>
+                              <span
+                                style={{
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  whiteSpace: "nowrap",
+                                  display: "inline-block",
+                                  maxWidth: "calc(100% - 90px)", // adjust to fit your layout
+                                  verticalAlign: "middle"
+                                }}
+                                title={post.location}
+                              >
+                                {" "} {post.location}
+                              </span>
+                            </div>
+                            <div className="col-6">
+                              <span className="fw-semibold text-muted">Mã căn hộ:</span> {post.apartmentCode || "—"}
+                            </div>
+                            <div className="col-6">
+                              <span className="fw-semibold text-muted">Loại:</span> {post.property === "nha_can_ho" ? "Căn hộ" : post.property === "nha_dat" ? "Nhà/Đất" : post.property}
+                            </div>
+                            <div className="col-6">
+                              <span className="fw-semibold text-muted">Diện tích:</span> {post.area} m²
+                            </div>
+                            <div className="col-6">
+                              <span className="fw-semibold text-muted">Nội thất:</span> {post.interiorStatus || "—"}
+                            </div>
+                            <div className="col-6">
+                              <span className="fw-semibold text-muted">Ngày đăng:</span> {new Date(post.createdAt).toLocaleDateString("vi-VN")}
+                            </div>
+
+                          </div>
+                          <div className="d-flex align-items-end justify-content-between mt-2">
+                            <span className="fw-bold text-danger">Giá: {formatPrice(post.price)}</span>
+                          </div>
+                          {/* Contact and type */}
+                          <div className="d-flex justify-content-between align-items-end mt-auto pt-2">
+                            <div>
+                              <span className="fw-semibold text-muted">Người đăng:</span> {post.contactInfo?.name}
+                              <br />
+
+                            </div>
+                            <span className="badge bg-secondary">{post.type === "ban" ? "Bán/Cho thuê" : post.type}</span>
                           </div>
                         </div>
-                      </div>
-                    </Link>
-                  </div>
-                ))
-              )}
-            </div>
+                      </Link>
+                    </div>
+                  ))
+                )}
+              </div>
 
-            {totalPages > 1 && (
+              {/* Pagination */}
               <div className="d-flex justify-content-center mt-4">
                 <nav>
-                  <ul className="pagination">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <li key={page} className={`page-item ${page === currentPage ? "active" : ""}`}>
-                        <button className="page-link" onClick={() => handlePageChange(page)}>
-                          {page}
-                        </button>
-                      </li>
-                    ))}
+                  <ul className="pagination mb-0">
+                    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
+                      <button className="page-link" onClick={() => handlePageChange(currentPage - 1)}>
+                        &laquo; Prev
+                      </button>
+                    </li>
+                    {getPageNumbers().map((page, idx) =>
+                      page === "..." ? (
+                        <li key={idx} className="page-item">
+                          <button
+                            className="page-link"
+                            style={{ minWidth: 40, padding: "0 8px" }}
+                            onClick={() => {
+                              const input = prompt("Nhập số trang muốn chuyển đến:", currentPage);
+                              const num = Number(input);
+                              if (num && num >= 1 && num <= totalPages) handlePageChange(num);
+                            }}
+                          >
+                            ...
+                          </button>
+                        </li>
+                      ) : (
+                        <li key={page} className={`page-item ${page === currentPage ? "active" : ""}`}>
+                          <button className="page-link" onClick={() => handlePageChange(page)}>
+                            {page}
+                          </button>
+                        </li>
+                      )
+                    )}
+                    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
+                      <button className="page-link" onClick={() => handlePageChange(currentPage + 1)}>
+                        Next &raquo;
+                      </button>
+                    </li>
                   </ul>
                 </nav>
               </div>
-            )}
-
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 

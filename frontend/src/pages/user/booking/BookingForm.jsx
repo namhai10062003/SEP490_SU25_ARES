@@ -13,7 +13,7 @@ const BookingForm = () => {
   const { user } = useAuth();
   const [name, setName] = useState("");
   const navigate = useNavigate();
-  const hasWarned = useRef(false); 
+  const hasWarned = useRef(false);
   const [post, setPost] = useState(null);
   const [form, setForm] = useState({
     startDate: "",
@@ -34,12 +34,12 @@ const BookingForm = () => {
     };
     fetchPost();
   }, [postId]);
-//set ten
-useEffect(() => {
-  if (user?.name) {
-    setName(user.name);
-  }
-}, [user]);
+  //set ten
+  useEffect(() => {
+    if (user?.name) {
+      setName(user.name);
+    }
+  }, [user]);
 
   //kiểm tra xem thử có cccd hay ko
   useEffect(() => {
@@ -47,7 +47,7 @@ useEffect(() => {
       if (!user.identityNumber || !user.address) {
         toast.error("❌ Bạn cần cập nhật CMND/CCCD và địa chỉ trước khi tạo hợp đồng");
         hasWarned.current = true;
-  
+
         setTimeout(() => {
           navigate("/profile");
         }, 1000); // ⏱ Chờ 3 giây rồi mới chuyển trang
@@ -141,9 +141,18 @@ useEffect(() => {
     <div className="bg-light min-vh-100">
       <Header user={user} />
       <div className="container py-5 my-4">
+        <button
+          type="button"
+          className="btn btn-secondary mb-3"
+          onClick={() => navigate(-1)}
+        >
+          ← Quay lại
+        </button>
+        <h2 className="text-center mb-4">Đặt cọc giữ chỗ</h2>
         <div className="card shadow-sm p-4">
           <h4 className="fw-bold text-primary mb-3">
-            Đặt cọc giữ chỗ: {post.apartmentCode} - {post.location}
+            Mã căn hộ: {post.apartmentCode} <br />
+            Địa chỉ: {post.location}
           </h4>
           <p>
             Giá thuê: <strong>{post.price.toLocaleString("vi-VN")} VNĐ/tháng</strong>

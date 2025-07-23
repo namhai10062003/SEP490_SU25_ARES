@@ -12,8 +12,8 @@ import {
 import { Modal } from "react-bootstrap";
 import Slider from "react-slick";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
-import "bootstrap/dist/css/bootstrap.min.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
@@ -29,6 +29,7 @@ import {
   addComment,
   checkLiked,
   getLikeCount,
+  reportPost,
 } from "../../../service/postInteractionService.js";
 
 const PostDetail = () => {
@@ -46,6 +47,14 @@ const PostDetail = () => {
   const [relatedPosts, setRelatedPosts] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
+
+  // New: toggles for comment & report
+  const [showComments, setShowComments] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -111,6 +120,27 @@ const PostDetail = () => {
     setCommentText("");
   };
 
+  // Placeholder for report handler
+
+  const handleReport = async () => {
+    if (!reportReason.trim()) {
+      toast.warn("Vui lòng nhập lý do báo cáo!", { position: "top-right" });
+      return;
+    }
+    try {
+      await reportPost(id, { reason: reportReason, description: reportDescription });
+      toast.success("Đã gửi báo cáo!", { position: "top-right" });
+      setReportReason("");
+      setReportDescription("");
+      setShowReport(false);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || "Gửi báo cáo thất bại.",
+        { position: "top-right" }
+      );
+    }
+  };
+
   if (loading) return <div className="text-center py-5">🔄 Đang tải dữ liệu…</div>;
   if (err) return <div className="text-danger text-center py-5">{err}</div>;
 
@@ -140,7 +170,12 @@ const PostDetail = () => {
                 src={post.images?.[selectedIndex] || "https://via.placeholder.com/800x500"}
                 alt="main"
                 className="img-fluid rounded shadow-sm"
-                style={{ maxHeight: 450, objectFit: "cover", width: "100%" }}
+                style={{
+                  width: "100%",
+                  height: 400, // fixed height
+                  objectFit: "cover",
+                  background: "#f5f5f5"
+                }}
               />
               <button
                 className="btn btn-light position-absolute top-0 end-0 m-2"
@@ -151,26 +186,31 @@ const PostDetail = () => {
             </div>
 
             {/* Thumbnails in slick */}
-            <div className="mt-2">
-              <Slider {...thumbSliderSettings}>
-                {(post.images || []).map((img, idx) => (
-                  <div key={idx} onClick={() => setSelectedIndex(idx)}>
-                    <img
-                      src={img}
-                      alt={`thumb-${idx}`}
-                      style={{
-                        width: "95%",
-                        height: 80,
-                        objectFit: "cover",
-                        border: idx === selectedIndex ? "2px solid #0d6efd" : "1px solid #ddd",
-                        borderRadius: 4,
-                        cursor: "pointer",
-                      }}
-                    />
-                  </div>
-                ))}
-              </Slider>
-            </div>
+            {(post.images || []).length > 1 ? (
+              <div className="mt-2">
+                <Slider {...thumbSliderSettings}>
+                  {(post.images || []).map((img, idx) => (
+                    <div key={idx} onClick={() => setSelectedIndex(idx)}>
+                      <img
+                        src={img}
+                        alt={`thumb-${idx}`}
+                        style={{
+                          width: "95%",
+                          height: 80,
+                          objectFit: "cover",
+                          border: idx === selectedIndex ? "2px solid #0d6efd" : "1px solid #ddd",
+                          borderRadius: 4,
+                          cursor: "pointer",
+                          background: "#f5f5f5"
+                        }}
+                      />
+                    </div>
+                  ))}
+                </Slider>
+              </div>
+            ) : null}
+
+
           </div>
 
           {/* Right column: Info */}
@@ -198,10 +238,31 @@ const PostDetail = () => {
             </button>
 
             <button
-              className="btn btn-outline-primary"
-              onClick={() => document.getElementById("comments").scrollIntoView({ behavior: "smooth" })}
+              className="btn btn-outline-primary me-2"
+              onClick={() => {
+                setShowComments((prev) => !prev);
+                setTimeout(() => {
+                  const el = document.getElementById("comments");
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }, 100); // wait for render
+              }}
             >
               💬 Bình luận
+            </button>
+
+            <button
+              className="btn btn-outline-warning me-2"
+              onClick={() => setShowReportModal(true)}
+            >
+              🚩 Báo cáo
+            </button>
+
+
+            <button
+              className="btn btn-success"
+              onClick={() => navigate(`/booking/${post._id}`)}
+            >
+              📄 Đặt chỗ
             </button>
           </div>
         </div>
@@ -227,25 +288,49 @@ const PostDetail = () => {
         </div>
 
         {/* Comments */}
-        <div className="mt-4" id="comments">
-          <h4>💬 Bình luận</h4>
-          <textarea
-            className="form-control mb-2"
-            placeholder="Viết bình luận…"
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-          />
-          <button className="btn btn-primary mb-3" onClick={handleAddComment}>
-            Gửi bình luận
-          </button>
-          <ul className="list-group">
-            {comments.map((c, idx) => (
-              <li key={idx} className="list-group-item">
-                <strong>{c.user?.name || "Ẩn danh"}:</strong> {c.content}
-              </li>
-            ))}
-          </ul>
-        </div>
+        {showComments && (
+          <div className="mt-4" id="comments">
+            <h4>💬 Bình luận</h4>
+            <textarea
+              className="form-control mb-2"
+              placeholder="Viết bình luận…"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+            />
+            <button className="btn btn-primary mb-3" onClick={handleAddComment}>
+              Gửi bình luận
+            </button>
+            <ul className="list-group">
+              {comments.map((c, idx) => (
+                <li key={idx} className="list-group-item">
+                  <strong>{c.user?.name || "Ẩn danh"}:</strong> {c.content}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Report */}
+        {showReport && (
+          <div className="mt-4">
+            <h4>🚩 Báo cáo</h4>
+            <input
+              className="form-control mb-2"
+              placeholder="Lý do báo cáo"
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+            />
+            <textarea
+              className="form-control mb-2"
+              placeholder="Mô tả chi tiết (tuỳ chọn)"
+              value={reportDescription}
+              onChange={(e) => setReportDescription(e.target.value)}
+            />
+            <button className="btn btn-warning mb-3" onClick={handleReport}>
+              Gửi báo cáo
+            </button>
+          </div>
+        )}
 
         {/* Related posts */}
         {relatedPosts.length > 0 && (
@@ -297,14 +382,85 @@ const PostDetail = () => {
                   alt={`modal-${idx}`}
                   className="d-block mx-auto"
                   style={{
-                    maxHeight: "80vh",
-                    objectFit: "contain",
+                    width: "100%",
+                    height: "70vh", // or 60vh if you want less height
+                    objectFit: "cover",
+                    background: "#f5f5f5",
+                    borderRadius: 8,
                   }}
                 />
               </div>
             ))}
           </Slider>
         </Modal.Body>
+      </Modal>
+      {/* Report Modal */}
+      <Modal
+        show={showReportModal}
+        onHide={() => setShowReportModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>🚩 Báo cáo bài đăng</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="mb-3">
+            <label className="form-label fw-bold">Lý do báo cáo <span className="text-danger">*</span></label>
+            <select
+              className="form-select"
+              value={reportReason}
+              onChange={e => setReportReason(e.target.value)}
+            >
+              <option value="">-- Chọn lý do --</option>
+              <option value="Tin giả mạo">Tin giả mạo</option>
+              <option value="Nội dung không phù hợp">Nội dung không phù hợp</option>
+              <option value="Lừa đảo">Lừa đảo</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Mô tả chi tiết (tuỳ chọn)</label>
+            <textarea
+              className="form-control"
+              rows={3}
+              placeholder="Nhập mô tả chi tiết nếu cần..."
+              value={reportDescription}
+              onChange={e => setReportDescription(e.target.value)}
+            />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <button
+            className="btn btn-secondary"
+            onClick={() => setShowReportModal(false)}
+            disabled={reportLoading}
+          >
+            Huỷ
+          </button>
+          <button
+            className="btn btn-warning"
+            disabled={!reportReason || reportLoading}
+            onClick={async () => {
+              if (!reportReason) return;
+              setReportLoading(true);
+              try {
+                await reportPost(id, { reason: reportReason, description: reportDescription });
+                toast.success("Đã gửi báo cáo!", { position: "top-right" });
+                setShowReportModal(false);
+                setReportReason("");
+                setReportDescription("");
+              } catch (error) {
+                toast.error(
+                  error?.response?.data?.message || "Gửi báo cáo thất bại.",
+                  { position: "top-right" }
+                );
+              }
+              setReportLoading(false);
+            }}
+          >
+            {reportLoading ? "Đang gửi..." : "Gửi báo cáo"}
+          </button>
+        </Modal.Footer>
       </Modal>
     </>
   );
