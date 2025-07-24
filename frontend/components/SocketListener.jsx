@@ -11,10 +11,6 @@ const SocketListener = () => {
         if (!socket) return;
         const handler = (data) => {
             toast.error(data.message || "Tài khoản của bạn đã bị khóa!");
-            logout();
-            setTimeout(() => {
-                window.location.href = "/login";
-            }, 3000);
         };
         socket.on("blocked", handler);
         return () => socket.off("blocked", handler);
