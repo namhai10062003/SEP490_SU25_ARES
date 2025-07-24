@@ -19,13 +19,7 @@ export const createPost = async (req, res) => {
                 error: true
             });
         }
-        if (userID.canPost === 0) {
-            return res.status(403).json({
-                message: "Bạn đã bị chặn đăng bài bởi admin. Xin vui lòng liên hệ admin để biết thêm chi tiết.",
-                success: false,
-                error: true
-            });
-        }
+
         // Kiểm tra gói đăng tin có tồn tại không
         const postPackage = await PostPackage.findById(postData.postPackage);
         if (!postPackage) {
