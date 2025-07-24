@@ -1,6 +1,4 @@
 import Like from "../models/Like.js";
-import Post from "../models/Post.js";
-import Notification from "../models/Notification.js";
 // danh sach bài post đã like 
 
 export const getLikedPostsByUser = async (req, res) => {
@@ -45,13 +43,7 @@ export const toggleLike = async (req, res) => {
       return res.json({ success: true, liked: false });
     }
 
-    const post = await Post.findById(postId).populate('contactInfo');
-    const postOwnerId = post?.contactInfo?._id;
-    await Notification.create({
-      userId: postOwnerId,
-      message: `Bài viết ${postId} của bạn đã được thích 👍.`
-    });
-
+    await Like.create({ post: postId, user: userId });
     res.json({ success: true, liked: true });
   } catch (err) {
     res.status(500).json({ success: false, message: "Like thất bại", error: err.message });
