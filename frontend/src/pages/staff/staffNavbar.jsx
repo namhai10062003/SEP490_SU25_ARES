@@ -241,7 +241,7 @@ const StaffNavbar = () => {
               Quản Lý Nhân Khẩu
             </Link>
           </li>
-          <li className="nav-item">
+          {/* <li className="nav-item">
             <Link
               to="/staff-citizenlist"
               className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-citizenlist"
@@ -257,7 +257,7 @@ const StaffNavbar = () => {
             >
               Danh sách Nhân Khẩu
             </Link>
-          </li>
+          </li> */}
           {/* Dropdown quản lý cư dân */}
           <li className="nav-item">
             {/* Không dùng nav-link cho div cha để tránh lỗi mất label */}
