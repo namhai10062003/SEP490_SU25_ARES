@@ -6,7 +6,7 @@ import Inbox from "../../../pages/user/messages/Inbox.jsx";
 
 const GlobalChatBox = () => {
   const { user } = useAuth();
-  const { receiver } = useChat();
+  const { receiver, postInfo } = useChat(); // 🟢 lấy thêm postInfo
   const [open, setOpen] = useState(false);
 
   if (!user) return null;
@@ -58,6 +58,7 @@ const GlobalChatBox = () => {
               currentUserId={user._id}
               receiverId={receiver.id}
               receiverName={receiver.name}
+              postInfo={postInfo} // ✅ truyền vào đây
             />
           ) : (
             <Inbox currentUserId={user._id} />

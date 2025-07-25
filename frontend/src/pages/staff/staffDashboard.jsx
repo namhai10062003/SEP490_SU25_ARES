@@ -1,71 +1,87 @@
-import React, { useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
+import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import StaffNavbar from './staffNavbar'; // Sử dụng navbar chung
-import h1 from "../images/banner.jpg";
-import socket from '../../server/socket';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {
+  Bar, BarChart, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis,
+  YAxis
+} from 'recharts';
+import socket from '../../server/socket';
+import StaffNavbar from './staffNavbar';
 
 const StaffDashboard = () => {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({
+    parking: { total: 0, pending: 0, approved: 0, rejected: 0 },
+    fees: { total: 0, paid: 0, unpaid: 0 },
+    residents: { verifiedResidents: 0, rejectedResidents: 0 },
+    verifications: { total: 0, pending: 0, approved: 0, rejected: 0 }
+    
+  });
+  const [monthlyRevenue, setMonthlyRevenue] = useState([]);
+
   const token = localStorage.getItem('token');
   let userName = 'Người dùng';
-
   if (token) {
     try {
-      const decoded = jwtDecode(token);
-      userName = decoded?.name || 'Người dùng';
-    } catch (error) {
-      console.error("Lỗi khi giải mã token:", error);
+      userName = jwtDecode(token)?.name || userName;
+    } catch (e) {
+      console.error('Invalid token', e);
     }
   }
 
   useEffect(() => {
-    socket.on('staff:new-parking-request', (data) => {
-      const message = data['Có đăng ký gửi xe mới cần duyệt'] || '📥 Có yêu cầu gửi xe mới';
-      const registration = data?.registration || {};
-      const { apartmentCode, owner, licensePlate, vehicleType } = registration;
+    const fetchAllStats = async () => {
+      try {
+        const [parkingRes, feesRes, residentsRes, verifsRes, revenueRes] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/count-by-status`),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/fees/paid`),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/residents/status`),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/statistics`),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/revenue/monthly`)
+        ]);
 
-      toast.info(
-        `${message}: 🚗 Căn hộ ${apartmentCode} - ${owner} (${licensePlate}, ${vehicleType})`,
-        {
-          position: 'top-right',
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          onClick: () => {
-            navigate(`/manage-parkinglot`);
-          },
-        }
-      );
+        // ✅ Lấy đúng data từ res.data.data
+        const parkingData = parkingRes.data|| {};
+        const feesData = feesRes.data?.data || {};
+        const residentsData = residentsRes.data || {};
+        const verifsData = verifsRes.data?.data || {};
+        const revenueData = revenueRes.data?.data || [];
+        setMonthlyRevenue(revenueData);
+        console.log("🚗 Parking API:", parkingData);
+        console.log("💰 Fees API:", feesData);
+        console.log("🧑‍🤝‍🧑 Residents API:", residentsData);
+        console.log("📋 Verifications API:", verifsData);
+
+        setStats({
+          parking: parkingData,
+          fees: feesData,
+          residents: residentsData,
+          verifications: verifsData
+        });
+      } catch (err) {
+        console.error('❌ Lỗi khi lấy thống kê:', err);
+        toast.error('Không thể tải thống kê, vui lòng thử lại sau.');
+      }
+    };
+
+    fetchAllStats();
+  }, []);
+
+  useEffect(() => {
+    socket.on('staff:new-parking-request', data => {
+      const { apartmentCode, owner, licensePlate, vehicleType } = data.registration;
+      toast.info(`📢 Yêu cầu gửi xe mới: ${apartmentCode} - ${owner} (${licensePlate}, ${vehicleType})`, {
+        onClick: () => navigate('/manage-parkinglot')
+      });
     });
 
-    socket.on('new-resident-registered', (resident) => {
-      const {
-        fullName,
-        gender,
-        apartmentCode,
-        relation,
-      } = resident;
-      toast.info(
-        `📋 Nhân khẩu mới: ${fullName} (${gender}, ${relation}) – Căn hộ ${apartmentCode}`,
-        {
-          position: 'top-right',
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          onClick: () => {
-            navigate('/resident-verify');
-          },
-        }
-      );
+    socket.on('new-resident-registered', resident => {
+      toast.info(`📋 Nhân khẩu mới: ${resident.fullName} – Căn hộ ${resident.apartmentCode}`, {
+        onClick: () => navigate('/resident-verify')
+      });
     });
 
     return () => {
@@ -74,23 +90,50 @@ const StaffDashboard = () => {
     };
   }, [navigate]);
 
-  const stats = [
-    { title: 'Bài Post', count: 128, color: 'primary' },
-    { title: 'Căn hộ & BĐS', count: 56, color: 'success' },
-    { title: 'Bãi đỗ xe', count: 78, color: 'warning' },
-    { title: 'Chi phí', count: 45, color: 'danger' },
-  ];
-
-  const users = [
-    { name: 'Nguyễn Văn A', email: 'nguyenvana@gmail.com', role: 'Admin', date: '2024-01-15' },
-    { name: 'Trần Thị B', email: 'tranthib@gmail.com', role: 'Nhân viên', date: '2024-02-12' },
-    { name: 'Phạm Văn C', email: 'phamvanc@gmail.com', role: 'Khách hàng', date: '2024-03-10' },
+  const cards = [
+    {
+      title: 'Đăng ký gửi xe',
+      lines: [
+        `Tổng: ${stats.parking.total}`,
+        `Chờ duyệt: ${stats.parking.pending}`,
+        `Đã duyệt: ${stats.parking.approved}`,
+        `Từ chối: ${stats.parking.rejected}`
+      ],
+      color: 'warning'
+    },
+    {
+      title: 'Hóa đơn phí',
+      lines: [
+        `Tổng: ${stats.fees.total}`,
+        `Đã thanh toán: ${stats.fees.paid}`,
+        `Chưa thanh toán: ${stats.fees.unpaid}`
+      ],
+      color: 'success'
+    },
+    {
+      title: 'Cư dân',
+      lines: [
+        `Đã xác minh: ${stats.residents.verifiedResidents}`,
+        `Bị từ chối: ${stats.residents.rejectedResidents}`
+      ],
+      color: 'info'
+    },
+    {
+      title: 'Xác minh cư dân',
+      lines: [
+        `Tổng Yêu cầu: ${stats.verifications.total}`,
+        `Chờ duyệt: ${stats.verifications.pending}`,
+        `Đã duyệt: ${stats.verifications.approved}`,
+        `Từ chối: ${stats.verifications.rejected}`
+      ],
+      color: 'primary'
+    }
   ];
 
   return (
     <div className="d-flex min-vh-100 bg-light">
       <ToastContainer />
-      <StaffNavbar /> {/* Navbar dùng chung cho staff */}
+      <StaffNavbar />
       <main className="flex-grow-1 p-4">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h2 className="fw-bold mb-0">Dashboard</h2>
@@ -100,71 +143,140 @@ const StaffDashboard = () => {
           </div>
         </div>
 
-        <h2 className="fw-bold mb-4">Bảng điều khiển</h2>
-
         <div className="row g-4 mb-4">
-          {stats.map((item, idx) => (
-            <div key={idx} className="col-12 col-md-6 col-lg-3">
+          {cards.map((c, i) => (
+            <div key={i} className="col-12 col-md-6 col-lg-3">
               <div className={`card border-0 shadow h-100`}>
-                <div className={`card-body text-center border-start border-5 border-${item.color}`}>
-                  <div className="text-secondary mb-2">{item.title}</div>
-                  <div className="fs-2 fw-bold mb-3">{item.count}</div>
-                  <button className={`btn btn-${item.color} rounded-pill px-4`}>Xem chi tiết</button>
+                <div className={`card-body text-center border-start border-5 border-${c.color}`}>
+                  <div className="text-secondary mb-2">{c.title}</div>
+                  <div className="text-start">
+                    {c.lines.map((l, j) => (<div key={j}>{l}</div>))}
+                  </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
+        <div className="row">
+  <h4 className="fw-bold mb-3">Biểu đồ thống kê</h4>
 
-        <div className="row g-4 mb-4">
-          <div className="col-12 col-lg-6">
-            <div className="card shadow h-100">
-              <div className="card-body text-center">
-                <h5 className="fw-bold mb-3">Doanh thu theo tháng</h5>
-                <img src={h1} alt="Doanh thu" className="img-fluid rounded" style={{ maxHeight: 200, objectFit: "cover" }} />
-              </div>
-            </div>
-          </div>
-          <div className="col-12 col-lg-6">
-            <div className="card shadow h-100">
-              <div className="card-body text-center">
-                <h5 className="fw-bold mb-3">Người đăng mới theo tháng</h5>
-                <img src={h1} alt="Người dùng mới" className="img-fluid rounded" style={{ maxHeight: 200, objectFit: "cover" }} />
-              </div>
-            </div>
-          </div>
-        </div>
+  {/* Pie Chart: Đăng ký gửi xe */}
+  <div className="col-md-6 col-lg-3 mb-4">
+    <h6 className="text-center">Gửi xe</h6>
+    <ResponsiveContainer width="100%" height={250}>
+      <PieChart>
+        <Pie
+          data={[
+            { name: 'Đã duyệt', value: stats.parking.approved },
+            { name: 'Chờ duyệt', value: stats.parking.pending },
+            { name: 'Từ chối', value: stats.parking.rejected }
+          ]}
+          dataKey="value"
+          outerRadius={80}
+          label
+        >
+          <Cell fill="#00C49F" />
+          <Cell fill="#FFBB28" />
+          <Cell fill="#FF4D4F" />
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
 
-        <div className="card shadow mb-4">
-          <div className="card-body">
-            <h5 className="fw-bold mb-3">Danh sách người dùng</h5>
-            <div className="table-responsive">
-              <table className="table table-bordered align-middle mb-0">
-                <thead className="table-primary">
-                  <tr>
-                    <th>#</th>
-                    <th>Tên</th>
-                    <th>Email</th>
-                    <th>Vai trò</th>
-                    <th>Ngày đăng ký</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user, idx) => (
-                    <tr key={idx}>
-                      <td>{idx + 1}</td>
-                      <td>{user.name}</td>
-                      <td>{user.email}</td>
-                      <td>{user.role}</td>
-                      <td>{user.date}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+  {/* Pie Chart: Hóa đơn */}
+  <div className="col-md-6 col-lg-3 mb-4">
+    <h6 className="text-center">Hóa đơn</h6>
+    <ResponsiveContainer width="100%" height={250}>
+      <PieChart>
+        <Pie
+          data={[
+            { name: 'Đã thanh toán', value: stats.fees.paid },
+            { name: 'Chưa thanh toán', value: stats.fees.unpaid }
+          ]}
+          dataKey="value"
+          outerRadius={80}
+          label
+        >
+          <Cell fill="#00C49F" />
+          <Cell fill="#FF4D4F" />
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
+
+  {/* Pie Chart: Cư dân */}
+  <div className="col-md-6 col-lg-3 mb-4">
+    <h6 className="text-center">Cư dân</h6>
+    <ResponsiveContainer width="100%" height={250}>
+      <PieChart>
+        <Pie
+          data={[
+            { name: 'Đã xác minh', value: stats.residents.verifiedResidents },
+            { name: 'Từ chối', value: stats.residents.rejectedResidents }
+          ]}
+          dataKey="value"
+          outerRadius={80}
+          label
+        >
+          <Cell fill="#00C49F" />
+          <Cell fill="#FF4D4F" />
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
+
+  {/* Pie Chart: Xác minh cư dân */}
+  <div className="col-md-6 col-lg-3 mb-4">
+    <h6 className="text-center">Xác minh cư dân</h6>
+    <ResponsiveContainer width="100%" height={250}>
+      <PieChart>
+        <Pie
+          data={[
+            { name: 'Đã duyệt', value: stats.verifications.approved },
+            { name: 'Chờ duyệt', value: stats.verifications.pending },
+            { name: 'Từ chối', value: stats.verifications.rejected }
+          ]}
+          dataKey="value"
+          outerRadius={80}
+          label
+        >
+          <Cell fill="#00C49F" />
+          <Cell fill="#FFBB28" />
+          <Cell fill="#FF4D4F" />
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
+</div>
+<div className="mt-5">
+  <h4 className="fw-bold mb-3">Doanh thu theo tháng</h4>
+  <ResponsiveContainer width="100%" height={300}>
+  <BarChart
+    data={monthlyRevenue.map(item => ({
+      month: item.month,
+      revenue: item.paid + item.unpaid
+    }))}
+    margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+  >
+    <Tooltip />
+    <Legend />
+    <XAxis dataKey="month" />
+    <YAxis />
+    <Bar dataKey="revenue" fill="#007bff" radius={[4, 4, 0, 0]} />
+  </BarChart>
+</ResponsiveContainer>
+</div>
+
       </main>
+      
     </div>
   );
 };

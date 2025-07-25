@@ -272,3 +272,30 @@ export const getResidentsByApartment = async (req, res) => {
       res.status(500).json({ message: 'Lỗi server', error: err.message });
     }
   };
+
+  // ✅ Lấy toàn bộ danh sách nhân khẩu (admin hoặc staff)
+  export const getAllResidents = async (req, res) => {
+    try {
+      const residents = await Resident.find().populate('apartmentId');
+  
+      const formatted = residents.map((r) => ({
+        fullName: r.fullName,
+        gender: r.gender,
+        dateOfBirth: r.dateOfBirth,
+        relationWithOwner: r.relationWithOwner,
+        verifiedByStaff: r.verifiedByStaff,
+        rejectReason: r.rejectReason,
+        apartmentCode: r.apartmentId?.apartmentCode || '---',
+        createdAt: r.createdAt,
+      }));
+  
+      return res.status(200).json({
+        message: 'Lấy danh sách toàn bộ nhân khẩu thành công',
+        data: formatted,
+      });
+    } catch (err) {
+      console.error('❌ Lỗi getAllResidents:', err);
+      return res.status(500).json({ message: 'Lỗi server', error: err.message });
+    }
+  };
+  

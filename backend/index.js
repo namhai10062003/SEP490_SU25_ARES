@@ -9,6 +9,7 @@ import connectToDatabase from "./db/db.js";
 import adminDashboardRoutes from "./router/adminDashboardRoutes.js";
 import apartmentRouter from "./router/apartmentRoutes.js";
 import authRouter from "./router/auth.js";
+import contactRoutes from "./router/contactRoutes.js";
 import contractRouter from "./router/contractRouter.js";
 import expenseRoutes from "./router/expenseRoutes.js";
 import feeRoutes from "./router/feeRoutes.js";
@@ -22,13 +23,13 @@ import postPackage from "./router/postPackage.js";
 import postRouter from "./router/postRouter.js";
 import residentRouter from "./router/residentRoutes.js";
 import residentVerificationRouter from "./router/residentVerificationRoutes.js";
+import revenueRoutes from "./router/revenueRoutes.js";
 import staffRouter from "./router/staff.js";
+import staffDashboardRoute from './router/staffDashboardRoutes.js';
 import userRouter from "./router/user.js";
 import waterRoutes from "./router/waterRoutes.js";
 import withdrawalRouter from "./router/withdrawalRouter.js";
 import { initSocket } from "./socket.js";
-import contactRoutes from "./router/contactRoutes.js";
-import revenueRoutes from "./router/revenueRoutes.js";
 
 dotenv.config();
 
@@ -102,6 +103,7 @@ app.use("/api/plaza", plazaRoutes);
 app.use("/api/withdrawals", withdrawalRouter);
 app.use("/api/contact", contactRoutes);
 app.use("/api/revenue", revenueRoutes);
+app.use('/api/staff-dashboard', staffDashboardRoute);
 
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {

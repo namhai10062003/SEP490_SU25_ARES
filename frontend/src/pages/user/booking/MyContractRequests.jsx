@@ -20,7 +20,11 @@ const MyContractRequests = () => {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contracts/landlord`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setRequests(res.data.data);
+        setRequests(
+          res.data.data
+            .slice() // sao chép mảng để không đột biến
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        );
       } catch (err) {
         toast.error("❌ Lỗi khi tải yêu cầu hợp đồng");
       }
@@ -79,8 +83,10 @@ const MyContractRequests = () => {
   };
 
   const filteredRequests = requests.filter((c) =>
-    filterStatus === "all" ? true : c.status === filterStatus
-  );
+  filterStatus === "all"
+    ? c.status !== "cancelled"
+    : c.status === filterStatus
+);
 
   if (loading) return <p>🔄 Đang tải...</p>;
 
@@ -109,6 +115,7 @@ const MyContractRequests = () => {
             <option value="approved">Đã duyệt</option>
             <option value="rejected">Đã từ chối</option>
             <option value="expired">Đã hết hạn</option>
+            <option value="cancelled">Đã huỷ</option>
           </select>
         </div>
 
@@ -131,17 +138,19 @@ const MyContractRequests = () => {
                         <div className="mb-1"><span className="fw-semibold">📅</span> {contract.startDate?.slice(0, 10)} - {contract.endDate?.slice(0, 10)}</div>
                         <div className="mb-1"><span className="fw-semibold">💰 Cọc:</span> {contract.depositAmount?.toLocaleString("vi-VN")} VNĐ</div>
                         <div>
-                          <span className="fw-semibold">Trạng thái: </span>
-                          {contract.status === "approved" ? (
-                            <span className="badge bg-success">Đã duyệt</span>
-                          ) : contract.status === "rejected" ? (
-                            <span className="badge bg-danger">Đã từ chối</span>
-                          ) : contract.status === "expired" ? (
-                            <span className="badge bg-secondary">Đã hết hạn</span>
-                          ) : (
-                            <span className="badge bg-warning text-dark">Chờ duyệt</span>
-                          )}
-                        </div>
+  <span className="fw-semibold">Trạng thái: </span>
+  {contract.status === "approved" ? (
+    <span className="badge bg-success">Đã duyệt</span>
+  ) : contract.status === "rejected" ? (
+    <span className="badge bg-danger">Đã từ chối</span>
+  ) : contract.status === "expired" ? (
+    <span className="badge bg-secondary">Đã hết hạn</span>
+  ) : contract.status === "cancelled" ? (
+    <span className="badge bg-dark">Đã huỷ</span>
+  ) : (
+    <span className="badge bg-warning text-dark">Chờ duyệt</span>
+  )}
+</div>
                         {contract.rejectReason && (
                           <div className="text-danger fst-italic mt-2">
                             📝 Lý do từ chối: {contract.rejectReason}
