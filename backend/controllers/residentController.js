@@ -90,27 +90,11 @@ export const createResident = async (req, res) => {
       idNumber,
       issueDate,
       documentFront: documentFrontUrl,
-      documentBack: documentBackUrl,
-      createdBy: req.user._id,
-      verifiedByStaff: "pending",  // ✅ đảm bảo luôn là pending khi mới tạo
+      documentBack : documentBackUrl,
+      verifiedByStaff: false,
+      // rejectReason,
+      // verifiedByAdmin: false,
     });
-    
-    // const resident = await Resident.create({
-    //   apartmentId,
-    //   fullName,
-    //   gender,
-    //   dateOfBirth,
-    //   relationWithOwner,
-    //   moveInDate,
-    //   nationality,
-    //   idNumber,
-    //   issueDate,
-    //   documentFront: documentFrontUrl,
-    //   documentBack : documentBackUrl,
-    //   // verifiedByStaff: false,
-    //   // rejectReason,
-    //   // verifiedByAdmin: false,
-    // });
 
     /* 6. Emit socket cho nhân viên */
     if (global._io) {
@@ -139,10 +123,8 @@ export const createResident = async (req, res) => {
 // Lấy danh sách nhân khẩu chưa được xác minh bởi nhân viên
 export const getResidentsUnverifiedByStaff = async (req, res) => {
   try {
-    const unverifiedResidents = await Resident.find({ verifiedByStaff: "pending" })
-    .populate('apartmentId')
-    .sort({ createdAt: -1 });
-  
+    const unverifiedResidents = await Resident.find({ verifiedByStaff: false }).populate('apartmentId');
+
     res.status(200).json({
       residents: unverifiedResidents,
     });
@@ -161,7 +143,7 @@ export const verifyResidentByStaff = async (req, res) => {
     }
 
     // ✅ Cập nhật xác minh bởi staff & xoá rejectReason (nếu có trước đó)
-    resident.verifiedByStaff = "true";
+    resident.verifiedByStaff = true;
     resident.rejectReason = null;
     await resident.save();
 
@@ -178,36 +160,29 @@ export const rejectResidentByStaff = async (req, res) => {
     const { id } = req.params;
     const { reason } = req.body;
 
-    // Kiểm tra lý do từ chối
-    if (!reason || reason.trim() === "") {
-      return res.status(400).json({ message: "⚠️ Lý do từ chối là bắt buộc." });
-    }
-
-    // Tìm nhân khẩu theo ID
     const resident = await Resident.findById(id).populate("createdBy");
 
     if (!resident) {
-      return res.status(404).json({ message: "❌ Không tìm thấy nhân khẩu." });
+      return res.status(404).json({ message: "Không tìm thấy nhân khẩu" });
     }
 
-    // Cập nhật thông tin từ chối
-    resident.rejectReason = reason.trim();
-    resident.verifiedByStaff ="false";
-    resident.rejectedAt = new Date();
-    resident.rejectedBy = req.user?._id || null;
+    if (!reason || reason.trim() === "") {
+      return res.status(400).json({ message: "Lý do từ chối là bắt buộc" });
+    }
 
+    // ❌ Cập nhật trạng thái từ chối
+    resident.verifiedByStaff = false;
+    resident.rejectReason = reason;
     await resident.save();
 
     return res.status(200).json({
-      message: "❌ Nhân khẩu đã bị từ chối thành công.",
-      residentId: resident._id,
+      message: "❌ Nhân khẩu đã bị từ chối",
       rejectReason: resident.rejectReason,
-      rejectedBy: req.user?.name || "Không rõ người từ chối",
-      rejectedAt: resident.rejectedAt,
+      createdBy: resident.createdBy?.name || "Không rõ người tạo",
     });
-  } catch (error) {
-    console.error("❌ Lỗi khi từ chối nhân khẩu:", error);
-    return res.status(500).json({ message: "Lỗi server nội bộ.", error: error.message });
+  } catch (err) {
+    console.error("❌ Lỗi từ chối:", err);
+    return res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };
 
@@ -298,33 +273,29 @@ export const getResidentsByApartment = async (req, res) => {
     }
   };
 
-  export const getResidentsByStatus = async (req, res) => {
-    const { status } = req.query;
-    let filter = {};
-  
-    if (status === "unverified") {
-      filter = { verifiedByStaff: "pending" };
-    } else if (status === "verified") {
-      filter = { verifiedByStaff: "true" };
-    } else if (status === "rejected") {
-      filter = { verifiedByStaff: "false" };
-    }
-    
-  
+  // ✅ Lấy toàn bộ danh sách nhân khẩu (admin hoặc staff)
+  export const getAllResidents = async (req, res) => {
     try {
-      const residents = await Resident.find(filter).populate("apartmentId");
-      res.status(200).json(residents);
+      const residents = await Resident.find().populate('apartmentId');
+  
+      const formatted = residents.map((r) => ({
+        fullName: r.fullName,
+        gender: r.gender,
+        dateOfBirth: r.dateOfBirth,
+        relationWithOwner: r.relationWithOwner,
+        verifiedByStaff: r.verifiedByStaff,
+        rejectReason: r.rejectReason,
+        apartmentCode: r.apartmentId?.apartmentCode || '---',
+        createdAt: r.createdAt,
+      }));
+  
+      return res.status(200).json({
+        message: 'Lấy danh sách toàn bộ nhân khẩu thành công',
+        data: formatted,
+      });
     } catch (err) {
-      res.status(500).json({ error: "Lỗi server" });
+      console.error('❌ Lỗi getAllResidents:', err);
+      return res.status(500).json({ message: 'Lỗi server', error: err.message });
     }
   };
   
-  // controllers/residentController.js
-export const getUnverifiedResidents = async (req, res) => {
-  try {
-    const residents = await Resident.find({ verifiedByStaff: "pending" }).populate("apartmentId");
-    res.json({ residents });
-  } catch (err) {
-    res.status(500).json({ message: "Lỗi server khi lấy danh sách chưa xác minh" });
-  }
-};

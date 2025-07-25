@@ -16,16 +16,10 @@ const residentSchema = new Schema({
   apartmentId: { type: Schema.Types.ObjectId, ref: 'Apartment', required: true },
 
   // ✅ Chỉ giữ verifiedByStaff
-  verifiedByStaff: {
-    type: String,
-    enum: ["pending", "true", "false"],
-    default: "pending",
-  },
-  
+  verifiedByStaff: { type: Boolean, default: false },
   //từ chối nữa 
   rejectReason: { type: String, default: null }, // 👈 thêm field này
-  createdBy: { type: Schema.Types.ObjectId, ref: 'User', default: null }, // 👈 cần có để liên kết
-  rejectedAt: { type: Date, default: null },
+  createdBy: { type: Schema.Types.ObjectId, ref: 'User' }, // 👈 cần có để liên kết
 
 }, { timestamps: true });
 

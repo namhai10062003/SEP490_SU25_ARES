@@ -10,9 +10,6 @@ export default function WaterExpense() {
   const [file, setFile] = useState(null);
   const [waterData, setWaterData] = useState([]);
   const [page, setPage] = useState(1);
-  const [filterMonth, setFilterMonth] = useState("");
-const [filterText, setFilterText] = useState("");
-
 
   useEffect(() => {
     fetchWaterUsage();
@@ -44,20 +41,8 @@ const [filterText, setFilterText] = useState("");
   };
 
   // Pagination
-  const filteredData = waterData.filter((item) => {
-    const matchesMonth = filterMonth
-      ? item.month?.startsWith(filterMonth)
-      : true;
-    const matchesText = filterText
-      ? item.apartmentCode?.toLowerCase().includes(filterText.toLowerCase()) ||
-        item.ownerName?.toLowerCase().includes(filterText.toLowerCase())
-      : true;
-    return matchesMonth && matchesText;
-  });
-  
-  const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
-  const currentData = filteredData.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  
+  const totalPages = Math.ceil(waterData.length / PAGE_SIZE);
+  const currentData = waterData.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   useEffect(() => {
     if (page > totalPages) setPage(1);
@@ -92,28 +77,6 @@ const [filterText, setFilterText] = useState("");
               <button type="submit" className="btn btn-primary btn-sm">📁 Import File</button>
             </form>
           </div>
-          <div className="row g-3 mb-3" style={{ maxWidth: 1000, margin: "0 auto" }}>
-  <div className="col-md-3">
-    <label className="form-label fw-bold">Lọc theo tháng</label>
-    <input
-      type="month"
-      className="form-control"
-      value={filterMonth}
-      onChange={(e) => setFilterMonth(e.target.value)}
-    />
-  </div>
-  <div className="col-md-4">
-    <label className="form-label fw-bold">Lọc mã căn hộ hoặc tên chủ hộ</label>
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Nhập mã căn hộ hoặc tên..."
-      value={filterText}
-      onChange={(e) => setFilterText(e.target.value)}
-    />
-  </div>
-</div>
-
           {currentData.length > 0 ? (
             <div className="table-responsive mb-4" style={{ maxWidth: 1000, margin: "0 auto" }}>
               <table className="table table-bordered table-hover text-center align-middle bg-white rounded-4 shadow">
