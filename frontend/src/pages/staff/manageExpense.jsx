@@ -22,6 +22,8 @@ const Expenses = () => {
     const [loadingFees, setLoadingFees] = useState(true);
     const [filterMonth, setFilterMonth] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [filterText, setFilterText] = useState("");
+    const [filterStatus, setFilterStatus] = useState("all");
     const rowsPerPage = 10;
 
     const formattedFilterMonth = filterMonth
@@ -31,18 +33,38 @@ const Expenses = () => {
         })()
         : null;
 
-        const filteredFees = (formattedFilterMonth
-            ? apartmentFees.filter((f) => f.month === formattedFilterMonth)
-            : apartmentFees
-        ).sort((a, b) => {
-            const dateA = new Date(`01/${a.month}`); // thêm ngày để parse đúng
-            const dateB = new Date(`01/${b.month}`);
-            return dateB - dateA; // Giảm dần: gần nhất trên
-        });
+
+
 
     // console.log("Filter month:", formattedFilterMonth);
     // console.log("All fee months:", apartmentFees.map((f) => f.month));
     // console.log("Filtered fee months:", filteredFees.map((f) => f.month));
+
+    const getFilteredFees = () => {
+        return apartmentFees.filter(fee => {
+            const matchesMonth =
+                !filterMonth || fee.month === `${filterMonth.split("-")[1]}/${filterMonth.split("-")[0]}`;
+
+            const search = filterText.trim().toLowerCase();
+            const matchesText =
+                !search ||
+                fee.apartmentCode.toLowerCase().includes(search) ||
+                fee.ownerName.toLowerCase().includes(search);
+
+            const matchesStatus =
+                filterStatus === "all" || fee.paymentStatus === filterStatus;
+
+            return matchesMonth && matchesText && matchesStatus;
+        }).sort((a, b) => {
+            const dateA = new Date(`01/${a.month}`);
+            const dateB = new Date(`01/${b.month}`);
+            return dateB - dateA;
+        });
+    };
+
+
+    const filteredFees = getFilteredFees();
+
 
     const totalPages = Math.ceil(filteredFees.length / rowsPerPage);
     const paginatedFees = filteredFees.slice(
@@ -89,6 +111,7 @@ const Expenses = () => {
             }
         }
     };
+
 
     const handleAdd = async (e) => {
         e.preventDefault();
@@ -247,42 +270,46 @@ const Expenses = () => {
                     Bảng chi phí tổng hợp từng căn hộ theo tháng
                 </h4>
 
-                {/* Bộ lọc tháng */}
-                <div className="d-flex align-items-center gap-3 mb-2">
-                    <label className="fw-semibold mb-0">Lọc theo tháng:</label>
-                    <div style={{ position: "relative", display: "inline-block" }}>
+                <div className="row g-3 mb-3 align-items-end">
+                    {/* Bộ lọc theo tháng */}
+                    <div className="col-md-2">
+                        <label className="form-label fw-bold">Lọc theo tháng</label>
                         <input
                             type="month"
-                            className="form-control w-auto"
+                            className="form-control"
                             value={filterMonth}
-                            onChange={(e) => {
-                                setFilterMonth(e.target.value);
-                                setCurrentPage(1);
-                            }}
-                            style={{
-                                position: "relative",
-                                zIndex: 2,
-                                backgroundColor: "transparent",
-                            }}
+                            onChange={(e) => setFilterMonth(e.target.value)}
                         />
-                        {filterMonth === "" && (
-                            <span
-                                style={{
-                                    position: "absolute",
-                                    top: "50%",
-                                    left: "12px",
-                                    transform: "translateY(-50%)",
-                                    color: "#6c757d",
-                                    fontSize: "0.875rem",
-                                    pointerEvents: "none",
-                                    zIndex: 1,
-                                }}
-                            >
-                                VD: chọn 07/2025
-                            </span>
-                        )}
+                    </div>
+
+                    {/* Bộ lọc theo mã căn hộ hoặc tên chủ hộ */}
+                    <div className="col-md-3">
+                        <label className="form-label fw-bold">Lọc theo mã căn hộ hoặc tên chủ hộ</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Nhập mã căn hộ hoặc tên chủ hộ..."
+                            value={filterText}
+                            onChange={(e) => setFilterText(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Bộ lọc theo trạng thái thanh toán */}
+                    <div className="col-md-2">
+                        <label className="form-label fw-bold">Lọc trạng thái</label>
+                        <select
+                            className="form-select"
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                        >
+                            <option value="all">Tất cả</option>
+                            <option value="unpaid">Chưa thanh toán</option>
+                            <option value="paid">Đã thanh toán</option>
+                        </select>
                     </div>
                 </div>
+
+
 
                 <div className="table-responsive">
                     {loadingFees ? (
@@ -309,16 +336,16 @@ const Expenses = () => {
                                         <tr key={index}>
                                             <td>{row.apartmentCode}</td>
                                             <td>{row.ownerName}</td>
-                                                <td>
-                                                    {(() => {
-                                                        const m = new Date(row.month);
-                                                        return isNaN(m)
-                                                            ? row.month
-                                                            : `${(m.getMonth() + 1)
-                                                                .toString()
-                                                                .padStart(2, "0")}/${m.getFullYear()}`;
-                                                    })()}
-                                                </td>
+                                            <td>
+                                                {(() => {
+                                                    const m = new Date(row.month);
+                                                    return isNaN(m)
+                                                        ? row.month
+                                                        : `${(m.getMonth() + 1)
+                                                            .toString()
+                                                            .padStart(2, "0")}/${m.getFullYear()}`;
+                                                })()}
+                                            </td>
                                             <td>{row.managementFee?.toLocaleString()} đ</td>
                                             <td>{row.waterFee?.toLocaleString()} đ</td>
                                             <td>{row.parkingFee?.toLocaleString()} đ</td>

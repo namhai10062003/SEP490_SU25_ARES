@@ -93,6 +93,7 @@ const [filterRelation, setFilterRelation] = useState('all');
             <tbody>
               {apt.residents.length ? (
            apt.residents
+           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
            .filter((r) => {
              const nameMatch = r.fullName.toLowerCase().includes(searchText.toLowerCase());
              const statusMatch =
