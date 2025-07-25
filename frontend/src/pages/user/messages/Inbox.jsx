@@ -6,7 +6,7 @@ const Inbox = ({ currentUserId }) => {
   const [partners, setPartners] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedUserName, setSelectedUserName] = useState("");
-
+  const [postInfo, setPostInfo] = useState(null);
   useEffect(() => {
     const fetchPartners = async () => {
       try {
@@ -18,6 +18,7 @@ const Inbox = ({ currentUserId }) => {
         if (filtered.length > 0) {
           setSelectedUserId(filtered[0]._id);
           setSelectedUserName(filtered[0].name || filtered[0].email || "Người dùng");
+          
         }
       } catch (err) {
         console.error("❌ Lỗi lấy danh sách:", err);
@@ -46,6 +47,8 @@ const Inbox = ({ currentUserId }) => {
               onClick={() => {
                 setSelectedUserId(p._id);
                 setSelectedUserName(p.name || p.email || "Người dùng");
+                setPostInfo(p.lastPost || null);
+                console.log("🧾 Đang chọn:", p);
               }}
             >
               <span className="me-2">👤</span>
@@ -67,6 +70,7 @@ const Inbox = ({ currentUserId }) => {
               currentUserId={currentUserId}
               receiverId={selectedUserId}
               receiverName={selectedUserName}
+              postInfo={postInfo}
             />
           ) : (
             <div className="text-center text-secondary py-5">Chọn người để xem hội thoại</div>

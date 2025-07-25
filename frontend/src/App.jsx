@@ -13,15 +13,17 @@ import "react-datepicker/dist/react-datepicker.css";
 import AuthProvider, { useAuth } from "../context/authContext";
 import SocketProvider from "../context/socketContext";
 
+import ScrollButtons from "../components/ScrollButton.jsx";
 import SocketListener from "../components/SocketListener.jsx";
 import VideoPlayer from "../src/pages/user/messages/VideoPlayer.jsx";
 import GlobalChatBox from "./pages/user/messages/GlobalChatBox.jsx";
 import VideoCallPopup from "./pages/user/messages/VideoCallPopup";
-import ScrollButtons from "../components/ScrollButton.jsx";
 // Các trang
 import Home from "./home/home";
 import DashboardHome from "./pages/admin/DashboardHome.jsx";
+import AdminPostDetail from "./pages/admin/ManagementPost/PostDetail.jsx";
 import PostManagement from "./pages/admin/ManagementPost/PostManagement.jsx";
+import AdminContactPage from "./pages/admin/contactPage/adminContactPage.jsx";
 import ManageApartment from "./pages/admin/manage-apartment.jsx";
 import ManageApplicationForm from "./pages/admin/manage-application-form.jsx";
 import ManageStaff from "./pages/admin/manage-staff.jsx";
@@ -32,9 +34,9 @@ import AdminWithdrawPage from "./pages/admin/revenue/AdminWithdrawRequests.jsx";
 import AdminRevenueApartment from "./pages/admin/revenue/apartment.jsx";
 import AdminRevenueApartmentDeposit from "./pages/admin/revenue/apartmentDeposit.jsx";
 import AdminRevenuePost from "./pages/admin/revenue/posts.jsx";
-import AdminPostDetail from "./pages/admin/ManagementPost/PostDetail.jsx";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
 import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
+import CitizenList from "./pages/staff/ResidentVerify/CitizenList.jsx";
 import ResidentVerifyList from "./pages/staff/ResidentVerify/residentVerifyList";
 import DashboardPage from "./pages/staff/dashboardStatistics";
 import ManageExpense from "./pages/staff/manageExpense.jsx";
@@ -44,6 +46,7 @@ import WaterDataUpload from "./pages/staff/waterExpense.jsx";
 import BlogList from "./pages/user/BlogList/BlogList.jsx";
 import PostDetail from "./pages/user/BlogList/BlogListDetail";
 import LikedPosts from "./pages/user/BlogList/LikedPosts.jsx";
+import Contact from "./pages/user/Contact/Contact.jsx";
 import Introduce from "./pages/user/Introduce/Introduce.jsx";
 import CustomerPostManagement from "./pages/user/MangementPostByCustomer/CustomerPostManagement.jsx";
 import RegistrationForm from "./pages/user/PostRegistration/registrationForm.jsx";
@@ -69,8 +72,6 @@ import Register from "./pages/user/register.jsx";
 import ResetPassword from "./pages/user/resetpassword";
 import UserRevenue from "./pages/user/revenuer/UserRevenue.jsx";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
-import Contact from "./pages/user/Contact/Contact.jsx";
-import AdminContactPage from "./pages/admin/contactPage/adminContactPage.jsx";
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
@@ -145,6 +146,7 @@ function AppRoutes() {
           <Route path="staff-manage-parkinglot" element={<ProtectedRoute element={<ManageParkingLot />} allowedRoles={["staff"]} />} />
           <Route path="staff-parkinglot-list" element={<ProtectedRoute element={<ParkingLotList />} allowedRoles={["staff"]} />} />
           <Route path="staff-water-data-upload" element={<ProtectedRoute element={<WaterDataUpload />} allowedRoles={["staff"]} />} />
+          <Route path="staff-citizenlist" element={<ProtectedRoute element={<CitizenList />} allowedRoles={["staff"]} />} />
 
           {/* User */}
         </Routes>

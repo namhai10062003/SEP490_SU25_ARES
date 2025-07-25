@@ -241,6 +241,23 @@ const StaffNavbar = () => {
               Quản Lý Nhân Khẩu
             </Link>
           </li>
+          <li className="nav-item">
+            <Link
+              to="/staff-citizenlist"
+              className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-citizenlist"
+                  ? "active bg-white text-primary fw-bold shadow-sm"
+                  : "text-white"
+                }`}
+              style={{
+                background:
+                  location.pathname === "/staff-citizenlist"
+                    ? "white"
+                    : "transparent",
+              }}
+            >
+              Danh sách Nhân Khẩu
+            </Link>
+          </li>
           {/* Dropdown quản lý cư dân */}
           <li className="nav-item">
             {/* Không dùng nav-link cho div cha để tránh lỗi mất label */}

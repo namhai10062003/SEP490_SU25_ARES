@@ -34,26 +34,32 @@ const ContractDetail = () => {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contracts/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("✅ Contract Data: ", res.data.data);
+  
         const contractData = res.data.data;
         setContract(contractData);
-
+  
         if (contractData.postId) {
-          const postRes = await axios.get(
-            `${import.meta.env.VITE_API_URL}/api/posts/postdetail/${contractData.postId}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          setPost(postRes.data.data);
+          try {
+            const postRes = await axios.get(
+              `${import.meta.env.VITE_API_URL}/api/posts/postdetail/${contractData.postId}`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setPost(postRes.data.data);
+          } catch (postErr) {
+            console.warn("⚠️ Bài đăng đã bị xoá hoặc không tồn tại.");
+            setPost(null); // vẫn giữ contract
+          }
         }
       } catch (err) {
-        console.error(err);
-        alert("Không thể tải chi tiết hợp đồng hoặc bài đăng.");
+        console.error("❌ Lỗi khi tải hợp đồng:", err);
+        alert("Không thể tải chi tiết hợp đồng.");
         navigate("/my-contracts");
       }
     };
-
+  
     fetchDetail();
   }, [id, navigate]);
+  
 
   if (loading || !contract)
     return <div className="text-center py-4">🔄 Đang tải chi tiết...</div>;
