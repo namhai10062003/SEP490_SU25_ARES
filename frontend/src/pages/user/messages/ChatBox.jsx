@@ -4,13 +4,16 @@ import io from "socket.io-client";
 import { useChat } from "../../../../context/ChatContext";
 import { useVideoCall } from "../../../../context/VideoCallContext";
 import { sendMessageWithSocket } from "./utils/sendMessageWithSocket";
+
 const socket = io(`${import.meta.env.VITE_API_URL}`, { withCredentials: true });
-const ChatBox = ({ currentUserId, receiverId, receiverName, postInfo }) => {
+const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const chatEndRef = useRef(null);
   const { callUser } = useVideoCall();
-  const { setPostInfo } = useChat(); 
+  const { postInfo, setPostInfo } = useChat();
+
+
   // Nhận tin nhắn mới qua socket
   const handleReceive = (rawMsg) => {
     const msg = {
@@ -20,7 +23,8 @@ const ChatBox = ({ currentUserId, receiverId, receiverName, postInfo }) => {
       content: rawMsg.content,
       timestamp: rawMsg.timestamp || rawMsg.createdAt || new Date(),
       type: rawMsg.type || "text",
-      postInfo: rawMsg.post || rawMsg.postInfo || null,
+      postInfo: rawMsg.postInfo || rawMsg.post || null
+// ✅ lấy từ server trả về
     };
 
     const isValid =
@@ -43,12 +47,25 @@ const ChatBox = ({ currentUserId, receiverId, receiverName, postInfo }) => {
       return [...prev, msg];
     });
   };
-
   useEffect(() => {
     socket.on("receiveMessage", handleReceive);
     return () => socket.off("receiveMessage", handleReceive);
   }, []);
-
+  
+  useEffect(() => {
+    if (!postInfo && messages.length > 0) {
+      const msgWithPost = messages.find((msg) => msg.postInfo);
+      if (msgWithPost) {
+        setPostInfo(msgWithPost.postInfo);
+      }
+    }
+  }, [messages]);
+  useEffect(() => {
+    if (postInfo) {
+      console.log("📥 postInfo đã cập nhật từ context:", postInfo);
+      // nếu cần xử lý thêm, thực hiện ở đây
+    }
+  }, [postInfo]);
   useEffect(() => {
     if (!currentUserId || !receiverId) return;
   
@@ -57,8 +74,6 @@ const ChatBox = ({ currentUserId, receiverId, receiverName, postInfo }) => {
     const fetchMessages = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messages/${currentUserId}/${receiverId}`);
-        
-        // Giữ nguyên logic cũ: chuẩn hóa tin nhắn
         const normalized = res.data.data.map((msg) => ({
           _id: msg._id,
           senderId: msg.sender,
@@ -66,19 +81,17 @@ const ChatBox = ({ currentUserId, receiverId, receiverName, postInfo }) => {
           content: msg.content,
           timestamp: msg.createdAt,
           type: msg.type || "text",
-          postInfo: msg.post || null, // ✅ chính xác
+          postInfo: msg.post || null,
         }));
         setMessages(normalized);
   
-        // ✅ Nếu chưa có postInfo từ props, tự lấy từ tin nhắn đầu có postInfo
         if (!postInfo) {
           const msgWithPost = normalized.find((msg) => msg.postInfo);
           if (msgWithPost) {
             setPostInfo(msgWithPost.postInfo);
           }
         }
-        console.log("🪵 Tin nhắn từ API:", res.data.data);
-
+  
       } catch (err) {
         console.error("❌ Lỗi khi tải tin nhắn:", err);
       }
@@ -92,7 +105,7 @@ const ChatBox = ({ currentUserId, receiverId, receiverName, postInfo }) => {
     return () => {
       socket.off("receiveMessage", handleReceive);
     };
-  }, [currentUserId, receiverId]);
+  }, [currentUserId, receiverId]); // ⛔ KHÔNG NÊN thêm postInfo ở đây (sẽ gây loop)
   
 
   const sendMessage = async () => {
@@ -134,19 +147,15 @@ const ChatBox = ({ currentUserId, receiverId, receiverName, postInfo }) => {
     {/* Messages */}
     <div className="flex-grow-1 overflow-auto mb-2" style={{ minHeight: 200, maxHeight: 300 }}>
       {/* ✅ Tin hệ thống hiển thị bài viết đang chat */}
-      {postInfo && (
-  <div
-    className="d-flex align-items-center gap-2 px-3 py-2 border-bottom"
-    style={{ background: "#f9f9f9" }}
-  >
-    <img
-      src={postInfo.image || postInfo.thumbnail || "/default.jpg"} // ✅ sửa ở đây
-      alt="Ảnh bài đăng"
-      style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8 }}
-    />
+      {postInfo && postInfo.title && (
+  <div className="d-flex align-items-center gap-2 px-3 py-2 border-bottom" style={{ background: "#f9f9f9" }}>
+   <img
+    src={postInfo.image || postInfo.thumbnail || "/default-thumbnail.jpg"} // 🟢 fallback ở đây
+    alt="Ảnh bài đăng"
+    style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8 }}
+  />
     <div>
       <div className="fw-bold">{postInfo.title}</div>
-      {/* ✅ Nếu không có giá thì không hiển thị */}
       {postInfo.price && (
         <div className="text-muted small">
           Giá: {postInfo.price.toLocaleString("vi-VN")} VNĐ

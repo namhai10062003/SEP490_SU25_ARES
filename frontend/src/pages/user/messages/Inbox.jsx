@@ -1,12 +1,15 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { useChat } from "../../../../context/ChatContext"; // đường dẫn tùy dự án của bạn
 import ChatBox from "./ChatBox";
-
 const Inbox = ({ currentUserId }) => {
+  const location = useLocation(); // ⬅️ Lấy state từ router
   const [partners, setPartners] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedUserName, setSelectedUserName] = useState("");
-  const [postInfo, setPostInfo] = useState(null);
+  const { setReceiver, setPostInfo, postInfo } = useChat();
+
   useEffect(() => {
     const fetchPartners = async () => {
       try {
@@ -14,20 +17,31 @@ const Inbox = ({ currentUserId }) => {
         const data = res.data.data || [];
         const filtered = data.filter(user => user._id !== currentUserId);
         setPartners(filtered);
+        console.log("🧾 Danh sách partners:", filtered);
 
-        if (filtered.length > 0) {
-          setSelectedUserId(filtered[0]._id);
-          setSelectedUserName(filtered[0].name || filtered[0].email || "Người dùng");
-          
+        if (location.state?.receiver) {
+          // ✅ Nếu được truyền từ nơi khác qua
+          const r = location.state.receiver;
+          const pi = location.state.postInfo;
+          setSelectedUserId(r.id);
+          setSelectedUserName(r.name || "Người dùng");
+          setPostInfo(pi || null);
+          setReceiver({ id: r.id, name: r.name || "Người dùng" });
+        } else {
+          // ❌ Đừng auto chọn người đầu tiên ở đây!
+          setSelectedUserId(null);
+          setSelectedUserName("");
+          setPostInfo(null);
+          setReceiver(null);
         }
       } catch (err) {
         console.error("❌ Lỗi lấy danh sách:", err);
       }
     };
-
+  
     fetchPartners();
   }, [currentUserId]);
-
+  
   return (
     <div className="h-100 d-flex flex-column flex-md-row" style={{ minHeight: 400, height: "100%" }}>
       {/* Sidebar */}
@@ -47,12 +61,23 @@ const Inbox = ({ currentUserId }) => {
               onClick={() => {
                 setSelectedUserId(p._id);
                 setSelectedUserName(p.name || p.email || "Người dùng");
-                setPostInfo(p.lastPost || null);
+                console.log("👉 Partner:", p.name || p.email, "Post:", p.lastPost);
+                // ✅ Kiểm tra post có tồn tại không
+                if (p.lastPost) {
+                  setPostInfo({
+                    ...p.lastPost,
+                    image: p.lastPost.image || p.lastPost.thumbnail || null,
+                  });
+                } else {
+                  setPostInfo(null);
+                }
+                              
                 console.log("🧾 Đang chọn:", p);
               }}
             >
               <span className="me-2">👤</span>
               {p.name || p.email}
+              
             </button>
           ))}
         </div>
