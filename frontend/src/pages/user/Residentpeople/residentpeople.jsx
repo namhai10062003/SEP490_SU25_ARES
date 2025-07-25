@@ -89,36 +89,39 @@ const ResidentList = () => {
             </thead>
             <tbody>
               {apt.residents.length ? (
-                apt.residents.map((r) => (
-                  <tr key={r._id}>
-                    <td>{r.fullName}</td>
-                    <td>{r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString('vi-VN') : ''}</td>
-                    <td>{r.gender}</td>
-                    <td>{r.relationWithOwner}</td>
-                    <td>
-                      {r.verifiedByStaff ? (
-                        <span className="badge bg-success">✅ Đã duyệt</span>
-                      ) : r.rejectReason ? (
-                        <span className="badge bg-danger">❌ Đã từ chối</span>
-                      ) : (
-                        <span className="badge bg-warning text-dark">🟡 Chờ duyệt</span>
-                      )}
-                    </td>
-                    <td>
-                      <Link to={`/residents/${r._id}`} className="btn btn-primary btn-sm rounded-pill me-2">
-                        Xem chi tiết
-                      </Link>
-                      {r.rejectReason && (
-                        <button
-                          className="btn btn-warning btn-sm rounded-pill"
-                          onClick={() => setModalReason({ name: r.fullName, reason: r.rejectReason })}
-                        >
-                          ❓ Lý do
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                apt.residents
+                  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                  .map((r) => (
+                    <tr key={r._id}>
+                      <td>{r.fullName}</td>
+                      <td>{r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString('vi-VN') : ''}</td>
+                      <td>{r.gender}</td>
+                      <td>{r.relationWithOwner}</td>
+                      <td>
+                        {r.verifiedByStaff === "true" ? (
+                          <span className="badge bg-success">✅ Đã duyệt</span>
+                        ) : r.verifiedByStaff === "false" ? (
+                          <span className="badge bg-danger">❌ Đã từ chối</span>
+                        ) : (
+                          <span className="badge bg-warning text-dark">🟡 Chờ duyệt</span>
+                        )}
+                      </td>
+
+                      <td>
+                        <Link to={`/residents/${r._id}`} className="btn btn-primary btn-sm rounded-pill me-2">
+                          Xem chi tiết
+                        </Link>
+                        {r.rejectReason && (
+                          <button
+                            className="btn btn-warning btn-sm rounded-pill"
+                            onClick={() => setModalReason({ name: r.fullName, reason: r.rejectReason })}
+                          >
+                            ❓ Lý do
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
               ) : (
                 <tr>
                   <td colSpan="6" className="text-center py-3">

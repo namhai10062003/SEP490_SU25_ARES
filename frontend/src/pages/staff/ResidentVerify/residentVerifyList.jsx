@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { toast } from "react-toastify";
 import StaffNavbar from "../../staff/staffNavbar"; // ✅ Thêm dòng này
 
@@ -8,25 +8,46 @@ const ResidentVerifyList = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [rejectId, setRejectId] = useState(null);
   const [confirmId, setConfirmId] = useState(null);
+  const [filterText, setFilterText] = useState("");
+  const [dobFilter, setDobFilter] = useState(""); // ngày sinh
+  const [issueDateFilter, setIssueDateFilter] = useState(""); // ngày cấp
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const fetchUnverifiedResidents = async () => {
+
+  const fetchResidents = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/residents/residents/unverified`, {
+      let url;
+
+      if (statusFilter === "pending") {
+        url = `${import.meta.env.VITE_API_URL}/api/residents/residents/unverified`;
+      } else if (statusFilter === "all") {
+        url = `${import.meta.env.VITE_API_URL}/api/residents`;
+      } else {
+        url = `${import.meta.env.VITE_API_URL}/api/residents?status=${statusFilter}`;
+      }
+
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       const data = await res.json();
-      setResidents(data.residents || []);
+      const sorted = (data.residents || data || []).sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      setResidents(sorted);
     } catch (err) {
-      toast.error("❌ Lỗi tải danh sách nhân khẩu");
+      toast.error("❌ Lỗi tải danh sách cư dân");
     } finally {
       setLoading(false);
     }
   };
 
+
   useEffect(() => {
-    fetchUnverifiedResidents();
-  }, []);
+    setLoading(true);
+    fetchResidents();
+  }, [statusFilter]);
 
   const handleVerify = async () => {
     if (!confirmId) return;
@@ -79,7 +100,10 @@ const ResidentVerifyList = () => {
 
       if (res.ok) {
         toast.success("🚫 Đã từ chối nhân khẩu");
+
+        // ❌ Xoá khỏi danh sách
         setResidents((prev) => prev.filter((r) => r._id !== rejectId));
+
         setRejectId(null);
         setRejectReason("");
       } else {
@@ -90,22 +114,105 @@ const ResidentVerifyList = () => {
     }
   };
 
+
+
   const openImage = (url) => {
     if (url) window.open(url, "_blank", "noopener,noreferrer");
   };
 
+  const filteredResidents = useMemo(() => {
+    const result = residents.filter((r) => {
+      const fullText = `${r.fullName} ${r.apartmentId?.apartmentCode || ""} ${r.gender} ${r.nationality} ${r.idNumber}`.toLowerCase();
+      const matchText = fullText.includes(filterText.toLowerCase());
+  
+      const dobMatch = dobFilter
+        ? new Date(r.dateOfBirth).toISOString().split("T")[0] === dobFilter
+        : true;
+  
+      const issueDateMatch = issueDateFilter
+        ? new Date(r.issueDate).toISOString().split("T")[0] === issueDateFilter
+        : true;
+  
+      const statusMatch =
+        statusFilter === "all"
+          ? true
+          : String(r.verifiedByStaff) === statusFilter;
+  
+      return matchText && dobMatch && issueDateMatch && statusMatch;
+    });
+  
+    // ✅ Log toàn bộ danh sách resident đang là pending
+    const pendingList = residents.filter(
+      (r) => String(r.verifiedByStaff) === "pending"
+    );
+    console.log("🟡 Resident có trạng thái pending:", pendingList);
+  
+    // ✅ Log kết quả lọc final
+    console.log("✅ filteredResidents sau khi lọc:", result);
+  
+    return result;
+  }, [residents, filterText, dobFilter, issueDateFilter, statusFilter]);
+  
+
   return (
     <div className="bg-light min-vh-100 d-flex">
-      {/* ✅ Thay aside bằng component navbar */}
       <StaffNavbar />
 
-      {/* Main content */}
       <main className="flex-grow-1 p-4">
-        <h2 className="fw-bold mb-4 text-center text-primary">Danh sách nhân khẩu chờ xác minh</h2>
+        <h2 className="fw-bold mb-4 text-center text-primary">
+          Danh sách nhân khẩu chờ xác minh
+        </h2>
 
+        {/* Bộ lọc */}
+        <div className="row g-2 align-items-end mb-4">
+          <div className="col-md-4">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="🔍 Tìm theo tên, căn hộ, giới tính, quốc tịch, CCCD..."
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+            />
+          </div>
+          <div className="col-md-3">
+            <label className="form-label fw-bold">Ngày sinh</label>
+            <input
+              type="date"
+              className="form-control"
+              value={dobFilter}
+              onChange={(e) => setDobFilter(e.target.value)}
+            />
+          </div>
+          <div className="col-md-3">
+            <label className="form-label fw-bold">Ngày cấp CCCD</label>
+            <input
+              type="date"
+              className="form-control"
+              value={issueDateFilter}
+              onChange={(e) => setIssueDateFilter(e.target.value)}
+            />
+          </div>
+          <div className="col-md-2">
+            <label className="form-label fw-bold">Trạng thái</label>
+            <select
+              className="form-select w-auto"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">Tất cả</option>
+              <option value="pending">Chưa xác minh</option>
+              <option value="true">Đã xác minh</option>
+              <option value="false">Đã từ chối</option>
+            </select>
+
+
+          </div>
+        </div>
+
+        {/* Nội dung */}
         {loading ? (
           <div className="d-flex align-items-center justify-content-center py-5">
-            <div className="spinner-border text-primary me-2"></div>
+            <div className="spinner-border text-primary me-2" />
             <span>Đang tải dữ liệu...</span>
           </div>
         ) : residents.length === 0 ? (
@@ -128,7 +235,7 @@ const ResidentVerifyList = () => {
                 </tr>
               </thead>
               <tbody>
-                {residents.map((r) => (
+                {filteredResidents.map((r) => (
                   <tr key={r._id}>
                     <td>{r.fullName}</td>
                     <td>{r.apartmentId?.apartmentCode || "---"}</td>
@@ -156,9 +263,33 @@ const ResidentVerifyList = () => {
                       ) : "---"}
                     </td>
                     <td>
-                      <button className="btn btn-success btn-sm mb-1 w-100" onClick={() => setConfirmId(r._id)}>Xác minh</button>
-                      <button className="btn btn-danger btn-sm w-100" onClick={() => setRejectId(r._id)}>Từ chối</button>
+                      {r.verifiedByStaff === "pending" && (
+                        <>
+                          <button className="btn btn-success mb-2" onClick={() => setConfirmId(r._id)}>
+                            Xác minh
+                          </button>
+                          <button className="btn btn-danger" onClick={() => setRejectId(r._id)}>
+                            Từ chối
+                          </button>
+                        </>
+                      )}
+
+                      {r.verifiedByStaff === "true" && (
+                        <span className="text-success fw-bold">Đã xác minh</span>
+                      )}
+
+                      {r.verifiedByStaff === "false" && (
+                        <div>
+                          <span className="text-danger fw-bold">Đã từ chối</span>
+                          {r.rejectReason && (
+                            <div className="text-muted small mt-1">Lý do: {r.rejectReason}</div>
+                          )}
+                        </div>
+                      )}
+
                     </td>
+
+
                   </tr>
                 ))}
               </tbody>
@@ -184,8 +315,12 @@ const ResidentVerifyList = () => {
                   <p>Bạn có chắc chắn muốn xác minh nhân khẩu này?</p>
                 </div>
                 <div className="modal-footer d-flex justify-content-end gap-2">
-                  <button className="btn btn-success" onClick={handleVerify}>Xác minh</button>
-                  <button className="btn btn-secondary" onClick={() => setConfirmId(null)}>Huỷ</button>
+                  <button className="btn btn-success" onClick={handleVerify}>
+                    Xác minh
+                  </button>
+                  <button className="btn btn-secondary" onClick={() => setConfirmId(null)}>
+                    Huỷ
+                  </button>
                 </div>
               </div>
             </div>
@@ -216,11 +351,18 @@ const ResidentVerifyList = () => {
                   />
                 </div>
                 <div className="modal-footer d-flex justify-content-end gap-2">
-                  <button className="btn btn-danger" onClick={handleReject}>Gửi từ chối</button>
-                  <button className="btn btn-secondary" onClick={() => {
-                    setRejectId(null);
-                    setRejectReason("");
-                  }}>Huỷ</button>
+                  <button className="btn btn-danger" onClick={handleReject}>
+                    Gửi từ chối
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setRejectId(null);
+                      setRejectReason("");
+                    }}
+                  >
+                    Huỷ
+                  </button>
                 </div>
               </div>
             </div>
@@ -229,6 +371,8 @@ const ResidentVerifyList = () => {
       </main>
     </div>
   );
+
+
 };
 
 export default ResidentVerifyList;

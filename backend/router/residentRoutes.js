@@ -1,5 +1,5 @@
 import express from 'express';
-import { countResidentsByApartment, createResident, getMyResidents, getResidentDetail, getResidentsByApartment, getResidentsUnverifiedByStaff, rejectResidentByStaff, verifyResidentByStaff } from '../controllers/residentController.js';
+import {getUnverifiedResidents, getResidentsByStatus, countResidentsByApartment, createResident, getMyResidents, getResidentDetail, getResidentsByApartment, getResidentsUnverifiedByStaff, rejectResidentByStaff, verifyResidentByStaff } from '../controllers/residentController.js';
 import verifyUser from '../middleware/authMiddleware.js';
 import isStaff from '../middleware/isStaff.js';
 import { uploadImage } from '../middleware/upload.js';
@@ -8,6 +8,7 @@ const router = express.Router();
 
 // Tạo nhân khẩu mới (có upload ảnh CCCD, yêu cầu xác thực)
 router.post('/create', verifyUser, uploadImage, createResident);
+router.get("/", verifyUser, getResidentsByStatus);
 //xem chi tiet nhan khau 
 router.get('/:id', verifyUser, getResidentDetail);
 // Lấy danh sách nhân khẩu theo căn hộ (dựa vào apartmentId)
@@ -16,6 +17,8 @@ router.get('/me/residents', verifyUser, getMyResidents);
 router.get('/count/:apartmentId', verifyUser, countResidentsByApartment);
 //lấy danh sách nhân khẩu chưa đc xác minh
 router.get('/residents/unverified', isStaff, getResidentsUnverifiedByStaff);
+router.get("/residents/unverified", isStaff, getUnverifiedResidents);
+router.get("/", isStaff, getResidentsByStatus);
 router.put("/verify-by-staff/:id", isStaff, verifyResidentByStaff);
 router.put("/reject-by-staff/:id", isStaff, rejectResidentByStaff);
 //lấy danh sách nhân khẩu chưa dc duyệt bởi admin 
