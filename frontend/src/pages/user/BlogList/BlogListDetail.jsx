@@ -13,13 +13,10 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import Slider from "react-slick";
 import { toast } from "react-toastify";
-import { useChat } from "../../../../context/ChatContext.jsx";
-import ChatBox from "../messages/ChatBox.jsx";
-
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
-
 import Header from "../../../../components/header.jsx";
+import { useChat } from "../../../../context/ChatContext.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
 import {
   addComment,
@@ -59,8 +56,10 @@ const PostDetail = () => {
   const [reportLoading, setReportLoading] = useState(false);
 
   //chat 
-  const { setReceiver } = useChat();
+  const { setReceiver, setPostInfo } = useChat();
 const [showChat, setShowChat] = useState(false);
+const [selectedPost, setSelectedPost] = useState(null);
+const [selectedUser, setSelectedUser] = useState(null);
 // hàm thực hiện chat vs người bài đăng 
 useEffect(() => {
   if (post?.contactInfo?.userId) {
@@ -70,7 +69,14 @@ useEffect(() => {
         name: post.contactInfo.name,
       });
 
-      // ✅ Log thông tin khi không phải chủ bài viết
+      // ✅ Set postInfo ở đây
+      setPostInfo({
+        id: post._id,
+        title: post.title,
+        image: post.images?.[0] || "",
+        price: post.price,
+      });
+
       console.log("✅ ChatBox Props:", {
         currentUserId: user._id,
         receiverId: post.contactInfo.userId,
@@ -78,7 +84,8 @@ useEffect(() => {
         postId: post._id,
       });
     } else {
-      setReceiver(null); // Nếu là chủ bài, không cho tự nhắn chính mình
+      setReceiver(null);
+      setPostInfo(null); // clear nếu là chủ bài
     }
   }
 }, [post, user]);
@@ -294,36 +301,34 @@ useEffect(() => {
             </button>
           </div>
         </div>
-        {user && post.contactInfo?.userId && (
-  <div className="my-3">
-    {/* <button
-      className="btn btn-outline-success"
-      onClick={() => setShowChat((prev) => !prev)}
-    >
-      💬 Nhắn tin
-    </button> */}
+        {/* {user && post.contactInfo?.userId !== user._id && (
+  <button
+    className="btn btn-outline-primary btn-sm"
+    onClick={() => {
+      setReceiver({
+        id: post.contactInfo.userId,
+        name: post.contactInfo.name,
+      });
 
-    {showChat && (
-      user._id === post.contactInfo.userId ? (
-        <div className="mt-3">
-          <p className="text-muted">🧑‍💼 Đây là bài viết của bạn. Không thể tự nhắn chính mình.</p>
-        </div>
-      ) : (
-        
-        <div className="mt-3">
-          
-          <ChatBox
-            currentUserId={user._id}
-            receiverId={post.contactInfo.userId}
-            receiverName={post.contactInfo.name}
-            postId={post._id}
-          />
-        </div>
-      )
-    )}
-  </div>
-)}
-
+      setPostInfo({
+        id: post._id,
+        title: post.title,
+        image: post.images?.[0] || "", // lấy ảnh đầu tiên nếu có
+        price: post.price,
+      });
+    }}
+  >
+    💬 Nhắn tin với người đăng
+  </button>
+)} */}
+{/* {selectedUser && selectedPost && showChat && (
+  <ChatBox
+    currentUserId={user._id}
+    receiverId={selectedUser._id}
+    receiverName={selectedUser.name}
+    postInfo={selectedPost}
+  />
+)} */}
         {/* Description */}
         <div className="mt-4">
           <h4 className="mb-3 d-flex align-items-center text-primary">

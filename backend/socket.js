@@ -54,28 +54,31 @@ export const initSocket = (serverIO) => {
     socket.on("sendMessage", (data) => {
       const {
         _id,
-        senderId,
-        receiverId,
+        sender,       // ✅ sửa từ senderId
+        receiver,     // ✅ sửa từ receiverId
         content,
-        timestamp,
-        type = "text", // hỗ trợ cả message dạng "missed-call"
+        createdAt,
+        type = "text",
+        post,         // ✅ đúng tên field lưu bài đăng
       } = data;
     
-      const roomId = [senderId, receiverId].sort().join("_");
+      const roomId = [sender, receiver].sort().join("_");
     
       const payload = {
         _id,
-        senderId,
-        receiverId,
+        sender,
+        receiver,
         content,
-        timestamp: timestamp || new Date().toISOString(),
+        timestamp: createdAt || new Date().toISOString(),
         type,
+        post: postInfo,
       };
     
       console.log("📤 Gửi message tới phòng:", roomId, payload);
     
-      io.to(roomId).emit("receiveMessage", payload); // realtime gửi về cả 2 người
+      io.to(roomId).emit("receiveMessage", payload);
     });
+    
     
 
     // 🔌 Ngắt kết nối

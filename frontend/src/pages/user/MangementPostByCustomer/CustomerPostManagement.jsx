@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../../../../components/header.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
-import { useNavigate } from "react-router-dom";
 import {
   createPayment,
   deletePost,
@@ -18,6 +18,13 @@ const CustomerPostManagement = () => {
   const [editingPost, setEditingPost] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState({
+    month: "",
+    status: "",
+    type: "",
+    postPackage: "",
+  });
+  
   const navigate = useNavigate();
 
   // Form state for editing
@@ -68,14 +75,42 @@ const CustomerPostManagement = () => {
     setLoading(true);
     try {
       const response = await getPostsByUser();
-      setPosts(Array.isArray(response.data.data) ? response.data.data : []);
+      const fetched = Array.isArray(response.data.data) ? response.data.data : [];
+  
+      // ✅ Log ID và type để kiểm tra
+      console.log("📦 Danh sách post:", fetched.map(p => ({ id: p._id, type: p.type, title: p.title })));
+  
+      setPosts(fetched);
     } catch (error) {
+      console.error("❌ Lỗi khi fetch post:", error);
       setPosts([]);
     } finally {
       setLoading(false);
     }
   };
+  
+  
+  useEffect(() => {
+    console.log("Dữ liệu type trong bài viết:", posts.map(p => p.type));
+    console.log("Filter đang chọn:", filters.type);
+    console.log("So sánh sau normalize:", posts.map(p => normalize(p.type)));
+  }, [posts, filters]);
+  const normalize = (str) => str?.toLowerCase().replace(/\s/g, "_");
 
+const filteredPosts = posts.filter((post) => {
+  const createdMonth = new Date(post.createdAt).getMonth() + 1;
+
+  return (
+    (filters.month === "" || createdMonth === Number(filters.month)) &&
+    (filters.status === "" || post.status === filters.status) &&
+    (filters.type === "" || normalize(post.type) === normalize(filters.type)) &&
+    (filters.postPackage === "" || post.postPackage?._id === filters.postPackage)
+  );
+});
+  
+  const paginatedPosts = filteredPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const totalPages = Math.ceil(filteredPosts.length / PAGE_SIZE);
+  
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
@@ -165,8 +200,8 @@ const CustomerPostManagement = () => {
   };
 
   // Pagination logic
-  const totalPages = Math.ceil(posts.length / PAGE_SIZE);
-  const paginatedPosts = posts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  // const totalPages = Math.ceil(posts.length / PAGE_SIZE);
+  // const paginatedPosts = posts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   if (authLoading || loading) {
     return (
@@ -182,6 +217,75 @@ const CustomerPostManagement = () => {
       <Header user={user} name={user?.username || user?.name || ""} logout={logout} />
 
       <div className="container py-4">
+      <div className="card p-3 mb-4 rounded-4">
+  <div className="row g-3 align-items-end">
+    {/* Tháng */}
+    <div className="col-md-3">
+      <label className="form-label">Tháng đăng</label>
+      <select
+        className="form-select"
+        value={filters.month}
+        onChange={(e) => setFilters((prev) => ({ ...prev, month: e.target.value }))}
+      >
+        <option value="">Tất cả</option>
+        {[...Array(12)].map((_, i) => (
+          <option key={i} value={i + 1}>Tháng {i + 1}</option>
+        ))}
+      </select>
+    </div>
+
+    {/* Trạng thái */}
+    <div className="col-md-3">
+      <label className="form-label">Trạng thái</label>
+      <select
+        className="form-select"
+        value={filters.status}
+        onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
+      >
+        <option value="">Tất cả</option>
+        <option value="pending">Chờ duyệt</option>
+        <option value="approved">Đã duyệt</option>
+        <option value="rejected">Từ chối</option>
+      </select>
+    </div>
+
+    {/* Loại bài đăng */}
+    <div className="col-md-3">
+      <label className="form-label">Loại bài</label>
+      <select
+        className="form-select"
+        value={filters.type}
+        onChange={(e) => setFilters((prev) => ({ ...prev, type: e.target.value }))}
+      >
+        <option value="">Tất cả</option>
+        {typeOptions.map((opt) => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+    </div>
+
+    {/* Gói đăng tin */}
+    <div className="col-md-3">
+      <label className="form-label">Gói đăng</label>
+      <select
+        className="form-select"
+        value={filters.postPackage}
+        onChange={(e) => setFilters((prev) => ({ ...prev, postPackage: e.target.value }))}
+      >
+        <option value="">Tất cả</option>
+        {postPackage.map((pkg) => (
+          <option key={pkg.value} value={pkg.value}>{pkg.label}</option>
+        ))}
+      </select>
+    </div>
+    <button
+  className="btn btn-outline-secondary mt-3"
+  onClick={() => setFilters({ month: "", status: "", type: "", postPackage: "" })}
+>
+  Đặt lại bộ lọc
+</button>
+  </div>
+</div>
         <div className="bg-primary text-white rounded-4 p-3 mb-4 text-center">
           <h2 className="mb-0">
             <span className="material-symbols-rounded align-middle" style={{ fontSize: 32, verticalAlign: "middle" }}>library_books</span>

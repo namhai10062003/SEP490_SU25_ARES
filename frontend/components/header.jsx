@@ -1,10 +1,11 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { FiBell } from "react-icons/fi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "./navbar";
 
-const Header = ({ user, name, logout }) => {
+
+const Header = ({ user, name}) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [selectedNotification, setSelectedNotification] = useState(null);
@@ -12,6 +13,12 @@ const Header = ({ user, name, logout }) => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const profileDropdownRef = useRef();
   const dropdownRef = useRef();
+  const navigate = useNavigate();
+
+  const logout = () => {
+    localStorage.removeItem("token"); // xóa token
+    navigate("/login");               // chuyển hướng
+  };
 
   // Fetch notifications from backend
   const fetchNotifications = async () => {

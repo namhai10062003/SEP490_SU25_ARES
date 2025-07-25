@@ -19,16 +19,26 @@ const getParkingRegistrationAll = async (req, res) => {
     const registrations = await ParkingRegistration.find();
 
     // ✅ 2. Định dạng lại dữ liệu gửi về client
-    const formatted = registrations.map(item => ({
-      tênChủSởHữu: item.owner || 'Không rõ',
-      loạiXe: item.vehicleType,
-      biểnSốXe: item.licensePlate,
-      mãCănHộ: item.apartmentCode || 'Không rõ',
-      giá: '80.000đ / tháng',
-      ngàyĐăngKý: item.registerDate?.toISOString().split('T')[0] || '---',
-      trạngThái: item.status || 'Chưa rõ',  // ✅ lấy đúng giá trị từ DB
-      id: item._id
-    }));
+    const formatted = registrations.map(item => {
+      // ✅ Gán giá theo loại xe
+      let price = '---';
+      if (item.vehicleType?.toLowerCase() === 'ô tô') {
+        price = '800.000đ / tháng';
+      } else if (item.vehicleType?.toLowerCase() === 'xe máy') {
+        price = '80.000đ / tháng';
+      }
+
+      return {
+        tênChủSởHữu: item.owner || 'Không rõ',
+        loạiXe: item.vehicleType || 'Không rõ',
+        biểnSốXe: item.licensePlate || 'Không rõ',
+        mãCănHộ: item.apartmentCode || 'Không rõ',
+        giá: price,
+        ngàyĐăngKý: item.registerDate?.toISOString().split('T')[0] || '---',
+        trạngThái: item.status || 'Chưa rõ',
+        id: item._id
+      };
+    });
 
     res.status(200).json({
       message: 'Lấy danh sách bãi gửi xe thành công',
@@ -40,6 +50,7 @@ const getParkingRegistrationAll = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 };
+
 
 // Hiển thị danh sách xe đã đăng ký gửi
 const getParkingRegistrations = async (req, res) => {

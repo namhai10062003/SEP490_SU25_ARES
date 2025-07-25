@@ -97,7 +97,6 @@ const ResidentVerifyList = () => {
           body: JSON.stringify({ reason: rejectReason }),
         }
       );
-
       if (res.ok) {
         toast.success("🚫 Đã từ chối nhân khẩu");
 
@@ -120,6 +119,7 @@ const ResidentVerifyList = () => {
     if (url) window.open(url, "_blank", "noopener,noreferrer");
   };
 
+  
   const filteredResidents = useMemo(() => {
     const result = residents.filter((r) => {
       const fullText = `${r.fullName} ${r.apartmentId?.apartmentCode || ""} ${r.gender} ${r.nationality} ${r.idNumber}`.toLowerCase();
@@ -153,7 +153,6 @@ const ResidentVerifyList = () => {
     return result;
   }, [residents, filterText, dobFilter, issueDateFilter, statusFilter]);
   
-
   return (
     <div className="bg-light min-vh-100 d-flex">
       <StaffNavbar />

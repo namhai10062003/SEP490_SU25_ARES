@@ -4,47 +4,92 @@ import Message from "../models/Messages.js";
 import User from "../models/User.js";
 const router = express.Router();
 
+// router.get("/recent-sender/:userId", async (req, res) => {
+//   const userId = req.params.userId;
+
+//   // ✅ Kiểm tra ID hợp lệ
+//   if (!mongoose.Types.ObjectId.isValid(userId)) {
+//     return res.status(400).json({ success: false, message: "ID người dùng không hợp lệ" });
+//   }
+
+//   try {
+//     // ✅ Tìm các tin nhắn có userId là sender hoặc receiver
+//     const messages = await Message.find({
+//       $or: [
+//         { sender: userId },
+//         { receiver: userId }
+//       ]
+//     });
+
+//     // ✅ Tạo Set để lưu các ID khác với userId
+//     const partnerIdSet = new Set();
+
+//     messages.forEach(msg => {
+//       if (msg.sender.toString() !== userId) {
+//         partnerIdSet.add(msg.sender.toString());
+//       }
+//       if (msg.receiver.toString() !== userId) {
+//         partnerIdSet.add(msg.receiver.toString());
+//       }
+//     });
+
+//     const partnerIds = Array.from(partnerIdSet); // → danh sách người đã nhắn với userId
+
+//     // ✅ Lấy thông tin user
+//     const partners = await User.find({ _id: { $in: partnerIds } }).select("name email");
+
+//     return res.status(200).json({ success: true, data: partners });
+//   } catch (err) {
+//     console.error("❌ Lỗi recent-sender:", err.message);
+//     return res.status(500).json({ success: false, message: "Lỗi server", error: err.message });
+//   }
+// });
+
 router.get("/recent-sender/:userId", async (req, res) => {
   const userId = req.params.userId;
 
-  // ✅ Kiểm tra ID hợp lệ
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return res.status(400).json({ success: false, message: "ID người dùng không hợp lệ" });
   }
 
   try {
-    // ✅ Tìm các tin nhắn có userId là sender hoặc receiver
+    // ✅ Lấy tất cả tin nhắn có liên quan
     const messages = await Message.find({
-      $or: [
-        { sender: userId },
-        { receiver: userId }
-      ]
-    });
+      $or: [{ sender: userId }, { receiver: userId }]
+    }).sort({ createdAt: -1 }); // sắp xếp mới nhất trước
 
-    // ✅ Tạo Set để lưu các ID khác với userId
-    const partnerIdSet = new Set();
+    const partnerMap = new Map(); // key = partnerId, value = { info: user, lastPost: ... }
 
-    messages.forEach(msg => {
-      if (msg.sender.toString() !== userId) {
-        partnerIdSet.add(msg.sender.toString());
+    for (const msg of messages) {
+      const partnerId =
+        msg.sender.toString() === userId ? msg.receiver.toString() : msg.sender.toString();
+
+      // Nếu chưa có, thêm vào map
+      if (!partnerMap.has(partnerId)) {
+        partnerMap.set(partnerId, {
+          lastPost: msg.post || null,
+        });
       }
-      if (msg.receiver.toString() !== userId) {
-        partnerIdSet.add(msg.receiver.toString());
-      }
-    });
+    }
 
-    const partnerIds = Array.from(partnerIdSet); // → danh sách người đã nhắn với userId
+    const partnerIds = Array.from(partnerMap.keys());
 
     // ✅ Lấy thông tin user
-    const partners = await User.find({ _id: { $in: partnerIds } }).select("name email");
+    const users = await User.find({ _id: { $in: partnerIds } }).select("name email");
 
-    return res.status(200).json({ success: true, data: partners });
+    const result = users.map((user) => ({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      lastPost: partnerMap.get(user._id.toString())?.lastPost || null,
+    }));
+
+    return res.status(200).json({ success: true, data: result });
   } catch (err) {
     console.error("❌ Lỗi recent-sender:", err.message);
     return res.status(500).json({ success: false, message: "Lỗi server", error: err.message });
   }
 });
-
 
 
 
@@ -69,7 +114,7 @@ router.get("/:user1Id/:user2Id", async (req, res) => {
 
   // POST /api/messages
   router.post("/", async (req, res) => {
-    const { senderId, receiverId, content } = req.body;
+    const { senderId, receiverId, content, type = "text", post = null } = req.body;
   
     if (!senderId || !receiverId || !content) {
       return res.status(400).json({ success: false, message: "Thiếu dữ liệu" });
@@ -80,12 +125,13 @@ router.get("/:user1Id/:user2Id", async (req, res) => {
         sender: senderId,
         receiver: receiverId,
         content,
+        type,
+        post: type === "post" ? post : undefined,
       });
       await message.save();
   
       const roomId = [senderId, receiverId].sort().join("_");
   
-      // ✅ Emit lại đúng message đã lưu (kèm _id, createdAt, ...)
       global._io?.to?.(roomId)?.emit("receiveMessage", message);
   
       res.status(201).json({ success: true, data: message });

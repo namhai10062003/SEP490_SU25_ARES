@@ -8,7 +8,10 @@ const ResidentList = () => {
   const [name, setName] = useState(null);
   const [apartmentData, setData] = useState([]);
   const [modalReason, setModalReason] = useState(null); // { name, reason }
-
+  const [searchText, setSearchText] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterGender, setFilterGender] = useState('all');
+const [filterRelation, setFilterRelation] = useState('all');
   useEffect(() => {
     setName(user?.name || null);
 
@@ -89,39 +92,55 @@ const ResidentList = () => {
             </thead>
             <tbody>
               {apt.residents.length ? (
-                apt.residents
-                  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                  .map((r) => (
-                    <tr key={r._id}>
-                      <td>{r.fullName}</td>
-                      <td>{r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString('vi-VN') : ''}</td>
-                      <td>{r.gender}</td>
-                      <td>{r.relationWithOwner}</td>
-                      <td>
-                        {r.verifiedByStaff === "true" ? (
-                          <span className="badge bg-success">✅ Đã duyệt</span>
-                        ) : r.verifiedByStaff === "false" ? (
-                          <span className="badge bg-danger">❌ Đã từ chối</span>
-                        ) : (
-                          <span className="badge bg-warning text-dark">🟡 Chờ duyệt</span>
-                        )}
-                      </td>
-
-                      <td>
-                        <Link to={`/residents/${r._id}`} className="btn btn-primary btn-sm rounded-pill me-2">
-                          Xem chi tiết
-                        </Link>
-                        {r.rejectReason && (
-                          <button
-                            className="btn btn-warning btn-sm rounded-pill"
-                            onClick={() => setModalReason({ name: r.fullName, reason: r.rejectReason })}
-                          >
-                            ❓ Lý do
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
+           apt.residents
+           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+           .filter((r) => {
+             const nameMatch = r.fullName.toLowerCase().includes(searchText.toLowerCase());
+             const statusMatch =
+               filterStatus === 'all' ||
+               (filterStatus === 'approved' && r.verifiedByStaff) ||
+               (filterStatus === 'rejected' && r.rejectReason) ||
+               (filterStatus === 'pending' && !r.verifiedByStaff && !r.rejectReason);
+               const relationMatch =
+               filterRelation === 'all' ||
+               (r.relationWithOwner &&
+                 r.relationWithOwner.toLowerCase().trim().includes(filterRelation.toLowerCase().trim()));
+             
+    const genderMatch =
+    filterGender === 'all' ||
+    (r.gender && r.gender.toLowerCase().trim() === filterGender.toLowerCase().trim());
+             return nameMatch && statusMatch && relationMatch && genderMatch;
+           })
+              .map((r) => (
+                  <tr key={r._id}>
+                    <td>{r.fullName}</td>
+                    <td>{r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString('vi-VN') : ''}</td>
+                    <td>{r.gender}</td>
+                    <td>{r.relationWithOwner}</td>
+                    <td>
+                      {r.verifiedByStaff ? (
+                        <span className="badge bg-success">✅ Đã duyệt</span>
+                      ) : r.rejectReason ? (
+                        <span className="badge bg-danger">❌ Đã từ chối</span>
+                      ) : (
+                        <span className="badge bg-warning text-dark">🟡 Chờ duyệt</span>
+                      )}
+                    </td>
+                    <td>
+                      <Link to={`/residents/${r._id}`} className="btn btn-primary btn-sm rounded-pill me-2">
+                        Xem chi tiết
+                      </Link>
+                      {r.rejectReason && (
+                        <button
+                          className="btn btn-warning btn-sm rounded-pill"
+                          onClick={() => setModalReason({ name: r.fullName, reason: r.rejectReason })}
+                        >
+                          ❓ Lý do
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
               ) : (
                 <tr>
                   <td colSpan="6" className="text-center py-3">
@@ -142,7 +161,79 @@ const ResidentList = () => {
 
       <div className="container py-5">
         <h2 className="fw-bold text-center mb-4 text-primary">Danh sách nhân khẩu theo căn hộ</h2>
+        <div className="row mb-4 justify-content-between">
+        <div className="row mb-4">
+  <div className="col-md-3 mb-2">
+    <input
+      type="text"
+      className="form-control"
+      placeholder="🔍 Tìm theo tên nhân khẩu..."
+      value={searchText}
+      onChange={(e) => setSearchText(e.target.value)}
+    />
+  </div>
 
+  <div className="col-md-2 mb-2">
+    <select
+      className="form-select"
+      value={filterStatus}
+      onChange={(e) => setFilterStatus(e.target.value)}
+    >
+      <option value="all">Tất cả trạng thái</option>
+      <option value="approved">✅ Đã duyệt</option>
+      <option value="rejected">❌ Từ chối</option>
+      <option value="pending">🟡 Chờ duyệt</option>
+    </select>
+  </div>
+
+  <div className="col-md-2 mb-2">
+    <select
+      className="form-select"
+      value={filterGender}
+      onChange={(e) => setFilterGender(e.target.value)}
+    >
+      <option value="all">Giới tính</option>
+      <option value="Nam">Nam</option>
+      <option value="Nữ">Nữ</option>
+      <option value="Khác">Khác</option>
+    </select>
+  </div>
+
+  <div className="col-md-3 mb-2">
+  <select
+    className="form-select"
+    value={filterRelation}
+    onChange={(e) => setFilterRelation(e.target.value)}
+  >
+    <option value="all">Quan hệ với chủ hộ</option>
+    <option value="Vợ">Vợ</option>
+    <option value="Chồng">Chồng</option>
+    <option value="Con">Con</option>
+    <option value="Chị">Chị</option>
+    <option value="Em">Em</option>
+    <option value="Bố">Bố</option>
+    <option value="Mẹ">Mẹ</option>
+    <option value="Khác">Khác</option>
+  </select>
+</div>
+
+
+
+  <div className="col-md-2 mb-2 d-grid">
+    <button
+      className="btn btn-outline-secondary"
+      onClick={() => {
+        setSearchText('');
+        setFilterStatus('all');
+        setFilterGender('all');
+        setFilterRelation('all');
+      }}
+    >
+      🔄 Xóa bộ lọc
+    </button>
+  </div>
+</div>
+</div>
         {apartmentData.length ? (
           apartmentData.map(renderApartment)
         ) : (

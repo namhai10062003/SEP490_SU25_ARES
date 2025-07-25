@@ -28,10 +28,23 @@ const contractSchema = new mongoose.Schema({
   },
     // Trạng thái duyệt
     status: {
-        type: String,
-        enum: ["pending", "approved", "rejected", "expired"],
-        default: "pending"
-      },
+      type: String,
+      enum: ["pending", "approved", "rejected", "expired", "cancelled"], // ✅ thêm 'cancelled'
+      default: "pending"
+    },
+    postSnapshot: {
+      title: String,
+      image: String,
+      location: String,
+      area: Number,
+      price: Number,
+      property: String,
+      legalDocument: String,
+      interiorStatus: String,
+      amenities: [String],
+      apartmentCode: String,
+    },
+    
     rejectionReason: { type: String },
     paymentStatus: {
       type: String,

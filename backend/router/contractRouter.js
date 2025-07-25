@@ -48,6 +48,27 @@ router.get("/landlord", verifysUser, async (req, res) => {
 router.put("/:id/approve", verifysUser, approveContract);
 router.put("/:id/reject", verifysUser, rejectContract);
 router.delete("/:id", verifysUser, deleteContract);
+// hủy hợp đồng 
+// routes/contractRouter.js
+router.patch('/cancel/:id', async (req, res) => {
+  try {
+    const contract = await Contract.findById(req.params.id);
+    if (!contract) return res.status(404).json({ message: 'Không tìm thấy hợp đồng.' });
+
+    // Kiểm tra điều kiện nếu cần (ví dụ: chỉ huỷ được nếu đang "pending")
+    if (contract.status !== 'pending') {
+      return res.status(400).json({ message: 'Chỉ có thể huỷ hợp đồng khi đang chờ duyệt.' });
+    }
+
+    contract.status = 'cancelled';
+    await contract.save();
+
+    res.json({ message: 'Đã huỷ hợp đồng thành công.', contract });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi server khi huỷ hợp đồng.' });
+  }
+});
+
 // xem chi tiết 
 router.get("/:id", verifysUser, getContractById);
 router.put("/:id/resubmit", verifysUser, resubmitContract);
