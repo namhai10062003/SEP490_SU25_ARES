@@ -71,7 +71,7 @@ export const initSocket = (serverIO) => {
         content,
         timestamp: createdAt || new Date().toISOString(),
         type,
-        post: postInfo,
+        postInfo: post,
       };
     
       console.log("📤 Gửi message tới phòng:", roomId, payload);
