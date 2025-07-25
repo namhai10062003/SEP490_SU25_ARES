@@ -65,6 +65,7 @@ const getUsersDepartment = async (req, res) => {
 // Block or unblock user from posting
 const blockUser = async (req, res) => {
   try {
+    const { reason } = req.body;
     const user = await User.findById(req.params.id).select('-password -otp -otpExpires');
     if (!user) return res.status(404).json({ error: "User not found" });
     if (user.status === 0) return res.status(200).json({
@@ -74,30 +75,32 @@ const blockUser = async (req, res) => {
     });
     user.status = 0;
     await user.save();
+
+    const message = `Tài khoản của bạn đã bị chặn đăng bài bởi admin. ${reason ? "Lý do: " + reason : "Vui lòng liên lạc với bộ phận hỗ trợ."}`;
+
     if (global._io) {
-      global._io.sockets.sockets.forEach((socket) => {
-        if (socket.userId === user._id.toString()) {
-          socket.emit('blocked_posting', { message: 'Tài khoản của bạn đã bị chặn đăng bài bởi admin. Xin vui lòng liên lạc với bộ phận hỗ trợ.' });
-        }
-      });
-      await Notification.create({
-        userId: user._id,
-        message: 'Tài khoản của bạn đã bị chặn đăng bài bởi admin. Xin vui lòng liên lạc với bộ phận hỗ trợ.'
-      });
-      if (user.email) {
-        await sendEmailNotification({
-          to: user.email,
-          subject: "Thông báo chặn đăng bài",
-          text: "Tài khoản của bạn đã bị chặn đăng bài bởi admin. Vui lòng liên hệ bộ phận hỗ trợ.",
-          html: "<b>Tài khoản của bạn đã bị chặn đăng bài bởi admin.</b><br>Vui lòng liên hệ bộ phận hỗ trợ."
-        });
+      const socketId = userSocketMap.get(user._id.toString());
+      console.log("[Emit blocked] socketId:", socketId);
+      if (socketId) {
+        global._io.to(socketId).emit("blocked_posting", { message });
+        console.log("[Emit blocked] sent to socket:", socketId);
       }
-      if (user.phone) {
-        await sendSMSNotification({
-          to: user.phone,
-          body: "Tai khoan cua ban da bi chan dang bai, Vui long lien he bo phan ho tro."
-        });
-      }
+      await Notification.create({ userId: user._id, message });
+    }
+
+    if (user.email) {
+      await sendEmailNotification({
+        to: user.email,
+        subject: "Thông báo chặn đăng bài",
+        text: message,
+        html: `<b>${message}</b>`
+      });
+    }
+    if (user.phone) {
+      await sendSMSNotification({
+        to: user.phone,
+        body: message
+      });
     }
 
     res.json(user);
@@ -105,6 +108,7 @@ const blockUser = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 const unBlockUser = async (req, res) => {
   try {

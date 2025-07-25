@@ -40,6 +40,11 @@ export async function sendEmailNotification({ to, subject, text, html }) {
 const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
 export async function sendSMSNotification({ to, body }) {
+    if (process.env.TWILIO_ENABLE !== "true") {
+        console.log("Twilio is disabled.");
+        return false;
+    }
+
     try {
         const formattedTo = formatVietnamPhoneNumber(to);
         console.log("Sending SMS to:", formattedTo);

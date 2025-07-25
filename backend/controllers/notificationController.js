@@ -23,6 +23,16 @@ const markAsRead = async (req, res) => {
     }
 };
 
+//Mark all notifications as read for a user
+const markAllAsRead = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        await Notification.updateMany({ userId, read: false }, { read: true });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: "Server error" });
+    }
+};
 // Delete a notification
 const deleteNotification = async (req, res) => {
     try {
@@ -38,5 +48,6 @@ const deleteNotification = async (req, res) => {
 export {
     getNotifications,
     markAsRead,
+    markAllAsRead,
     deleteNotification
 };
