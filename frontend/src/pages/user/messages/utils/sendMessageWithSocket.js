@@ -7,7 +7,7 @@ export const sendMessageWithSocket = async ({
   content,
   socket,
   setText,
-  postInfo, // 🟢 thêm dòng này
+  postInfo,
 }) => {
   if (!content.trim() || senderId === receiverId) return;
 
@@ -16,12 +16,14 @@ export const sendMessageWithSocket = async ({
       senderId,
       receiverId,
       content,
-      type: postInfo ? "post" : "text", // 🆗 phân biệt loại
-      post: postInfo ? {
-        postId: postInfo._id,
-        title: postInfo.title,
-        thumbnail: postInfo.image || postInfo.thumbnail || "", // nếu có
-      } : undefined,
+      type: postInfo ? "post" : "text",
+      post: postInfo
+        ? {
+            postId: postInfo._id,
+            title: postInfo.title,
+            thumbnail: postInfo.image || postInfo.thumbnail || "",
+          }
+        : undefined,
     });
 
     const msg = {
@@ -29,10 +31,15 @@ export const sendMessageWithSocket = async ({
       senderId,
       receiverId,
       timestamp: res.data.data.createdAt,
+      // ✅ Gắn postInfo vào để socket gửi đi
+      postInfo: res.data.data.post || {
+        title: postInfo?.title,
+        thumbnail: postInfo?.image || postInfo?.thumbnail || "",
+      },
     };
-    
+
     socket.emit("sendMessage", msg);
-    setText(""); // Clear input
+    setText("");
   } catch (err) {
     console.error("❌ Gửi tin nhắn thất bại:", err);
   }

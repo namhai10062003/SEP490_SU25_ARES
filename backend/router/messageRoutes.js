@@ -53,36 +53,44 @@ router.get("/recent-sender/:userId", async (req, res) => {
   }
 
   try {
-    // ✅ Lấy tất cả tin nhắn có liên quan
+    // ✅ Lấy danh sách userId đã từng nhắn tin với
     const messages = await Message.find({
       $or: [{ sender: userId }, { receiver: userId }]
-    }).sort({ createdAt: -1 }); // sắp xếp mới nhất trước
+    });
 
-    const partnerMap = new Map(); // key = partnerId, value = { info: user, lastPost: ... }
+    const partnerIdsSet = new Set();
 
     for (const msg of messages) {
-      const partnerId =
-        msg.sender.toString() === userId ? msg.receiver.toString() : msg.sender.toString();
+      const partnerId = msg.sender.toString() === userId
+        ? msg.receiver.toString()
+        : msg.sender.toString();
 
-      // Nếu chưa có, thêm vào map
-      if (!partnerMap.has(partnerId)) {
-        partnerMap.set(partnerId, {
-          lastPost: msg.post || null,
-        });
-      }
+      partnerIdsSet.add(partnerId);
     }
 
-    const partnerIds = Array.from(partnerMap.keys());
+    const partnerIds = Array.from(partnerIdsSet);
 
-    // ✅ Lấy thông tin user
-    const users = await User.find({ _id: { $in: partnerIds } }).select("name email");
+    const result = [];
 
-    const result = users.map((user) => ({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      lastPost: partnerMap.get(user._id.toString())?.lastPost || null,
-    }));
+    for (const partnerId of partnerIds) {
+      const [user, lastMessage] = await Promise.all([
+        User.findById(partnerId).select("name email"),
+        Message.findOne({
+          $or: [
+            { sender: userId, receiver: partnerId },
+            { sender: partnerId, receiver: userId }
+          ],
+          post: { $ne: null }
+        }).sort({ createdAt: -1 })
+      ]);
+
+      result.push({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        lastPost: lastMessage?.post || null,
+      });
+    }
 
     return res.status(200).json({ success: true, data: result });
   } catch (err) {
@@ -90,7 +98,6 @@ router.get("/recent-sender/:userId", async (req, res) => {
     return res.status(500).json({ success: false, message: "Lỗi server", error: err.message });
   }
 });
-
 
 
 
