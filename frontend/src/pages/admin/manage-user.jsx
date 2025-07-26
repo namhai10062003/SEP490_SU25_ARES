@@ -2,6 +2,7 @@ import { faEye, faEyeSlash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import LoadingModal from "../../../components/LoadingModal.jsx";
 import AdminDashboard from "./adminDashboard.jsx";
 
 
@@ -18,7 +19,7 @@ const ManageUsers = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [filterStatus, setFilterStatus] = useState("");
-
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -41,7 +42,12 @@ const ManageUsers = () => {
         const token = localStorage.getItem("token");
         setLoading(true);
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${user._id}/status`, {
+            const endpoint =
+                user.status === 1
+                    ? `${import.meta.env.VITE_API_URL}/api/users/block/${user._id}`
+                    : `${import.meta.env.VITE_API_URL}/api/users/unblock/${user._id}`;
+
+            const res = await fetch(endpoint, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -49,6 +55,7 @@ const ManageUsers = () => {
                 },
                 body: user.status === 1 ? JSON.stringify({ reason }) : null,
             });
+
             if (res.ok) {
                 toast.success("Đã đổi trạng thái!");
                 fetchUsers();
@@ -60,11 +67,13 @@ const ManageUsers = () => {
         } catch {
             toast.error("Lỗi server!");
         }
+        setLoading(false);
     };
 
 
     const handleDeleteUser = async () => {
         if (!userToDelete) return;
+        setLoading(true);
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${userToDelete._id}`, {
                 method: "DELETE",
@@ -80,10 +89,13 @@ const ManageUsers = () => {
         } catch {
             toast.error("Lỗi server!");
         }
+        setLoading(false);
     };
     return (
         <AdminDashboard>
-            <div className="w-100">
+            <div className="w-100 postion-relative">
+                {/* Loading Modal */}
+                {loading && <LoadingModal />}
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2 className="font-weight-bold">Quản lý User</h2>
                 </div>
