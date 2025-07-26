@@ -1,5 +1,5 @@
 import express from 'express';
-import { countResidentsByApartment, createResident, getMyResidents, getResidentDetail, getResidentsByApartment, getResidentsUnverifiedByStaff, rejectResidentByStaff, verifyResidentByStaff } from '../controllers/residentController.js';
+import { countResidentsByApartment, createResident, getAllResidents, getMyResidents, getResidentDetail, getResidentsByApartment, getResidentsUnverifiedByStaff, rejectResidentByStaff, verifyResidentByStaff } from '../controllers/residentController.js';
 import verifyUser from '../middleware/authMiddleware.js';
 import isStaff from '../middleware/isStaff.js';
 import { uploadImage } from '../middleware/upload.js';
@@ -8,6 +8,8 @@ const router = express.Router();
 
 // Tạo nhân khẩu mới (có upload ảnh CCCD, yêu cầu xác thực)
 router.post('/create', verifyUser, uploadImage, createResident);
+// lấy ra danh sách nhân khẩu
+router.get('/all', getAllResidents); 
 //xem chi tiet nhan khau 
 router.get('/:id', verifyUser, getResidentDetail);
 // Lấy danh sách nhân khẩu theo căn hộ (dựa vào apartmentId)

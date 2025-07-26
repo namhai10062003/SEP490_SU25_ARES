@@ -248,41 +248,38 @@ const ContractForm = ({
           <p>
             <strong>3. Cam kết và nghĩa vụ:</strong>
           </p>
-          <p>
-            <strong>3.1. Cam kết của Bên A:</strong>
-          </p>
-          <ul>
-            <li>Giữ chỗ cho Bên B trong thời gian đặt cọc nêu trên.</li>
-            <li>
-              Cung cấp đầy đủ và minh bạch thông tin liên quan đến bất động sản.
-            </li>
-            <li>
-              Thông báo và mời Bên B ký hợp đồng mua bán / thuê chính thức trong
-              thời hạn giữ chỗ.
-            </li>
-            <li>
-              Hoàn lại toàn bộ tiền cọc nếu không thể thực hiện giao dịch do lỗi
-              của Bên A.
-            </li>
-          </ul>
+      
 
-          <p>
-            <strong>3.2. Cam kết của Bên B:</strong>
-          </p>
-          <ul>
-            <li>
-              Thanh toán đầy đủ và đúng hạn số tiền đặt cọc đã thỏa thuận.
-            </li>
-            <li>
-              Tiến hành ký hợp đồng mua bán / thuê chính thức đúng thời hạn nếu
-              còn nhu cầu.
-            </li>
-            <li>
-              Chấp nhận mất toàn bộ tiền cọc nếu tự ý từ chối giao dịch mà không
-              có lý do chính đáng.
-            </li>
-          </ul>
+<p><strong>3.1. Cam kết của Bên A:</strong></p>
+<ul>
+  <li>Giữ chỗ cho Bên B trong thời gian đặt cọc nêu trên.</li>
+  <li>Cung cấp đầy đủ và minh bạch thông tin liên quan đến bất động sản.</li>
+  <li>Thông báo và mời Bên B ký hợp đồng mua bán / thuê chính thức trong thời hạn giữ chỗ.</li>
+  <li>Hoàn lại toàn bộ tiền cọc nếu không thể thực hiện giao dịch do lỗi của Bên A.</li>
+</ul>
 
+<p><strong>Nghĩa vụ của Bên A:</strong></p>
+<ul>
+  <li>Hỗ trợ Bên B hoàn tất các thủ tục pháp lý liên quan đến giao dịch.</li>
+  <li>Chịu trách nhiệm về tính pháp lý của bất động sản trong giao dịch.</li>
+  <li>Bàn giao tài sản đúng thời hạn và tình trạng như đã cam kết.</li>
+</ul>
+
+<p><strong>3.2. Cam kết của Bên B:</strong></p>
+<ul>
+  <li>Thanh toán đầy đủ và đúng hạn số tiền đặt cọc đã thỏa thuận.</li>
+  <li>Tiến hành ký hợp đồng mua bán / thuê chính thức đúng thời hạn nếu còn nhu cầu.</li>
+  <li>Chấp nhận mất toàn bộ tiền cọc nếu tự ý từ chối giao dịch mà không có lý do chính đáng.</li>
+</ul>
+
+<p><strong>Nghĩa vụ của Bên B:</strong></p>
+<ul>
+  <li>Cung cấp đầy đủ thông tin cá nhân, giấy tờ cần thiết phục vụ giao dịch.</li>
+  <li>Thực hiện đầy đủ các cam kết tài chính theo hợp đồng đặt cọc.</li>
+  <li>Phối hợp với Bên A để hoàn tất thủ tục ký hợp đồng mua bán / thuê chính thức.</li>
+</ul>
+
+          
           <p>
             <strong>4. Điều khoản chung:</strong>
           </p>

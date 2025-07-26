@@ -17,23 +17,36 @@ export const createContract = async (req, res) => {
       addressB,
       phoneA,
       phoneB,
-      emailA,  // ✅ thêm dòng này
-      emailB,  // ✅ thêm dòng này
+      emailA,
+      emailB,
       agreed,
       contractTerms,
       depositAmount,
       apartmentCode,
     } = req.body;
 
-    let finalDeposit = depositAmount;
-
-    if (!finalDeposit) {
-      const post = await Post.findById(postId);
-      if (!post) {
-        return res.status(404).json({ success: false, message: "Không tìm thấy bài đăng." });
-      }
-      finalDeposit = Math.floor(post.price * 0.1);
+    // 📌 Lấy bài đăng để lấy dữ liệu snapshot
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy bài đăng." });
     }
+
+    // 💵 Tính tiền cọc nếu chưa có
+    let finalDeposit = depositAmount || Math.floor(post.price * 0.1);
+
+    // ✨ Snapshot đầy đủ các thông tin từ bài đăng
+    const postSnapshot = {
+      title: post.title,
+      image: post.image,
+      location: post.location,
+      area: post.area,
+      price: post.price,
+      property: post.property,
+      legalDocument: post.legalDocument,
+      interiorStatus: post.interiorStatus,
+      amenities: post.amenities,
+      apartmentCode: post.apartmentCode,
+    };
 
     const contract = new Contract({
       postId,
@@ -49,13 +62,14 @@ export const createContract = async (req, res) => {
       addressB,
       phoneA,
       phoneB,
-      emailA,      // ✅ gán vào schema
-      emailB,      // ✅ gán vào schema
+      emailA,
+      emailB,
       agreed,
       contractTerms,
       apartmentCode,
       depositAmount: finalDeposit,
       withdrawableAmount: Math.round(finalDeposit * 0.9),
+      postSnapshot, // ✅ dùng snapshot đầy đủ
     });
 
     await contract.save();

@@ -1,5 +1,5 @@
 import express from 'express';
-import { changePassword, blockUser, unBlockUser, deleteUser, getUserById, getUserProfileById, getUsers, getUsersDepartment, updateProfile } from '../controllers/userController.js';
+import { changePassword, changeUserStatus, deleteUser, getUserById, getUserProfileById, getUsers, getUsersDepartment, updateProfile } from '../controllers/userController.js';
 import verifysUser from "../middleware/authMiddleware.js";
 import { uploadProfileImage } from "../middleware/uploadProfileImage.js";
 const router = express.Router();
@@ -7,8 +7,7 @@ const router = express.Router();
 router.get('/', getUsers);
 router.get('/get-user-apartment', getUsersDepartment);
 router.get('/:id', getUserById);
-router.patch('/block/:id', verifysUser, blockUser);
-router.patch('/unblock/:id', verifysUser, unBlockUser);
+router.patch('/:id/status', changeUserStatus);
 router.delete('/:id', deleteUser);
 //update profile 
 router.patch("/updateprofile", verifysUser, uploadProfileImage, updateProfile);

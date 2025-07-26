@@ -1,10 +1,11 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
-
 
 const MyContracts = () => {
   const { user, loading } = useAuth();
@@ -107,7 +108,39 @@ useEffect(() => {
       toast.error("❌ Lỗi khi gửi lại hợp đồng");
     }
   };
+// hàm xử lý hủy hợp đồng
+const handleCancelContract = async (id) => {
+  confirmAlert({
+    title: "Xác nhận huỷ hợp đồng",
+    message: "Bạn có chắc chắn muốn huỷ hợp đồng này?",
+    buttons: [
+      {
+        label: "Huỷ hợp đồng",
+        onClick: async () => {
+          try {
+            const token = localStorage.getItem("token");
+            await axios.patch(`${import.meta.env.VITE_API_URL}/api/contracts/cancel/${id}`, null, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
 
+            toast.success("🗑️ Đã huỷ hợp đồng");
+            setContracts((prev) =>
+              prev.map((c) => (c._id === id ? { ...c, status: "cancelled" } : c))
+            );
+          } catch (err) {
+            console.error(err);
+            toast.error("❌ Lỗi khi huỷ hợp đồng");
+          }
+        },
+      },
+      {
+        label: "Không huỷ",
+        onClick: () => toast.info("⛔ Bạn đã huỷ thao tác"),
+      },
+    ],
+  });
+};
+// hàm xử lí thanh toán
   const handlePayment = async (id) => {
     try {
       const res = await axios.put(
@@ -135,7 +168,9 @@ useEffect(() => {
   if (loading) return <p>🔄 Đang tải...</p>;
 
   const myTenantContracts = contracts.filter(
-    (c) => c.userId === user._id || c.userId === user._id?.toString()
+    (c) =>  
+      (c.userId === user._id || c.userId === user._id?.toString()) &&
+      c.status !== "cancelled" // ẩn hợp đồng đã huỷ
   );
 
   const filteredContracts = myTenantContracts.filter((c) => {
@@ -227,6 +262,14 @@ useEffect(() => {
                       >
                         XEM CHI TIẾT
                       </button>
+                      {contract.status === "pending" && (
+  <button
+    className="btn btn-outline-danger fw-bold"
+    onClick={() => handleCancelContract(contract._id)}
+  >
+    HUỶ HỢP ĐỒNG
+  </button>
+)}
                       {contract.status === "approved" && contract.paymentStatus === "unpaid" && (
                         <button className="btn btn-primary fw-bold" onClick={() => handlePayment(contract._id)}>
                           THANH TOÁN

@@ -1,36 +1,35 @@
 import React, { useEffect, useState } from "react";
+import { Modal } from "react-bootstrap";
 import {
   FaCalendarAlt,
+  FaExpand,
   FaHeart,
+  FaInfoCircle,
   FaMapMarkerAlt,
   FaRegHeart,
   FaRulerCombined,
   FaStar,
-  FaInfoCircle,
-  FaExpand,
 } from "react-icons/fa";
-import { Modal } from "react-bootstrap";
-import Slider from "react-slick";
 import { useNavigate, useParams } from "react-router-dom";
+import Slider from "react-slick";
 import { toast } from "react-toastify";
-
-import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-
+import "slick-carousel/slick/slick.css";
 import Header from "../../../../components/header.jsx";
+import { useChat } from "../../../../context/ChatContext.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
 import {
-  getPostById,
-  getAllPosts,
-} from "../../../service/postService.js";
-import {
-  toggleLike,
-  getComments,
   addComment,
   checkLiked,
+  getComments,
   getLikeCount,
   reportPost,
+  toggleLike,
 } from "../../../service/postInteractionService.js";
+import {
+  getAllPosts,
+  getPostById,
+} from "../../../service/postService.js";
 
 const PostDetail = () => {
   const { id } = useParams();
@@ -56,6 +55,42 @@ const PostDetail = () => {
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
 
+  //chat 
+  const { setReceiver, setPostInfo } = useChat();
+const [showChat, setShowChat] = useState(false);
+const [selectedPost, setSelectedPost] = useState(null);
+const [selectedUser, setSelectedUser] = useState(null);
+// hàm thực hiện chat vs người bài đăng 
+useEffect(() => {
+  if (post?.contactInfo?.userId) {
+    if (user && user._id !== post.contactInfo.userId) {
+      setReceiver({
+        id: post.contactInfo.userId,
+        name: post.contactInfo.name,
+      });
+
+      // ✅ Set postInfo ở đây
+      setPostInfo({
+        id: post._id,
+        title: post.title,
+        image: post.images?.[0] || "",
+        price: post.price,
+      });
+
+      console.log("✅ ChatBox Props:", {
+        currentUserId: user._id,
+        receiverId: post.contactInfo.userId,
+        receiverName: post.contactInfo.name,
+        postId: post._id,
+      });
+    } else {
+      setReceiver(null);
+      setPostInfo(null); // clear nếu là chủ bài
+    }
+  }
+}, [post, user]);
+
+// 
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -266,7 +301,34 @@ const PostDetail = () => {
             </button>
           </div>
         </div>
+        {/* {user && post.contactInfo?.userId !== user._id && (
+  <button
+    className="btn btn-outline-primary btn-sm"
+    onClick={() => {
+      setReceiver({
+        id: post.contactInfo.userId,
+        name: post.contactInfo.name,
+      });
 
+      setPostInfo({
+        id: post._id,
+        title: post.title,
+        image: post.images?.[0] || "", // lấy ảnh đầu tiên nếu có
+        price: post.price,
+      });
+    }}
+  >
+    💬 Nhắn tin với người đăng
+  </button>
+)} */}
+{/* {selectedUser && selectedPost && showChat && (
+  <ChatBox
+    currentUserId={user._id}
+    receiverId={selectedUser._id}
+    receiverName={selectedUser.name}
+    postInfo={selectedPost}
+  />
+)} */}
         {/* Description */}
         <div className="mt-4">
           <h4 className="mb-3 d-flex align-items-center text-primary">

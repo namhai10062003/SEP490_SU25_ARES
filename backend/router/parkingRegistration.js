@@ -45,4 +45,25 @@ router.get("/fee/:userId/:apartmentId/:month", async (req, res) => {
       res.status(500).json({ success: false, message: "Lỗi server" });
     }
   });
+  // PATCH - Chuyển trạng thái gửi xe sang "cancelled"
+router.patch('/cancel/:id', async (req, res) => {
+  try {
+    const updated = await ParkingRegistration.findByIdAndUpdate(
+      req.params.id,
+      { status: 'cancelled' },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Không tìm thấy đơn đăng ký gửi xe' });
+    }
+
+    res.status(200).json({
+      message: 'Đã huỷ gửi xe thành công',
+      data: updated,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi server', error: err.message });
+  }
+});
 export default router;
