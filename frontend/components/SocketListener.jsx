@@ -5,20 +5,37 @@ import { toast } from "react-toastify";
 
 const SocketListener = () => {
     const { socket } = useSocket();
-    const { logout } = useAuth();
+    const { user, logout } = useAuth();
 
     useEffect(() => {
         if (!socket) return;
+
         const handler = (data) => {
             toast.error(data.message || "Tài khoản của bạn đã bị khóa!");
-            logout();
-            setTimeout(() => {
-                window.location.href = "/login";
-            }, 3000);
         };
-        socket.on("blocked", handler);
-        return () => socket.off("blocked", handler);
+
+        socket.on("blocked_posting", handler);
+
+        return () => socket.off("blocked_posting", handler);
     }, [socket, logout]);
+
+    useEffect(() => {
+        if (!socket || !user?._id) return;
+
+        socket.emit("register-user", user._id);
+
+        const handleNewNotification = (notification) => {
+            toast.info(notification.message || "Bạn có thông báo mới 🔔");
+        };
+
+        socket.on("newNotification", handleNewNotification);
+
+        return () => {
+            socket.off("newNotification", handleNewNotification);
+        };
+    }, [socket, user]);
+
+
 
     return null;
 };
