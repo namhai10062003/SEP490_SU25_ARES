@@ -15,21 +15,21 @@ const ChangePassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!oldPassword || !newPassword || !confirmPassword) {
-      toast.warn("⚠️ Vui lòng điền đầy đủ các trường!");
+  
+    if (!newPassword || !confirmPassword) {
+      toast.warn("⚠️ Vui lòng nhập mật khẩu mới và xác nhận.");
       return;
     }
-
+  
     if (newPassword !== confirmPassword) {
       toast.error("❌ Mật khẩu xác nhận không khớp.");
       return;
     }
-
+  
     try {
       await axios.patch(
         `${import.meta.env.VITE_API_URL}/api/users/changepassword`,
-        { oldPassword, newPassword },
+        { oldPassword, newPassword }, // nếu oldPassword rỗng thì backend sẽ bỏ qua
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -37,6 +37,7 @@ const ChangePassword = () => {
           },
         }
       );
+  
       toast.success("✅ Đổi mật khẩu thành công!");
       setTimeout(() => {
         navigate("/profile");
@@ -46,6 +47,7 @@ const ChangePassword = () => {
       toast.error(err?.response?.data?.message || "❌ Đổi mật khẩu thất bại!");
     }
   };
+  
 
   return (
     <div className="bg-light min-vh-100">
@@ -59,15 +61,17 @@ const ChangePassword = () => {
               <input type="email" className="form-control" value={user?.email || ""} disabled />
             </div>
             <div className="mb-3">
-              <label className="form-label">Mật khẩu cũ</label>
-              <input
-                type="password"
-                className="form-control"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                required
-              />
-            </div>
+  <label className="form-label">Mật khẩu hiện tại</label>
+  <input
+    type="password"
+    className="form-control"
+    value={oldPassword}
+    onChange={(e) => setOldPassword(e.target.value)}
+    placeholder="Nhập mật khẩu hiện tại"
+    required
+  />
+</div>
+
             <div className="mb-3">
               <label className="form-label">Mật khẩu mới</label>
               <input

@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import Notification from '../models/Notification.js';
+import ProfileUpdateRequest from "../models/ProfileUpdateRequest.js";
 import User from '../models/User.js';
 import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
 // GET /api/users?page=1&limit=10&role=staff&status=1
@@ -213,6 +214,12 @@ export const updateProfile = async (req, res) => {
       jobTitle,
     } = req.body;
 
+
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
     const updateData = {
       name,
       phone,
@@ -224,10 +231,26 @@ export const updateProfile = async (req, res) => {
       jobTitle,
     };
 
+
+    // Check nếu CCCD hoặc ảnh thay đổi → tạo yêu cầu chờ duyệt
+    const changedCCCD = identityNumber && identityNumber !== currentUser.identityNumber;
+    const changedImage = req.file && req.file.path && req.file.path !== currentUser.profileImage;
+
+    if (changedCCCD || changedImage) {
+      await ProfileUpdateRequest.create({
+        userId,
+        newIdentityNumber: changedCCCD ? identityNumber : undefined,
+        newProfileImage: changedImage ? req.file.path : undefined,
+      });
+    }
+
+    // Cập nhật các trường còn lại (không phải CCCD/ảnh)
+
     // Nếu có ảnh đại diện mới từ Cloudinary
     if (req.file && req.file.path) {
       updateData.profileImage = req.file.path;
     }
+
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -236,7 +259,10 @@ export const updateProfile = async (req, res) => {
     );
 
     res.status(200).json({
-      message: "Cập nhật hồ sơ thành công",
+
+      message: changedCCCD || changedImage
+        ? "Đã cập nhật thông tin cơ bản. CCCD/ảnh đang chờ admin duyệt."
+        : "Cập nhật hồ sơ thành công",
       user: updatedUser,
     });
   } catch (error) {
@@ -244,38 +270,38 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Lỗi server" });
   }
 };
-export const getUserProfileById = async (req, res) => {
-  try {
-    const _id = req.params.id;
+  export const getUserProfileById = async (req, res) => {
+    try {
+      const _id = req.params.id;
+  
+      if (!_id) {
+        return res.status(400).json({ error: "Thiếu ID người dùng" });
+      }
+  
+      const user = await User.findById(_id).select(
+        'name phone gender dob address identityNumber jobTitle bio profileImage'
+      );
+  
+      if (!user) {
+        return res.status(404).json({ error: "Không tìm thấy người dùng" });
+      }
+  
+      res.status(200).json(user);
+    } catch (err) {
+      console.error("❌ Lỗi khi lấy profile:", err.message);
+      res.status(500).json({ error: "Server error" });
 
-    if (!_id) {
-      return res.status(400).json({ error: "Thiếu ID người dùng" });
-    }
 
-    const user = await User.findById(_id).select(
-      'name phone gender dob address identityNumber jobTitle bio profileImage'
-    );
-
-    if (!user) {
-      return res.status(404).json({ error: "Không tìm thấy người dùng" });
-    }
-
-    res.status(200).json(user);
-  } catch (err) {
-    console.error("❌ Lỗi khi lấy profile:", err.message);
-    res.status(500).json({ error: "Server error" });
-  }
-};
 // change mk 
 export const changePassword = async (req, res) => {
   try {
     const userId = req.user._id; // Lấy ID từ middleware xác thực
     const { oldPassword, newPassword } = req.body;
 
+
     if (!oldPassword || !newPassword) {
       return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
     }
-
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "Người dùng không tồn tại." });
 
@@ -284,8 +310,17 @@ export const changePassword = async (req, res) => {
       return res.status(400).json({ message: "Mật khẩu cũ không đúng." });
     }
 
+   // Mã hóa và cập nhật mật khẩu mới
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.status(200).json({ message: "✅ Đổi mật khẩu thành công!" });
+  } catch (err) {
+    console.error("Lỗi đổi mật khẩu:", err);
+    res.status(500).json({ message: "❌ Lỗi server." });
+  }
+};
 
     await Notification.create({
       userId: user._id,
