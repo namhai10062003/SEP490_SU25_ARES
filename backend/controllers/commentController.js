@@ -26,7 +26,7 @@ export const createComment = async (req, res) => {
 
     // 3. Nếu không phải tự mình comment vào bài mình
     if (post && postOwner && postOwner._id.toString() !== userId.toString()) {
-      const message = `Bạn có bình luận mới từ ${req.user.name} trên bài viết của bạn.`;
+      const message = `Bạn có bình luận mới từ ${req.user.name} trên bài viết ${postId} của bạn.`;
 
       // 4. Lưu vào DB
       const newNotification = await Notification.create({
