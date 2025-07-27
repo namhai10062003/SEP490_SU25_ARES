@@ -15,6 +15,7 @@ const ParkingLotList = () => {
   const [page, setPage] = useState(1);
   //ham tim kiem
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchDate, setSearchDate] = useState('');
 // doan loc 
 
   const [selectedParking, setSelectedParking] = useState(null);
@@ -129,11 +130,16 @@ console.log('Ảnh sau:', json.data.documentBack);
     const matchSearch =
       item.apartmentCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.licensePlate.toLowerCase().includes(searchTerm.toLowerCase());
-  
+      item.licensePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.vehicleType.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchStatus = statusFilter === 'all' || item.status === statusFilter;
+
+    const matchDate =
+    !searchDate ||
+    new Date(item.registerDate).toISOString().slice(0, 10) === searchDate;
   
-    return matchSearch && matchStatus;
+    return matchSearch && matchStatus && matchDate;
   });
   const totalPages = Math.ceil(filteredList.length / PAGE_SIZE);
   const currentList = filteredList.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -170,17 +176,24 @@ console.log('Ảnh sau:', json.data.documentBack);
     </select>
   </div>
 
-  <div>
+  <div className="d-flex gap-2 align-items-center">
     <input
       type="text"
       className="form-control"
       placeholder="Tìm kiếm..."
       value={searchTerm}
       onChange={(e) => setSearchTerm(e.target.value)}
-      style={{ minWidth: '250px' }}
+      style={{ minWidth: '200px' }}
+    />
+    <input
+      type="date"
+      className="form-control"
+      onChange={(e) => setSearchDate(e.target.value)}
+      style={{ minWidth: '160px' }}
     />
   </div>
 </div>
+
           <div className="table-responsive">
             <table className="table table-bordered align-middle bg-white rounded-4 shadow">
               <thead className="table-primary">
