@@ -45,7 +45,10 @@ export const toggleLike = async (req, res) => {
       await existing.deleteOne();
       return res.json({ success: true, liked: false });
     }
-
+    await Like.create({
+      post: postId,
+      user: userId,
+    });
     const post = await Post.findById(postId).populate('contactInfo');
     const postOwnerId = post?.contactInfo?._id;
     const newNotification = await Notification.create({
