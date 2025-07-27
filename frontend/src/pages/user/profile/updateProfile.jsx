@@ -86,14 +86,14 @@ const UpdateProfileForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
   
-    // Kiểm tra nếu là trường CMND/CCCD
-    if (name === "identityNumber") {
-      const onlyDigits = value.replace(/\D/g, ""); // Loại bỏ ký tự không phải số
-      if (onlyDigits.length <= 12) {
+    if (name === "identityNumber" || name === "phone") {
+      const onlyDigits = value.replace(/\D/g, "");
+      if (name === "identityNumber" && onlyDigits.length <= 12) {
+        setForm({ ...form, [name]: onlyDigits });
+      } else if (name === "phone" && onlyDigits.length <= 11) {
         setForm({ ...form, [name]: onlyDigits });
       }
     } else {
-      // Các trường khác giữ nguyên
       setForm({ ...form, [name]: value });
     }
   };
@@ -180,9 +180,19 @@ const UpdateProfileForm = () => {
             </div>
 
             <div className="mb-3">
-              <label className="form-label">SĐT</label>
-              <input type="text" name="phone" value={form.phone} onChange={handleChange} className="form-control" required />
-            </div>
+  <label className="form-label">SĐT</label>
+  <input
+  type="text"
+  name="phone"
+  value={form.phone}
+  onChange={handleChange}
+  className="form-control"
+  required
+  maxLength={11} // 👈 Giới hạn ký tự tối đa
+  pattern="^0\d{9,10}$"
+  title="Số điện thoại phải bắt đầu bằng số 0 và có 10-11 chữ số"
+/>
+</div>
 
             <div className="mb-3">
               <label className="form-label">Giới tính</label>
