@@ -185,8 +185,8 @@ const ResidentList = () => {
                 onChange={(e) => setFilterStatus(e.target.value)}
               >
                 <option value="all">Tất cả trạng thái</option>
-                <option value="true">✅ Đã duyệt</option>
-                <option value="false">❌ Từ chối</option>
+                <option value="true">✅ Đã xác minh</option>
+                <option value="false">❌ Đã từ chối</option>
                 <option value="pending">🟡 Chờ duyệt</option>
               </select>
             </div>

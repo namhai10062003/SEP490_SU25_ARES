@@ -2,6 +2,7 @@ import { faEye, faEyeSlash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import LoadingModal from "../../../components/LoadingModal.jsx";
 import AdminDashboard from "./adminDashboard.jsx";
 
 
@@ -11,12 +12,14 @@ const ManageUsers = () => {
     const [userList, setUserList] = useState([]);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
-
+    const [showBlockModal, setShowBlockModal] = useState(false);
+    const [userToBlock, setUserToBlock] = useState(null);
+    const [blockReason, setBlockReason] = useState("");
 
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [filterStatus, setFilterStatus] = useState("");
-
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -35,25 +38,42 @@ const ManageUsers = () => {
         }
     };
 
-    const handleToggleStatus = async (user) => {
+    const handleToggleStatus = async (user, reason = "") => {
+        const token = localStorage.getItem("token");
+        setLoading(true);
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${user._id}/status`, {
+            const endpoint =
+                user.status === 1
+                    ? `${import.meta.env.VITE_API_URL}/api/users/block/${user._id}`
+                    : `${import.meta.env.VITE_API_URL}/api/users/unblock/${user._id}`;
+
+            const res = await fetch(endpoint, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: user.status ? 0 : 1 }),
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: user.status === 1 ? JSON.stringify({ reason }) : null,
             });
+
             if (res.ok) {
                 toast.success("Đã đổi trạng thái!");
                 fetchUsers();
+                setShowBlockModal(false);
+                setBlockReason("");
             } else {
                 toast.error("Đổi trạng thái thất bại!");
             }
         } catch {
             toast.error("Lỗi server!");
         }
+        setLoading(false);
     };
+
+
     const handleDeleteUser = async () => {
         if (!userToDelete) return;
+        setLoading(true);
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/users/${userToDelete._id}`, {
                 method: "DELETE",
@@ -69,10 +89,13 @@ const ManageUsers = () => {
         } catch {
             toast.error("Lỗi server!");
         }
+        setLoading(false);
     };
     return (
         <AdminDashboard>
-            <div className="w-100">
+            <div className="w-100 postion-relative">
+                {/* Loading Modal */}
+                {loading && <LoadingModal />}
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2 className="font-weight-bold">Quản lý User</h2>
                 </div>
@@ -121,7 +144,14 @@ const ManageUsers = () => {
                                                 <button
                                                     className={`btn btn-sm ${user.status ? "btn-outline-danger" : "btn-outline-success"}`}
                                                     style={{ whiteSpace: "nowrap", minWidth: 70, marginRight: 8 }}
-                                                    onClick={() => handleToggleStatus(user)}
+                                                    onClick={() => {
+                                                        if (user.status === 1) {
+                                                            setUserToBlock(user);
+                                                            setShowBlockModal(true);
+                                                        } else {
+                                                            handleToggleStatus(user); // unblocking
+                                                        }
+                                                    }}
                                                 >
                                                     {user.status ? "Block" : "Active"}
                                                 </button>
@@ -165,6 +195,43 @@ const ManageUsers = () => {
                         Next &gt;
                     </button>
                 </div>
+
+                {/* Block Modal */}
+                {showBlockModal && (
+                    <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,0.3)" }}>
+                        <div className="modal-dialog">
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">Chặn người dùng</h5>
+                                    <button type="button" className="close" onClick={() => setShowBlockModal(false)}>
+                                        <span>&times;</span>
+                                    </button>
+                                </div>
+                                <div className="modal-body">
+                                    <p>Nhập lý do chặn <strong>{userToBlock?.name}</strong>:</p>
+                                    <textarea
+                                        className="form-control"
+                                        rows="3"
+                                        value={blockReason}
+                                        onChange={(e) => setBlockReason(e.target.value)}
+                                        placeholder="Nhập lý do..."
+                                    ></textarea>
+                                </div>
+                                <div className="modal-footer">
+                                    <button className="btn btn-secondary" onClick={() => setShowBlockModal(false)}>Hủy</button>
+                                    <button
+                                        className="btn btn-danger"
+                                        onClick={() => handleToggleStatus(userToBlock, blockReason)}
+                                        disabled={!blockReason.trim()}
+                                    >
+                                        Chặn
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Delete Modal */}
                 {showDeleteModal && (
                     <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,0.3)" }}>

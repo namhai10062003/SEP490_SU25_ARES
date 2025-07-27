@@ -40,7 +40,7 @@ export const initSocket = (serverIO) => {
       }
     });
     // cuộc gọi nhỡ
-    
+
     socket.on("start-call", ({ from, to, name }) => {
       const toSocketId = userSocketMap.get(to);
       if (toSocketId) {
@@ -61,9 +61,9 @@ export const initSocket = (serverIO) => {
         type = "text",
         post,         // ✅ đúng tên field lưu bài đăng
       } = data;
-    
+
       const roomId = [sender, receiver].sort().join("_");
-    
+
       const payload = {
         _id,
         sender,
@@ -73,13 +73,13 @@ export const initSocket = (serverIO) => {
         type,
         postInfo: post,
       };
-    
+
       console.log("📤 Gửi message tới phòng:", roomId, payload);
-    
+
       io.to(roomId).emit("receiveMessage", payload);
     });
-    
-    
+
+
 
     // 🔌 Ngắt kết nối
     socket.on("disconnect", () => {
@@ -88,6 +88,15 @@ export const initSocket = (serverIO) => {
         console.log(`🔴 User ${socket.userId} disconnected (${socket.id})`);
       } else {
         console.log(`🔴 Socket disconnected: ${socket.id}`);
+      }
+    });
+
+    // Thêm các sự kiện khác nếu cần
+    socket.on("sendNotification", ({ userId, notification }) => {
+      const socketId = userSocketMap.get(userId);
+      if (socketId) {
+        io.to(socketId).emit("newNotification", notification);
+        console.log(`🔔 Notification sent to user ${userId}`);
       }
     });
   });

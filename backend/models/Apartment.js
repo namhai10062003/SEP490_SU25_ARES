@@ -29,7 +29,7 @@ const apartmentSchema = new Schema({
   status: {
     type: String,
     enum: ['đang ở', 'đang cho thuê', 'chưa có chủ sở hữu'],
-    default: 'chưa có chủ sở hữu'
+    default: 'chưa có chủ sở hữu' 
   },
   direction: {
     type: String,
