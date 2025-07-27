@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
 import axios from "axios";
-import AdminDashboard from "./adminDashboard.jsx";
-import { ToastContainer, toast } from "react-toastify";
+import React, { useEffect, useState } from "react";
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AdminDashboard from "./adminDashboard.jsx";
 
 const PAGE_SIZE = 10;
 
@@ -14,7 +16,94 @@ const ManageApplicationForm = () => {
     const [selectedApp, setSelectedApp] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [page, setPage] = useState(1);
+    const [showEditModal, setShowEditModal] = useState(false);
+    
+    useEffect(() => {
+        if (selectedApp) {
+            console.log("Ảnh hợp đồng:", selectedApp.documentImage);
+        }
+      }, [selectedApp]);
+      
+    const handleEdit = (app) => {
+      setSelectedApp(app);
+      setShowEditModal(true);
+    };
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setSelectedApp(prev => ({
+          ...prev,
+          newImageFile: file // lưu file tạm thời
+        }));
+      };
+    const updateSelectedApp = (e) => {
+        setSelectedApp
+        (prev => ({
+          ...prev,
+          [e.target.name]: e.target.value,
+        }));
+      };
+      
+      const handleEditSubmit = async () => {
+        try {
+          const formData = new FormData();
+      
+          // Thêm các trường văn bản (text fields)
+          for (const key in selectedApp) {
+            if (key !== 'documentImage' && key !== 'newImageFile') {
+              formData.append(key, selectedApp[key]);
+            }
+          }
+      
+          // Nếu có ảnh mới được chọn
+          if (selectedApp.newImageFile) {
+            formData.append("documentImage", selectedApp.newImageFile);
+          }
+      
+          await axios.put(
+            `${import.meta.env.VITE_API_URL}/api/resident-verifications/${selectedApp._id}`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+      
+          toast.success("Cập nhật thành công!");
+          fetchApplications();
+          setShowEditModal(false);
+        } catch (err) {
+          const msg = err?.response?.data?.message || "Cập nhật thất bại!";
+          toast.error(msg);
+        }
+      };
+      
 
+      const handleCancel = async (id) => {
+        confirmAlert({
+          title: "Xác nhận huỷ đơn",
+          message: "Bạn có chắc muốn huỷ đơn đã duyệt này không?",
+          buttons: [
+            {
+              label: "Có",
+              onClick: async () => {
+                try {
+                  await axios.patch(`${import.meta.env.VITE_API_URL}/api/resident-verifications/${id}/cancel`);
+                  await fetchApplications(); // không nên toast trong đây
+                  toast.success("Đã huỷ đơn và gỡ hợp đồng khỏi căn hộ!");
+                } catch (err) {
+                  const msg = err?.response?.data?.error || "Huỷ đơn thất bại!";
+                  toast.error(msg);
+                }
+              },
+            },
+            {
+              label: "Không",
+            },
+          ],
+        });
+      };
+      
     useEffect(() => {
         fetchApplications();
     }, []);
@@ -155,28 +244,43 @@ const ManageApplicationForm = () => {
                                                 </span>
                                             </td>
                                             <td>
-                                                <div className="d-flex gap-2 flex-wrap">
-                                                    <button
-                                                        className="btn btn-sm btn-outline-info"
-                                                        onClick={() => handleView(app)}
-                                                    >
-                                                        Xem
-                                                    </button>
-                                                    <button
-                                                        className="btn btn-sm btn-success"
-                                                        onClick={() => handleApprove(app._id)}
-                                                        disabled={app.status === "Đã duyệt"}
-                                                    >
-                                                        Duyệt
-                                                    </button>
-                                                    <button
-                                                        className="btn btn-sm btn-danger"
-                                                        onClick={() => handleReject(app._id)}
-                                                        disabled={app.status === "Đã từ chối"}
-                                                    >
-                                                        Từ chối
-                                                    </button>
-                                                </div>
+                                            <div className="d-flex gap-2 flex-wrap">
+  <button
+    className="btn btn-sm btn-outline-info"
+    onClick={() => handleView(app)}
+  >
+    Xem
+  </button>
+  <button
+    className="btn btn-sm btn-success"
+    onClick={() => handleApprove(app._id)}
+    disabled={app.status === "Đã duyệt"}
+  >
+    Duyệt
+  </button>
+  {app.status === "Đã duyệt" ? (
+    <button
+      className="btn btn-sm btn-warning"
+      onClick={() => handleCancel(app._id)}
+    >
+      Huỷ
+    </button>
+  ) : (
+    <button
+      className="btn btn-sm btn-danger"
+      onClick={() => handleReject(app._id)}
+      disabled={app.status === "Đã từ chối"}
+    >
+      Từ chối
+    </button>
+  )}
+  <button
+    className="btn btn-sm btn-secondary"
+    onClick={() => handleEdit(app)}
+  >
+    Sửa
+  </button>
+</div>
                                             </td>
                                         </tr>
                                     ))
@@ -258,10 +362,112 @@ const ManageApplicationForm = () => {
                         </div>
                     </div>
                 )}
+{showEditModal && selectedApp && (
+  <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,0.3)" }}>
+    <div className="modal-dialog modal-lg">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">Chỉnh sửa đơn xác nhận</h5>
+          <button type="button" className="close" onClick={() => setShowEditModal(false)}>
+            <span>×</span>
+          </button>
+        </div>
+        <div className="modal-body row g-3">
+          {/* Các trường cơ bản */}
+          <div className="col-md-6">
+            <label>Họ tên</label>
+            <input className="form-control" name="fullName" value={selectedApp.fullName || ""} onChange={updateSelectedApp} />
+          </div>
+          <div className="col-md-6">
+            <label>Email</label>
+            <input className="form-control" name="email" value={selectedApp.email || ""} onChange={updateSelectedApp} />
+          </div>
+          <div className="col-md-6">
+            <label>Điện thoại</label>
+            <input className="form-control" name="phone" value={selectedApp.phone || ""} onChange={updateSelectedApp} />
+          </div>
+          <div className="col-md-6">
+            <label>Mã căn hộ</label>
+            <input className="form-control" name="apartmentCode" value={selectedApp.apartmentCode || ""} onChange={updateSelectedApp} />
+          </div>
+
+          {/* Loại giấy tờ */}
+          <div className="col-md-6">
+            <label>Loại giấy tờ</label>
+            <select className="form-control" name="documentType" value={selectedApp.documentType || ""} onChange={updateSelectedApp}>
+              <option value="Hợp đồng mua bán">Hợp đồng mua bán</option>
+              <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
+              {/* <option value="Giấy chủ quyền">Giấy chủ quyền</option> */}
+            </select>
+          </div>
+
+          {/* <div className="col-md-6">
+            <label>Trạng thái</label>
+            <select className="form-control" name="status" value={selectedApp.status || ""} onChange={updateSelectedApp}>
+              <option value="Chờ duyệt">Chờ duyệt</option>
+              <option value="Đã duyệt">Đã duyệt</option>
+              <option value="Đã từ chối">Đã từ chối</option>
+            </select>
+          </div> */}
+
+          {/* Hiện thêm ngày và ảnh nếu là HĐ thuê */}
+          {(selectedApp.documentType === "Hợp đồng cho thuê") && (
+            <>
+              <div className="col-md-6">
+                <label>Ngày bắt đầu</label>
+                <input type="date" className="form-control" name="contractStart" value={selectedApp.contractStart?.slice(0, 10) || ""} onChange={updateSelectedApp} />
+              </div>
+              <div className="col-md-6">
+                <label>Ngày kết thúc</label>
+                <input type="date" className="form-control" name="contractEnd" value={selectedApp.contractEnd?.slice(0, 10) || ""} onChange={updateSelectedApp} />
+              </div>
+            </>
+          )}
+
+          {/* Nếu là HĐ thuê hoặc HĐ mua bán thì cho upload ảnh */}
+          {(selectedApp.documentType === "Hợp đồng cho thuê" || selectedApp.documentType === "Hợp đồng mua bán") && (
+            <div className="col-md-12">
+            <label>Ảnh hợp đồng hiện tại:</label><br />
+            {selectedApp.documentImage ? (
+              <img
+                src={selectedApp.documentImage}
+                alt="Ảnh hợp đồng"
+                style={{ maxWidth: "100%", maxHeight: "300px", marginBottom: "10px" }}
+              />
+            ) : (
+              <p><i>Không có ảnh</i></p>
+            )}
+          
+            <label>Chọn ảnh mới (nếu muốn thay đổi):</label>
+            <input
+              type="file"
+              className="form-control"
+              name="documentImage"
+              onChange={handleFileChange}
+            />
+          </div>
+          )}
+
+          <div className="col-12">
+            <label>Ghi chú</label>
+            <textarea className="form-control" name="note" value={selectedApp.note || ""} onChange={updateSelectedApp} />
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={() => setShowEditModal(false)}>Hủy</button>
+          <button className="btn btn-primary" onClick={handleEditSubmit}>Lưu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
+
             </div>
-            <ToastContainer />
+            {/* <ToastContainer /> */}
         </AdminDashboard>
-    );
+    );  
 };
 
 export default ManageApplicationForm;
