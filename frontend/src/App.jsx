@@ -34,6 +34,7 @@ import AdminWithdrawPage from "./pages/admin/revenue/AdminWithdrawRequests.jsx";
 import AdminRevenueApartment from "./pages/admin/revenue/apartment.jsx";
 import AdminRevenueApartmentDeposit from "./pages/admin/revenue/apartmentDeposit.jsx";
 import AdminRevenuePost from "./pages/admin/revenue/posts.jsx";
+import AdminProfileUpdatePage from "./pages/admin/verifyprofileuser/AdminProfileUpdatePage.jsx";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
 import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
 import CitizenList from "./pages/staff/ResidentVerify/CitizenList.jsx";
@@ -136,6 +137,7 @@ function AppRoutes() {
           <Route path="/admin-dashboard/user-revenue" element={<ProtectedRoute element={<AdminWithdrawPage />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/contact" element={<ProtectedRoute element={<AdminContactPage />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/posts/:id" element={<ProtectedRoute element={<AdminPostDetail />} allowedRoles={["admin"]} />} />
+          <Route path="/admin-dashboard/updateprofile" element={<ProtectedRoute element={<AdminProfileUpdatePage />} allowedRoles={["admin"]} />} />
 
           {/* Staff */}
           <Route path="/staff-dashboard" element={<ProtectedRoute element={<DashboardPage />} allowedRoles={["staff"]} />} />

@@ -1,0 +1,219 @@
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { useAuth } from "../../../../context/authContext";
+import {
+    approveProfileUpdate,
+    getAllProfileUpdateRequests,
+    rejectProfileUpdate
+} from "../../../service/profileService";
+import AdminDashboard from "../adminDashboard";
+
+const AdminProfileUpdatePage = () => {
+  const { token: contextToken } = useAuth();
+  const token = contextToken || localStorage.getItem("token");
+
+  const [requests, setRequests] = useState([]);
+  const [filter, setFilter] = useState("pending");
+  const [loading, setLoading] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+
+  const loadRequests = async () => {
+    setLoading(true);
+    try {
+      const res = await getAllProfileUpdateRequests(token);
+      const all = res?.data || [];
+
+      // ✅ Lọc tại frontend
+      const filtered = filter ? all.filter((r) => r.status === filter) : all;
+      setRequests(filtered);
+    } catch (error) {
+      console.error("❌ Lỗi khi load requests:", error);
+      toast.error("Không thể tải yêu cầu cập nhật hồ sơ");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadRequests();
+  }, [filter]);
+
+  const handleApprove = async (id) => {
+    try {
+      await approveProfileUpdate(id);
+      toast.success("✅ Đã duyệt hồ sơ!");
+      loadRequests();
+    } catch (error) {
+      toast.error("❌ Lỗi duyệt hồ sơ!");
+    }
+  };
+
+  const openRejectModal = (req) => {
+    setSelectedRequest(req);
+    setRejectReason("");
+    setRejectModalOpen(true);
+  };
+
+  const handleRejectConfirm = async () => {
+    if (!rejectReason.trim()) {
+      toast.warning("⚠️ Vui lòng nhập lý do từ chối!");
+      return;
+    }
+
+    try {
+      await rejectProfileUpdate(selectedRequest._id, rejectReason);
+      toast.success("❌ Đã từ chối hồ sơ!");
+      setRejectModalOpen(false);
+      loadRequests();
+    } catch (error) {
+      toast.error("❌ Lỗi từ chối hồ sơ!");
+    }
+  };
+
+  return (
+    <AdminDashboard active="profile-requests">
+      <div className="container py-4">
+        <div className="bg-primary text-white rounded-4 p-3 mb-4 text-center">
+          <h2 className="mb-0">Duyệt yêu cầu cập nhật hồ sơ</h2>
+        </div>
+
+        {/* Lọc trạng thái */}
+        <div className="mb-3 d-flex align-items-center gap-2">
+          <label className="fw-semibold">Lọc trạng thái:</label>
+          <select
+            className="form-select w-auto"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            <option value="pending">Chờ duyệt</option>
+            <option value="approved">Đã duyệt</option>
+            <option value="rejected">Từ chối</option>
+            <option value="">Tất cả</option>
+          </select>
+        </div>
+
+        {/* Danh sách yêu cầu */}
+        {loading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary mb-2" />
+            <div>Đang tải dữ liệu...</div>
+          </div>
+        ) : (
+          <div className="table-responsive">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Ảnh</th>
+                  <th>Tên</th>
+                  <th>Email</th>
+                  <th>CCCD</th>
+                  <th>Trạng thái</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Array.isArray(requests) && requests.length > 0 ? (
+                  requests.map((req) => (
+                    <tr key={req._id}>
+                      <td>
+                        <img
+                          src={req.newProfileImage || "/default-avatar.png"}
+                          alt="avatar"
+                          style={{ width: 60, height: 60, borderRadius: "50%" }}
+                        />
+                      </td>
+                      <td>{req.userId?.name}</td>
+                      <td>{req.userId?.email}</td>
+                      <td>{req.newIdentityNumber}</td>
+                      <td>{req.status}</td>
+                      <td>
+                        <button
+                          className="btn btn-success btn-sm me-2"
+                          onClick={() => handleApprove(req._id)}
+                          disabled={req.status !== "pending"}
+                        >
+                          Duyệt
+                        </button>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => openRejectModal(req)}
+                          disabled={req.status !== "pending"}
+                        >
+                          Từ chối
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="text-center">
+                      Không có yêu cầu nào.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Modal từ chối */}
+        {rejectModalOpen && (
+          <div
+            className="modal fade show"
+            style={{
+              display: "block",
+              background: "rgba(0,0,0,0.5)",
+              position: "fixed",
+              inset: 0,
+              zIndex: 1050,
+            }}
+            onClick={() => setRejectModalOpen(false)}
+          >
+            <div
+              className="modal-dialog modal-dialog-centered"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">Lý do từ chối</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setRejectModalOpen(false)}
+                  />
+                </div>
+                <div className="modal-body">
+                  <textarea
+                    className="form-control"
+                    rows="3"
+                    placeholder="Nhập lý do từ chối..."
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                  />
+                </div>
+                <div className="modal-footer">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setRejectModalOpen(false)}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    className="btn btn-danger"
+                    onClick={handleRejectConfirm}
+                  >
+                    Gửi từ chối
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </AdminDashboard>
+  );
+};
+
+export default AdminProfileUpdatePage;

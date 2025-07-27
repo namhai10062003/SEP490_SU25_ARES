@@ -165,6 +165,16 @@ const Home = () => {
   const startIndex = (currentPage - 1) * postsPerPage;
   const selectedPosts = posts.slice(startIndex, startIndex + postsPerPage);
 
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+const navigate = useRef(null);
+
+useEffect(() => {
+  // Giả sử bạn xác định người dùng chưa cập nhật nếu thiếu identityNumber hoặc phone
+  if (user && (!user.identityNumber || !user.phone)) {
+    setShowUpdateModal(true);
+  }
+}, [user]);
+
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -446,7 +456,41 @@ const Home = () => {
           </div>
         </div>
       </section>
-
+      {showUpdateModal && (
+  <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content rounded-4 shadow">
+        <div className="modal-header">
+          <h5 className="modal-title text-danger">Thông báo</h5>
+          <button type="button" className="btn-close" onClick={() => setShowUpdateModal(false)}></button>
+        </div>
+        <div className="modal-body">
+          <p>Bạn chưa cập nhật đầy đủ thông tin cá nhân. Vui lòng cập nhật để tiếp tục sử dụng hệ thống.</p>
+        </div>
+        <div className="modal-footer">
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setShowUpdateModal(false);
+              window.location.href = "/profile"; // Điều hướng đến trang cập nhật thông tin
+            }}
+          >
+            Cập nhật ngay
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => {
+              logout(); // Gọi hàm logout từ context
+              window.location.href = "/"; // Chuyển về trang chủ hoặc login
+            }}
+          >
+            Hủy và đăng xuất
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
       {/* FOOTER */}
       <Footer />
     </div>

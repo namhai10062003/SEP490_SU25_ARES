@@ -124,8 +124,16 @@ useEffect(() => {
     const fetchRelated = async () => {
       try {
         const res = await getAllPosts();
-        if (res.data.success) {
-          const others = res.data.data.filter((p) => p._id !== id).slice(0, 3);
+        if (res.data.success && Array.isArray(res.data.data)) {
+          const now = new Date();
+          const others = res.data.data
+  .filter((p) => 
+    p._id !== id &&
+    p.status === "active" &&
+    p.isActive === true && // kiểm tra thêm isActive
+    (!p.expiredAt || new Date(p.expiredAt) > now)
+  )
+  .slice(0, 3);
           setRelatedPosts(others);
         }
       } catch {
@@ -134,7 +142,7 @@ useEffect(() => {
     };
     fetchRelated();
   }, [id]);
-
+  
   const formatPrice = (price) =>
     new Intl.NumberFormat("vi-VN", {
       style: "currency",

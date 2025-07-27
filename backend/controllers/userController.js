@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
 import Notification from '../models/Notification.js';
+import ProfileUpdateRequest from "../models/ProfileUpdateRequest.js";
 import User from '../models/User.js';
 // GET /api/users?page=1&limit=10&role=staff&status=1
 const getUsers = async (req, res) => {
@@ -119,51 +120,65 @@ const deleteUser = async (req, res) => {
 
 // update profile 
 export const updateProfile = async (req, res) => {
-    try {
-      const userId = req.user._id;
-  
-      const {
-        name,
-        phone,
-        gender,
-        dob,
-        address,
-        identityNumber,
-        bio,
-        jobTitle,
-      } = req.body;
-  
-      const updateData = {
-        name,
-        phone,
-        gender,
-        dob,
-        address,
-        identityNumber,
-        bio,
-        jobTitle,
-      };
-  
-      // Nếu có ảnh đại diện mới từ Cloudinary
-      if (req.file && req.file.path) {
-        updateData.profileImage = req.file.path;
-      }
-  
-      const updatedUser = await User.findByIdAndUpdate(
-        userId,
-        { $set: updateData },
-        { new: true }
-      );
-  
-      res.status(200).json({
-        message: "Cập nhật hồ sơ thành công",
-        user: updatedUser,
-      });
-    } catch (error) {
-      console.error("Lỗi cập nhật hồ sơ:", error);
-      res.status(500).json({ message: "Lỗi server" });
+  try {
+    const userId = req.user._id;
+
+    const {
+      name,
+      phone,
+      gender,
+      dob,
+      address,
+      identityNumber,
+      bio,
+      jobTitle,
+    } = req.body;
+
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
     }
-  };
+
+    const updateData = {
+      name,
+      phone,
+      gender,
+      dob,
+      address,
+      bio,
+      jobTitle,
+    };
+
+    // Check nếu CCCD hoặc ảnh thay đổi → tạo yêu cầu chờ duyệt
+    const changedCCCD = identityNumber && identityNumber !== currentUser.identityNumber;
+    const changedImage = req.file && req.file.path && req.file.path !== currentUser.profileImage;
+
+    if (changedCCCD || changedImage) {
+      await ProfileUpdateRequest.create({
+        userId,
+        newIdentityNumber: changedCCCD ? identityNumber : undefined,
+        newProfileImage: changedImage ? req.file.path : undefined,
+      });
+    }
+
+    // Cập nhật các trường còn lại (không phải CCCD/ảnh)
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: changedCCCD || changedImage
+        ? "Đã cập nhật thông tin cơ bản. CCCD/ảnh đang chờ admin duyệt."
+        : "Cập nhật hồ sơ thành công",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Lỗi cập nhật hồ sơ:", error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
   export const getUserProfileById = async (req, res) => {
     try {
       const _id = req.params.id;
@@ -188,32 +203,39 @@ export const updateProfile = async (req, res) => {
   };
 // change mk 
 export const changePassword = async (req, res) => {
-    try {
-      const userId = req.user._id; // Lấy ID từ middleware xác thực
-      const { oldPassword, newPassword } = req.body;
-  
-      if (!oldPassword || !newPassword) {
-        return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
-      }
-  
-      const user = await User.findById(userId);
-      if (!user) return res.status(404).json({ message: "Người dùng không tồn tại." });
-  
-      const isMatch = await bcrypt.compare(oldPassword, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ message: "Mật khẩu cũ không đúng." });
-      }
-  
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(newPassword, salt);
-      await user.save();
-  
-      res.status(200).json({ message: "✅ Đổi mật khẩu thành công!" });
-    } catch (err) {
-      console.error("Lỗi đổi mật khẩu:", err);
-      res.status(500).json({ message: "❌ Lỗi server." });
+  try {
+    const userId = req.user._id; // Lấy ID từ middleware xác thực
+    const { oldPassword, newPassword } = req.body;
+
+    // Kiểm tra xem cả hai mật khẩu đều được cung cấp
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ message: "⚠️ Vui lòng nhập đầy đủ mật khẩu cũ và mật khẩu mới." });
     }
-  };
+
+    // Tìm người dùng theo ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "❌ Người dùng không tồn tại." });
+    }
+
+    // So sánh mật khẩu cũ
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "❌ Mật khẩu cũ không đúng." });
+    }
+
+    // Mã hóa và cập nhật mật khẩu mới
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.status(200).json({ message: "✅ Đổi mật khẩu thành công!" });
+  } catch (err) {
+    console.error("Lỗi đổi mật khẩu:", err);
+    res.status(500).json({ message: "❌ Lỗi server." });
+  }
+};
+
 
 export { changeUserStatus, deleteUser, getUserById, getUsers, getUsersDepartment };
 
