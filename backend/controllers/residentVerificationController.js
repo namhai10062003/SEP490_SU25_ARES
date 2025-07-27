@@ -166,6 +166,64 @@ const approveResidentVerification = async (req, res) => {
   }
 };
 
+const getUserWithApartment = async (req, res) => {
+  try {
+    const apartments = await Apartment.find().lean();
+
+    const result = await Promise.all(
+      apartments.flatMap((apartment) => {
+        const list = [];
+
+        if (apartment.isOwner) {
+          list.push({
+            userId: apartment.isOwner,
+            role: "Chủ hộ",
+            apartmentCode: apartment.apartmentCode,
+          });
+        }
+
+        if (apartment.isRenter) {
+          list.push({
+            userId: apartment.isRenter,
+            role: "Người thuê",
+            apartmentCode: apartment.apartmentCode,
+          });
+        }
+
+        return list;
+      }).map(async (entry) => {
+        const user = await User.findById(entry.userId).lean();
+        if (!user) return null;
+
+        const verification = await ResidentVerification.findOne({ user: user._id }).lean();
+
+        const status = verification?.status || "Chờ duyệt";
+        const approvedAt = (status === "Đã duyệt" || status === "Đã từ chối")
+          ? verification?.updatedAt
+          : null;
+
+        return {
+          name: user.name,
+          email: user.email,
+          picture: user.picture,
+          apartmentCode: entry.apartmentCode,
+          role: entry.role,
+          contractImage: verification?.documentImage || null,
+          status,
+          approvedAt,
+        };
+      })
+    );
+
+    const filteredResult = result.filter(item => item !== null);
+    res.status(200).json({ success: true, data: filteredResult });
+  } catch (err) {
+    console.error("❌ Lỗi:", err);
+    res.status(500).json({ success: false, message: "Lỗi server." });
+  }
+};
+
+
 const rejectResidentVerification = async (req, res) => {
   try {
     const { id } = req.params;
@@ -196,5 +254,5 @@ const rejectResidentVerification = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-export { approveResidentVerification, getAllResidentVerifications, getResidentVerificationById, rejectResidentVerification };
+export { getUserWithApartment, approveResidentVerification, getAllResidentVerifications, getResidentVerificationById, rejectResidentVerification };
 

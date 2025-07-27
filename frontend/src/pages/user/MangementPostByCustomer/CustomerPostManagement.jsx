@@ -77,10 +77,10 @@ const CustomerPostManagement = () => {
       const response = await getPostsByUser();
       const fetched = Array.isArray(response.data.data) ? response.data.data : [];
   
-      // ✅ Log ID và type để kiểm tra
-      console.log("📦 Danh sách post:", fetched.map(p => ({ id: p._id, type: p.type, title: p.title })));
+      // 🔽 Sort theo thời gian mới nhất
+      const sortedPosts = fetched.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   
-      setPosts(fetched);
+      setPosts(sortedPosts);
     } catch (error) {
       console.error("❌ Lỗi khi fetch post:", error);
       setPosts([]);
@@ -88,6 +88,7 @@ const CustomerPostManagement = () => {
       setLoading(false);
     }
   };
+  
   
   
   useEffect(() => {
