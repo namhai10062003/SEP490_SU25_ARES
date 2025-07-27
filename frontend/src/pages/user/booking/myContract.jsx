@@ -12,6 +12,9 @@ const MyContracts = () => {
   const [contracts, setContracts] = useState([]);
   const [filter, setFilter] = useState("all");
   const [editingContract, setEditingContract] = useState(null);
+  const [searchText, setSearchText] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [editForm, setEditForm] = useState({
     startDate: "",
     endDate: "",
@@ -27,16 +30,16 @@ const MyContracts = () => {
       .split("T")[0];
   };
   // xử lý ngày h 
-// ✅ Nếu startDate > endDate → tự set endDate = startDate + 1
-useEffect(() => {
-  if (!editingContract) return;
-  if (editForm.endDate <= editForm.startDate) {
-    const nextDay = new Date(editForm.startDate);
-    nextDay.setDate(nextDay.getDate() + 1);
-    const nextDayStr = nextDay.toISOString().split("T")[0];
-    setEditForm((prev) => ({ ...prev, endDate: nextDayStr }));
-  }
-}, [editForm.startDate, editingContract]);
+  // ✅ Nếu startDate > endDate → tự set endDate = startDate + 1
+  useEffect(() => {
+    if (!editingContract) return;
+    if (editForm.endDate <= editForm.startDate) {
+      const nextDay = new Date(editForm.startDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      const nextDayStr = nextDay.toISOString().split("T")[0];
+      setEditForm((prev) => ({ ...prev, endDate: nextDayStr }));
+    }
+  }, [editForm.startDate, editingContract]);
   // ✅ Xử lý khi thanh toán thành công
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -60,7 +63,7 @@ useEffect(() => {
 
     handlePaymentReturn();
   }, [location.search, navigate]);
-// xử lý hợp đồng
+  // xử lý hợp đồng
   const fetchContracts = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -108,39 +111,39 @@ useEffect(() => {
       toast.error("❌ Lỗi khi gửi lại hợp đồng");
     }
   };
-// hàm xử lý hủy hợp đồng
-const handleCancelContract = async (id) => {
-  confirmAlert({
-    title: "Xác nhận huỷ hợp đồng",
-    message: "Bạn có chắc chắn muốn huỷ hợp đồng này?",
-    buttons: [
-      {
-        label: "Huỷ hợp đồng",
-        onClick: async () => {
-          try {
-            const token = localStorage.getItem("token");
-            await axios.patch(`${import.meta.env.VITE_API_URL}/api/contracts/cancel/${id}`, null, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+  // hàm xử lý hủy hợp đồng
+  const handleCancelContract = async (id) => {
+    confirmAlert({
+      title: "Xác nhận huỷ hợp đồng",
+      message: "Bạn có chắc chắn muốn huỷ hợp đồng này?",
+      buttons: [
+        {
+          label: "Huỷ hợp đồng",
+          onClick: async () => {
+            try {
+              const token = localStorage.getItem("token");
+              await axios.patch(`${import.meta.env.VITE_API_URL}/api/contracts/cancel/${id}`, null, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
 
-            toast.success("🗑️ Đã huỷ hợp đồng");
-            setContracts((prev) =>
-              prev.map((c) => (c._id === id ? { ...c, status: "cancelled" } : c))
-            );
-          } catch (err) {
-            console.error(err);
-            toast.error("❌ Lỗi khi huỷ hợp đồng");
-          }
+              toast.success("🗑️ Đã huỷ hợp đồng");
+              setContracts((prev) =>
+                prev.map((c) => (c._id === id ? { ...c, status: "cancelled" } : c))
+              );
+            } catch (err) {
+              console.error(err);
+              toast.error("❌ Lỗi khi huỷ hợp đồng");
+            }
+          },
         },
-      },
-      {
-        label: "Không huỷ",
-        onClick: () => toast.info("⛔ Bạn đã huỷ thao tác"),
-      },
-    ],
-  });
-};
-// hàm xử lí thanh toán
+        {
+          label: "Không huỷ",
+          onClick: () => toast.info("⛔ Bạn đã huỷ thao tác"),
+        },
+      ],
+    });
+  };
+  // hàm xử lí thanh toán
   const handlePayment = async (id) => {
     try {
       const res = await axios.put(
@@ -167,19 +170,38 @@ const handleCancelContract = async (id) => {
 
   if (loading) return <p>🔄 Đang tải...</p>;
 
-  const myTenantContracts = contracts.filter(
-    (c) =>  
-      (c.userId === user._id || c.userId === user._id?.toString()) &&
-      c.status !== "cancelled" // ẩn hợp đồng đã huỷ
-  );
+  const filteredContracts = contracts.filter((c) => {
+    // 1. Kiểm tra người dùng
+    const isMyContract =
+      c.userId === user._id || c.userId === user._id?.toString();
+    if (!isMyContract || c.status === "cancelled") return false;
 
-  const filteredContracts = myTenantContracts.filter((c) => {
-    if (filter === "all") return true;
-    if (filter === "paid") return c.paymentStatus === "paid";
-    if (filter === "unpaid") return c.paymentStatus === "unpaid";
-    if (filter === "failed") return c.paymentStatus === "failed";
-    return true;
+    // 2. Lọc theo trạng thái thanh toán
+    const matchesStatus = filter === "all" || c.paymentStatus === filter;
+
+    // 3. Lọc theo từ khóa (1 ô input duy nhất: tên, địa chỉ, SĐT, tiền đặt cọc)
+    const keyword = searchText.toLowerCase().trim();
+    const combined = `${c.fullNameA} ${c.addressA} ${c.phoneA}`.toLowerCase();
+    const matchesText = combined.includes(keyword);
+
+    const inputAsNumber = parseFloat(searchText.replace(/[^\d]/g, ""));
+    const matchesDeposit =
+      isNaN(inputAsNumber) || c.depositAmount >= inputAsNumber;
+
+    const matchesKeyword = matchesText || matchesDeposit;
+
+    // 4. Lọc theo ngày
+    const from = dateFrom ? new Date(dateFrom) : null;
+    const to = dateTo ? new Date(dateTo) : null;
+    if (to) to.setHours(23, 59, 59, 999);
+    const contractDate = new Date(c.startDate);
+    const matchesDate =
+      (!from || contractDate >= from) && (!to || contractDate <= to);
+
+    return matchesStatus && matchesKeyword && matchesDate;
   });
+
+
 
   return (
     <div className="bg-light min-vh-100">
@@ -196,7 +218,7 @@ const handleCancelContract = async (id) => {
         <h2 className="fw-bold mb-4 text-primary">📄 Hợp đồng của tôi</h2>
 
         <div className="mb-4 d-flex align-items-center gap-2">
-          <label className="fw-semibold">Lọc theo thanh toán:</label>
+          <label className="fw-semibold">Lọc trạng thái:</label>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
@@ -205,9 +227,34 @@ const handleCancelContract = async (id) => {
             <option value="all">Tất cả</option>
             <option value="paid">Đã thanh toán</option>
             <option value="unpaid">Chưa thanh toán</option>
-            <option value="failed">Thanh toán thất bại</option>
+            <option value="failed">Chờ duyệt</option>
           </select>
+
+
+          <input
+            type="text"
+            className="form-control w-auto"
+            placeholder="Tìm kiếm..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+
+          <input
+            type="date"
+            className="form-control w-auto"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+          />
+          <input
+            type="date"
+            className="form-control w-auto"
+            value={dateTo}
+            min={dateFrom}
+            onChange={(e) => setDateTo(e.target.value)}
+          />
+
         </div>
+
 
         {filteredContracts.length === 0 ? (
           <div className="alert alert-info">📭 Không có hợp đồng phù hợp.</div>
@@ -263,13 +310,13 @@ const handleCancelContract = async (id) => {
                         XEM CHI TIẾT
                       </button>
                       {contract.status === "pending" && (
-  <button
-    className="btn btn-outline-danger fw-bold"
-    onClick={() => handleCancelContract(contract._id)}
-  >
-    HUỶ HỢP ĐỒNG
-  </button>
-)}
+                        <button
+                          className="btn btn-outline-danger fw-bold"
+                          onClick={() => handleCancelContract(contract._id)}
+                        >
+                          HUỶ HỢP ĐỒNG
+                        </button>
+                      )}
                       {contract.status === "approved" && contract.paymentStatus === "unpaid" && (
                         <button className="btn btn-primary fw-bold" onClick={() => handlePayment(contract._id)}>
                           THANH TOÁN
@@ -291,33 +338,33 @@ const handleCancelContract = async (id) => {
                           <div className="mb-2"><strong>👤 Người thuê:</strong> {editingContract.fullNameB} - {editingContract.phoneB}</div>
                           <div className="mb-2"><strong>👤 Chủ nhà:</strong> {editingContract.fullNameA} - {editingContract.phoneA}</div>
                           <div className="mb-3">
-  <label className="form-label">📅 Ngày bắt đầu</label>
-  <input
-    type="date"
-    className="form-control"
-    value={editForm.startDate}
-    min={getToday()}
-    onChange={(e) =>
-      setEditForm({ ...editForm, startDate: e.target.value })
-    }
-  />
-</div>
-<div className="mb-3">
-  <label className="form-label">📅 Ngày kết thúc</label>
-  <input
-    type="date"
-    className="form-control"
-    value={editForm.endDate}
-    min={(() => {
-      const nextDay = new Date(editForm.startDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      return nextDay.toISOString().split("T")[0];
-    })()}
-    onChange={(e) =>
-      setEditForm({ ...editForm, endDate: e.target.value })
-    }
-  />
-</div>
+                            <label className="form-label">📅 Ngày bắt đầu</label>
+                            <input
+                              type="date"
+                              className="form-control"
+                              value={editForm.startDate}
+                              min={getToday()}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, startDate: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div className="mb-3">
+                            <label className="form-label">📅 Ngày kết thúc</label>
+                            <input
+                              type="date"
+                              className="form-control"
+                              value={editForm.endDate}
+                              min={(() => {
+                                const nextDay = new Date(editForm.startDate);
+                                nextDay.setDate(nextDay.getDate() + 1);
+                                return nextDay.toISOString().split("T")[0];
+                              })()}
+                              onChange={(e) =>
+                                setEditForm({ ...editForm, endDate: e.target.value })
+                              }
+                            />
+                          </div>
 
                           <div className="mb-3">
                             <label className="form-label">📜 Ghi chú thêm vào hợp đồng</label>

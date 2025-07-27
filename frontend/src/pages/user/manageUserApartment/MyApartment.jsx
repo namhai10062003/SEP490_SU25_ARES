@@ -6,7 +6,6 @@ import { useAuth } from "../../../../context/authContext";
 import { createFeePayment } from "../../../service/feePayment.js";
 import BillPopup from "../../../../components/BillPopup.jsx";
 
-
 const MyApartment = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -14,10 +13,10 @@ const MyApartment = () => {
   const [apartments, setApartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expensesMap, setExpensesMap] = useState({});
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7)); // "2025-07"
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
   const [showPopup, setShowPopup] = useState(false);
   const [currentBill, setCurrentBill] = useState(null);
-
+  const [filterText, setFilterText] = useState("");
 
   useEffect(() => {
     if (user?._id) {
@@ -43,31 +42,6 @@ const MyApartment = () => {
       setLoading(false);
     }
   };
-  
-  const handleShowBill = async (apartmentId) => {
-    console.log("📌 Click vào nút xem hóa đơn với:", apartmentId);
-  
-    try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/fees/detail/${apartmentId}/${selectedMonth}`
-      );
-      console.log("📥 Kết quả từ API:", res.data);
-  
-      // Gắn thêm tháng vào bill nếu API không có
-      const fullBill = { ...res.data, month: selectedMonth };
-  
-      // Log chi tiết bill để kiểm tra
-      console.log("🧾 Dữ liệu gán vào popup:", fullBill);
-  
-      setCurrentBill(fullBill);
-      setShowPopup(true);
-    } catch (err) {
-      console.error("❌ Lỗi lấy hóa đơn:", err);
-      alert("Không thể lấy hóa đơn");
-    }
-  };
-
-
 
   const fetchExpenses = async (apartment, encodedMonth, currentMonth) => {
     try {
@@ -105,7 +79,6 @@ const MyApartment = () => {
     }
   };
 
-
   const handlePayment = async (apartmentId) => {
     const formattedMonth = `${selectedMonth.slice(5, 7)}/${selectedMonth.slice(0, 4)}`;
     try {
@@ -118,6 +91,20 @@ const MyApartment = () => {
     }
   };
 
+  const handleShowBill = async (apartmentId) => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/fees/detail/${apartmentId}/${selectedMonth}`
+      );
+      const fullBill = { ...res.data, month: selectedMonth };
+      setCurrentBill(fullBill);
+      setShowPopup(true);
+    } catch (err) {
+      console.error("❌ Lỗi lấy hóa đơn:", err);
+      alert("Không thể lấy hóa đơn");
+    }
+  };
+
   if (loading) {
     return (
       <>
@@ -127,14 +114,16 @@ const MyApartment = () => {
     );
   }
 
-  if (!apartments.length) {
-    return (
-      <>
-        <Header user={user} name={user?.name} logout={logout} />
-        <div className="text-center py-5">Bạn chưa sở hữu hoặc thuê căn hộ nào.</div>
-      </>
-    );
-  }
+  const filteredApartments = apartments.filter((apartment) => {
+    const roleText = String(apartment?.isRenter?._id) === user._id
+      ? "Người thuê"
+      : String(apartment?.isOwner?._id) === user._id
+        ? "Chủ hộ"
+        : "Không xác định";
+
+    const haystack = `${apartment.apartmentCode} ${roleText} ${apartment?.ownerName || ""} 1`.toLowerCase();
+    return haystack.includes(filterText.toLowerCase());
+  });
 
   const formattedMonth = `${selectedMonth.slice(5, 7)}/${selectedMonth.slice(0, 4)}`;
 
@@ -144,8 +133,7 @@ const MyApartment = () => {
       <div className="container py-5">
         <h2 className="fw-bold text-center mb-4 text-primary">Quản Lý Chi Phí Căn Hộ</h2>
 
-        {/* Bộ lọc tháng */}
-        <div className="d-flex justify-content-end mb-4">
+        <div className="d-flex justify-content-between align-items-center mb-4">
           <input
             type="month"
             className="form-control w-auto"
@@ -156,10 +144,18 @@ const MyApartment = () => {
               setExpensesMap({});
             }}
           />
+
+          <input
+            type="text"
+            className="form-control w-auto ms-3"
+            placeholder="Tìm kiếm..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+          />
         </div>
 
         <div className="d-flex flex-column gap-4">
-          {apartments.map((apartment) => {
+          {filteredApartments.map((apartment) => {
             const expenses = expensesMap[apartment._id] || {};
             const { maintenanceFee = 0, waterFee = 0, parkingRegs = [], parkingFee = 0, paymentStatus = "unpaid" } = expenses;
             const total = maintenanceFee + waterFee + parkingFee;
@@ -192,7 +188,6 @@ const MyApartment = () => {
                 </div>
                 <div className="mt-2 fw-bold">Tổng cộng: {total.toLocaleString("vi-VN")} đ</div>
 
-
                 {paymentStatus === "unpaid" ? (
                   <button
                     className="btn btn-success rounded-pill fw-semibold mt-3"
@@ -203,19 +198,17 @@ const MyApartment = () => {
                 ) : (
                   <button
                     className="btn btn-primary rounded-pill fw-semibold mt-3"
-                    onClick={() => handleShowBill(apartment._id)} // ✅ đúng cách
+                    onClick={() => handleShowBill(apartment._id)}
                   >
                     Xem hóa đơn
                   </button>
-
-
-
                 )}
-
               </div>
             );
           })}
-        </div>{showPopup && currentBill && (
+        </div>
+
+        {showPopup && currentBill && (
           <BillPopup show={showPopup} onClose={() => setShowPopup(false)} bill={currentBill} />
         )}
 
@@ -223,6 +216,5 @@ const MyApartment = () => {
     </div>
   );
 };
-
 
 export default MyApartment;
