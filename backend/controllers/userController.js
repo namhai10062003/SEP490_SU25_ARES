@@ -4,7 +4,7 @@ import ProfileUpdateRequest from "../models/ProfileUpdateRequest.js";
 import User from '../models/User.js';
 import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
 // GET /api/users?page=1&limit=10&role=staff&status=1
-const getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -33,7 +33,7 @@ const getUsers = async (req, res) => {
   }
 };
 
-const getUsersDepartment = async (req, res) => {
+export const getUsersDepartment = async (req, res) => {
   try {
     const users = await User.find({
       apartmentId: { $exists: true, $ne: null }
@@ -64,7 +64,7 @@ const getUsersDepartment = async (req, res) => {
 };
 
 // Block or unblock user from posting
-const blockUser = async (req, res) => {
+export const blockUser = async (req, res) => {
   try {
     const { reason } = req.body;
     const user = await User.findById(req.params.id).select('-password -otp -otpExpires');
@@ -111,7 +111,7 @@ const blockUser = async (req, res) => {
 };
 
 
-const unBlockUser = async (req, res) => {
+export const unBlockUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password -otp -otpExpires');
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -157,7 +157,7 @@ const unBlockUser = async (req, res) => {
 };
 
 
-const getUserById = async (req, res) => {
+export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password -otp -otpExpires');
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -166,7 +166,7 @@ const getUserById = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-const deleteUser = async (req, res) => {
+export const deleteUser = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(
       req.params.id,
@@ -270,26 +270,29 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Lỗi server" });
   }
 };
-  export const getUserProfileById = async (req, res) => {
-    try {
-      const _id = req.params.id;
-  
-      if (!_id) {
-        return res.status(400).json({ error: "Thiếu ID người dùng" });
-      }
-  
-      const user = await User.findById(_id).select(
-        'name phone gender dob address identityNumber jobTitle bio profileImage'
-      );
-  
-      if (!user) {
-        return res.status(404).json({ error: "Không tìm thấy người dùng" });
-      }
-  
-      res.status(200).json(user);
-    } catch (err) {
-      console.error("❌ Lỗi khi lấy profile:", err.message);
-      res.status(500).json({ error: "Server error" });
+export const getUserProfileById = async (req, res) => {
+  try {
+    const _id = req.params.id;
+
+    if (!_id) {
+      return res.status(400).json({ error: "Thiếu ID người dùng" });
+    }
+
+    const user = await User.findById(_id).select(
+      'name phone gender dob address identityNumber jobTitle bio profileImage'
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "Không tìm thấy người dùng" });
+    }
+
+    res.status(200).json(user);
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy profile:", err.message);
+    res.status(500).json({ error: "Server error" });
+  }
+}; // ✅ Đã đóng hàm
+
 
 
 // change mk 
@@ -298,9 +301,9 @@ export const changePassword = async (req, res) => {
     const userId = req.user._id; // Lấy ID từ middleware xác thực
     const { oldPassword, newPassword } = req.body;
 
-
     if (!oldPassword || !newPassword) {
       return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
+
     }
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "Người dùng không tồn tại." });
@@ -310,17 +313,8 @@ export const changePassword = async (req, res) => {
       return res.status(400).json({ message: "Mật khẩu cũ không đúng." });
     }
 
-   // Mã hóa và cập nhật mật khẩu mới
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
-    await user.save();
-
-    res.status(200).json({ message: "✅ Đổi mật khẩu thành công!" });
-  } catch (err) {
-    console.error("Lỗi đổi mật khẩu:", err);
-    res.status(500).json({ message: "❌ Lỗi server." });
-  }
-};
 
     await Notification.create({
       userId: user._id,
@@ -349,5 +343,3 @@ export const changePassword = async (req, res) => {
     res.status(500).json({ message: "❌ Lỗi server." });
   }
 };
-
-export { blockUser, unBlockUser, deleteUser, getUserById, getUsers, getUsersDepartment };
