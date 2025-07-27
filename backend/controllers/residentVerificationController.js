@@ -254,5 +254,77 @@ const rejectResidentVerification = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-export { getUserWithApartment, approveResidentVerification, getAllResidentVerifications, getResidentVerificationById, rejectResidentVerification };
+
+// hàm hủy hợp đồng cư dân
+ const cancelResidentVerification = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Tìm đơn xác minh
+    const verification = await ResidentVerification.findById(id);
+    if (!verification) {
+      return res.status(404).json({ error: "Không tìm thấy đơn xác minh" });
+    }
+
+    // Nếu đơn này liên kết với một căn hộ, cập nhật trạng thái căn hộ
+    if (verification.apartment) {
+      const apartment = await Apartment.findById(verification.apartment);
+      if (apartment) {
+        apartment.status = "bỏ trống"; // ✅ giá trị hợp lệ
+        await apartment.save();
+      }
+    }
+
+    // Xoá đơn xác minh
+    await ResidentVerification.findByIdAndDelete(id);
+
+    return res.status(200).json({ message: "Huỷ đơn xác minh thành công" });
+  } catch (error) {
+    console.error("Lỗi huỷ đơn xác minh:", error);
+    return res.status(500).json({ error: "Lỗi server khi huỷ đơn" });
+  }
+};
+// hàm chỉnh sửa hợp đồng cư dân 
+export const updateResidentVerification = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateFields = { ...req.body };
+
+    // Nếu có file ảnh mới
+    if (req.file) {
+      updateFields.documentImage = req.file.path || `/uploads/${req.file.filename}`;
+    }
+
+    // ✅ Xử lý đặc biệt với field user
+    if (updateFields.user) {
+      // Nếu là object thì lấy _id
+      if (typeof updateFields.user === 'object' && updateFields.user._id) {
+        updateFields.user = updateFields.user._id;
+      }
+
+      // Nếu không hợp lệ thì xóa
+      const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(updateFields.user);
+      if (!isValidObjectId) {
+        delete updateFields.user;
+      }
+    }
+
+    const updated = await ResidentVerification.findByIdAndUpdate(id, updateFields, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Không tìm thấy thông tin cư dân' });
+    }
+
+    res.json(updated);
+  } catch (error) {
+    console.error('Lỗi cập nhật:', error);
+    res.status(500).json({ message: 'Lỗi máy chủ khi cập nhật' });
+  }
+};
+
+
+export { approveResidentVerification, cancelResidentVerification, getAllResidentVerifications, getResidentVerificationById, getUserWithApartment, rejectResidentVerification };
 
