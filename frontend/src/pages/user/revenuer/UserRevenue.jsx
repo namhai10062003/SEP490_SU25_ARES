@@ -324,52 +324,55 @@ useEffect(() => {
 
             {/* Lịch sử yêu cầu rút tiền */}
             <div className="mt-5">
-              <h5 className="mb-3 border-start border-4 ps-3 text-primary">
-                📝 Lịch sử các yêu cầu rút tiền
-              </h5>
-              {withdrawHistory.length === 0 ? (
-                <p className="text-muted">Chưa có yêu cầu nào.</p>
-              ) : (
-                <div className="table-responsive">
-                  <table className="table table-bordered table-striped align-middle">
-                    <thead className="table-light">
-                      <tr>
-                        <th>Ngày gửi</th>
-                        <th>Số tiền</th>
-                        <th>Ngân hàng</th>
-                        <th>Số tài khoản</th>
-                        <th>Trạng thái</th>
-                        <th>Lý do từ chối</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {withdrawHistory.map((w) => (
-                        <tr key={w._id}>
-                          <td>{formatDate(w.createdAt)}</td>
-                          <td>{formatPrice(w.amount)}</td>
-                          <td>{w.bankName}</td>
-                          <td>{w.bankNumber}</td>
-                          <td>
-                            <span
-                              className={`badge text-capitalize ${
-                                w.status === "approved"
-                                  ? "bg-success"
-                                  : w.status === "rejected"
-                                  ? "bg-danger"
-                                  : "bg-warning text-dark"
-                              }`}
-                            >
-                              {w.status}
-                            </span>
-                          </td>
-                          <td>{w.rejectedReason || "--"}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+  <h5 className="mb-3 border-start border-4 ps-3 text-primary">
+    📝 Lịch sử các yêu cầu rút tiền
+  </h5>
+  {withdrawHistory.length === 0 ? (
+    <p className="text-muted">Chưa có yêu cầu nào.</p>
+  ) : (
+    <div className="table-responsive">
+      <table className="table table-bordered table-striped align-middle">
+        <thead className="table-light">
+          <tr>
+            <th>Ngày gửi</th>
+            <th>Số tiền</th>
+            <th>Ngân hàng</th>
+            <th>Số tài khoản</th>
+            <th>Chủ tài khoản</th> {/* Thêm cột mới */}
+            <th>Trạng thái</th>
+            <th>Lý do từ chối</th>
+          </tr>
+        </thead>
+        <tbody>
+          {withdrawHistory.map((w) => (
+            <tr key={w._id}>
+              <td>{formatDate(w.createdAt)}</td>
+              <td>{formatPrice(w.amount)}</td>
+              <td>{w.bankName}</td>
+              <td>{w.bankNumber}</td>
+              <td>{w.accountHolder || "--"}</td> {/* Hiển thị tên chủ tài khoản */}
+              <td>
+                <span
+                  className={`badge text-capitalize ${
+                    w.status === "approved"
+                      ? "bg-success"
+                      : w.status === "rejected"
+                      ? "bg-danger"
+                      : "bg-warning text-dark"
+                  }`}
+                >
+                  {w.status}
+                </span>
+              </td>
+              <td>{w.rejectedReason || "--"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )}
+</div>
+
           </>
         )}
       </div>

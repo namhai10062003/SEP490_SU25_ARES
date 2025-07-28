@@ -1,11 +1,18 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "./navbar";
 import NotificationBell from "./notification";
 
 const Header = ({ user, name, logout }) => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const profileDropdownRef = useRef();
+  const navigate = useNavigate(); 
+
+   // Hàm xử lý logout
+   const handleLogout = () => {
+    logout();              // Gọi hàm logout (xoá user context / token v.v.)
+    navigate("/login");    // 👈 Điều hướng về trang đăng nhập
+  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -105,9 +112,9 @@ const Header = ({ user, name, logout }) => {
               </div>
 
               {/* 👇 Logout */}
-              <button onClick={logout} className="btn btn-outline-warning ms-2">
-                Log out
-              </button>
+              <button onClick={handleLogout} className="btn btn-outline-warning ms-2">
+  Log out
+</button>
             </>
           ) : (
             <div className="d-flex align-items-center gap-2">

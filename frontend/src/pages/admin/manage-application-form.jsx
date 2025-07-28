@@ -139,16 +139,55 @@ const ManageApplicationForm = () => {
     };
 
     const handleReject = async (id) => {
-        if (window.confirm("Xác nhận từ chối đơn này?")) {
-            try {
-                await axios.patch(`${import.meta.env.VITE_API_URL}/api/resident-verifications/${id}/reject`);
-                fetchApplications();
-                toast.success("Đã từ chối đơn!");
-            } catch (err) {
-                const msg = err?.response?.data?.error || "Từ chối đơn thất bại!";
-                toast.error(msg);
-            }
-        }
+      let reasonInput = "";
+    
+      confirmAlert({
+        customUI: ({ onClose }) => {
+          return (
+            <div className="custom-ui p-3 border rounded" style={{ backgroundColor: "#fff", maxWidth: 450 }}>
+              <h5 className="mb-3">Xác nhận từ chối đơn</h5>
+              <div className="mb-3">
+                <label>Lý do từ chối:</label>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  onChange={(e) => {
+                    reasonInput = e.target.value;
+                  }}
+                  placeholder="Vui lòng nhập lý do từ chối..."
+                />
+              </div>
+              <div className="d-flex justify-content-end gap-2">
+                <button className="btn btn-secondary" onClick={onClose}>Hủy</button>
+                <button
+                  className="btn btn-danger"
+                  onClick={async () => {
+                    try {
+                      await axios.patch(
+                        `${import.meta.env.VITE_API_URL}/api/resident-verifications/${id}/reject`,
+                        { reason: reasonInput },
+                        {
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                        }
+                      );
+                      await fetchApplications();
+                      toast.success("Đã từ chối đơn!");
+                    } catch (err) {
+                      const msg = err?.response?.data?.error || "Từ chối đơn thất bại!";
+                      toast.error(msg);
+                    }
+                    onClose();
+                  }}
+                >
+                  Xác nhận từ chối
+                </button>
+              </div>
+            </div>
+          );
+        },
+      });
     };
 
     // Filter logic

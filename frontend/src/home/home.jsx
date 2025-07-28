@@ -1,5 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
+import { Button, Modal } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
+import 'react-toastify/dist/ReactToastify.css';
 import Footer from "../../components/footer";
 import Header from "../../components/header";
 import { useAuth } from "../../context/authContext";
@@ -166,7 +169,11 @@ const Home = () => {
   const selectedPosts = posts.slice(startIndex, startIndex + postsPerPage);
 
   const [showUpdateModal, setShowUpdateModal] = useState(false);
-const navigate = useRef(null);
+  const navigate = useNavigate();
+
+const [showModal, setShowModal] = useState(false);
+const [selectedPostId, setSelectedPostId] = useState(null);
+
 
 useEffect(() => {
   // Giả sử bạn xác định người dùng chưa cập nhật nếu thiếu identityNumber hoặc phone
@@ -183,6 +190,31 @@ useEffect(() => {
       listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
+  
+  // hàm xử lí user khi kick vào chitiet
+  const handleViewDetail = (postId) => {
+    if (!user) {
+      setShowModal(true);
+      setSelectedPostId(postId);
+    } else {
+      navigate(`/postdetail/${postId}`);
+    }
+  };
+  
+ // Xử lý chuyển sang trang đăng nhập và truyền trạng thái redirect
+ const handleLoginRedirect = () => {
+  navigate("/login", { state: { redirectTo: "/blog" } });
+};
+  // Xử lý khi nhấn nút "Xem thêm"
+  const handleViewMore = () => {
+    if (user) {
+      navigate("/blog");
+    } else {
+      setShowModal(true); // Hiện popup đăng nhập
+    }
+  };
+
+
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -190,7 +222,7 @@ useEffect(() => {
         // Lấy token từ localStorage (bạn có thể đổi theo cách bạn lưu token)
         const token = localStorage.getItem("token");
 
-        const res = await axios.get("http://localhost:4000/api/posts/active", {
+        const res = await axios.get("http://localhost:4000/api/posts/guest/get-post", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -393,48 +425,70 @@ useEffect(() => {
 
 
       {/* FEATURED APARTMENTS */}
-      <section className="container py-5" ref={listRef}>
-        <h2 className="fw-bold text-uppercase mb-4 text-center">Căn hộ nổi bật</h2>
-        <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
-          {selectedPosts.map((post) => (
-            <div className="col" key={post._id}>
-              <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
-                <div className="position-relative">
-                  <img
-                    src={post.images[0]}
-                    className="card-img-top"
-                    alt={post.title}
-                    style={{ height: 200, objectFit: "cover" }}
-                  />
-                  <span
-                    className={`${getPackageBadgeClass(post.postPackage?.type)} position-absolute top-0 end-0 m-2 px-3 py-2 rounded-pill shadow`}
-                    style={{ fontSize: "0.9rem", fontWeight: "bold" }}
-                  >
-                    {post.postPackage?.type?.toUpperCase() || "KHÔNG CÓ GÓI"}
-                  </span>
-                </div>
-                <div className="card-body d-flex flex-column bg-white">
-                  <h5 className="card-title fw-bold">{post.title}</h5>
-                  <p className="card-text flex-grow-1">{post.address}</p>
-                  <a href={`/postdetail/${post._id}`} className="btn btn-warning mt-auto rounded-pill">
-                    Chi tiết
-                  </a>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* PAGINATION */}
-        <div className="d-flex justify-content-center mt-4">
-           {/* Nút Xem thêm */}
-  <div className="text-center mt-4">
-    <a href="/blog" className="btn btn-outline-primary px-4 py-2">
-      Xem thêm
-    </a>
+    {/* FEATURED APARTMENTS */}
+<section className="container py-5" ref={listRef}>
+  <h2 className="fw-bold text-uppercase mb-4 text-center">Căn hộ nổi bật</h2>
+  <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+    {selectedPosts.map((post) => (
+      <div className="col" key={post._id}>
+        <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
+          <div className="position-relative">
+            <img
+              src={post.images[0]}
+              className="card-img-top"
+              alt={post.title}
+              style={{ height: 200, objectFit: "cover" }}
+            />
+            <span
+              className={`${getPackageBadgeClass(post.postPackage?.type)} position-absolute top-0 end-0 m-2 px-3 py-2 rounded-pill shadow`}
+              style={{ fontSize: "0.9rem", fontWeight: "bold" }}
+            >
+              {post.postPackage?.type?.toUpperCase() || "KHÔNG CÓ GÓI"}
+            </span>
+          </div>
+          <div className="card-body d-flex flex-column bg-white">
+  <h5 className="card-title fw-bold">{post.title}</h5>
+  <p className="card-text flex-grow-1">{post.address}</p>
+  <div className="d-flex justify-content-center mt-2">
+    <Button
+      variant="outline-warning"
+      onClick={() => handleViewDetail(post._id)}
+      className="btn-sm px-3 py-1"
+      style={{ fontSize: '0.8rem' }}
+    >
+      Chi tiết
+    </Button>
   </div>
+</div>
+
         </div>
-      </section>
+      </div>
+    ))}
+  </div>
+
+  {/* Nút Xem thêm */}
+  <div className="text-center mt-4">
+    <button onClick={handleViewMore} className="btn btn-outline-primary px-4 py-2">
+      Xem thêm
+    </button>
+  </div>
+
+  {/* Modal yêu cầu đăng nhập (chỉ 1 modal duy nhất) */}
+  <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+    <Modal.Header closeButton>
+      <Modal.Title>Yêu cầu đăng nhập</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>Bạn cần đăng nhập để thực hiện thao tác này.</Modal.Body>
+    <Modal.Footer>
+      <Button variant="secondary" onClick={() => setShowModal(false)}>
+        Hủy
+      </Button>
+      <Button variant="primary" onClick={handleLoginRedirect}>
+        Đăng nhập
+      </Button>
+    </Modal.Footer>
+  </Modal>
+</section>
 
 
       {/* INFO BANNER */}
@@ -491,6 +545,7 @@ useEffect(() => {
     </div>
   </div>
 )}
+
       {/* FOOTER */}
       <Footer />
     </div>
