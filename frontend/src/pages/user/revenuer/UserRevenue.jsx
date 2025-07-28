@@ -212,14 +212,9 @@ const UserRevenue = () => {
           <p>Đang tải dữ liệu...</p>
         ) : (
           <>
-            <h5 className="mb-3 text-end">
-              Tổng tiền có thể rút:{" "}
-              <span className="text-success fw-bold">
-                {formatPrice(totalWithdrawable)}
-              </span>
-            </h5>
+            <div className="row align-items-center g-3 mb-3">
 
-            <div className="row g-3 mb-3">
+
               <div className="col-md-3">
                 <input
                   type="text"
@@ -232,6 +227,7 @@ const UserRevenue = () => {
                   }}
                 />
               </div>
+
               <div className="col-md-2">
                 <input
                   type="date"
@@ -243,6 +239,7 @@ const UserRevenue = () => {
                   }}
                 />
               </div>
+
               <div className="col-md-2">
                 {(contractSearchText || contractFilterDate) && (
                   <button
@@ -256,8 +253,15 @@ const UserRevenue = () => {
                   </button>
                 )}
               </div>
+              <div className="col-md-4 ms-auto text-end">
+                <h5 className="mb-2">
+                  Tổng tiền có thể rút:{" "}
+                  <span className="text-success fw-bold">
+                    {formatPrice(totalWithdrawable)}
+                  </span>
+                </h5>
+              </div>
             </div>
-
 
             {/* Danh sách hợp đồng */}
             <div className="table-responsive">
