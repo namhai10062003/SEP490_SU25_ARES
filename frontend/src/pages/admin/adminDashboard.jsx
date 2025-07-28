@@ -10,7 +10,8 @@ export default function AdminDashboard({ children }) {
 
   const [showFeedbackSub, setShowFeedbackSub] = useState(
     location.pathname.startsWith("/admin-dashboard/report") ||
-    location.pathname.startsWith("/admin-dashboard/contact")
+    location.pathname.startsWith("/admin-dashboard/contact") ||
+    location.pathname.startsWith("/admin-dashboard/updateprofile")
   );
 
   useEffect(() => {
@@ -19,7 +20,8 @@ export default function AdminDashboard({ children }) {
     }
     if (
       location.pathname.startsWith("/admin-dashboard/report") ||
-      location.pathname.startsWith("/admin-dashboard/contact")
+      location.pathname.startsWith("/admin-dashboard/contact")||
+      location.pathname.startsWith("/admin-dashboard/updateprofile")
     ) {
       setShowFeedbackSub(true);
     }
