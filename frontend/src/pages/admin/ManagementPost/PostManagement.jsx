@@ -11,6 +11,10 @@ const PostManagement = () => {
 
   const [categoryFilter, setCategoryFilter] = useState("pending");
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchText, setSearchText] = useState("");
+  const [filterDate, setFilterDate] = useState("");
+  const [page, setPage] = useState(1); // Nếu đang dùng phân trang
+
   const perPage = 7;
 
   const { user } = useAuth();
@@ -81,10 +85,26 @@ const PostManagement = () => {
     }
   };
 
-  const filteredPosts =
-    categoryFilter === "all"
-      ? posts
-      : posts.filter((p) => p.status === categoryFilter);
+  const filteredPosts = posts.filter((p) => {
+    const label = tagLabel(p.type).toLowerCase();
+  
+    const textMatch =
+      p.title?.toLowerCase().includes(searchText.toLowerCase()) ||
+      p.contactInfo?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+      p.location?.toLowerCase().includes(searchText.toLowerCase()) ||
+      label.includes(searchText.toLowerCase());
+  
+    const dateMatch = filterDate
+      ? new Date(p.createdAt).toDateString() ===
+        new Date(filterDate).toDateString()
+      : true;
+  
+    const statusMatch =
+      categoryFilter === "all" ? true : p.status === categoryFilter;
+  
+    return textMatch && dateMatch && statusMatch;
+  });
+  
 
   const paginatedPosts = filteredPosts.slice(
     (currentPage - 1) * perPage,
@@ -106,6 +126,52 @@ const PostManagement = () => {
         <div className="bg-primary text-white rounded p-2 text-center mb-3">
           <h4>Quản Lý Bài Đăng</h4>
         </div>
+
+        <div className="row g-3 align-items-end mb-3">
+          {/* Ô tìm kiếm text */}
+          <div className="col-md-3">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Tìm kiếm..."
+              value={searchText}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+
+          {/* Ô lọc theo ngày */}
+          <div className="col-md-2">
+            <input
+              type="date"
+              className="form-control"
+              value={filterDate}
+              onChange={(e) => {
+                setFilterDate(e.target.value);
+                setPage(1);
+              }}
+            />
+          </div>
+
+          {/* Nút xóa lọc */}
+          <div className="col-md-2">
+            {(searchText || filterDate) && (
+              <button
+                className="btn btn-outline-secondary w-100"
+                onClick={() => {
+                  setSearchText("");
+                  setFilterDate("");
+                  setPage(1);
+                }}
+              >
+                Xóa lọc
+              </button>
+            )}
+          </div>
+        </div>
+
 
         <div className="row g-3">
           {/* Table1 */}

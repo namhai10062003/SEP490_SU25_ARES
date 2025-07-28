@@ -387,7 +387,7 @@ export const verifyPostByAdmin = async (req, res) => {
             });
         }
         // Cập nhật trạng thái bài đăng thành "active"
-        existingPost.status = "active";
+        existingPost.status = "approved";
         existingPost.isActive = true; // Đảm bảo isActive được đặt thành true   
         // Lưu các thay đổi
         await existingPost.save();
