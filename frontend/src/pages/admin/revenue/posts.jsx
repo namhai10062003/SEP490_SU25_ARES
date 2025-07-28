@@ -29,28 +29,29 @@ const RevenueManagement = () => {
     const [filteredPosts, setFilteredPosts] = useState([]);
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
+    const [searchText, setSearchText] = useState("");
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
     const formatDate = (d) => new Date(d).toLocaleDateString("vi-VN");
     const formatPrice = (p) => new Intl.NumberFormat("vi-VN").format(p) + " đ";
+
     useEffect(() => {
         const now = new Date();
-
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-        // Convert to YYYY-MM-DD string for input fields
         const toInputDate = (date) => {
             const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const d = String(date.getDate()).padStart(2, '0');
+            const m = String(date.getMonth() + 1).padStart(2, "0");
+            const d = String(date.getDate()).padStart(2, "0");
             return `${y}-${m}-${d}`;
         };
 
         setStartDate(toInputDate(firstDayOfMonth));
         setEndDate(toInputDate(lastDayOfMonth));
     }, []);
+
     useEffect(() => {
         getAllPosts()
             .then((res) => {
@@ -65,10 +66,22 @@ const RevenueManagement = () => {
     useEffect(() => {
         const filtered = posts.filter((p) => {
             const paid = new Date(p.paymentDate);
-            if (startDate && paid < new Date(startDate)) return false;
-            if (endDate && paid > new Date(endDate)) return false;
-            return true;
+
+            const matchDate =
+                (!startDate || paid >= new Date(startDate)) &&
+                (!endDate || paid <= new Date(endDate));
+
+            const lowerSearch = searchText.toLowerCase();
+            const matchText =
+                !searchText ||
+                (p.title && p.title.toLowerCase().includes(lowerSearch)) ||
+                (p.contactInfo?.name && p.contactInfo.name.toLowerCase().includes(lowerSearch)) ||
+                (p.postPackage?.type && p.postPackage.type.toLowerCase().includes(lowerSearch)) ||
+                (p.amount && p.amount.toString().includes(lowerSearch));
+
+            return matchDate && matchText;
         });
+
         setFilteredPosts(filtered);
 
         const newTotalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
@@ -77,7 +90,7 @@ const RevenueManagement = () => {
         if (page > newTotalPages) {
             setPage(1);
         }
-    }, [posts, startDate, endDate, page]);
+    }, [posts, startDate, endDate, page, searchText]);
 
     const filteredRevenue = filteredPosts.reduce(
         (sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0),
@@ -95,8 +108,9 @@ const RevenueManagement = () => {
             Người_đăng: p.contactInfo?.name || "-",
             Ngày_thanh_toán: formatDate(p.paymentDate),
             Gói: p.postPackage?.type || "-",
-            Số_tiền: PACKAGE_PRICES[p.postPackage?.type] || 0,
+            Số_tiền: formatPrice(PACKAGE_PRICES[p.postPackage?.type] || 0),
         }));
+
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "DoanhThu");
@@ -138,40 +152,54 @@ const RevenueManagement = () => {
                     <h2 className="mb-0">Thống Kê Doanh Thu Bài Post</h2>
                 </div>
 
-                <div className="row g-3 mb-4">
+                <div className="row g-3 mb-4 align-items-end">
                     <div className="col-md-3">
+                        <label className="form-label fw-semibold">Từ ngày</label>
                         <input
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
                             className="form-control"
+                            max={endDate || undefined} // Optional: để ngăn chọn từ ngày lớn hơn đến ngày
                         />
                     </div>
                     <div className="col-md-3">
+                        <label className="form-label fw-semibold">Đến ngày</label>
                         <input
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
                             className="form-control"
+                            min={startDate || undefined} // ✅ Giới hạn không cho chọn nhỏ hơn Từ ngày
                         />
                     </div>
                     <div className="col-md-3">
+                        <label className="form-label fw-semibold">Tìm kiếm</label>
+                        <input
+                            type="text"
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                            placeholder="Tìm kiếm..."
+                            className="form-control"
+                        />
+                    </div>
+                    <div className="col-md-3 d-flex gap-2">
                         <button
                             className="btn btn-secondary w-100"
                             onClick={() => {
                                 setStartDate("");
                                 setEndDate("");
+                                setSearchText("");
                             }}
                         >
                             Xóa bộ lọc
                         </button>
-                    </div>
-                    <div className="col-md-3">
                         <button className="btn btn-success w-100" onClick={exportToExcel}>
                             Xuất Excel
                         </button>
                     </div>
                 </div>
+
 
                 <h5 className="mb-3 text-end">
                     Tổng doanh thu:{" "}

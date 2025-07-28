@@ -22,6 +22,7 @@ const RevenueApartment = () => {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
+    const [searchText, setSearchText] = useState("");
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     useEffect(() => {
@@ -48,12 +49,30 @@ const RevenueApartment = () => {
 
     const filteredFees = fees.filter((f) => {
         const paidDate = f.paymentDate ? new Date(f.paymentDate) : null;
-        if (startDate && paidDate && paidDate < new Date(startDate)) return false;
-        if (endDate && paidDate && paidDate > new Date(endDate)) return false;
-        if (statusFilter === "paid" && f.paymentStatus !== "paid") return false;
-        if (statusFilter === "unpaid" && f.paymentStatus !== "unpaid") return false;
-        return true;
+
+        const matchDate =
+            (!startDate || (paidDate && paidDate >= new Date(startDate))) &&
+            (!endDate || (paidDate && paidDate <= new Date(endDate)));
+
+        const matchStatus =
+            statusFilter === "all" ||
+            (statusFilter === "paid" && f.paymentStatus === "paid") ||
+            (statusFilter === "unpaid" && f.paymentStatus === "unpaid");
+
+        const lowerSearch = searchText.toLowerCase();
+        const matchSearch =
+            !searchText ||
+            f.apartmentCode?.toLowerCase().includes(lowerSearch) ||
+            f.ownerName?.toLowerCase().includes(lowerSearch) ||
+            f.orderCode?.toLowerCase().includes(lowerSearch) ||
+            f.managementFee?.toString().includes(lowerSearch) ||
+            f.waterFee?.toString().includes(lowerSearch) ||
+            f.parkingFee?.toString().includes(lowerSearch) ||
+            f.total?.toString().includes(lowerSearch);
+
+        return matchDate && matchStatus && matchSearch;
     });
+
 
     const filteredRevenue = filteredFees
         .filter(f => f.paymentStatus === "paid")
@@ -79,7 +98,8 @@ const RevenueApartment = () => {
         );
         setTotalPages(newTotalPages);
         if (page > newTotalPages) setPage(1);
-    }, [fees, startDate, endDate, statusFilter]);
+    }, [fees, startDate, endDate, statusFilter, searchText]);
+
 
     const exportToExcel = () => {
         const data = filteredFees.map((f) => ({
@@ -135,8 +155,10 @@ const RevenueApartment = () => {
                     <h2 className="mb-0">Thống Kê Doanh Thu Căn Hộ</h2>
                 </div>
 
-                <div className="row g-3 mb-4">
-                    <div className="col-md-3">
+                <div className="row g-3 mb-3 align-items-end">
+                    {/* Từ ngày */}
+                    <div className="col-md-2">
+                        <label className="form-label fw-semibold">Từ ngày</label>
                         <input
                             type="date"
                             value={startDate}
@@ -144,7 +166,10 @@ const RevenueApartment = () => {
                             className="form-control"
                         />
                     </div>
-                    <div className="col-md-3">
+
+                    {/* Đến ngày */}
+                    <div className="col-md-2">
+                        <label className="form-label fw-semibold">Đến ngày</label>
                         <input
                             type="date"
                             value={endDate}
@@ -152,7 +177,10 @@ const RevenueApartment = () => {
                             className="form-control"
                         />
                     </div>
+
+                    {/* Trạng thái */}
                     <div className="col-md-2">
+                        <label className="form-label fw-semibold">Trạng thái</label>
                         <select
                             className="form-select"
                             value={statusFilter}
@@ -163,32 +191,50 @@ const RevenueApartment = () => {
                             <option value="unpaid">Chưa thanh toán</option>
                         </select>
                     </div>
-                    <div className="col-md-4 d-flex gap-2">
+
+                    {/* Tìm kiếm */}
+                    <div className="col-md-2">
+                        <label className="form-label fw-semibold">Tìm kiếm</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Tìm kiếm thông tin..."
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Nút Xóa bộ lọc */}
+                    <div className="col-md-2 d-grid">
                         <button
-                            className="btn btn-secondary w-50"
+                            className="btn btn-secondary fw-semibold"
                             onClick={() => {
                                 setStartDate("");
                                 setEndDate("");
                                 setStatusFilter("all");
+                                setSearchText("");
                             }}
                         >
                             Xóa bộ lọc
                         </button>
-                        <button
-                            className="btn btn-success w-100"
-                            onClick={exportToExcel}
-                        >
+                    </div>
+                    <div className="col-md-2 d-grid">
+                        <button className="btn btn-success fw-semibold" onClick={exportToExcel}>
                             Xuất Excel
                         </button>
                     </div>
                 </div>
 
-                <h5 className="mb-3 text-end">
-                    Tổng doanh thu:{" "}
-                    <span className="text-success fw-bold">
-                        {formatPrice(filteredRevenue)}
-                    </span>
-                </h5>
+                {/* Tổng doanh thu */}
+                <div className="d-flex justify-content-end align-items-center gap-3 mb-3">
+                    <h5 className="mb-0">
+                        Tổng doanh thu:{" "}
+                        <span className="text-success fw-bold">
+                            {formatPrice(filteredRevenue)}
+                        </span>
+                    </h5>
+                </div>
+
 
                 <div className="table-responsive mb-3">
                     <table className="table table-bordered align-middle table-striped">

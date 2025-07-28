@@ -192,12 +192,16 @@ const ManageApplicationForm = () => {
 
     // Filter logic
     const filteredApps = applications.filter(app =>
-        (searchTerm.trim() === "" ||
-            (app.fullName && app.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-            (app.apartmentCode && app.apartmentCode.toLowerCase().includes(searchTerm.toLowerCase()))
-        ) &&
-        (filterStatus === "" || String(app.status) === filterStatus)
+      (searchTerm.trim() === "" ||
+        (app.fullName && app.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (app.email && app.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (app.phone && app.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (app.apartmentCode && app.apartmentCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (app.documentType && app.documentType.toLowerCase().includes(searchTerm.toLowerCase()))
+      ) &&
+      (filterStatus === "" || String(app.status) === filterStatus)
     );
+    
 
     // Pagination logic
     const totalPages = Math.ceil(filteredApps.length / PAGE_SIZE) || 1;
@@ -222,7 +226,7 @@ const ManageApplicationForm = () => {
                             style={{ width: 220 }}
                         />
                         <select
-                            className="form-control"
+                            className="form-select w-auto"
                             style={{ maxWidth: 180 }}
                             value={filterStatus}
                             onChange={e => setFilterStatus(e.target.value)}

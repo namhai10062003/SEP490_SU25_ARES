@@ -94,14 +94,14 @@ const ManageUsers = () => {
 
     const filteredUsers = userList.filter((user) => {
         const lower = searchText.toLowerCase();
-      
+
         const matchesSearch =
-          user.name?.toLowerCase().includes(lower) ||
-          user.email?.toLowerCase().includes(lower) ||
-          user.phone?.toLowerCase().includes(lower);
-      
+            user.name?.toLowerCase().includes(lower) ||
+            user.email?.toLowerCase().includes(lower) ||
+            user.phone?.toLowerCase().includes(lower);
+
         return searchText === "" || matchesSearch;
-      });      
+    });
 
     return (
         <AdminDashboard>
@@ -111,32 +111,35 @@ const ManageUsers = () => {
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2 className="font-weight-bold">Quản lý User</h2>
                 </div>
-                <div className="mb-3 d-flex gap-3 flex-wrap">
-                    <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Tìm kiếm..."
-                        style={{ maxWidth: 300 }}
-                        value={searchText}
-                        onChange={(e) => {
-                            setPage(1);
-                            setSearchText(e.target.value);
-                        }}
-                    />
-                    <select
-                        className="form-select w-auto"
-                        style={{ maxWidth: 220 }}
-                        value={filterStatus}
-                        onChange={(e) => {
-                            setPage(1);
-                            setFilterStatus(e.target.value);
-                        }}
-                    >
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="1">Active</option>
-                        <option value="0">Blocked</option>
-                    </select>
+                <div className="mb-3 d-flex justify-content-end">
+                    <div className="d-flex gap-3 flex-wrap">
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Tìm kiếm..."
+                            style={{ maxWidth: 200 }}
+                            value={searchText}
+                            onChange={(e) => {
+                                setPage(1);
+                                setSearchText(e.target.value);
+                            }}
+                        />
+                        <select
+                            className="form-select w-auto"
+                            style={{ maxWidth: 220 }}
+                            value={filterStatus}
+                            onChange={(e) => {
+                                setPage(1);
+                                setFilterStatus(e.target.value);
+                            }}
+                        >
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="1">Active</option>
+                            <option value="0">Blocked</option>
+                        </select>
+                    </div>
                 </div>
+
 
                 <div className="card w-100">
                     <div className="card-body p-0">

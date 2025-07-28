@@ -2,16 +2,16 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useAuth } from "../../../../context/authContext";
 import {
-    approveProfileUpdate,
-    getAllProfileUpdateRequests,
-    rejectProfileUpdate
+  approveProfileUpdate,
+  getAllProfileUpdateRequests,
+  rejectProfileUpdate
 } from "../../../service/profileService";
 import AdminDashboard from "../adminDashboard";
 
 const AdminProfileUpdatePage = () => {
   const { token: contextToken } = useAuth();
   const token = contextToken || localStorage.getItem("token");
-
+  const [searchText, setSearchText] = useState("");
   const [requests, setRequests] = useState([]);
   const [filter, setFilter] = useState("pending");
   const [loading, setLoading] = useState(false);
@@ -24,9 +24,23 @@ const AdminProfileUpdatePage = () => {
     try {
       const res = await getAllProfileUpdateRequests(token);
       const all = res?.data || [];
-
-      // ✅ Lọc tại frontend
-      const filtered = filter ? all.filter((r) => r.status === filter) : all;
+  
+      const searchLower = searchText.toLowerCase();
+  
+      const filtered = all.filter((r) => {
+        const matchesStatus = filter ? r.status === filter : true;
+  
+        const matchesSearch = !searchText || [
+          r.userId?.name,
+          r.userId?.email,
+          r.newIdentityNumber,
+        ]
+          .filter(Boolean)
+          .some((field) => field.toLowerCase().includes(searchLower));
+  
+        return matchesStatus && matchesSearch;
+      });
+  
       setRequests(filtered);
     } catch (error) {
       console.error("❌ Lỗi khi load requests:", error);
@@ -35,10 +49,11 @@ const AdminProfileUpdatePage = () => {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     loadRequests();
-  }, [filter]);
+  }, [filter, searchText]);
 
   const handleApprove = async (id) => {
     try {
@@ -80,18 +95,26 @@ const AdminProfileUpdatePage = () => {
         </div>
 
         {/* Lọc trạng thái */}
-        <div className="mb-3 d-flex align-items-center gap-2">
-          <label className="fw-semibold">Lọc trạng thái:</label>
-          <select
-            className="form-select w-auto"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          >
-            <option value="pending">Chờ duyệt</option>
-            <option value="approved">Đã duyệt</option>
-            <option value="rejected">Từ chối</option>
-            <option value="">Tất cả</option>
-          </select>
+        <div className="mb-3 d-flex flex-column flex-md-row justify-content-end align-items-md-center gap-3">
+          <div className="d-flex align-items-center gap-2">
+            <select
+              className="form-select w-auto"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="pending">Chờ duyệt</option>
+              <option value="approved">Đã duyệt</option>
+              <option value="rejected">Từ chối</option>
+              <option value="">Tất cả</option>
+            </select>
+            <input
+            type="text"
+            className="form-control w-auto"
+            placeholder="Tìm kiếm..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+          </div>
         </div>
 
         {/* Danh sách yêu cầu */}
