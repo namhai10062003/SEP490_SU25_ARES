@@ -21,19 +21,38 @@ const AdminWithdrawPage = () => {
     try {
       const res = await fetchAllWithdrawals();
       const allData = res.data || [];
-      setWithdrawals(
-        filter ? allData.filter((r) => r.status === filter) : allData
-      );
+  
+      // Lọc theo trạng thái nếu có
+      let filtered = filter
+        ? allData.filter((r) => r.status === filter)
+        : allData;
+  
+      // Lọc theo searchTerm
+      if (searchTerm.trim()) {
+        const lowerSearch = searchTerm.toLowerCase();
+        filtered = filtered.filter((w) =>
+          (w.user?.name?.toLowerCase().includes(lowerSearch) ||
+            w.user?.email?.toLowerCase().includes(lowerSearch) ||
+            w.accountHolder?.toLowerCase().includes(lowerSearch) ||
+            w.bankNumber?.includes(lowerSearch) ||
+            w.bankName?.toLowerCase().includes(lowerSearch) ||
+            String(w.amount).includes(searchTerm.trim()) // Thêm dòng này để tìm theo số tiền
+          )
+        );
+      }
+  
+      setWithdrawals(filtered);
     } catch (err) {
       toast.error("Không thể nạp danh sách yêu cầu rút tiền!");
     } finally {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     loadWithdrawals();
-  }, [filter]);
+  }, [filter, searchTerm]);
 
   const openRejectModal = (id) => {
     setSelectedId(id);
