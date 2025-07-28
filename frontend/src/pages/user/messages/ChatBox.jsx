@@ -24,7 +24,7 @@ const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
       timestamp: rawMsg.timestamp || rawMsg.createdAt || new Date(),
       type: rawMsg.type || "text",
       postInfo: rawMsg.postInfo || rawMsg.post || null
-// ✅ lấy từ server trả về
+      // ✅ lấy từ server trả về
     };
 
     const isValid =
@@ -51,7 +51,7 @@ const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
     socket.on("receiveMessage", handleReceive);
     return () => socket.off("receiveMessage", handleReceive);
   }, []);
-  
+
   useEffect(() => {
     if (!postInfo && messages.length > 0) {
       const msgWithPost = messages.find((msg) => msg.postInfo);
@@ -68,9 +68,9 @@ const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
   }, [postInfo]);
   useEffect(() => {
     if (!currentUserId || !receiverId) return;
-  
+
     socket.emit("joinRoom", { senderId: currentUserId, receiverId });
-  
+
     const fetchMessages = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messages/${currentUserId}/${receiverId}`);
@@ -84,29 +84,29 @@ const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
           postInfo: msg.post || null,
         }));
         setMessages(normalized);
-  
+
         if (!postInfo) {
           const msgWithPost = normalized.find((msg) => msg.postInfo);
           if (msgWithPost) {
             setPostInfo(msgWithPost.postInfo);
           }
         }
-  
+
       } catch (err) {
         console.error("❌ Lỗi khi tải tin nhắn:", err);
       }
     };
-  
+
     fetchMessages();
-  
+
     socket.off("receiveMessage", handleReceive);
     socket.on("receiveMessage", handleReceive);
-  
+
     return () => {
       socket.off("receiveMessage", handleReceive);
     };
   }, [currentUserId, receiverId]); // ⛔ KHÔNG NÊN thêm postInfo ở đây (sẽ gây loop)
-  
+
 
   const sendMessage = async () => {
     if (!text.trim()) return;
@@ -126,95 +126,95 @@ const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
   }, [messages]);
 
   console.log("📦 postInfo:", postInfo);
-  
+
   return (
     <div className="d-flex flex-column h-100">
-    {/* Header */}
-    
-    <div className="d-flex align-items-center border-bottom pb-2 mb-2">
-      <span className="me-2 fs-4 text-success">💬</span>
-      <span>
-        Đoạn hội thoại với <strong>{receiverName || "người dùng"}</strong>
-      </span>
-      <button
-        onClick={() => callUser(receiverId)}
-        className="btn btn-success btn-sm ms-auto"
-      >
-        📞 Gọi
-      </button>
-    </div>
+      {/* Header */}
 
-    {/* Messages */}
-    <div className="flex-grow-1 overflow-auto mb-2" style={{ minHeight: 200, maxHeight: 300 }}>
-      {/* ✅ Tin hệ thống hiển thị bài viết đang chat */}
-      {postInfo && postInfo.title && (
-  <div className="d-flex align-items-center gap-2 px-3 py-2 border-bottom" style={{ background: "#f9f9f9" }}>
-   <img
-    src={postInfo.image || postInfo.thumbnail || "/default-thumbnail.jpg"} // 🟢 fallback ở đây
-    alt="Ảnh bài đăng"
-    style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8 }}
-  />
-    <div>
-      <div className="fw-bold">{postInfo.title}</div>
-      {postInfo.price && (
-        <div className="text-muted small">
-          Giá: {postInfo.price.toLocaleString("vi-VN")} VNĐ
-        </div>
-      )}
-    </div>
-  </div>
-)}
+      <div className="d-flex align-items-center border-bottom pb-2 mb-2">
+        <span className="me-2 fs-4 text-success">💬</span>
+        <span>
+          Đoạn hội thoại với <strong>{receiverName || "người dùng"}</strong>
+        </span>
+        <button
+          onClick={() => callUser(receiverId)}
+          className="btn btn-success btn-sm ms-auto"
+        >
+          📞 Gọi
+        </button>
+      </div>
 
-      {/* ✅ Tin nhắn người dùng */}
-      {messages.map((msg, idx) => {
-        const isCurrentUser = msg.senderId === currentUserId;
-        return (
-          <div
-            key={msg._id || idx}
-            className={`d-flex flex-column mb-2 ${isCurrentUser ? "align-items-end" : "align-items-start"}`}
-          >
-            <div
-              className={`px-3 py-2 rounded-3 ${isCurrentUser ? "bg-success text-white" : "bg-light border"}`}
-              style={{ maxWidth: "75%", wordBreak: "break-word" }}
-            >
-              <div className="small mb-1" style={{ opacity: 0.7 }}>
-                {isCurrentUser ? "Bạn" : receiverName || "Người gửi"}
-              </div>
-              <div>{msg.content}</div>
-              <div className="text-end small mt-1" style={{ opacity: 0.6 }}>
-                {new Date(msg.timestamp || msg.createdAt).toLocaleString("vi-VN", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour12: false,
-                })}
-              </div>
+      {/* Messages */}
+      <div className="flex-grow-1 overflow-auto mb-2" style={{ minHeight: 200, maxHeight: 300 }}>
+        {/* ✅ Tin hệ thống hiển thị bài đăng đang chat */}
+        {postInfo && postInfo.title && (
+          <div className="d-flex align-items-center gap-2 px-3 py-2 border-bottom" style={{ background: "#f9f9f9" }}>
+            <img
+              src={postInfo.image || postInfo.thumbnail || "/default-thumbnail.jpg"} // 🟢 fallback ở đây
+              alt="Ảnh bài đăng"
+              style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8 }}
+            />
+            <div>
+              <div className="fw-bold">{postInfo.title}</div>
+              {postInfo.price && (
+                <div className="text-muted small">
+                  Giá: {postInfo.price.toLocaleString("vi-VN")} VNĐ
+                </div>
+              )}
             </div>
           </div>
-        );
-      })}
-      <div ref={chatEndRef} />
-    </div>
+        )}
 
-    {/* Input */}
-    <div className="input-group">
-      <input
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Nhập tin nhắn..."
-        className="form-control"
-        onKeyDown={(e) => {
-          if (e.key === "Enter") sendMessage();
-        }}
-      />
-      <button className="btn btn-primary" onClick={sendMessage}>
-        Gửi
-      </button>
+        {/* ✅ Tin nhắn người dùng */}
+        {messages.map((msg, idx) => {
+          const isCurrentUser = msg.senderId === currentUserId;
+          return (
+            <div
+              key={msg._id || idx}
+              className={`d-flex flex-column mb-2 ${isCurrentUser ? "align-items-end" : "align-items-start"}`}
+            >
+              <div
+                className={`px-3 py-2 rounded-3 ${isCurrentUser ? "bg-success text-white" : "bg-light border"}`}
+                style={{ maxWidth: "75%", wordBreak: "break-word" }}
+              >
+                <div className="small mb-1" style={{ opacity: 0.7 }}>
+                  {isCurrentUser ? "Bạn" : receiverName || "Người gửi"}
+                </div>
+                <div>{msg.content}</div>
+                <div className="text-end small mt-1" style={{ opacity: 0.6 }}>
+                  {new Date(msg.timestamp || msg.createdAt).toLocaleString("vi-VN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour12: false,
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+        <div ref={chatEndRef} />
+      </div>
+
+      {/* Input */}
+      <div className="input-group">
+        <input
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Nhập tin nhắn..."
+          className="form-control"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") sendMessage();
+          }}
+        />
+        <button className="btn btn-primary" onClick={sendMessage}>
+          Gửi
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default ChatBox;

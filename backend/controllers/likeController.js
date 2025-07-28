@@ -1,14 +1,14 @@
 import Like from "../models/Like.js";
 import Notification from "../models/Notification.js";
 import Post from "../models/Post.js";
-import { getIO } from "../socket.js";
+import { emitNotification } from "../helpers/socketHelper.js";
 // danh sach bài post đã like 
 
 export const getLikedPostsByUser = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Tìm tất cả like của user, populate bài viết và gói bài viết
+    // Tìm tất cả like của user, populate bài đăng và gói bài đăng
     const likes = await Like.find({ user: userId }).populate({
       path: "post",
       populate: { path: "postPackage" },
@@ -16,7 +16,7 @@ export const getLikedPostsByUser = async (req, res) => {
 
     const currentDate = new Date();
 
-    // Lọc bài viết còn tồn tại và chưa hết hạn theo expiredDate
+    // Lọc bài đăng còn tồn tại và chưa hết hạn theo expiredDate
     const likedPosts = likes
       .map((like) => like.post)
       .filter(
@@ -48,31 +48,15 @@ export const toggleLike = async (req, res) => {
     await Like.create({
       post: postId,
       user: userId,
-      });
+    });
     const post = await Post.findById(postId).populate('contactInfo');
     const postOwnerId = post?.contactInfo?._id;
     const newNotification = await Notification.create({
       userId: postOwnerId,
-      message: `Bài viết ${postId} của bạn đã được thích 👍.`
+      message: `Bài đăng ${postId} của bạn đã được thích 👍.`
     });
-    const io = getIO();
-    io.emit("sendNotification", {
-      userId: postOwnerId,
-      notification: {
-        message: `Bài viết ${postId} của bạn đã được thích 👍.`,
-        createdAt: new Date()
-      }
-    });
-    const target = [...io.sockets.sockets.values()].find(
-      (s) => s.userId === postOwnerId.toString()
-    );
-    if (target) {
-      target.emit("newNotification", {
-        message: newNotification.message,
-        createdAt: newNotification.createdAt,
-        _id: newNotification._id,
-      });
-    }
+
+    emitNotification(postOwnerId, newNotification);
     res.json({ success: true, liked: true });
   } catch (err) {
     res.status(500).json({ success: false, message: "Like thất bại", error: err.message });

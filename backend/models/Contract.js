@@ -20,48 +20,49 @@ const contractSchema = new mongoose.Schema({
   addressB: String,
   phoneB: String,
   emailB: String,
-  
+
   contractTerms: String, // chứa nội dung điều khoản hợp đồng
   depositAmount: {
     type: Number,
     required: true,
   },
-    // Trạng thái duyệt
-    status: {
-      type: String,
-      enum: ["pending", "approved", "rejected", "expired", "cancelled"], // ✅ thêm 'cancelled'
-      default: "pending"
-    },
-    postSnapshot: {
-      title: String,
-      image: String,
-      location: String,
-      area: Number,
-      price: Number,
-      property: String,
-      legalDocument: String,
-      interiorStatus: String,
-      amenities: [String],
-      apartmentCode: String,
-    },
-    
-    rejectionReason: { type: String },
-    paymentStatus: {
-      type: String,
-      enum: ['unpaid', 'paid', 'failed'],
-      default: 'unpaid'
-    },
-    orderCode: {
-      type: String,
-    },
-    paymentDate: {
-      type: Date
-    },
-    apartmentCode: { type: String },
-    withdrawableAmount: {
-  type: Number,
-  default: 0, // mặc định là 0 cho hợp đồng mới
-},
+  // Trạng thái duyệt
+  status: {
+    type: String,
+    enum: ["pending", "approved", "rejected", "expired", "cancelled"], // ✅ thêm 'cancelled'
+    default: "pending"
+  },
+  postSnapshot: {
+    title: String,
+    image: String,
+    location: String,
+    area: Number,
+    price: Number,
+    property: String,
+    legalDocument: String,
+    interiorStatus: String,
+    amenities: [String],
+    apartmentCode: String,
+  },
+
+  rejectionReason: { type: String },
+  paymentStatus: {
+    type: String,
+    enum: ['unpaid', 'paid', 'failed'],
+    default: 'unpaid'
+  },
+  orderCode: {
+    type: String,
+  },
+  paymentDate: {
+    type: Date
+  },
+  apartmentCode: { type: String },
+  withdrawableAmount: {
+    type: Number,
+    default: 0, // mặc định là 0 cho hợp đồng mới
+  },
+  deletedAt: { type: Date, default: null }, // Soft delete
 }, { timestamps: true });
 
 export default mongoose.model("Contract", contractSchema);

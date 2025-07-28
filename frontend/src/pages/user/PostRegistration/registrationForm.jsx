@@ -305,7 +305,7 @@ const RegistrationForm = () => {
           <div className="alert alert-danger text-center">
             <h4 className="alert-heading">Tài khoản của bạn đã bị chặn</h4>
             <p>
-              Bạn không thể đăng bài viết mới. Vui lòng liên hệ bộ phận hỗ trợ để biết thêm chi tiết.
+              Bạn không thể đăng bài đăng mới. Vui lòng liên hệ bộ phận hỗ trợ để biết thêm chi tiết.
             </p>
             <button className="btn btn-primary" onClick={logout}>
               Đăng xuất

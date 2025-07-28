@@ -84,16 +84,16 @@ const AdminReportPage = () => {
       try {
         const res = await fetchAllReports(filter);
         const fetchedReports = res.data.data || [];
-  
+
         setReports(fetchedReports);
-  
+
         // Lọc theo searchTerm
         const filtered = fetchedReports.filter((rep) => {
           if (!searchTerm.trim()) return true;
-  
+
           const post = rep.post || {};
           const user = rep.user || {};
-  
+
           const fieldsToSearch = [
             post.title,
             post.description,
@@ -105,12 +105,12 @@ const AdminReportPage = () => {
             rep.reason,
             rep.description,
           ];
-  
+
           return fieldsToSearch.some((field) =>
             field?.toLowerCase().includes(searchTerm.toLowerCase())
           );
         });
-  
+
         setFilteredReports(filtered);
       } catch (err) {
         console.error("Lỗi khi tải báo cáo:", err);
@@ -119,9 +119,9 @@ const AdminReportPage = () => {
         setLoading(false);
       }
     };
-  
+
     loadAndFilterReports();
-  }, [filter, searchTerm]);  
+  }, [filter, searchTerm]);
 
   return (
     <AdminDashboard active="reports">
@@ -131,27 +131,27 @@ const AdminReportPage = () => {
         </div>
 
         <div className="container">
-  <div className="mb-3 d-flex justify-content-end gap-3 flex-wrap">
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Tìm kiếm..."
-      style={{ maxWidth: 280 }}
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-    />
-    <select
-      className="form-select w-auto"
-      value={filter}
-      onChange={(e) => setFilter(e.target.value)}
-    >
-      <option value="">Tất cả</option>
-      <option value="pending">Chưa xử lý</option>
-      <option value="reviewed">Đã xử lý</option>
-      <option value="rejected">Từ chối</option>
-    </select>
-  </div>
-</div>
+          <div className="mb-3 d-flex justify-content-end gap-3 flex-wrap">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Tìm kiếm..."
+              style={{ maxWidth: 280 }}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <select
+              className="form-select w-auto"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="">Tất cả</option>
+              <option value="pending">Chưa xử lý</option>
+              <option value="reviewed">Đã xử lý</option>
+              <option value="rejected">Từ chối</option>
+            </select>
+          </div>
+        </div>
 
         {loading ? (
           <div className="text-center py-5">
@@ -165,7 +165,7 @@ const AdminReportPage = () => {
                 <tr>
                   <th>Ảnh</th>
                   <th>Tiêu đề</th>
-                  <th>Mô tả bài viết</th>
+                  <th>Mô tả bài đăng</th>
                   <th>Loại GD</th>
                   <th>Loại BĐS</th>
                   <th>Pháp lý</th>
@@ -285,7 +285,7 @@ const AdminReportPage = () => {
             >
               <div className="modal-content">
                 <div className="modal-header">
-                  <h5 className="modal-title">Mô tả bài viết</h5>
+                  <h5 className="modal-title">Mô tả bài đăng</h5>
                   <button
                     type="button"
                     className="btn-close"

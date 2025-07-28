@@ -227,7 +227,7 @@ export const getPostActive = async (req, res) => {
         });
     }
 };
-// lấy bài viết chi tiết 
+// lấy bài đăng chi tiết 
 export const getPostDetail = async (req, res) => {
     try {
         const { id } = req.params;
@@ -259,7 +259,7 @@ export const getPostDetail = async (req, res) => {
         // 3️⃣ Kiểm tra trạng thái
         if (post.status !== "active" || !post.isActive) {
             return res.status(403).json({
-                message: "Bài viết tồn tại nhưng không hoạt động (inactive)",
+                message: "bài đăng tồn tại nhưng không hoạt động (inactive)",
                 success: false,
                 error: true,
             });

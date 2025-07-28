@@ -11,34 +11,34 @@ export const createReport = async (req, res) => {
     console.log("[DEBUG] req.user  :", req.user);   // Lấy từ middleware auth
 
     const { postId } = req.params;
-    const userId     = req.user?._id;   // Có thể undefined nếu chấp nhận ẩn danh
+    const userId = req.user?._id;   // Có thể undefined nếu chấp nhận ẩn danh
 
     /* ----- 1. Lấy payload thật sự ----- */
     const payload = req.body?.data ? req.body.data : req.body;   // ưu tiên req.body.data
-    const reason       = typeof payload.reason       === "string" ? payload.reason.trim()       : "";
-    const description  = typeof payload.description  === "string" ? payload.description.trim()  : "";
+    const reason = typeof payload.reason === "string" ? payload.reason.trim() : "";
+    const description = typeof payload.description === "string" ? payload.description.trim() : "";
 
     /* ----- 2. Validate ----- */
     if (!reason) {
       return res.status(400).json({
-        success : false,
-        message : "Lý do báo cáo là bắt buộc.",
+        success: false,
+        message: "Lý do báo cáo là bắt buộc.",
       });
     }
 
-    /* ----- 3. Bài viết có tồn tại? ----- */
+    /* ----- 3. bài đăng có tồn tại? ----- */
     const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({
-        success : false,
-        message : "Không tìm thấy bài viết.",
+        success: false,
+        message: "Không tìm thấy bài đăng.",
       });
     }
 
     /* ----- 4. Tạo báo cáo ----- */
     const report = await Report.create({
       post,
-      user : userId,
+      user: userId,
       reason,
       description,
     });
@@ -46,9 +46,9 @@ export const createReport = async (req, res) => {
     console.log("[DEBUG] Report created:", report);
 
     return res.status(201).json({
-      success : true,
-      message : "Báo cáo đã được gửi.",
-      data    : report,
+      success: true,
+      message: "Báo cáo đã được gửi.",
+      data: report,
     });
 
   } catch (err) {
@@ -57,14 +57,14 @@ export const createReport = async (req, res) => {
     // Lỗi duplicate key (đã báo cáo trước đó)
     if (err.code === 11000) {
       return res.status(409).json({
-        success : false,
-        message : "Bạn đã gửi báo cáo này trước đó.",
+        success: false,
+        message: "Bạn đã gửi báo cáo này trước đó.",
       });
     }
 
     return res.status(500).json({
-      success : false,
-      message : "Lỗi máy chủ.",
+      success: false,
+      message: "Lỗi máy chủ.",
     });
   }
 };
