@@ -17,12 +17,21 @@ const formatDate = (dateStr) => {
   return new Date(dateStr).toLocaleDateString("vi-VN");
 };
 
+
+
 const UserRevenue = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const [contracts, setContracts] = useState([]);
   const [withdrawHistory, setWithdrawHistory] = useState([]);
+  // For contracts table
+  const [contractSearchText, setContractSearchText] = useState("");
+  const [contractFilterDate, setContractFilterDate] = useState("");
+
+  // For withdrawal history table
+  const [withdrawSearchText, setWithdrawSearchText] = useState("");
+  const [withdrawFilterDate, setWithdrawFilterDate] = useState("");
   const [withdrawForm, setWithdrawForm] = useState({
     accountHolder: "",
     bankNumber: "",
@@ -35,13 +44,13 @@ const UserRevenue = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [name, setName] = useState(null);
-// kiểm tra người thuê
+  // kiểm tra người thuê
   const hasNotified = useRef(false);
 
   useEffect(() => {
     if (user && contracts.length > 0 && !hasNotified.current) {
       const firstContract = contracts[0];
-  
+
       if (firstContract.userId?.toString() === user._id?.toString()) {
         console.warn("🚫 Người thuê đang cố truy cập trang Doanh thu");
         toast.error("❌ Bạn không có quyền truy cập trang này (chỉ dành cho bên cho thuê)", {
@@ -52,12 +61,12 @@ const UserRevenue = () => {
       }
     }
   }, [user, contracts]);
-// setname
-useEffect(() => {
-  if (user && user.name) {
-    setName(user.name); // ✅ cập nhật tên từ user
-  }
-}, [user]);
+  // setname
+  useEffect(() => {
+    if (user && user.name) {
+      setName(user.name); // ✅ cập nhật tên từ user
+    }
+  }, [user]);
   const fetchWithdrawHistory = async (token) => {
     try {
       const res = await axios.get(`${API_WITHDRAWAL}/me`, {
@@ -91,9 +100,28 @@ useEffect(() => {
   }, []);
 
   // ✅ Lọc và phân trang hợp đồng
-  const filteredContracts = contracts.filter(
-    (c) => c.paymentStatus === "paid" && c.depositAmount
-  );
+  const filteredContracts = contracts.filter((c) => {
+    const keyword = contractSearchText.toLowerCase();
+
+    const matchesSearch =
+      c.apartmentCode?.toLowerCase().includes(keyword) ||
+      c.fullNameB?.toLowerCase().includes(keyword) ||
+      c.orderCode?.toLowerCase().includes(keyword) ||
+      c.depositAmount?.toString().includes(keyword) ||
+      c.withdrawableAmount?.toString().includes(keyword);
+
+    const matchesDate = contractFilterDate
+      ? new Date(c.paymentDate).toLocaleDateString("vi-VN") ===
+      new Date(contractFilterDate).toLocaleDateString("vi-VN")
+      : true;
+
+    return (
+      c.paymentStatus === "paid" &&
+      c.depositAmount &&
+      matchesSearch &&
+      matchesDate
+    );
+  });
 
   const paginatedContracts = filteredContracts.slice(
     (page - 1) * PAGE_SIZE,
@@ -154,6 +182,24 @@ useEffect(() => {
     }
   };
 
+  const filteredWithdrawHistory = withdrawHistory.filter((w) => {
+    const keyword = withdrawSearchText.toLowerCase();
+
+    const matchesSearch =
+      w.bankName?.toLowerCase().includes(keyword) ||
+      w.bankNumber?.toLowerCase().includes(keyword) ||
+      w.status?.toLowerCase().includes(keyword) ||
+      w.amount?.toString().includes(keyword);
+
+    const matchesDate = withdrawFilterDate
+      ? new Date(w.createdAt).toLocaleDateString("vi-VN") ===
+      new Date(withdrawFilterDate).toLocaleDateString("vi-VN")
+      : true;
+
+    return matchesSearch && matchesDate;
+  });
+
+
   return (
     <>
       <Header user={user} name={name} logout={logout} />
@@ -172,6 +218,46 @@ useEffect(() => {
                 {formatPrice(totalWithdrawable)}
               </span>
             </h5>
+
+            <div className="row g-3 mb-3">
+              <div className="col-md-3">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Tìm kiếm..."
+                  value={contractSearchText}
+                  onChange={(e) => {
+                    setContractSearchText(e.target.value);
+                    setPage(1);
+                  }}
+                />
+              </div>
+              <div className="col-md-2">
+                <input
+                  type="date"
+                  className="form-control"
+                  value={contractFilterDate}
+                  onChange={(e) => {
+                    setContractFilterDate(e.target.value);
+                    setPage(1);
+                  }}
+                />
+              </div>
+              <div className="col-md-2">
+                {(contractSearchText || contractFilterDate) && (
+                  <button
+                    className="btn btn-outline-secondary w-100"
+                    onClick={() => {
+                      setContractSearchText("");
+                      setContractFilterDate("");
+                    }}
+                  >
+                    Xóa lọc
+                  </button>
+                )}
+              </div>
+            </div>
+
 
             {/* Danh sách hợp đồng */}
             <div className="table-responsive">
@@ -240,7 +326,7 @@ useEffect(() => {
 
             {/* Form rút tiền */}
             {totalWithdrawable > 0 && (
-              <div className="mt-5">
+              <div className="mt-3">
                 <div className="row shadow rounded-4 p-4 bg-white">
                   <div className="col-md-6">
                     <h5 className="mb-4 border-start border-4 ps-3 text-primary">
@@ -322,6 +408,40 @@ useEffect(() => {
               </div>
             )}
 
+            <div className="row g-3 mb-3 mt-2">
+              <div className="col-md-3">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Tìm kiếm..."
+                  value={withdrawSearchText}
+                  onChange={(e) => setWithdrawSearchText(e.target.value)}
+                />
+              </div>
+              <div className="col-md-2">
+                <input
+                  type="date"
+                  className="form-control"
+                  value={withdrawFilterDate}
+                  onChange={(e) => setWithdrawFilterDate(e.target.value)}
+                />
+              </div>
+              <div className="col-md-2">
+                {(withdrawSearchText || withdrawFilterDate) && (
+                  <button
+                    className="btn btn-outline-secondary w-100"
+                    onClick={() => {
+                      setWithdrawSearchText("");
+                      setWithdrawFilterDate("");
+                    }}
+                  >
+                    Xóa lọc
+                  </button>
+                )}
+              </div>
+            </div>
+
+
             {/* Lịch sử yêu cầu rút tiền */}
             <div className="mt-5">
   <h5 className="mb-3 border-start border-4 ps-3 text-primary">
@@ -371,9 +491,8 @@ useEffect(() => {
       </table>
     </div>
   )}
-</div>
-
-          </>
+  </div>
+         </>
         )}
       </div>
     </>

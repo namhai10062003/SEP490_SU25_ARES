@@ -12,6 +12,8 @@ const LikedPosts = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchText, setSearchText] = useState("");
+  const [filterDate, setFilterDate] = useState("");
   const navigate = useNavigate();
 
   const fetchLikedPosts = async () => {
@@ -22,10 +24,10 @@ const LikedPosts = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       const now = new Date();
-const filteredPosts = (res.data.data || []).filter(post => {
-  return !post.expiredDate || new Date(post.expiredDate) > now;
-});
-setPosts(filteredPosts);
+      const filteredPosts = (res.data.data || []).filter(post => {
+        return !post.expiredDate || new Date(post.expiredDate) > now;
+      });
+      setPosts(filteredPosts);
     } catch (err) {
       console.error("Lỗi khi load bài đã like", err);
       setPosts([]);
@@ -49,8 +51,24 @@ setPosts(filteredPosts);
     rejected: "Từ chối",
   };
 
-  const totalPages = Math.ceil(posts.length / PAGE_SIZE);
-  const paginatedPosts = posts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const filteredPosts = posts.filter((post) => {
+    const keyword = searchText.toLowerCase();
+    const matchesSearch =
+      post.title?.toLowerCase().includes(keyword) ||
+      post.location?.toLowerCase().includes(keyword) ||
+      post.area?.toString().includes(keyword) ||
+      post.price?.toString().includes(keyword);
+
+    const matchesDate = filterDate
+      ? new Date(post.createdAt).toLocaleDateString("vi-VN") === new Date(filterDate).toLocaleDateString("vi-VN")
+      : true;
+
+    return matchesSearch && matchesDate;
+  });
+
+  const totalPages = Math.ceil(filteredPosts.length / PAGE_SIZE);
+  const paginatedPosts = filteredPosts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
 
   return (
     <div className="bg-light min-vh-100">
@@ -58,6 +76,45 @@ setPosts(filteredPosts);
 
       <div className="container py-4">
         <h3 className="mb-3 text-primary">📌 Bài viết bạn đã thích</h3>
+
+        <div className="row mb-4 g-3">
+          <div className="col-md-3">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Tìm kiếm..."
+              value={searchText}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                setCurrentPage(1); // reset về trang đầu
+              }}
+            />
+          </div>
+          <div className="col-md-2">
+            <input
+              type="date"
+              className="form-control"
+              value={filterDate}
+              onChange={(e) => {
+                setFilterDate(e.target.value);
+                setCurrentPage(1); // reset về trang đầu
+              }}
+            />
+          </div>
+          <div className="col-md-2 d-flex align-items-center">
+            {(searchText || filterDate) && (
+              <button
+                className="btn btn-outline-secondary w-100"
+                onClick={() => {
+                  setSearchText("");
+                  setFilterDate("");
+                }}
+              >
+                Xóa lọc
+              </button>
+            )}
+          </div>
+        </div>
 
         <div className="row g-4">
           {paginatedPosts.map((post, index) => (
