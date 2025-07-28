@@ -1,6 +1,6 @@
 import Like from "../models/Like.js";
-import Post from "../models/Post.js";
 import Notification from "../models/Notification.js";
+import Post from "../models/Post.js";
 import { getIO } from "../socket.js";
 // danh sach bài post đã like 
 
@@ -45,7 +45,10 @@ export const toggleLike = async (req, res) => {
       await existing.deleteOne();
       return res.json({ success: true, liked: false });
     }
-
+    await Like.create({
+      post: postId,
+      user: userId,
+      });
     const post = await Post.findById(postId).populate('contactInfo');
     const postOwnerId = post?.contactInfo?._id;
     const newNotification = await Notification.create({
