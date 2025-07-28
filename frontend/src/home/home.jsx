@@ -171,16 +171,16 @@ const Home = () => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const navigate = useNavigate();
 
-const [showModal, setShowModal] = useState(false);
-const [selectedPostId, setSelectedPostId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState(null);
 
 
-useEffect(() => {
-  // Giả sử bạn xác định người dùng chưa cập nhật nếu thiếu identityNumber hoặc phone
-  if (user && (!user.identityNumber || !user.phone)) {
-    setShowUpdateModal(true);
-  }
-}, [user]);
+  useEffect(() => {
+    // Giả sử bạn xác định người dùng chưa cập nhật nếu thiếu identityNumber hoặc phone
+    if (user && (!user.identityNumber || !user.phone)) {
+      setShowUpdateModal(true);
+    }
+  }, [user]);
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -190,7 +190,7 @@ useEffect(() => {
       listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
-  
+
   // hàm xử lí user khi kick vào chitiet
   const handleViewDetail = (postId) => {
     if (!user) {
@@ -200,11 +200,11 @@ useEffect(() => {
       navigate(`/postdetail/${postId}`);
     }
   };
-  
- // Xử lý chuyển sang trang đăng nhập và truyền trạng thái redirect
- const handleLoginRedirect = () => {
-  navigate("/login", { state: { redirectTo: "/blog" } });
-};
+
+  // Xử lý chuyển sang trang đăng nhập và truyền trạng thái redirect
+  const handleLoginRedirect = () => {
+    navigate("/login", { state: { redirectTo: "/blog" } });
+  };
   // Xử lý khi nhấn nút "Xem thêm"
   const handleViewMore = () => {
     if (user) {
@@ -228,7 +228,7 @@ useEffect(() => {
           },
         });
 
-        setPosts(res.data.data); // data là mảng các bài viết
+        setPosts(res.data.data); // data là mảng các bài đăng
       } catch (err) {
         console.error("❌ Error fetching posts:", err.response?.data || err.message);
       }
@@ -355,140 +355,140 @@ useEffect(() => {
       {/* PROJECTS */}
       {/* PLAZAS - DỰ ÁN NỔI BẬT */}
       <section className="container py-5">
-      <h2 className="fw-bold text-uppercase mb-4 text-center">Dự án nổi bật</h2>
-      <div className="row g-4">
-        {plazas.map((p, i) => (
-          <div className="col-12 col-sm-6 col-lg-4" key={i}>
-            <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
-              <img
-                src={p.img}
-                className="card-img-top"
-                alt={p.name}
-                style={{ height: 220, objectFit: "cover" }}
-              />
-              <div className="card-body bg-white">
-                <h5 className="card-title fw-bold text-dark">{p.name}</h5>
-                <p className="text-muted mb-2">
-                  <i className="fa fa-map-marker-alt me-2 text-warning"></i>{p.address}
-                </p>
-                <div className="d-flex justify-content-center">
-                  <button
-                    className="btn btn-outline-warning btn-sm"
-                    onClick={() => setSelectedPlaza(p)}
-                  >
-                    Chi tiết
-                  </button>
+        <h2 className="fw-bold text-uppercase mb-4 text-center">Dự án nổi bật</h2>
+        <div className="row g-4">
+          {plazas.map((p, i) => (
+            <div className="col-12 col-sm-6 col-lg-4" key={i}>
+              <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
+                <img
+                  src={p.img}
+                  className="card-img-top"
+                  alt={p.name}
+                  style={{ height: 220, objectFit: "cover" }}
+                />
+                <div className="card-body bg-white">
+                  <h5 className="card-title fw-bold text-dark">{p.name}</h5>
+                  <p className="text-muted mb-2">
+                    <i className="fa fa-map-marker-alt me-2 text-warning"></i>{p.address}
+                  </p>
+                  <div className="d-flex justify-content-center">
+                    <button
+                      className="btn btn-outline-warning btn-sm"
+                      onClick={() => setSelectedPlaza(p)}
+                    >
+                      Chi tiết
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {selectedPlaza && (
+          <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
+            <div className="modal-dialog modal-lg modal-dialog-centered">
+              <div className="modal-content p-3 rounded-4 shadow">
+                <div className="modal-header">
+                  <h5 className="modal-title">{selectedPlaza.name}</h5>
+                  <button type="button" className="btn-close" onClick={() => setSelectedPlaza(null)}></button>
+                </div>
+                <div className="modal-body">
+                  <img src={selectedPlaza.img} alt={selectedPlaza.name} className="img-fluid rounded mb-3" />
+                  <p><strong>Địa chỉ:</strong> {selectedPlaza.address}</p>
+                  <p><strong>Chủ đầu tư:</strong> {selectedPlaza.info.investor}</p>
+                  <p><strong>Vị trí:</strong> {selectedPlaza.info.location}</p>
+                  <div className="row">
+                    <div className="col-md-6">
+                      <p><strong>Tổng vốn đầu tư:</strong> {selectedPlaza.info.totalCapital}</p>
+                      <p><strong>Quy mô:</strong> {selectedPlaza.info.scale}</p>
+                      <p><strong>Loại hình phát triển:</strong> {selectedPlaza.info.type}</p>
+                      <p><strong>Số tầng:</strong> {selectedPlaza.info.floors}</p>
+                    </div>
+                    <div className="col-md-6">
+                      <p><strong>Tổng thầu:</strong> {selectedPlaza.info.contractor}</p>
+                      <p><strong>Tổng diện tích sàn:</strong> {selectedPlaza.info.totalArea}</p>
+                      <p><strong>Mật độ xây dựng:</strong> {selectedPlaza.info.constructionDensity}</p>
+                      <p><strong>Tiến độ:</strong> {selectedPlaza.info.completion}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={() => setSelectedPlaza(null)}>Đóng</button>
                 </div>
               </div>
             </div>
           </div>
-        ))}
-      </div>
+        )}
 
-      {selectedPlaza && (
-  <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
-    <div className="modal-dialog modal-lg modal-dialog-centered">
-      <div className="modal-content p-3 rounded-4 shadow">
-        <div className="modal-header">
-          <h5 className="modal-title">{selectedPlaza.name}</h5>
-          <button type="button" className="btn-close" onClick={() => setSelectedPlaza(null)}></button>
-        </div>
-        <div className="modal-body">
-          <img src={selectedPlaza.img} alt={selectedPlaza.name} className="img-fluid rounded mb-3" />
-          <p><strong>Địa chỉ:</strong> {selectedPlaza.address}</p>
-          <p><strong>Chủ đầu tư:</strong> {selectedPlaza.info.investor}</p>
-          <p><strong>Vị trí:</strong> {selectedPlaza.info.location}</p>
-          <div className="row">
-            <div className="col-md-6">
-              <p><strong>Tổng vốn đầu tư:</strong> {selectedPlaza.info.totalCapital}</p>
-              <p><strong>Quy mô:</strong> {selectedPlaza.info.scale}</p>
-              <p><strong>Loại hình phát triển:</strong> {selectedPlaza.info.type}</p>
-              <p><strong>Số tầng:</strong> {selectedPlaza.info.floors}</p>
-            </div>
-            <div className="col-md-6">
-              <p><strong>Tổng thầu:</strong> {selectedPlaza.info.contractor}</p>
-              <p><strong>Tổng diện tích sàn:</strong> {selectedPlaza.info.totalArea}</p>
-              <p><strong>Mật độ xây dựng:</strong> {selectedPlaza.info.constructionDensity}</p>
-              <p><strong>Tiến độ:</strong> {selectedPlaza.info.completion}</p>
-            </div>
-          </div>
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={() => setSelectedPlaza(null)}>Đóng</button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
-    </section>
+      </section>
 
 
       {/* FEATURED APARTMENTS */}
-    {/* FEATURED APARTMENTS */}
-<section className="container py-5" ref={listRef}>
-  <h2 className="fw-bold text-uppercase mb-4 text-center">Căn hộ nổi bật</h2>
-  <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
-    {selectedPosts.map((post) => (
-      <div className="col" key={post._id}>
-        <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
-          <div className="position-relative">
-            <img
-              src={post.images[0]}
-              className="card-img-top"
-              alt={post.title}
-              style={{ height: 200, objectFit: "cover" }}
-            />
-            <span
-              className={`${getPackageBadgeClass(post.postPackage?.type)} position-absolute top-0 end-0 m-2 px-3 py-2 rounded-pill shadow`}
-              style={{ fontSize: "0.9rem", fontWeight: "bold" }}
-            >
-              {post.postPackage?.type?.toUpperCase() || "KHÔNG CÓ GÓI"}
-            </span>
-          </div>
-          <div className="card-body d-flex flex-column bg-white">
-  <h5 className="card-title fw-bold">{post.title}</h5>
-  <p className="card-text flex-grow-1">{post.address}</p>
-  <div className="d-flex justify-content-center mt-2">
-    <Button
-      variant="outline-warning"
-      onClick={() => handleViewDetail(post._id)}
-      className="btn-sm px-3 py-1"
-      style={{ fontSize: '0.8rem' }}
-    >
-      Chi tiết
-    </Button>
-  </div>
-</div>
+      {/* FEATURED APARTMENTS */}
+      <section className="container py-5" ref={listRef}>
+        <h2 className="fw-bold text-uppercase mb-4 text-center">Căn hộ nổi bật</h2>
+        <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+          {selectedPosts.map((post) => (
+            <div className="col" key={post._id}>
+              <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
+                <div className="position-relative">
+                  <img
+                    src={post.images[0]}
+                    className="card-img-top"
+                    alt={post.title}
+                    style={{ height: 200, objectFit: "cover" }}
+                  />
+                  <span
+                    className={`${getPackageBadgeClass(post.postPackage?.type)} position-absolute top-0 end-0 m-2 px-3 py-2 rounded-pill shadow`}
+                    style={{ fontSize: "0.9rem", fontWeight: "bold" }}
+                  >
+                    {post.postPackage?.type?.toUpperCase() || "KHÔNG CÓ GÓI"}
+                  </span>
+                </div>
+                <div className="card-body d-flex flex-column bg-white">
+                  <h5 className="card-title fw-bold">{post.title}</h5>
+                  <p className="card-text flex-grow-1">{post.address}</p>
+                  <div className="d-flex justify-content-center mt-2">
+                    <Button
+                      variant="outline-warning"
+                      onClick={() => handleViewDetail(post._id)}
+                      className="btn-sm px-3 py-1"
+                      style={{ fontSize: '0.8rem' }}
+                    >
+                      Chi tiết
+                    </Button>
+                  </div>
+                </div>
 
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-    ))}
-  </div>
 
-  {/* Nút Xem thêm */}
-  <div className="text-center mt-4">
-    <button onClick={handleViewMore} className="btn btn-outline-primary px-4 py-2">
-      Xem thêm
-    </button>
-  </div>
+        {/* Nút Xem thêm */}
+        <div className="text-center mt-4">
+          <button onClick={handleViewMore} className="btn btn-outline-primary px-4 py-2">
+            Xem thêm
+          </button>
+        </div>
 
-  {/* Modal yêu cầu đăng nhập (chỉ 1 modal duy nhất) */}
-  <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-    <Modal.Header closeButton>
-      <Modal.Title>Yêu cầu đăng nhập</Modal.Title>
-    </Modal.Header>
-    <Modal.Body>Bạn cần đăng nhập để thực hiện thao tác này.</Modal.Body>
-    <Modal.Footer>
-      <Button variant="secondary" onClick={() => setShowModal(false)}>
-        Hủy
-      </Button>
-      <Button variant="primary" onClick={handleLoginRedirect}>
-        Đăng nhập
-      </Button>
-    </Modal.Footer>
-  </Modal>
-</section>
+        {/* Modal yêu cầu đăng nhập (chỉ 1 modal duy nhất) */}
+        <Modal show={showModal} onHide={() => setShowModal(false)} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Yêu cầu đăng nhập</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Bạn cần đăng nhập để thực hiện thao tác này.</Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
+              Hủy
+            </Button>
+            <Button variant="primary" onClick={handleLoginRedirect}>
+              Đăng nhập
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </section>
 
 
       {/* INFO BANNER */}
@@ -511,40 +511,40 @@ useEffect(() => {
         </div>
       </section>
       {showUpdateModal && (
-  <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
-    <div className="modal-dialog modal-dialog-centered">
-      <div className="modal-content rounded-4 shadow">
-        <div className="modal-header">
-          <h5 className="modal-title text-danger">Thông báo</h5>
-          <button type="button" className="btn-close" onClick={() => setShowUpdateModal(false)}></button>
+        <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content rounded-4 shadow">
+              <div className="modal-header">
+                <h5 className="modal-title text-danger">Thông báo</h5>
+                <button type="button" className="btn-close" onClick={() => setShowUpdateModal(false)}></button>
+              </div>
+              <div className="modal-body">
+                <p>Bạn chưa cập nhật đầy đủ thông tin cá nhân. Vui lòng cập nhật để tiếp tục sử dụng hệ thống.</p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setShowUpdateModal(false);
+                    window.location.href = "/profile"; // Điều hướng đến trang cập nhật thông tin
+                  }}
+                >
+                  Cập nhật ngay
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    logout(); // Gọi hàm logout từ context
+                    window.location.href = "/"; // Chuyển về trang chủ hoặc login
+                  }}
+                >
+                  Hủy và đăng xuất
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="modal-body">
-          <p>Bạn chưa cập nhật đầy đủ thông tin cá nhân. Vui lòng cập nhật để tiếp tục sử dụng hệ thống.</p>
-        </div>
-        <div className="modal-footer">
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              setShowUpdateModal(false);
-              window.location.href = "/profile"; // Điều hướng đến trang cập nhật thông tin
-            }}
-          >
-            Cập nhật ngay
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={() => {
-              logout(); // Gọi hàm logout từ context
-              window.location.href = "/"; // Chuyển về trang chủ hoặc login
-            }}
-          >
-            Hủy và đăng xuất
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
       {/* FOOTER */}
       <Footer />

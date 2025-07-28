@@ -3,6 +3,8 @@ import Notification from '../models/Notification.js';
 import ProfileUpdateRequest from "../models/ProfileUpdateRequest.js";
 import User from '../models/User.js';
 import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
+import { emitNotification } from "../helpers/socketHelper.js";
+
 // GET /api/users?page=1&limit=10&role=staff&status=1
 export const getUsers = async (req, res) => {
   try {
@@ -29,7 +31,7 @@ export const getUsers = async (req, res) => {
       total,
     });
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error", message: err.message });
   }
 };
 
@@ -78,17 +80,11 @@ export const blockUser = async (req, res) => {
     await user.save();
 
     const message = `Tài khoản của bạn đã bị chặn đăng bài bởi admin. ${reason ? "Lý do: " + reason : "Vui lòng liên lạc với bộ phận hỗ trợ."}`;
+    // --- SOCKET.IO NOTIFICATION ---
+    const newNotification = await Notification.create({ userId: user._id, message });
+    emitNotification(user._id, newNotification);
 
-    if (global._io) {
-      const socketId = userSocketMap.get(user._id.toString());
-      console.log("[Emit blocked] socketId:", socketId);
-      if (socketId) {
-        global._io.to(socketId).emit("blocked_posting", { message });
-        console.log("[Emit blocked] sent to socket:", socketId);
-      }
-      await Notification.create({ userId: user._id, message });
-    }
-
+    // --- SEND EMAIL & SMS NOTIFICATION ---
     if (user.email) {
       await sendEmailNotification({
         to: user.email,
@@ -103,10 +99,11 @@ export const blockUser = async (req, res) => {
         body: message
       });
     }
+    // --- END EMAIL & SMS NOTIFICATION ---
 
     res.json(user);
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error", message: err.message });
   }
 };
 
@@ -122,18 +119,15 @@ export const unBlockUser = async (req, res) => {
     });
     user.status = 1;
     await user.save();
+
+    const newNotification = await Notification.create({
+      userId: user._id,
+      message: 'Tài khoản của bạn đã được mở chặn đăng bài.'
+    });
     // --- SOCKET.IO NOTIFICATION ---
-    if (global._io) {
-      global._io.sockets.sockets.forEach((socket) => {
-        if (socket.userId === user._id.toString()) {
-          socket.emit('unblocked_posting', { message: 'Tài khoản của bạn đã được mở chặn đăng bài.' });
-        }
-      });
-      await Notification.create({
-        userId: user._id,
-        message: 'Tài khoản của bạn đã được mở chặn đăng bài.'
-      });
-    }
+    emitNotification(user._id, newNotification);
+
+    // --- SEND EMAIL & SMS NOTIFICATION ---
     if (user.email) {
       await sendEmailNotification({
         to: user.email,
@@ -148,11 +142,10 @@ export const unBlockUser = async (req, res) => {
         body: "Tai khoan cua ban da duoc mo chan dang bai."
       });
     }
-    // --- END SOCKET.IO NOTIFICATION ---
-    // You can add notification logic here if needed (optional)
+    // --- END EMAIL & SMS NOTIFICATION ---
     res.json(user);
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error", message: err.message });
   }
 };
 
@@ -163,7 +156,7 @@ export const getUserById = async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error", message: err.message });
   }
 };
 export const deleteUser = async (req, res) => {
@@ -194,7 +187,7 @@ export const deleteUser = async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error", message: err.message });
   }
 };
 
@@ -267,7 +260,7 @@ export const updateProfile = async (req, res) => {
     });
   } catch (error) {
     console.error("Lỗi cập nhật hồ sơ:", error);
-    res.status(500).json({ message: "Lỗi server" });
+    res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
 export const getUserProfileById = async (req, res) => {
@@ -289,7 +282,7 @@ export const getUserProfileById = async (req, res) => {
     res.status(200).json(user);
   } catch (err) {
     console.error("❌ Lỗi khi lấy profile:", err.message);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "❌ Lỗi server", message: err.message });
   }
 }; // ✅ Đã đóng hàm
 
@@ -316,10 +309,11 @@ export const changePassword = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
 
-    await Notification.create({
+    const newNotification = await Notification.create({
       userId: user._id,
-      message: 'Đổi mật khẩu thành công'
+      message: 'Bạn đã đổi mật khẩu thành công'
     });
+    emitNotification(user._id, newNotification);
     // --- EMAIL & SMS NOTIFICATION ---
     if (user.email) {
       await sendEmailNotification({
@@ -340,6 +334,6 @@ export const changePassword = async (req, res) => {
     res.status(200).json({ message: "✅ Đổi mật khẩu thành công!" });
   } catch (err) {
     console.error("Lỗi đổi mật khẩu:", err);
-    res.status(500).json({ message: "❌ Lỗi server." });
+    res.status(500).json({ message: "❌ Lỗi server.", error: err.message });
   }
 };

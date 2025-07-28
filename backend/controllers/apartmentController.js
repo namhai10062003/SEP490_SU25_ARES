@@ -1,7 +1,9 @@
 import { calcMaintenanceFee } from "../helpers/calculateMaitainceApartmentPrice.js";
 import Apartment from '../models/Apartment.js';
 import User from '../models/User.js';
-
+import Notification from '../models/Notification.js';
+import { emitNotification } from "../helpers/socketHelper.js";
+import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
 // Thêm mới căn hộ
 export const createApartment = async (req, res) => {
   try {
@@ -64,13 +66,33 @@ export const assignUserToApartment = async (req, res) => {
     const { userEmail } = req.body;
     const user = await User.findOne({ email: userEmail });
     if (!user) return res.status(404).json({ error: 'User not found' });
-
     const apartment = await Apartment.findByIdAndUpdate(
       req.params.id,
       { userId: user._id },
       { new: true }
     );
+    const newNotification = await Notification.create({
+      userId: user._id,
+      message: `Bạn đã được gán làm người thuê căn hộ ${apartment.name}.`
+    });
+    emitNotification(user._id, newNotification);
+    // --- EMAIL & SMS NOTIFICATION ---
+    if (user.email) {
+      await sendEmailNotification({
+        to: user.email,
+        subject: "Thông báo gán người thuê căn hộ",
+        text: `Bạn đã được gán làm người thuê căn hộ ${apartment.name}.`,
+        html: `<b>Bạn đã được gán làm người thuê căn hộ ${apartment.name}.</b>`
+      });
+    }
 
+    if (user.phone) {
+      await sendSMSNotification({
+        to: user.phone,
+        body: `Bạn đã được gán làm người thuê căn hộ ${apartment.name}.`
+      });
+    }
+    // --- END EMAIL & SMS NOTIFICATION ---
     res.json(apartment);
   } catch (err) {
     res.status(500).json({ error: err.message });

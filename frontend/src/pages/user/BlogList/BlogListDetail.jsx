@@ -57,40 +57,40 @@ const PostDetail = () => {
 
   //chat 
   const { setReceiver, setPostInfo } = useChat();
-const [showChat, setShowChat] = useState(false);
-const [selectedPost, setSelectedPost] = useState(null);
-const [selectedUser, setSelectedUser] = useState(null);
-// hàm thực hiện chat vs người bài đăng 
-useEffect(() => {
-  if (post?.contactInfo?.userId) {
-    if (user && user._id !== post.contactInfo.userId) {
-      setReceiver({
-        id: post.contactInfo.userId,
-        name: post.contactInfo.name,
-      });
+  const [showChat, setShowChat] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
+  // hàm thực hiện chat vs người bài đăng 
+  useEffect(() => {
+    if (post?.contactInfo?.userId) {
+      if (user && user._id !== post.contactInfo.userId) {
+        setReceiver({
+          id: post.contactInfo.userId,
+          name: post.contactInfo.name,
+        });
 
-      // ✅ Set postInfo ở đây
-      setPostInfo({
-        id: post._id,
-        title: post.title,
-        image: post.images?.[0] || "",
-        price: post.price,
-      });
+        // ✅ Set postInfo ở đây
+        setPostInfo({
+          id: post._id,
+          title: post.title,
+          image: post.images?.[0] || "",
+          price: post.price,
+        });
 
-      console.log("✅ ChatBox Props:", {
-        currentUserId: user._id,
-        receiverId: post.contactInfo.userId,
-        receiverName: post.contactInfo.name,
-        postId: post._id,
-      });
-    } else {
-      setReceiver(null);
-      setPostInfo(null); // clear nếu là chủ bài
+        console.log("✅ ChatBox Props:", {
+          currentUserId: user._id,
+          receiverId: post.contactInfo.userId,
+          receiverName: post.contactInfo.name,
+          postId: post._id,
+        });
+      } else {
+        setReceiver(null);
+        setPostInfo(null); // clear nếu là chủ bài
+      }
     }
-  }
-}, [post, user]);
+  }, [post, user]);
 
-// 
+  // 
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -111,7 +111,7 @@ useEffect(() => {
         setIsLiked(likedRes.data.liked);
         setLikeCount(countRes.data.count);
       } catch {
-        setErr("Có lỗi khi tải dữ liệu bài viết.");
+        setErr("Có lỗi khi tải dữ liệu bài đăng.");
       } finally {
         setLoading(false);
       }
@@ -127,13 +127,13 @@ useEffect(() => {
         if (res.data.success && Array.isArray(res.data.data)) {
           const now = new Date();
           const others = res.data.data
-  .filter((p) => 
-    p._id !== id &&
-    p.status === "active" &&
-    p.isActive === true && // kiểm tra thêm isActive
-    (!p.expiredAt || new Date(p.expiredAt) > now)
-  )
-  .slice(0, 3);
+            .filter((p) =>
+              p._id !== id &&
+              p.status === "active" &&
+              p.isActive === true && // kiểm tra thêm isActive
+              (!p.expiredAt || new Date(p.expiredAt) > now)
+            )
+            .slice(0, 3);
           setRelatedPosts(others);
         }
       } catch {
@@ -142,7 +142,7 @@ useEffect(() => {
     };
     fetchRelated();
   }, [id]);
-  
+
   const formatPrice = (price) =>
     new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -329,7 +329,7 @@ useEffect(() => {
     💬 Nhắn tin với người đăng
   </button>
 )} */}
-{/* {selectedUser && selectedPost && showChat && (
+        {/* {selectedUser && selectedPost && showChat && (
   <ChatBox
     currentUserId={user._id}
     receiverId={selectedUser._id}
@@ -405,7 +405,7 @@ useEffect(() => {
         {/* Related posts */}
         {relatedPosts.length > 0 && (
           <div className="mt-4">
-            <h4>🗂️ Bài viết gợi ý</h4>
+            <h4>🗂️ bài đăng gợi ý</h4>
             <div className="row g-3">
               {relatedPosts.map((rp) => (
                 <div className="col-md-4" key={rp._id}>

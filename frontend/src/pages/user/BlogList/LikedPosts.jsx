@@ -75,7 +75,7 @@ const LikedPosts = () => {
       <Header user={user} logout={logout} name={user?.name || user?.username || ""} />
 
       <div className="container py-4">
-        <h3 className="mb-3 text-primary">📌 Bài viết bạn đã thích</h3>
+        <h3 className="mb-3 text-primary">📌 bài đăng bạn đã thích</h3>
 
         <div className="row mb-4 g-3">
           <div className="col-md-3">
@@ -213,7 +213,7 @@ const LikedPosts = () => {
 
         {posts.length === 0 && !loading && (
           <div className="text-center p-5 bg-white rounded-4 mt-4">
-            <p>Bạn chưa thích bài viết nào</p>
+            <p>Bạn chưa thích bài đăng nào</p>
           </div>
         )}
       </div>

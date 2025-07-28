@@ -1,5 +1,9 @@
 import Contract from "../models/Contract.js";
 import Post from "../models/Post.js"; // để lấy giá từ bài đăng
+import Notification from "../models/Notification.js";
+import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
+import User from "../models/User.js";
+import { emitNotification } from "../helpers/socketHelper.js";
 
 export const createContract = async (req, res) => {
   try {
@@ -73,6 +77,10 @@ export const createContract = async (req, res) => {
     });
 
     await contract.save();
+    await Notification.create({
+      userId: userId,
+      message: `Bạn đã tạo một hợp đồng mới ${contract._id} thành công.`
+    });
 
     res.status(201).json({ success: true, message: "Tạo hợp đồng thành công", data: contract });
   } catch (error) {
@@ -108,7 +116,7 @@ export const getMyContracts = async (req, res) => {
     res.status(200).json({ success: true, data: updatedContracts });
   } catch (error) {
     console.error("❌ Lỗi getMyContracts:", error);
-    res.status(500).json({ success: false, message: "Lỗi server" });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -117,9 +125,34 @@ export const getMyContracts = async (req, res) => {
 export const approveContract = async (req, res) => {
   const contract = await Contract.findById(req.params.id);
   if (!contract) return res.status(404).json({ message: "Không tìm thấy hợp đồng" });
-
+  if (contract.status !== "pending") {
+    return res.status(400).json({ message: "Hợp đồng không ở trạng thái chờ duyệt" });
+  }
   contract.status = "approved";
   await contract.save();
+  const newNotification = await Notification.create({
+    userId: contract.userId,
+    message: `Hợp đồng ${contract._id} của bạn đã được duyệt ✅.`
+  });
+  const user = await User.findById(contract.userId);
+  // Gửi thông báo qua socket
+  emitNotification(contract.userId, newNotification);
+  // --- EMAIL & SMS NOTIFICATION ---
+  if (user.email) {
+    await sendEmailNotification({
+      to: user.email,
+      subject: "Thông báo duyệt hợp đồng",
+      text: `Hợp đồng ${contract._id} của bạn đã được duyệt ✅.`,
+      html: `<b>Hợp đồng ${contract._id} của bạn đã được duyệt ✅.</b>`
+    });
+  }
+  if (user.phone) {
+    await sendSMSNotification({
+      to: user.phone,
+      body: `Hợp đồng ${contract._id} của bạn đã được duyệt ✅.`
+    });
+  }
+  // --- END EMAIL & SMS NOTIFICATION ---
   res.json({ message: "Đã duyệt hợp đồng", data: contract });
 };
 
@@ -130,17 +163,48 @@ export const rejectContract = async (req, res) => {
 
   if (!contract) return res.status(404).json({ message: "Không tìm thấy hợp đồng" });
   if (!reason || reason.trim() === "") return res.status(400).json({ message: "Vui lòng nhập lý do từ chối" });
-
+  if (contract.status !== "pending") {
+    return res.status(400).json({ message: "Hợp đồng không ở trạng thái chờ duyệt" });
+  }
   contract.status = "rejected";
   contract.rejectionReason = reason;
   await contract.save();
-
+  const newNotification = await Notification.create({
+    userId: contract.userId,
+    message: `Hợp đồng ${contract._id} của bạn đã bị từ chối ❌. Lý do: ${reason}`
+  });
+  const user = await User.findById(contract.userId);
+  // Gửi thông báo qua socket
+  emitNotification(contract.userId, newNotification);
+  // --- EMAIL & SMS NOTIFICATION ---
+  if (user.email) {
+    await sendEmailNotification({
+      to: user.email,
+      subject: "Thông báo từ chối hợp đồng",
+      text: `Hợp đồng ${contract._id} của bạn đã bị từ chối ❌. Lý do: ${reason}`,
+      html: `<b>Hợp đồng ${contract._id} của bạn đã bị từ chối ❌. Lý do: ${reason}</b>`
+    });
+  }
+  if (user.phone) {
+    await sendSMSNotification({
+      to: user.phone,
+      body: `Hợp đồng ${contract._id} của bạn đã bị từ chối ❌. Lý do: ${reason}`
+    });
+  }
+  // --- END EMAIL & SMS NOTIFICATION ---
   res.json({ message: "Đã từ chối hợp đồng", data: contract });
 };
 
 // [DELETE] Xóa hợp đồng
 export const deleteContract = async (req, res) => {
-  await Contract.findByIdAndDelete(req.params.id);
+  const contract = await Contract.findById(req.params.id);
+  if (!contract) return res.status(404).json({ message: "Không tìm thấy hợp đồng" });
+  if (contract.status === "pending" || contract.status === "approved") {  // Không cho phép xóa hợp đồng đang chờ duyệt hay đã duyệt
+    return res.status(400).json({ message: "Không thể xóa hợp đồng đang chờ duyệt hay đã duyệt" });
+  }
+  // Thực hiện soft delete
+  contract.deletedAt = new Date(); // Đánh dấu thời gian xóa
+  await contract.save();
   res.json({ message: "Đã xóa hợp đồng" });
 };
 // xem chi tiết hợp đồng 
@@ -177,23 +241,68 @@ export const resubmitContract = async (req, res) => {
     contract.endDate = endDate;
     contract.contractTerms = contractTerms;
     contract.status = "pending"; // gửi lại để chờ duyệt
-    contract.rejectReason = "";  // xoá lý do cũ
+    contract.rejectionReason = "";  // xoá lý do cũ
 
     await contract.save();
+    // Gửi thông báo cho người dùng và chủ nhà
+    const newNotification = await Notification.create({
+      userId: contract.landlordId,
+      message: `Hợp đồng ${contract._id} đã được ${contract.userId} gửi lại để duyệt.`
+    });
+    await Notification.create({
+      userId: contract.userId,
+      message: `Bạn đã gửi lại hợp đồng ${contract._id} thành công, xin vui lòng chờ duyệt.`
+    });
+    // Gửi thông báo qua socket cho chủ nhà
+    emitNotification(contract.landlordId, newNotification);
 
+    // --- EMAIL & SMS NOTIFICATION ---
+    const landlord = await User.findById(contract.landlordId);
+    if (landlord.email) {
+      await sendEmailNotification({
+        to: landlord.email,
+        subject: "Hợp đồng đã được gửi lại",
+        text: `Hợp đồng ${contract._id} đã được ${contract.userId} gửi lại để duyệt.`,
+        html: `<b>Hợp đồng ${contract._id} đã được ${contract.userId} gửi lại để duyệt.</b>`
+      });
+    }
+    if (landlord.phone) {
+      await sendSMSNotification({
+        to: landlord.phone,
+        body: `Hợp đồng ${contract._id} đã được ${contract.userId} gửi lại để duyệt.`
+      });
+    }
+    if (req.user.email) {
+      await sendEmailNotification({
+        to: req.user.email,
+        subject: "Hợp đồng đã gửi lại",
+        text: `Bạn đã gửi lại hợp đồng ${contract._id} thành công, xin vui lòng chờ duyệt.`,
+        html: `<b>Bạn đã gửi lại hợp đồng ${contract._id} thành công, xin vui lòng chờ duyệt.</b>`
+      });
+    }
+    if (req.user.phone) {
+      await sendSMSNotification({
+        to: req.user.phone,
+        body: `Bạn đã gửi lại hợp đồng ${contract._id} thành công, xin vui lòng chờ duyệt.`
+      });
+    }
+    // --- END EMAIL & SMS NOTIFICATION ---
     res.json({ message: "📤 Đã gửi lại hợp đồng", data: contract });
   } catch (err) {
     console.error("❌ Resubmit error:", err);
-    res.status(500).json({ message: "Lỗi khi gửi lại hợp đồng" });
+    res.status(500).json({ message: "Lỗi khi gửi lại hợp đồng", error: err.message });
   }
 };
 export const getAllPaidContracts = async (req, res) => {
   try {
     const contracts = await Contract.find({ paymentStatus: "paid" }).sort({ createdAt: -1 });
+    if (!contracts || contracts.length === 0) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy hợp đồng nào đã thanh toán" });
+    }
     res.status(200).json({ success: true, data: contracts });
   } catch (error) {
     console.error("❌ Lỗi getAllPaidContracts:", error);
-    res.status(500).json({ success: false, message: "Lỗi server" });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

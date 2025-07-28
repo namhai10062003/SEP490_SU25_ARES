@@ -51,7 +51,7 @@ const NotificationBell = ({ user }) => {
         setSelectedNotification(note);
     };
     const extractPostId = (msg) => {
-        const match = msg.match(/bài viết ([a-f0-9]{24})/i); // i = ignore case, match ObjectId chuẩn
+        const match = msg.match(/bài đăng ([a-f0-9]{24})/i); // i = ignore case, match ObjectId chuẩn
         return match ? match[1] : null;
     };
     const closeModal = async () => {

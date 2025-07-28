@@ -14,7 +14,7 @@ import AuthProvider, { useAuth } from "../context/authContext";
 import SocketProvider from "../context/socketContext";
 
 import ScrollButtons from "../components/ScrollButton.jsx";
-import SocketListener from "../components/SocketListener.jsx";
+import SocketListener from "../utils/SocketListener.jsx";
 import VideoPlayer from "../src/pages/user/messages/VideoPlayer.jsx";
 import GlobalChatBox from "./pages/user/messages/GlobalChatBox.jsx";
 import VideoCallPopup from "./pages/user/messages/VideoCallPopup";

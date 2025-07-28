@@ -25,7 +25,7 @@ const Footer = () => {
                         <h4 className="fw-bold mb-3 text-warning">Liên kết nhanh</h4>
                         <ul className="list-unstyled">
                             <li><a href="/" className="text-light text-decoration-none">Trang chủ</a></li>
-                            <li><a href="/blog" className="text-light text-decoration-none">Bài viết nổi bật</a></li>
+                            <li><a href="/blog" className="text-light text-decoration-none">Bài đăng nổi bật</a></li>
                             <li><a href="/gioi-thieu" className="text-light text-decoration-none">Về chúng tôi</a></li>
                             <li><a href="#" className="text-light text-decoration-none">Liên hệ</a></li>
                         </ul>
