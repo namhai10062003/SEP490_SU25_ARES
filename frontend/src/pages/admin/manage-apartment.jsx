@@ -1,6 +1,8 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import AdminDashboard from "./adminDashboard.jsx"; // Assuming similar structure
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 const ManageApartment = () => {
   const [apartments, setApartments] = useState([]);
@@ -163,26 +165,37 @@ const ManageApartment = () => {
     }
   };
 
-  const filteredApartments = apartments.filter(apt =>
-    apt.apartmentCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    apt.ownerName?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredApartments = apartments.filter((apt) => {
+    const term = searchTerm.toLowerCase();
+
+    return (
+      apt.apartmentCode?.toLowerCase().includes(term) ||
+      apt.ownerName?.toLowerCase().includes(term) ||
+      apt.ownerPhone?.toLowerCase().includes(term) ||
+      apt.status?.toLowerCase().includes(term) ||
+      apt.building?.toLowerCase().includes(term) ||
+      apt.furniture?.toLowerCase().includes(term) ||
+      apt.direction?.toLowerCase().includes(term) ||
+      apt.area?.toString().includes(term)  // 🔍 tìm theo diện tích
+    );
+  });
 
   return (
     <AdminDashboard>
       <div className="w-100">
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="font-weight-bold">Quản lý Căn hộ</h2>
-          <div>
+          <h2 className="fw-bold mb-0">Quản lý Căn hộ</h2>
+          <div className="d-flex align-items-center gap-2">
             <input
               type="text"
+              className="form-control me-2"
               placeholder="Tìm kiếm..."
+              style={{ maxWidth: "200px" }}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ padding: "0.5rem", width: "200px", marginRight: "1rem" }}
             />
             <button
-              className="btn btn-sm btn-primary w-bold rounded-pill px-4 py-2 align-items-center gap-2 shadow-sm"
+              className="btn btn-primary fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm"
               onClick={() => {
                 setIsEdit(false);
                 setForm({
@@ -202,10 +215,13 @@ const ManageApartment = () => {
                 setShowModal(true);
               }}
             >
-              + Tạo Căn hộ
+              <span className="fs-5">+</span>
+              <span>Tạo Căn hộ</span>
             </button>
           </div>
         </div>
+
+
         <div className="card w-100">
           <div className="card-body p-0">
             <table className="table table-hover mb-0" style={{ width: "100%" }}>
@@ -289,151 +305,166 @@ const ManageApartment = () => {
           <div className="modal-dialog">
             <div className="modal-content">
               <form onSubmit={handleSubmit}>
-                <div className="modal-header">
-                  <h5 className="modal-title">{isEdit ? "Chỉnh sửa Căn hộ" : "Tạo Căn hộ"}</h5>
-                  <button
-                    type="button"
-                    className="close"
-                    onClick={() => setShowModal(false)}
-                  >
-                    <span>×</span>
-                  </button>
-                </div>
-                <div className="modal-body">
+                <div className="container py-2">
+                <div className="text-center mb-4">
+  <h2 className="fw-bold text-primary">Tạo Căn Hộ</h2>
+</div>
                   <div className="row g-3">
+                    {/* Mã căn hộ */}
                     <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Tên Căn hộ</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="apartmentCode"
-                          value={form.apartmentCode}
-                          onChange={handleChange}
-                          placeholder="Nhập mã căn hộ (ví dụ: P2-18.01)"
-                          required
-                        />
-                      </div>
-                      <div className="form-group mt-2">
-                        <label>Tầng</label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          name="floor"
-                          value={form.floor}
-                          onChange={handleChange}
-                          placeholder="Nhập số tầng"
-                          required
-                        />
-                      </div>
-                      <div className="form-group mt-2">
-                        <label>Diện tích (m²)</label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          name="area"
-                          value={form.area}
-                          onChange={handleChange}
-                          placeholder="Nhập diện tích (m²)"
-                          required
-                        />
-                      </div>
-                      <div className="form-group mt-2">
-                        <label>Trạng thái</label>
-                        <select name="status" value={form.status} onChange={handleChange} className="form-control" required>
-                          <option value="">-- Chọn trạng thái --</option>
-                          <option value="đang ở">Đang ở</option>
-                          <option value="đang cho thuê">Đang cho thuê</option>
-                          <option value="chưa có chủ sở hữu">Chưa có chủ sở hữu</option>
-                        </select>
-                      </div>
-                      <div className="form-group mt-2">
-                        <label>Chủ sở hữu</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="ownerName"
-                          value={form.ownerName}
-                          onChange={handleChange}
-                          placeholder="Nhập tên chủ sở hữu"
-                        />
-                      </div>
-                      <div className="form-group mt-2">
-                        <label>SĐT</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="ownerPhone"
-                          value={form.ownerPhone}
-                          onChange={handleChange}
-                          placeholder="Nhập số điện thoại"
-                        />
-                      </div>
+                      <label className="form-label">Mã Căn hộ</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Ví dụ: P2-18.01"
+                        value={form.apartmentCode}
+                        onChange={(e) => setForm({ ...form, apartmentCode: e.target.value })}
+                      />
                     </div>
+
+                    {/* Số phòng ngủ */}
                     <div className="col-md-6">
-                      <div className="form-group">
-                        <label>Số phòng ngủ</label>
-                        <input
-                          type="number"
-                          className="form-control"
-                          name="bedrooms"
-                          value={form.bedrooms}
-                          onChange={handleChange}
-                          placeholder="Nhập số phòng ngủ"
-                          required
-                        />
-                      </div>
-                      <div className="form-group mt-2">
-                        <label>Nội thất</label>
-                        <select name="furniture" value={form.furniture} onChange={handleChange} className="form-control" required>
-                          <option value="">-- Chọn nội thất --</option>
-                          <option value="Đầy đủ">Đầy đủ</option>
-                          <option value="Cơ bản">Cơ bản</option>
-                          <option value="Không có">Không có</option>
-                        </select>
-                      </div>
-                      <div className="form-group mt-2">
-                        <label>Hướng</label>
-                        <select name="direction" value={form.direction} onChange={handleChange} className="form-control" required>
-                          <option value="">-- Chọn hướng --</option>
-                          <option value="Đông">Đông</option>
-                          <option value="Tây">Tây</option>
-                          <option value="Nam">Nam</option>
-                          <option value="Bắc">Bắc</option>
-                        </select>
-                      </div>
-                      <div className="form-group mt-2">
-                        <label>Tòa nhà</label>
-                        <select name="building" value={form.building} onChange={handleChange} className="form-control" required>
-                          <option value="">-- Chọn tòa nhà --</option>
-                          <option value="Plaza 1">Plaza 1</option>
-                          <option value="Plaza 2">Plaza 2</option>
-                        </select>
-                      </div>
-                      <div className="form-group mt-2">
-                        <label>Tài liệu pháp lý</label>
-                        <select name="legalDocuments" value={form.legalDocuments} onChange={handleChange} className="form-control" required>
-                          <option value="">-- Chọn tài liệu --</option>
-                          <option value="sổ hồng">Sổ hồng</option>
-                          <option value="chưa có sổ">Chưa có sổ</option>
-                        </select>
-                      </div>
+                      <label className="form-label">Số phòng ngủ</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={form.bedrooms}
+                        onChange={(e) => setForm({ ...form, bedrooms: e.target.value })}
+                      />
+                    </div>
+
+                    {/* Tầng */}
+                    <div className="col-md-6">
+                      <label className="form-label">Tầng</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={form.floor}
+                        onChange={(e) => setForm({ ...form, floor: e.target.value })}
+                      />
+                    </div>
+
+                    {/* Nội thất */}
+                    <div className="col-md-6">
+                      <label className="form-label">Nội thất</label>
+                      <select
+                        className="form-select"
+                        value={form.furniture}
+                        onChange={(e) => setForm({ ...form, furniture: e.target.value })}
+                      >
+                        <option value="">-- Chọn --</option>
+                        <option value="full">Đầy đủ</option>
+                        <option value="partial">Một phần</option>
+                        <option value="none">Không có</option>
+                      </select>
+                    </div>
+
+                    {/* Diện tích */}
+                    <div className="col-md-6">
+                      <label className="form-label">Diện tích (m²)</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={form.area}
+                        onChange={(e) => setForm({ ...form, area: e.target.value })}
+                      />
+                    </div>
+
+                    {/* Hướng */}
+                    <div className="col-md-6">
+                      <label className="form-label">Hướng</label>
+                      <select
+                        className="form-select"
+                        value={form.direction}
+                        onChange={(e) => setForm({ ...form, direction: e.target.value })}
+                      >
+                        <option value="">-- Chọn --</option>
+                        <option value="Đông">Đông</option>
+                        <option value="Tây">Tây</option>
+                        <option value="Nam">Nam</option>
+                        <option value="Bắc">Bắc</option>
+                      </select>
+                    </div>
+
+                    {/* Trạng thái */}
+                    <div className="col-md-6">
+                      <label className="form-label">Trạng thái</label>
+                      <select
+                        className="form-select"
+                        value={form.status}
+                        onChange={(e) => setForm({ ...form, status: e.target.value })}
+                      >
+                        <option value="">-- Chọn --</option>
+                        <option value="available">Sẵn sàng</option>
+                        <option value="occupied">Đã thuê</option>
+                      </select>
+                    </div>
+
+                    {/* Tòa nhà */}
+                    <div className="col-md-6">
+                      <label className="form-label">Tòa nhà</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={form.building}
+                        onChange={(e) => setForm({ ...form, building: e.target.value })}
+                      />
+                    </div>
+
+                    {/* Chủ sở hữu */}
+                    <div className="col-md-6">
+                      <label className="form-label">Chủ sở hữu</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Không bắt buộc"
+                        value={form.ownerName}
+                        onChange={(e) => setForm({ ...form, ownerName: e.target.value })}
+                      />
+                    </div>
+
+                    {/* Tài liệu pháp lý */}
+                    <div className="col-md-6">
+                      <label className="form-label">Tài liệu pháp lý</label>
+                      <select
+                        className="form-select"
+                        value={form.legalDocuments}
+                        onChange={(e) =>
+                          setForm({ ...form, legalDocuments: e.target.value })
+                        }
+                      >
+                        <option value="">-- Chọn --</option>
+                        <option value="sổ đỏ">Sổ đỏ</option>
+                        <option value="sổ hồng">Sổ hồng</option>
+                        <option value="khác">Khác</option>
+                      </select>
+                    </div>
+
+                    {/* Số điện thoại */}
+                    <div className="col-md-6">
+                      <label className="form-label">Số điện thoại</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Không bắt buộc"
+                        value={form.ownerPhone}
+                        onChange={(e) => setForm({ ...form, ownerPhone: e.target.value })}
+                      />
                     </div>
                   </div>
-                </div>
-                <div className="modal-footer">
-                  <button type="submit" className="btn btn-primary">
-                    {isEdit ? "Xác nhận" : "Xác nhận"}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowModal(false)}
-                  >
-                    Hủy
-                  </button>
+
+                  {/* Nút hành động */}
+                  <div className="d-flex justify-content-end mt-4 gap-2">
+                    <button className="btn btn-primary" type="submit">
+                      Xác nhận
+                    </button>
+                    <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+                      Hủy
+                    </button>
+                  </div>
                 </div>
               </form>
+
             </div>
           </div>
         </div>
