@@ -15,7 +15,7 @@ const ManageUsers = () => {
     const [showBlockModal, setShowBlockModal] = useState(false);
     const [userToBlock, setUserToBlock] = useState(null);
     const [blockReason, setBlockReason] = useState("");
-
+    const [searchText, setSearchText] = useState("");
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [filterStatus, setFilterStatus] = useState("");
@@ -91,6 +91,18 @@ const ManageUsers = () => {
         }
         setLoading(false);
     };
+
+    const filteredUsers = userList.filter((user) => {
+        const lower = searchText.toLowerCase();
+
+        const matchesSearch =
+            user.name?.toLowerCase().includes(lower) ||
+            user.email?.toLowerCase().includes(lower) ||
+            user.phone?.toLowerCase().includes(lower);
+
+        return searchText === "" || matchesSearch;
+    });
+
     return (
         <AdminDashboard>
             <div className="w-100 postion-relative">
@@ -99,13 +111,36 @@ const ManageUsers = () => {
                 <div className="d-flex justify-content-between align-items-center mb-4">
                     <h2 className="font-weight-bold">Quản lý User</h2>
                 </div>
-                <div className="mb-3 d-flex">
-                    <select className="form-control" style={{ maxWidth: 220 }} value={filterStatus} onChange={e => { setPage(1); setFilterStatus(e.target.value); }}>
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="1">Active</option>
-                        <option value="0">Blocked</option>
-                    </select>
+                <div className="mb-3 d-flex justify-content-end">
+                    <div className="d-flex gap-3 flex-wrap">
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Tìm kiếm..."
+                            style={{ maxWidth: 200 }}
+                            value={searchText}
+                            onChange={(e) => {
+                                setPage(1);
+                                setSearchText(e.target.value);
+                            }}
+                        />
+                        <select
+                            className="form-select w-auto"
+                            style={{ maxWidth: 220 }}
+                            value={filterStatus}
+                            onChange={(e) => {
+                                setPage(1);
+                                setFilterStatus(e.target.value);
+                            }}
+                        >
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="1">Active</option>
+                            <option value="0">Blocked</option>
+                        </select>
+                    </div>
                 </div>
+
+
                 <div className="card w-100">
                     <div className="card-body p-0">
                         <table className="table table-hover mb-0">
@@ -121,7 +156,7 @@ const ManageUsers = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {userList.map((user, idx) => (
+                                {filteredUsers.map((user, idx) => (
                                     <tr key={user._id}>
                                         <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
                                         <td>{user.name}</td>
@@ -166,7 +201,7 @@ const ManageUsers = () => {
                                         </td>
                                     </tr>
                                 ))}
-                                {userList.length === 0 && (
+                                {filteredUsers.length === 0 && (
                                     <tr>
                                         <td colSpan="7" className="text-center text-muted py-4">
                                             Không có user nào.

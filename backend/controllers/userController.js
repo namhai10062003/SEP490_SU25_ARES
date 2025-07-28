@@ -1,9 +1,10 @@
 import bcrypt from "bcryptjs";
 import Notification from '../models/Notification.js';
+import ProfileUpdateRequest from "../models/ProfileUpdateRequest.js";
 import User from '../models/User.js';
 import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
 // GET /api/users?page=1&limit=10&role=staff&status=1
-const getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -32,7 +33,7 @@ const getUsers = async (req, res) => {
   }
 };
 
-const getUsersDepartment = async (req, res) => {
+export const getUsersDepartment = async (req, res) => {
   try {
     const users = await User.find({
       apartmentId: { $exists: true, $ne: null }
@@ -63,7 +64,7 @@ const getUsersDepartment = async (req, res) => {
 };
 
 // Block or unblock user from posting
-const blockUser = async (req, res) => {
+export const blockUser = async (req, res) => {
   try {
     const { reason } = req.body;
     const user = await User.findById(req.params.id).select('-password -otp -otpExpires');
@@ -110,7 +111,7 @@ const blockUser = async (req, res) => {
 };
 
 
-const unBlockUser = async (req, res) => {
+export const unBlockUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password -otp -otpExpires');
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -156,7 +157,7 @@ const unBlockUser = async (req, res) => {
 };
 
 
-const getUserById = async (req, res) => {
+export const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password -otp -otpExpires');
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -165,7 +166,7 @@ const getUserById = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-const deleteUser = async (req, res) => {
+export const deleteUser = async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(
       req.params.id,
@@ -213,6 +214,12 @@ export const updateProfile = async (req, res) => {
       jobTitle,
     } = req.body;
 
+
+    const currentUser = await User.findById(userId);
+    if (!currentUser) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
     const updateData = {
       name,
       phone,
@@ -224,10 +231,26 @@ export const updateProfile = async (req, res) => {
       jobTitle,
     };
 
+
+    // Check nếu CCCD hoặc ảnh thay đổi → tạo yêu cầu chờ duyệt
+    const changedCCCD = identityNumber && identityNumber !== currentUser.identityNumber;
+    const changedImage = req.file && req.file.path && req.file.path !== currentUser.profileImage;
+
+    if (changedCCCD || changedImage) {
+      await ProfileUpdateRequest.create({
+        userId,
+        newIdentityNumber: changedCCCD ? identityNumber : undefined,
+        newProfileImage: changedImage ? req.file.path : undefined,
+      });
+    }
+
+    // Cập nhật các trường còn lại (không phải CCCD/ảnh)
+
     // Nếu có ảnh đại diện mới từ Cloudinary
     if (req.file && req.file.path) {
       updateData.profileImage = req.file.path;
     }
+
 
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -236,7 +259,10 @@ export const updateProfile = async (req, res) => {
     );
 
     res.status(200).json({
-      message: "Cập nhật hồ sơ thành công",
+
+      message: changedCCCD || changedImage
+        ? "Đã cập nhật thông tin cơ bản. CCCD/ảnh đang chờ admin duyệt."
+        : "Cập nhật hồ sơ thành công",
       user: updatedUser,
     });
   } catch (error) {
@@ -265,7 +291,10 @@ export const getUserProfileById = async (req, res) => {
     console.error("❌ Lỗi khi lấy profile:", err.message);
     res.status(500).json({ error: "Server error" });
   }
-};
+}; // ✅ Đã đóng hàm
+
+
+
 // change mk 
 export const changePassword = async (req, res) => {
   try {
@@ -274,8 +303,8 @@ export const changePassword = async (req, res) => {
 
     if (!oldPassword || !newPassword) {
       return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
-    }
 
+    }
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "Người dùng không tồn tại." });
 
@@ -314,5 +343,3 @@ export const changePassword = async (req, res) => {
     res.status(500).json({ message: "❌ Lỗi server." });
   }
 };
-
-export { blockUser, unBlockUser, deleteUser, getUserById, getUsers, getUsersDepartment };

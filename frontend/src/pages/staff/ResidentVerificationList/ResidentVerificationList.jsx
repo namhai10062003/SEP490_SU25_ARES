@@ -2,128 +2,190 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import StaffNavbar from "../staffNavbar";
 
+const USERS_PER_PAGE = 20;
+
 export default function ResidentVerificationList() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Phân trang
-  const USERS_PER_PAGE = 20;
   const [page, setPage] = useState(1);
+  const [searchDate, setSearchDate] = useState("");
+
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/resident-verifications/get-user-apartment`
+      );
+      setUsers(res.data?.data || []);
+      console.log("✅ Dữ liệu từ API:", res.data);
+      setError(null);
+    } catch (err) {
+      console.error("❌ Lỗi khi fetch users:", err);
+      setError("Không thể tải danh sách người dùng.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/users/get-user-apartment`
-        );
-        setUsers(res.data.data || []);
-      } catch (err) {
-        setError("Lỗi khi tải dữ liệu");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchUsers();
   }, []);
 
-  // Tính toán phân trang
-  const totalPages = Math.ceil(users.length / USERS_PER_PAGE);
-  const indexOfLastUser = page * USERS_PER_PAGE;
-  const indexOfFirstUser = indexOfLastUser - USERS_PER_PAGE;
-  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
+  // ...
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredUsers = users
+    .filter((u) => {
+      const query = searchQuery.toLowerCase();
+      return (
+        (!searchQuery ||
+          u.name?.toLowerCase().includes(query) ||
+          u.email?.toLowerCase().includes(query) ||
+          u.apartmentCode?.toLowerCase().includes(query)) &&
+        (!searchDate || (u.approvedAt && new Date(u.approvedAt).toISOString().slice(0, 10) === searchDate))
+      );
+    })
+    .sort((a, b) => new Date(b.approvedAt || 0) - new Date(a.approvedAt || 0));
+
+  const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
+  const indexOfFirst = (page - 1) * USERS_PER_PAGE;
+  const currentUsers = filteredUsers.slice(indexOfFirst, indexOfFirst + USERS_PER_PAGE);
+
 
   return (
     <div className="d-flex min-vh-100 bg-light">
       <StaffNavbar />
       <main className="flex-grow-1 p-4">
-        <div className="mb-4 text-center">
-          <h1 className="fw-bold" style={{
-            fontSize: "2.2rem",
-            color: "#333",
-            marginBottom: 8,
-            fontWeight: 600,
-            textAlign: "center"
-          }}>
-            Danh Sách Người Dùng
-          </h1>
-          <p className="text-secondary">Quản lý thông tin người dùng và căn hộ</p>
+        <div className="text-center mb-4">
+          <h2 className="fw-bold text-dark">Danh Sách Cư Dân</h2>
+          <p className="text-secondary">Thông tin căn hộ và hợp đồng cư trú</p>
         </div>
 
+        <div className="row mb-3">
+          <div className="col-md-3">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Tìm theo tên, email, hoặc mã căn hộ"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1); // reset về trang đầu khi tìm kiếm
+              }}
+            />
+          </div>
+          <div className="col-md-2">
+            <input
+              type="date"
+              className="form-control"
+              value={searchDate}
+              onChange={(e) => {
+                setSearchDate(e.target.value);
+                setPage(1); // reset trang khi lọc theo ngày
+              }}
+            />
+          </div>
+        </div>
+
+
+
         {loading ? (
-          <div className="d-flex flex-column align-items-center justify-content-center py-5">
-            <div className="spinner-border text-primary mb-3" style={{ width: 40, height: 40 }}></div>
-            <span>Đang tải dữ liệu...</span>
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary mb-3" />
+            <div>Đang tải dữ liệu...</div>
           </div>
         ) : error ? (
           <div className="alert alert-danger text-center">{error}</div>
         ) : (
           <div className="table-responsive">
-            <table className="table table-bordered align-middle bg-white rounded-4 shadow">
+            <table className="table table-bordered bg-white rounded-4 shadow-sm align-middle">
               <thead className="table-primary">
                 <tr>
                   <th>STT</th>
                   <th>Họ và Tên</th>
                   <th>Email</th>
-                  <th>Ảnh đại diện</th>
-                  <th>Mã căn hộ</th>
-                  <th>Tòa nhà</th>
-                  <th>Tầng</th>
-                  <th>Diện tích</th>
-                  <th>Ngày tạo</th>
+                  <th>Mã Căn Hộ</th>
+                  <th>Vai Trò</th>
+                  <th>Hình Hợp Đồng</th>
+                  <th>Ngày Duyệt</th>
                 </tr>
               </thead>
               <tbody>
                 {currentUsers.map((user, index) => (
-                  <tr key={user._id}>
-                    <td>{indexOfFirstUser + index + 1}</td>
-                    <td>{user.name}</td>
-                    <td>{user.email}</td>
+                  <tr key={`${user.email}-${index}`}>
+                    <td>{indexOfFirst + index + 1}</td>
+                    <td>{user.name || "N/A"}</td>
+                    <td>{user.email || "N/A"}</td>
+                    <td>{user.apartmentCode || "N/A"}</td>
                     <td>
-                      <img
-                        src={user.picture || "/default-avatar.png"}
-                        alt={user.name}
-                        style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover" }}
-                      />
+                      <span
+                        className={`badge text-light ${user.role === "Chủ hộ" ? "bg-primary" : "bg-success"
+                          }`}
+                      >
+                        {user.role}
+                      </span>
                     </td>
-                    <td>{user.apartmentId?.apartmentCode || "N/A"}</td>
-                    <td>{user.apartmentId?.building || "N/A"}</td>
-                    <td>{user.apartmentId?.floor || "N/A"}</td>
-                    <td>{user.apartmentId?.area ? `${user.apartmentId.area}m²` : "N/A"}</td>
-                    <td>{new Date(user.createdAt).toLocaleDateString("vi-VN")}</td>
+
+                    <td className="p-2">
+                      {user.contractImage ? (
+                        <a
+                          href={user.contractImage}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="d-inline-block m-2"
+                        >
+                          <img
+                            src={user.contractImage}
+                            alt="contract"
+                            className="rounded shadow-sm"
+                            style={{ width: 60 }}
+                          />
+                        </a>
+                      ) : (
+                        <span className="text-muted ms-2">Không có</span>
+                      )}
+                    </td>
+
+                    <td>
+                      {user.approvedAt
+                        ? new Date(user.approvedAt).toLocaleDateString("vi-VN")
+                        : <span className="text-muted">-</span>}
+                    </td>
+
+
                   </tr>
                 ))}
               </tbody>
             </table>
+
             {/* Pagination */}
             <div className="d-flex justify-content-center align-items-center mt-3">
               <button
                 className="btn btn-outline-secondary me-2"
-                onClick={() => setPage(page - 1)}
+                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
                 disabled={page <= 1}
               >
-                &lt; Prev
+                &lt; Trước
               </button>
-              <span style={{ minWidth: 90, textAlign: "center" }}>
+              <span className="mx-2">
                 Trang {page} / {totalPages || 1}
               </span>
               <button
                 className="btn btn-outline-secondary ms-2"
-                onClick={() => setPage(page + 1)}
-                disabled={page >= totalPages || totalPages === 0}
+                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={page >= totalPages}
               >
-                Next &gt;
+                Tiếp &gt;
               </button>
             </div>
+
             {users.length === 0 && (
               <div className="text-center py-5 text-secondary">
-                Không có dữ liệu người dùng
+                Không có dữ liệu cư dân.
               </div>
             )}
-
-
           </div>
         )}
       </main>

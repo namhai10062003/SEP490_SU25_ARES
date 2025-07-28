@@ -6,23 +6,38 @@ import AdminDashboard from "../adminDashboard";
 const AdminContactPage = () => {
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [searchText, setSearchText] = useState("");
     const [filter, setFilter] = useState(""); // lọc trạng thái
 
     const loadContacts = async () => {
         setLoading(true);
         try {
-          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contact/list?status=${filter}`);
-          setContacts(res.data.data || []);
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contact/list`);
+            let data = res.data.data || [];
+
+            // Lọc theo trạng thái (nếu có)
+            if (filter) {
+                data = data.filter((c) => c.status === filter);
+            }
+
+            // Lọc theo từ khóa
+            if (searchText.trim()) {
+                const keyword = searchText.toLowerCase();
+                data = data.filter((c) =>
+                    [c.name, c.email, c.message].some((field) =>
+                        field?.toLowerCase().includes(keyword)
+                    )
+                );
+            }
+
+            setContacts(data);
         } catch (err) {
-          console.error("❌ Lỗi khi tải liên hệ:", err);
-          toast.error("Không thể tải danh sách liên hệ!");
+            console.error("❌ Lỗi khi tải liên hệ:", err);
+            toast.error("Không thể tải danh sách liên hệ!");
         } finally {
-          setLoading(false);
+            setLoading(false);
         }
-      };
-      
-
-
+    };
 
     const handleDelete = async (id) => {
         if (!window.confirm("Bạn có chắc muốn xoá liên hệ này?")) return;
@@ -52,7 +67,7 @@ const AdminContactPage = () => {
 
     useEffect(() => {
         loadContacts();
-    }, [filter]);
+    }, [filter, searchText]);
 
     return (
         <AdminDashboard active="contact">
@@ -62,19 +77,26 @@ const AdminContactPage = () => {
                 </div>
 
                 {/* Lọc trạng thái (nếu có status) */}
-                <div className="mb-3 d-flex align-items-center gap-2">
-  <label className="fw-semibold">Lọc trạng thái:</label>
-  <select
-    className="form-select w-auto"
-    value={filter}
-    onChange={(e) => setFilter(e.target.value)}
-  >
-    <option value="">Tất cả</option> {/* ✅ Tổng hợp tất cả */}
-    <option value="pending">Chưa xử lý</option>
-    <option value="reviewed">Đã xử lý</option>
-    <option value="archived">Đã xóa</option>
-  </select>
-</div>
+                <div className="mb-3 d-flex justify-content-end align-items-center gap-3 flex-wrap">
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Tìm kiếm liên hệ..."
+                        style={{ maxWidth: 200 }}
+                        value={searchText}
+                        onChange={(e) => setSearchText(e.target.value)}
+                    />
+                    <select
+                        className="form-select w-auto"
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                    >
+                        <option value="">Tất cả</option>
+                        <option value="pending">Chưa xử lý</option>
+                        <option value="reviewed">Đã xử lý</option>
+                        <option value="archived">Đã xoá</option>
+                    </select>
+                </div>
 
 
                 {loading ? (
@@ -110,10 +132,10 @@ const AdminContactPage = () => {
                                             <td>
                                                 <span
                                                     className={`badge ${c.isDeleted
-                                                            ? "bg-secondary"
-                                                            : c.status === "reviewed"
-                                                                ? "bg-success"
-                                                                : "bg-warning text-dark"
+                                                        ? "bg-secondary"
+                                                        : c.status === "reviewed"
+                                                            ? "bg-success"
+                                                            : "bg-warning text-dark"
                                                         }`}
                                                 >
                                                     {c.isDeleted

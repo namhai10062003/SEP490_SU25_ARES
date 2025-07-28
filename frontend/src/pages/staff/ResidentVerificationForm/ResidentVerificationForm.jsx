@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
+import Select from "react-select";
 import StaffNavbar from "../staffNavbar";
-
 export default function ResidentVerificationForm() {
   const [formData, setFormData] = useState({
     documentType: "",
@@ -18,6 +18,47 @@ export default function ResidentVerificationForm() {
   const [loading, setLoading] = useState(false);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
+
+  
+const customStyles = {
+  menu: (provided) => ({
+    ...provided,
+    maxHeight: 200,
+    overflowY: 'auto',
+  }),
+};
+// hàm sort apartment 
+// 🛠️ Di chuyển HÀM NÀY LÊN ĐÂU FILE, TRƯỚC KHI GỌI
+const sortApartments = (apartments) => {
+  console.log("Danh sách apartments đầu vào:", apartments);
+  return apartments
+    .slice() // tạo bản sao
+    .sort((a, b) => {
+      // Tách block và phần số: "P1-10.01" => ["P1", "10.01"]
+      const [blockA, numberA] = a.apartmentCode.split("-");
+      const [blockB, numberB] = b.apartmentCode.split("-");
+
+      // Tách tầng và phòng: "10.01" => [10, 1]
+      const [floorA, roomA] = numberA.split(".").map(Number);
+      const [floorB, roomB] = numberB.split(".").map(Number);
+
+      // So sánh theo block (P1 < P2 < P3 ...)
+      if (blockA !== blockB) return blockA.localeCompare(blockB);
+
+      // So sánh theo tầng
+      if (floorA !== floorB) return floorA - floorB;
+
+      // So sánh theo phòng
+      return roomA - roomB;
+    });
+};
+
+// 👇 Lúc này gọi mới hợp lệ
+const sortedApartments = sortApartments(apartments);
+const apartmentOptions = sortedApartments.map((ap) => ({
+  value: ap.apartmentCode,
+  label: ap.apartmentCode, // hoặc `${ap.apartmentCode} (Tầng ${tầng}, Phòng ${phòng})` nếu muốn chi tiết hơn
+}));
 // list ra all users
 useEffect(() => {
   const fetchAllUsers = async () => {
@@ -112,38 +153,40 @@ useEffect(() => {
     }));
   };
 
+// hàm sumit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (
-      !user ||
-      !formData.documentType ||
-      !formData.apartmentCode ||
-      !formData.contractStart ||
-      !formData.contractEnd
-    ) {
+  
+    if (!user || !formData.documentType || !formData.apartmentCode) {
       alert("Vui lòng điền đủ thông tin bắt buộc.");
       return;
     }
-
-    const data = new FormData();
-
+  
+    const data = new FormData(); // 👉 Đưa lên đầu tiên
+  
     data.append("user", user._id);
     data.append("fullName", user.name || "");
     data.append("email", user.email || "");
     data.append("phone", user.phone || "");
     data.append("documentType", formData.documentType);
     data.append("apartmentCode", formData.apartmentCode);
-    data.append("contractStart", new Date(formData.contractStart).toISOString());
-    data.append("contractEnd", new Date(formData.contractEnd).toISOString());
-
-    if (formData.documentImage && formData.documentImage instanceof File) {
-      data.append("documentImage", formData.documentImage);
-    } else {
-      alert("Ảnh hợp đồng không hợp lệ hoặc chưa được chọn.");
-      return;
+  
+    // 👉 Nếu là hợp đồng cho thuê thì thêm ngày bắt đầu và kết thúc
+    if (formData.documentType === "Hợp đồng cho thuê") {
+      if (formData.contractStart && formData.contractEnd) {
+        try {
+          data.append("contractStart", new Date(formData.contractStart).toISOString());
+          data.append("contractEnd", new Date(formData.contractEnd).toISOString());
+        } catch (err) {
+          alert("Ngày không hợp lệ. Vui lòng chọn lại.");
+          return;
+        }
+      } else {
+        alert("Vui lòng nhập ngày bắt đầu và kết thúc hợp đồng cho thuê.");
+        return;
+      }
     }
-
+  
     try {
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/resident-verifications/verification`,
@@ -154,9 +197,9 @@ useEffect(() => {
           },
         }
       );
-
+  
       alert("Gửi yêu cầu xác thực thành công!");
-
+  
       setFormData({
         documentType: "",
         apartmentCode: "",
@@ -165,11 +208,11 @@ useEffect(() => {
         documentImage: null,
       });
       setPreviewImage(null);
-
+  
       if (fileInputRef.current) {
         fileInputRef.current.value = null;
       }
-
+  
       setUser(null);
       setQuery("");
     } catch (err) {
@@ -177,6 +220,7 @@ useEffect(() => {
       alert("Gửi thất bại! Vui lòng kiểm tra lại.");
     }
   };
+  
 
   return (
     <div className="d-flex min-vh-100 bg-light">
@@ -303,59 +347,64 @@ useEffect(() => {
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">Căn hộ</label>
-                    <select
-                      name="apartmentCode"
-                      value={formData.apartmentCode}
-                      onChange={handleChange}
-                      className="form-select"
-                      required
-                    >
-                      <option value="">-- Chọn căn hộ --</option>
-                      {apartments.map((ap) => (
-                        <option key={ap._id} value={ap.apartmentCode}>
-                          {ap.apartmentCode}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Loại hợp đồng</label>
-                    <select
-                      name="documentType"
-                      value={formData.documentType}
-                      onChange={handleChange}
-                      className="form-select"
-                      required
-                    >
-                      <option value="">-- Loại hợp đồng --</option>
-                      <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
-                      <option value="Hợp đồng mua bán">Hợp đồng mua bán</option>
-                      <option value="Khác">Khác</option>
-                    </select>
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Ngày bắt đầu hợp đồng</label>
-                    <input
-                      type="date"
-                      name="contractStart"
-                      value={formData.contractStart}
-                      onChange={handleChange}
-                      className="form-control"
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Ngày kết thúc hợp đồng</label>
-                    <input
-                      type="date"
-                      name="contractEnd"
-                      value={formData.contractEnd}
-                      onChange={handleChange}
-                      className="form-control"
-                      required
-                    />
-                  </div>
+  <label className="form-label">Loại hợp đồng</label>
+  <select
+    name="documentType"
+    value={formData.documentType}
+    onChange={handleChange}
+    className="form-select"
+    required
+  >
+    <option value="">-- Loại hợp đồng --</option>
+    <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
+    <option value="Hợp đồng mua bán">Hợp đồng mua bán</option>
+    <option value="Khác">Khác</option>
+  </select>
+</div>
+
+<div className="col-md-6">
+  <label className="form-label">Căn hộ</label>
+  <Select
+    options={apartmentOptions}
+    value={apartmentOptions.find(opt => opt.value === formData.apartmentCode)}
+    onChange={(selected) =>
+      setFormData((prev) => ({
+        ...prev,
+        apartmentCode: selected ? selected.value : ""
+      }))
+    }
+    placeholder="Nhập hoặc chọn căn hộ"
+    styles={customStyles}
+    isClearable
+  />
+</div>
+
+{formData.documentType === "Hợp đồng cho thuê" && (
+  <>
+    <div className="col-md-6">
+      <label className="form-label">Ngày bắt đầu hợp đồng</label>
+      <input
+        type="date"
+        name="contractStart"
+        value={formData.contractStart}
+        onChange={handleChange}
+        className="form-control"
+        required
+      />
+    </div>
+    <div className="col-md-6">
+      <label className="form-label">Ngày kết thúc hợp đồng</label>
+      <input
+        type="date"
+        name="contractEnd"
+        value={formData.contractEnd}
+        onChange={handleChange}
+        className="form-control"
+        required
+      />
+    </div>
+  </>
+)}
                   <div className="col-md-12">
                     <label className="form-label">Ảnh hợp đồng</label>
                     <input

@@ -14,7 +14,9 @@ const UpdateProfileForm = () => {
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState(null);
   const token = localStorage.getItem("token");
-
+  const [updateStatus, setUpdateStatus] = useState(null); // "pending", "approved", "rejected"
+  const [rejectionReason, setRejectionReason] = useState("");
+  
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -30,16 +32,16 @@ const UpdateProfileForm = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
+        console.log("🔍 Fetching profile for user:", user?._id);
+  
+        // Lấy thông tin người dùng
         const res = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/users/profile/${user._id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-
+  
         const userInfo = res.data;
+  
         setForm({
           name: userInfo.name || "",
           phone: userInfo.phone || "",
@@ -50,22 +52,50 @@ const UpdateProfileForm = () => {
           bio: userInfo.bio || "",
           jobTitle: userInfo.jobTitle || "",
         });
-
+  
         setPreviewImage(userInfo.profileImage || null);
         setName(userInfo.name);
-      } catch (err) {
-        console.error("❌ Lỗi khi lấy thông tin người dùng:", err);
-        toast.error("Không thể tải thông tin người dùng!");
+  
+        // 🟡 Lấy yêu cầu cập nhật gần nhất
+        const requestRes = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/profile-update/profile-update-requests?userId=${user._id}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+  
+        console.log("🟢 Kết quả yêu cầu cập nhật:", requestRes.data);
+  
+        const latest = requestRes.data?.[0];
+  
+        if (latest) {
+          setUpdateStatus(latest.status);
+          setRejectionReason(latest.rejectionReason || "");
+        }
+  
+      } catch (error) {
+        console.error("❌ Lỗi khi load thông tin:", error);
       }
     };
-
+  
     if (user?._id && token) {
       fetchUserProfile();
     }
   }, [user, token]);
-
+  
+  
+  
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+  
+    if (name === "identityNumber" || name === "phone") {
+      const onlyDigits = value.replace(/\D/g, "");
+      if (name === "identityNumber" && onlyDigits.length <= 12) {
+        setForm({ ...form, [name]: onlyDigits });
+      } else if (name === "phone" && onlyDigits.length <= 11) {
+        setForm({ ...form, [name]: onlyDigits });
+      }
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   const handleImageChange = (e) => {
@@ -80,12 +110,12 @@ const UpdateProfileForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!form.name || !form.phone || !form.gender || !form.dob || !form.address) {
       toast.warn("⚠️ Vui lòng điền đầy đủ các trường bắt buộc!");
       return;
     }
-
+  
     try {
       const formData = new FormData();
       for (let key in form) {
@@ -94,22 +124,23 @@ const UpdateProfileForm = () => {
       if (profileImage) {
         formData.append("profileImage", profileImage);
       }
-
+  
+      // Gửi yêu cầu cập nhật (nhưng để admin duyệt)
       await axios.patch(`${import.meta.env.VITE_API_URL}/api/users/updateprofile`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
-
-      toast.success("✅ Đã cập nhật hồ sơ thành công!");
-
+  
+      toast.success("📤 Yêu cầu cập nhật đã được gửi, chờ admin duyệt!");
+  
       setTimeout(() => {
         navigate("/profile");
       }, 1500);
     } catch (err) {
       console.error("Lỗi cập nhật hồ sơ:", err);
-      toast.error("❌ Lỗi khi cập nhật hồ sơ!");
+      toast.error("❌ Gửi yêu cầu thất bại, thử lại sau!");
     }
   };
 
@@ -149,9 +180,19 @@ const UpdateProfileForm = () => {
             </div>
 
             <div className="mb-3">
-              <label className="form-label">SĐT</label>
-              <input type="text" name="phone" value={form.phone} onChange={handleChange} className="form-control" required />
-            </div>
+  <label className="form-label">SĐT</label>
+  <input
+  type="text"
+  name="phone"
+  value={form.phone}
+  onChange={handleChange}
+  className="form-control"
+  required
+  maxLength={11} // 👈 Giới hạn ký tự tối đa
+  pattern="^0\d{9,10}$"
+  title="Số điện thoại phải bắt đầu bằng số 0 và có 10-11 chữ số"
+/>
+</div>
 
             <div className="mb-3">
               <label className="form-label">Giới tính</label>
@@ -169,14 +210,23 @@ const UpdateProfileForm = () => {
             </div>
 
             <div className="mb-3">
-              <label className="form-label">Địa chỉ</label>
+              <label className="form-label">Địa Chỉ</label>
               <input type="text" name="address" value={form.address} onChange={handleChange} className="form-control" required />
             </div>
 
             <div className="mb-3">
-              <label className="form-label">CMND/CCCD</label>
-              <input type="text" name="identityNumber" value={form.identityNumber} onChange={handleChange} className="form-control" required />
-            </div>
+  <label className="form-label">CMND/CCCD</label>
+  <input
+    type="text"
+    name="identityNumber"
+    value={form.identityNumber}
+    onChange={handleChange}
+    className="form-control"
+    required
+    pattern="^\d{9}$|^\d{12}$"
+    title="CMND/CCCD phải gồm 12 chữ số"
+  />
+</div>
 
             <div className="mb-3">
               <label className="form-label">Giới thiệu</label>
@@ -200,6 +250,24 @@ const UpdateProfileForm = () => {
                 Cập nhật
               </button>
             </div>
+            {updateStatus && (
+  <div className="alert alert-info mt-3">
+    <p>
+      📌 Trạng thái yêu cầu cập nhật gần nhất:{" "}
+      <strong>
+        {{
+          pending: "⏳ Chờ duyệt",
+          approved: "✅ Đã được chấp nhận",
+          rejected: "❌ Bị từ chối",
+        }[updateStatus] || "Không xác định"}
+      </strong>
+    </p>
+
+    {updateStatus === "rejected" && rejectionReason && (
+      <p>📝 Lý do từ chối: <em>{rejectionReason}</em></p>
+    )}
+  </div>
+)}
           </form>
         </div>
         <footer className="text-center mt-4 text-secondary small">

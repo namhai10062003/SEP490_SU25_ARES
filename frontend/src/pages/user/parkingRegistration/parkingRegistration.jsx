@@ -20,19 +20,42 @@ const [filterPlate, setFilterPlate] = useState('');
 const [filterApartment, setFilterApartment] = useState('');
 const [sortOption, setSortOption] = useState('date_desc');
 const [loading, setLoading] = useState(true);
+const [filterOwnerName, setFilterOwnerName] = useState('');
 // hàm sort dữ liệu 
+const statusMapping = {
+  pending: "pending",       // Nếu có
+  approved: "approved",
+  rejected: "rejected",
+};
+
+const normalizeText = (text) =>
+  text?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+// Ánh xạ filterStatus sang dạng normalize của dữ liệu thực tế
+
 const getFilteredAndSortedData = (data) => {
-  const cleanedPlate = filterPlate.toLowerCase().trim();
-  const cleanedApartment = filterApartment.toLowerCase().trim();
+  const cleanedPlate = normalizeText(filterPlate);
+  const cleanedApartment = normalizeText(filterApartment);
+  const cleanedOwner = normalizeText(filterOwnerName);
+  // Ánh xạ trạng thái đã chọn sang dạng normalize
+  const mappedStatus = statusMapping[filterStatus];
 
   const filtered = data.filter(item => {
+    const statusNormalized = normalizeText(item.trạngThái);
+
     const matchesStatus =
-      filterStatus === 'all' || item.trạngThái === filterStatus;
-    const matchesPlate = item.biểnSốXe?.toLowerCase().includes(cleanedPlate);
-    const matchesApartment = item.mãCănHộ?.toLowerCase().includes(cleanedApartment);
-    return matchesStatus && matchesPlate && matchesApartment;
+      filterStatus === 'all' || statusNormalized === mappedStatus;
+
+    const matchesPlate = normalizeText(item.biểnSốXe).includes(cleanedPlate);
+    const matchesApartment = normalizeText(item.mãCănHộ).includes(cleanedApartment);
+    const matchesOwnerName = normalizeText(item.tênChủSởHữu).includes(cleanedOwner);
+    console.log('Status after normalize:', normalizeText(item.trạngThái));
+    console.log('Mapped status:', mappedStatus);
+    return matchesStatus && matchesPlate && matchesApartment && matchesOwnerName;
+
+    
   });
 
+  // Sort như cũ
   const sorted = [...filtered];
   if (sortOption === 'date_desc') {
     sorted.sort((a, b) => new Date(b.ngàyĐăngKý) - new Date(a.ngàyĐăngKý));
@@ -46,6 +69,7 @@ const getFilteredAndSortedData = (data) => {
 
   return sorted;
 };
+
 
 // hàm hủy khi mà người dùng không muốn đăng ký nữa 
 const handleCancel = (id) => {
@@ -267,7 +291,14 @@ const doCancel = async (id) => {
       <h5 className="fw-bold mb-3">
         <i className="bi bi-funnel me-2"></i>Bộ lọc
       </h5>
-
+      <label className="form-label">Chủ sở hữu</label>
+<input
+  type="text"
+  className="form-control mb-3"
+  value={filterOwnerName}
+  onChange={(e) => setFilterOwnerName(e.target.value)}
+  placeholder="Nhập tên chủ sở hữu"
+/>
       {/* Trạng thái */}
       <label className="form-label">Trạng thái</label>
       <select
@@ -310,8 +341,8 @@ const doCancel = async (id) => {
       >
         <option value="date_desc">Ngày đăng ký (mới nhất)</option>
         <option value="date_asc">Ngày đăng ký (cũ nhất)</option>
-        <option value="price_asc">Giá tăng dần</option>
-        <option value="price_desc">Giá giảm dần</option>
+        {/* <option value="price_asc">Giá tăng dần</option>
+        <option value="price_desc">Giá giảm dần</option> */}
       </select>
 
       {/* Reset */}
@@ -321,6 +352,7 @@ const doCancel = async (id) => {
           setFilterStatus('all');
           setFilterPlate('');
           setFilterApartment('');
+          setFilterOwnerName('');
           setSortOption('date_desc');
         }}
       >

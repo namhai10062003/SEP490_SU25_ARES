@@ -12,7 +12,9 @@ const AdminReportPage = () => {
   const [loading, setLoading] = useState(false);
   const [showFullDesc, setShowFullDesc] = useState(null);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [rejectReason, setRejectReason] = useState("");
+  const [filteredReports, setFilteredReports] = useState([]);
   const [selectedReportId, setSelectedReportId] = useState(null);
 
   const loadReports = async () => {
@@ -77,9 +79,49 @@ const AdminReportPage = () => {
   };
 
   useEffect(() => {
-    loadReports();
-    // eslint-disable-next-line
-  }, [filter]);
+    const loadAndFilterReports = async () => {
+      setLoading(true);
+      try {
+        const res = await fetchAllReports(filter);
+        const fetchedReports = res.data.data || [];
+  
+        setReports(fetchedReports);
+  
+        // Lọc theo searchTerm
+        const filtered = fetchedReports.filter((rep) => {
+          if (!searchTerm.trim()) return true;
+  
+          const post = rep.post || {};
+          const user = rep.user || {};
+  
+          const fieldsToSearch = [
+            post.title,
+            post.description,
+            post.type,
+            post.property,
+            post.legalDocument,
+            user.name,
+            user.email,
+            rep.reason,
+            rep.description,
+          ];
+  
+          return fieldsToSearch.some((field) =>
+            field?.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        });
+  
+        setFilteredReports(filtered);
+      } catch (err) {
+        console.error("Lỗi khi tải báo cáo:", err);
+        toast.error("Không thể nạp danh sách báo cáo!");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    loadAndFilterReports();
+  }, [filter, searchTerm]);  
 
   return (
     <AdminDashboard active="reports">
@@ -88,19 +130,28 @@ const AdminReportPage = () => {
           <h2 className="mb-0">Quản lý Báo cáo</h2>
         </div>
 
-        <div className="mb-3 d-flex align-items-center gap-2">
-          <label className="fw-semibold">Lọc trạng thái:</label>
-          <select
-            className="form-select w-auto"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          >
-            <option value="pending">Chưa xử lý</option>
-            <option value="reviewed">Đã xử lý</option>
-            <option value="rejected">Từ chối</option>
-            <option value="">Tất cả</option>
-          </select>
-        </div>
+        <div className="container">
+  <div className="mb-3 d-flex justify-content-end gap-3 flex-wrap">
+    <input
+      type="text"
+      className="form-control"
+      placeholder="Tìm kiếm..."
+      style={{ maxWidth: 280 }}
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+    />
+    <select
+      className="form-select w-auto"
+      value={filter}
+      onChange={(e) => setFilter(e.target.value)}
+    >
+      <option value="">Tất cả</option>
+      <option value="pending">Chưa xử lý</option>
+      <option value="reviewed">Đã xử lý</option>
+      <option value="rejected">Từ chối</option>
+    </select>
+  </div>
+</div>
 
         {loading ? (
           <div className="text-center py-5">
@@ -126,14 +177,14 @@ const AdminReportPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {reports.length === 0 && (
+                {filteredReports.length === 0 && (
                   <tr>
                     <td colSpan="15" className="text-center">
                       Không có báo cáo phù hợp
                     </td>
                   </tr>
                 )}
-                {reports.map((rep) => {
+                {filteredReports.map((rep) => {
                   const p = rep.post;
                   return (
                     <tr key={rep._id}>

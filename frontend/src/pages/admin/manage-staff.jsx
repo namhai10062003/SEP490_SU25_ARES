@@ -11,6 +11,7 @@ const ManageStaff = () => {
     const [selectedStaff, setSelectedStaff] = useState(null);
     const [form, setForm] = useState({ username: "", password: "", email: "" });
     const [showPassword, setShowPassword] = useState(false);
+    const [searchText, setSearchText] = useState("");
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
     const PAGE_SIZE = 10;
@@ -121,9 +122,19 @@ const ManageStaff = () => {
     // Filter and pagination logic
     const [filterStatus, setFilterStatus] = useState("");
 
-    const filteredStaff = filterStatus === ""
-        ? staffList
-        : staffList.filter(staff => String(staff.status) === filterStatus);
+    const filteredStaff = staffList.filter(staff => {
+        const matchesStatus =
+            filterStatus === "" ? true : String(staff.status) === filterStatus;
+
+        const lowerSearch = searchText.toLowerCase();
+
+        const matchesSearch =
+            staff.name?.toLowerCase().includes(lowerSearch) ||
+            staff.email?.toLowerCase().includes(lowerSearch) ||
+            staff.phone?.toLowerCase().includes(lowerSearch); // nếu staff có phone
+
+        return matchesStatus && (searchText === "" || matchesSearch);
+    });
 
     const pagedStaff = filteredStaff.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
     const totalPages = Math.ceil(filteredStaff.length / PAGE_SIZE) || 1;
@@ -142,18 +153,35 @@ const ManageStaff = () => {
                     </button>
 
                 </div>
-                <div className="mb-3 d-flex">
-                    <select
-                        className="form-control"
-                        style={{ maxWidth: 220 }}
-                        value={filterStatus}
-                        onChange={e => { setPage(1); setFilterStatus(e.target.value); }}
-                    >
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="1">Active</option>
-                        <option value="0">Blocked</option>
-                    </select>
+                <div className="mb-3 d-flex justify-content-end">
+                    <div className="d-flex gap-3">
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Tìm kiếm..."
+                            style={{ maxWidth: 300 }}
+                            value={searchText}
+                            onChange={(e) => {
+                                setPage(1);
+                                setSearchText(e.target.value);
+                            }}
+                        />
+                        <select
+                            className="form-select w-auto"
+                            style={{ maxWidth: 220 }}
+                            value={filterStatus}
+                            onChange={(e) => {
+                                setPage(1);
+                                setFilterStatus(e.target.value);
+                            }}
+                        >
+                            <option value="">Tất cả trạng thái </option>
+                            <option value="1">Active</option>
+                            <option value="0">Blocked</option>
+                        </select>
+                    </div>
                 </div>
+
                 <div className="card w-100">
                     <div className="card-body p-0">
                         <table className="table table-hover mb-0">

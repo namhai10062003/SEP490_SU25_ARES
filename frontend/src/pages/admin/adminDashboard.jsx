@@ -10,7 +10,8 @@ export default function AdminDashboard({ children }) {
 
   const [showFeedbackSub, setShowFeedbackSub] = useState(
     location.pathname.startsWith("/admin-dashboard/report") ||
-    location.pathname.startsWith("/admin-dashboard/contact")
+    location.pathname.startsWith("/admin-dashboard/contact") ||
+    location.pathname.startsWith("/admin-dashboard/updateprofile")
   );
 
   useEffect(() => {
@@ -19,7 +20,8 @@ export default function AdminDashboard({ children }) {
     }
     if (
       location.pathname.startsWith("/admin-dashboard/report") ||
-      location.pathname.startsWith("/admin-dashboard/contact")
+      location.pathname.startsWith("/admin-dashboard/contact")||
+      location.pathname.startsWith("/admin-dashboard/updateprofile")
     ) {
       setShowFeedbackSub(true);
     }
@@ -122,6 +124,17 @@ export default function AdminDashboard({ children }) {
                             }`}
                         >
                           • <span className="ms-2">Liên Hệ</span>
+                        </Link>
+                      </li>
+                      <li className="nav-item">
+                        <Link
+                          to="/admin-dashboard/updateprofile"
+                          className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/admin-dashboard/updateprofile"
+                            ? "active bg-white text-primary fw-bold shadow-sm"
+                            : "text-white"
+                            }`}
+                        >
+                          • <span className="ms-2">Cập nhật thông tin</span>
                         </Link>
                       </li>
                     </ul>

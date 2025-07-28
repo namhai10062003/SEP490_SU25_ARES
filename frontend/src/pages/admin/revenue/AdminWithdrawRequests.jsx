@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import {
-    approveWithdrawal,
-    fetchAllWithdrawals,
-    rejectWithdrawal,
+  approveWithdrawal,
+  fetchAllWithdrawals,
+  rejectWithdrawal,
 } from "../../../service/withdrawService";
 import AdminDashboard from "../adminDashboard";
 
@@ -13,6 +13,7 @@ const AdminWithdrawPage = () => {
   const [loading, setLoading] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedId, setSelectedId] = useState(null);
 
   const loadWithdrawals = async () => {
@@ -20,19 +21,38 @@ const AdminWithdrawPage = () => {
     try {
       const res = await fetchAllWithdrawals();
       const allData = res.data || [];
-      setWithdrawals(
-        filter ? allData.filter((r) => r.status === filter) : allData
-      );
+  
+      // Lọc theo trạng thái nếu có
+      let filtered = filter
+        ? allData.filter((r) => r.status === filter)
+        : allData;
+  
+      // Lọc theo searchTerm
+      if (searchTerm.trim()) {
+        const lowerSearch = searchTerm.toLowerCase();
+        filtered = filtered.filter((w) =>
+          (w.user?.name?.toLowerCase().includes(lowerSearch) ||
+            w.user?.email?.toLowerCase().includes(lowerSearch) ||
+            w.accountHolder?.toLowerCase().includes(lowerSearch) ||
+            w.bankNumber?.includes(lowerSearch) ||
+            w.bankName?.toLowerCase().includes(lowerSearch) ||
+            String(w.amount).includes(searchTerm.trim()) // Thêm dòng này để tìm theo số tiền
+          )
+        );
+      }
+  
+      setWithdrawals(filtered);
     } catch (err) {
       toast.error("Không thể nạp danh sách yêu cầu rút tiền!");
     } finally {
       setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     loadWithdrawals();
-  }, [filter]);
+  }, [filter, searchTerm]);
 
   const openRejectModal = (id) => {
     setSelectedId(id);
@@ -77,19 +97,30 @@ const AdminWithdrawPage = () => {
           <h2 className="mb-0">Yêu cầu rút tiền</h2>
         </div>
 
-        <div className="mb-3 d-flex align-items-center gap-2">
-          <label className="fw-semibold">Lọc trạng thái:</label>
-          <select
-            className="form-select w-auto"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-          >
-            <option value="pending">Chờ duyệt</option>
-            <option value="approved">Đã duyệt</option>
-            <option value="rejected">Từ chối</option>
-            <option value="">Tất cả</option>
-          </select>
+        <div className="mb-3 d-flex justify-content-end">
+          <div className="d-flex align-items-center gap-2">
+            <label className="fw-semibold">Lọc trạng thái:</label>
+            <select
+              className="form-select w-auto"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="pending">Chờ duyệt</option>
+              <option value="approved">Đã duyệt</option>
+              <option value="rejected">Từ chối</option>
+              <option value="">Tất cả</option>
+            </select>
+
+            <input
+              type="text"
+              className="form-control w-auto"
+              placeholder="Tìm kiếm..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
+
 
         {loading ? (
           <p className="text-center">Đang tải dữ liệu...</p>
@@ -129,13 +160,12 @@ const AdminWithdrawPage = () => {
                       <td>{Number(w.amount).toLocaleString()} đ</td>
                       <td>
                         <span
-                          className={`badge ${
-                            w.status === "approved"
-                              ? "bg-success"
-                              : w.status === "rejected"
+                          className={`badge ${w.status === "approved"
+                            ? "bg-success"
+                            : w.status === "rejected"
                               ? "bg-danger"
                               : "bg-warning text-dark"
-                          }`}
+                            }`}
                         >
                           {w.status}
                         </span>

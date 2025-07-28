@@ -21,76 +21,73 @@ const RevenueDeposit = () => {
     const [contracts, setContracts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
-
+    const [paymentDate, setPaymentDate] = useState("");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [apartmentCode, setApartmentCode] = useState("");
-    const [totalPages, setTotalPages] = useState(1);
+    const [searchText, setSearchText] = useState("");
+    const [filteredPosts, setFilteredPosts] = useState([]);
+
     useEffect(() => {
         const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-        // Convert to YYYY-MM-DD string for input fields
         const toInputDate = (date) => {
             const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const d = String(date.getDate()).padStart(2, '0');
+            const m = String(date.getMonth() + 1).padStart(2, "0");
+            const d = String(date.getDate()).padStart(2, "0");
             return `${y}-${m}-${d}`;
         };
 
-        setStartDate(toInputDate(firstDayOfMonth));
-        setEndDate(toInputDate(lastDayOfMonth));
+        setStartDate(toInputDate(firstDay));
+        setEndDate(toInputDate(lastDay));
     }, []);
+
     useEffect(() => {
-        const getPaidContracts = async () => {
+        const fetchContracts = async () => {
             setLoading(true);
             const data = await fetchPaidContracts();
             setContracts(data);
             setLoading(false);
         };
-        getPaidContracts();
+        fetchContracts();
     }, []);
 
-    const formatDate = (date) => {
-        if (!date) return "-";
-        return new Date(date).toLocaleDateString("vi-VN");
-    };
-
-    const formatPrice = (amount) =>
-        new Intl.NumberFormat("vi-VN").format(amount || 0) + " đ";
-
-    const filteredContracts = contracts.filter((c) => {
-        const paidDate = c.paymentDate ? new Date(c.paymentDate) : null;
-        if (startDate && paidDate < new Date(startDate)) return false;
-        if (endDate && paidDate > new Date(endDate)) return false;
-        if (
-            apartmentCode &&
-            !((c.apartmentCode || "").toLowerCase().includes(apartmentCode.toLowerCase()))
-        )
-            return false;
-        return true;
-    });
-
-    const paginatedContracts = filteredContracts.slice(
-        (page - 1) * PAGE_SIZE,
-        page * PAGE_SIZE
-    );
-
     useEffect(() => {
-        const pages = Math.max(1, Math.ceil(filteredContracts.length / PAGE_SIZE));
-        setTotalPages(pages);
-        if (page > pages) setPage(1);
-    }, [filteredContracts]);
+        const lower = searchText.toLowerCase();
+        const filtered = contracts.filter((c) => {
+            const paidDate = new Date(c.paymentDate);
+            const matchDate =
+                (!startDate || paidDate >= new Date(startDate)) &&
+                (!endDate || paidDate <= new Date(endDate));
+            const matchText =
+                !searchText ||
+                (c.apartmentCode && c.apartmentCode.toLowerCase().includes(lower)) ||
+                (c.contactInfo?.name && c.contactInfo.name.toLowerCase().includes(lower)) ||
+                (c.ownerName && c.ownerName.toLowerCase().includes(lower)) ||
+                (c.orderCode && c.orderCode.toLowerCase().includes(lower)) ||
+                (c.depositAmount && c.depositAmount.toString().includes(lower)) ||
+                (c.commission && c.commission.toString().includes(lower));
 
-    const totalRevenue = filteredContracts.reduce(
+            return matchDate && matchText;
+        });
+        setFilteredPosts(filtered);
+        setPage(1);
+    }, [contracts, searchText, startDate, endDate]);
+
+    const formatDate = (date) => date ? new Date(date).toLocaleDateString("vi-VN") : "-";
+    const formatPrice = (amount) => new Intl.NumberFormat("vi-VN").format(amount || 0) + " đ";
+
+    const paginatedContracts = filteredPosts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    const totalPages = Math.ceil(filteredPosts.length / PAGE_SIZE);
+
+    const totalRevenue = filteredPosts.reduce(
         (sum, c) => sum + Math.round(c.depositAmount * 0.1),
         0
     );
 
     const exportToExcel = () => {
-        const data = filteredContracts.map((c) => ({
+        const data = filteredPosts.map((c) => ({
             "Mã căn hộ": c.apartmentCode,
             "Khách thuê": c.fullNameA,
             "Chủ nhà": c.fullNameB,
@@ -101,6 +98,7 @@ const RevenueDeposit = () => {
             "Hoa hồng (10%)": formatPrice(Math.round(c.depositAmount * 0.1)),
             "Mã giao dịch": c.orderCode,
         }));
+
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "DoanhThuCoc");
@@ -136,7 +134,7 @@ const RevenueDeposit = () => {
     const resetFilters = () => {
         setStartDate("");
         setEndDate("");
-        setApartmentCode("");
+        setSearchText("");
     };
 
     return (
@@ -146,37 +144,69 @@ const RevenueDeposit = () => {
                     <h2 className="mb-0">Thống Kê Doanh Thu Tiền Cọc</h2>
                 </div>
 
-                <div className="row g-2 mb-3">
-                    <div className="col-md-3">
+                <div className="row g-3 align-items-end mb-3">
+                    {/* Bộ lọc theo ngày */}
+                    <div className="col-md-2">
+                        <label className="form-label fw-semibold">Từ ngày</label>
                         <input
                             type="date"
                             value={startDate}
+                            max={endDate || undefined}
                             onChange={(e) => setStartDate(e.target.value)}
                             className="form-control"
                         />
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-2">
+                        <label className="form-label fw-semibold">Đến ngày</label>
                         <input
                             type="date"
                             value={endDate}
+                            min={startDate || undefined}
                             onChange={(e) => setEndDate(e.target.value)}
                             className="form-control"
                         />
                     </div>
-                    <div className="col-md-3">
+
+                    <div className="col-md-2">
+                        <label className="form-label fw-semibold">Ngày thanh toán</label>
                         <input
-                            type="text"
-                            placeholder="Mã căn hộ"
-                            value={apartmentCode}
-                            onChange={(e) => setApartmentCode(e.target.value)}
+                            type="date"
+                            value={paymentDate}
+                            onChange={(e) => setPaymentDate(e.target.value)}
                             className="form-control"
                         />
                     </div>
-                    <div className="col-md-3 d-flex gap-2">
-                        <button className="btn btn-secondary flex-fill" onClick={resetFilters}>
-                            Xóa bộ lọc
+
+                    {/* Bộ lọc text tổng hợp */}
+                    <div className="col-md-2">
+                        <label className="form-label fw-semibold">Tìm kiếm thông tin</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Tìm theo mã căn, khách thuê, chủ nhà, cọc, hoa hồng, mã GD..."
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Nút chức năng */}
+                    <div className="col-md-2 d-grid">
+                        <button
+                            className="btn btn-secondary fw-semibold"
+                            onClick={() => {
+                                setStartDate("");
+                                setEndDate("");
+                                setSearchText("");
+                            }}
+                        >
+                            Xóa lọc
                         </button>
-                        <button className="btn btn-success flex-fill" onClick={exportToExcel}>
+                    </div>
+                    <div className="col-md-2 d-grid"> 
+                        <button
+                            className="btn btn-success fw-semibold"
+                            onClick={exportToExcel}
+                        >
                             Xuất Excel
                         </button>
                     </div>
@@ -261,7 +291,7 @@ const RevenueDeposit = () => {
                 </div>
             </div>
         </AdminDashboard>
-    );
+    )
 };
 
 export default RevenueDeposit;

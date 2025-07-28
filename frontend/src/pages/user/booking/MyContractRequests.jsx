@@ -11,6 +11,9 @@ const MyContractRequests = () => {
   const [rejectPopup, setRejectPopup] = useState({ show: false, contractId: null });
   const [rejectReason, setRejectReason] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -82,11 +85,30 @@ const MyContractRequests = () => {
     }
   };
 
-  const filteredRequests = requests.filter((c) =>
-  filterStatus === "all"
-    ? c.status !== "cancelled"
-    : c.status === filterStatus
-);
+  const filteredRequests = requests.filter((c) => {
+    const matchStatus =
+      filterStatus === "all" ? c.status !== "cancelled" : c.status === filterStatus;
+
+    const keyword = searchTerm.toLowerCase();
+    const matchSearch =
+      c.fullNameB?.toLowerCase().includes(keyword) ||
+      c.addressB?.toLowerCase().includes(keyword) ||
+      c.phoneB?.toLowerCase().includes(keyword) ||
+      c.depositAmount?.toString().includes(keyword);
+
+    const contractDate = new Date(c.createdAt); // hoặc c.startDate tuỳ bạn
+    const from = dateFrom ? new Date(dateFrom) : null;
+    const to = dateTo ? new Date(dateTo) : null;
+    if (to) to.setHours(23, 59, 59, 999); // để bao gồm cả ngày cuối cùng
+
+    const matchDate =
+      (!from || contractDate >= from) &&
+      (!to || contractDate <= to);
+
+    return matchStatus && (!searchTerm || matchSearch) && matchDate;
+  });
+
+
 
   if (loading) return <p>🔄 Đang tải...</p>;
 
@@ -117,6 +139,36 @@ const MyContractRequests = () => {
             <option value="expired">Đã hết hạn</option>
             <option value="cancelled">Đã huỷ</option>
           </select>
+
+          <input
+            type="text"
+            className="form-control w-auto"
+            placeholder="Tìm kiếm..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <input
+            type="date"
+            className="form-control"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            style={{ maxWidth: 200 }}
+          />
+          <input
+            type="date"
+            className="form-control"
+            value={dateTo}
+            onChange={(e) => {
+              if (dateFrom && new Date(e.target.value) < new Date(dateFrom)) {
+                alert("Ngày đến phải sau hoặc bằng ngày bắt đầu");
+                return;
+              }
+              setDateTo(e.target.value);
+            }}
+            min={dateFrom} // ngăn chọn nhỏ hơn từ ngày
+            style={{ maxWidth: 200 }}
+          />
+
         </div>
 
         {filteredRequests.length === 0 ? (
@@ -138,19 +190,19 @@ const MyContractRequests = () => {
                         <div className="mb-1"><span className="fw-semibold">📅</span> {contract.startDate?.slice(0, 10)} - {contract.endDate?.slice(0, 10)}</div>
                         <div className="mb-1"><span className="fw-semibold">💰 Cọc:</span> {contract.depositAmount?.toLocaleString("vi-VN")} VNĐ</div>
                         <div>
-  <span className="fw-semibold">Trạng thái: </span>
-  {contract.status === "approved" ? (
-    <span className="badge bg-success">Đã duyệt</span>
-  ) : contract.status === "rejected" ? (
-    <span className="badge bg-danger">Đã từ chối</span>
-  ) : contract.status === "expired" ? (
-    <span className="badge bg-secondary">Đã hết hạn</span>
-  ) : contract.status === "cancelled" ? (
-    <span className="badge bg-dark">Đã huỷ</span>
-  ) : (
-    <span className="badge bg-warning text-dark">Chờ duyệt</span>
-  )}
-</div>
+                          <span className="fw-semibold">Trạng thái: </span>
+                          {contract.status === "approved" ? (
+                            <span className="badge bg-success">Đã duyệt</span>
+                          ) : contract.status === "rejected" ? (
+                            <span className="badge bg-danger">Đã từ chối</span>
+                          ) : contract.status === "expired" ? (
+                            <span className="badge bg-secondary">Đã hết hạn</span>
+                          ) : contract.status === "cancelled" ? (
+                            <span className="badge bg-dark">Đã huỷ</span>
+                          ) : (
+                            <span className="badge bg-warning text-dark">Chờ duyệt</span>
+                          )}
+                        </div>
                         {contract.rejectReason && (
                           <div className="text-danger fst-italic mt-2">
                             📝 Lý do từ chối: {contract.rejectReason}

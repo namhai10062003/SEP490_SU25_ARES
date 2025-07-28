@@ -75,7 +75,7 @@ export const createPost = async (req, res) => {
         });
     }
 };
-
+// get ra xem all post
 
 export const getPost = async (req, res) => {
     try {
@@ -92,6 +92,41 @@ export const getPost = async (req, res) => {
         }
         return res.status(200).json({
             message: "Post retrieved successfully",
+            success: true,
+            error: false,
+            data: post
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+            error: true
+        });
+    }
+};
+// get post ra trang home 
+export const getPostForGuest = async (req, res) => {
+    try {
+        const now = new Date(); // thời gian hiện tại
+
+        const post = await Post.find({
+            status: "active", // chỉ lấy bài đã được admin duyệt
+            // chỉ lấy bài còn hạn
+        })
+            .populate('contactInfo', 'name email phone')
+            .populate('postPackage', 'type price expireAt')
+            .sort({ createdAt: -1 });
+
+        if (post.length === 0) {
+            return res.status(404).json({
+                message: "Không có bài đăng hợp lệ.",
+                success: false,
+                error: true
+            });
+        }
+
+        return res.status(200).json({
+            message: "Lấy bài đăng thành công (cho khách xem)",
             success: true,
             error: false,
             data: post
@@ -352,7 +387,7 @@ export const verifyPostByAdmin = async (req, res) => {
             });
         }
         // Cập nhật trạng thái bài đăng thành "active"
-        existingPost.status = "active";
+        existingPost.status = "approved";
         existingPost.isActive = true; // Đảm bảo isActive được đặt thành true   
         // Lưu các thay đổi
         await existingPost.save();

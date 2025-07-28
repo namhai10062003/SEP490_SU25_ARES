@@ -12,6 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fortawesome/free-solid-svg-icons": "^7.0.0",
+    "@fortawesome/react-fontawesome": "^0.2.3",
     "@payos/node": "^1.0.10",
     "backend": "file:",
     "bcrypt": "^6.0.0",
@@ -29,6 +31,7 @@
     "node-cron": "^4.1.0",
     "nodemailer": "^7.0.3",
     "socket.io": "^4.8.1",
+    "twilio": "^5.8.0",
     "xlsx": "^0.18.5"
   }
 }
