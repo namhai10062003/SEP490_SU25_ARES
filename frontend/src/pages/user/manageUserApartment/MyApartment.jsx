@@ -51,8 +51,15 @@ const MyApartment = () => {
         axios.get(`${import.meta.env.VITE_API_URL}/api/water/usage`)
       ]);
 
-      const approvedParking = parkingFeeRes.data.data || [];
-      const totalParkingFee = parkingFeeRes.data.total || 0;
+      const approvedParking = Array.isArray(parkingFeeRes.data?.data) ? parkingFeeRes.data.data : [];
+
+      const filteredParking = approvedParking.filter((reg) => {
+        const regDate = new Date(reg.registerDate);
+        const cutoff = new Date(currentMonth + "-15");
+        return regDate <= cutoff;
+      });
+
+      const totalParkingFee = filteredParking.reduce((sum, r) => sum + (r.price || 0), 0);
 
       const matchedWater = waterRes.data.find(
         (item) => item.apartmentCode === apartment.apartmentCode && item.month === currentMonth
@@ -64,7 +71,7 @@ const MyApartment = () => {
 
       const newExpense = {
         maintenanceFee: feeRes.data.managementFee || 0,
-        parkingRegs: approvedParking || [],
+        parkingRegs: filteredParking,
         parkingFee: totalParkingFee,
         waterFee: matchedWater?.total || 0,
         paymentStatus: feeRes.data.paymentStatus || "unpaid"
@@ -78,6 +85,7 @@ const MyApartment = () => {
       console.error("❌ Lỗi fetch chi phí:", err);
     }
   };
+
 
   const handlePayment = async (apartmentId) => {
     const formattedMonth = `${selectedMonth.slice(5, 7)}/${selectedMonth.slice(0, 4)}`;

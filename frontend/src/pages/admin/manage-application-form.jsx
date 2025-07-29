@@ -12,8 +12,9 @@ const ManageApplicationForm = () => {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
-    const [filterStatus, setFilterStatus] = useState("");
+    const [filterStatus, setFilterStatus] = useState("Chờ duyệt");
     const [selectedApp, setSelectedApp] = useState(null);
+    const [sortOrder, setSortOrder] = useState("newest");
     const [showModal, setShowModal] = useState(false);
     const [page, setPage] = useState(1);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -191,16 +192,23 @@ const ManageApplicationForm = () => {
     };
 
     // Filter logic
-    const filteredApps = applications.filter(app =>
-      (searchTerm.trim() === "" ||
-        (app.fullName && app.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (app.email && app.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (app.phone && app.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (app.apartmentCode && app.apartmentCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (app.documentType && app.documentType.toLowerCase().includes(searchTerm.toLowerCase()))
-      ) &&
-      (filterStatus === "" || String(app.status) === filterStatus)
-    );
+    const filteredApps = applications
+  .filter(app =>
+    (searchTerm.trim() === "" ||
+      (app.fullName && app.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (app.email && app.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (app.phone && app.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (app.apartmentCode && app.apartmentCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (app.documentType && app.documentType.toLowerCase().includes(searchTerm.toLowerCase()))
+    ) &&
+    (filterStatus === "" || String(app.status) === filterStatus)
+  )
+  .sort((a, b) => {
+    const dateA = new Date(a.createdAt);
+    const dateB = new Date(b.createdAt);
+    return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+  });
+
     
 
     // Pagination logic
@@ -225,6 +233,16 @@ const ManageApplicationForm = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             style={{ width: 220 }}
                         />
+                        <select
+  className="form-select w-auto"
+  style={{ maxWidth: 180 }}
+  value={sortOrder}
+  onChange={(e) => setSortOrder(e.target.value)}
+>
+  <option value="newest">Mới nhất</option>
+  <option value="oldest">Cũ nhất</option>
+</select>
+
                         <select
                             className="form-select w-auto"
                             style={{ maxWidth: 180 }}

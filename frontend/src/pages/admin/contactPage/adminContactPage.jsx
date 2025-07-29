@@ -7,7 +7,7 @@ const AdminContactPage = () => {
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [searchText, setSearchText] = useState("");
-    const [filter, setFilter] = useState(""); // lọc trạng thái
+    const [filter, setFilter] = useState("pending"); // lọc trạng thái
 
     const loadContacts = async () => {
         setLoading(true);

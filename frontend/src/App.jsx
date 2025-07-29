@@ -116,7 +116,7 @@ function AppRoutes() {
           <Route path="/my-contracts" element={<MyContracts />} />
           <Route path="/my-requests" element={<MyContractRequests />} />
           <Route path="/contracts/:id" element={<ContractDetail />} />
-          <Route path="/liked-posts" element={<LikedPosts />} />
+          <Route path="/canho/liked-posts" element={<LikedPosts />} />
           <Route path="/my-verified" element={<MyVerifiedApplications />} />
           <Route path="/gioi-thieu" element={<Introduce />} />
           <Route path="/my-revenue" element={<UserRevenue />} />

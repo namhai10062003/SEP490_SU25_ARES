@@ -12,6 +12,7 @@ const AdminWithdrawPage = () => {
   const [filter, setFilter] = useState("pending");
   const [loading, setLoading] = useState(false);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
+  const [sortOrder, setSortOrder] = useState("newest");
   const [rejectReason, setRejectReason] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedId, setSelectedId] = useState(null);
@@ -21,26 +22,32 @@ const AdminWithdrawPage = () => {
     try {
       const res = await fetchAllWithdrawals();
       const allData = res.data || [];
-  
+
       // Lọc theo trạng thái nếu có
       let filtered = filter
         ? allData.filter((r) => r.status === filter)
         : allData;
-  
+
       // Lọc theo searchTerm
       if (searchTerm.trim()) {
         const lowerSearch = searchTerm.toLowerCase();
         filtered = filtered.filter((w) =>
-          (w.user?.name?.toLowerCase().includes(lowerSearch) ||
-            w.user?.email?.toLowerCase().includes(lowerSearch) ||
-            w.accountHolder?.toLowerCase().includes(lowerSearch) ||
-            w.bankNumber?.includes(lowerSearch) ||
-            w.bankName?.toLowerCase().includes(lowerSearch) ||
-            String(w.amount).includes(searchTerm.trim()) // Thêm dòng này để tìm theo số tiền
-          )
+        (w.user?.name?.toLowerCase().includes(lowerSearch) ||
+          w.user?.email?.toLowerCase().includes(lowerSearch) ||
+          w.accountHolder?.toLowerCase().includes(lowerSearch) ||
+          w.bankNumber?.includes(lowerSearch) ||
+          w.bankName?.toLowerCase().includes(lowerSearch) ||
+          String(w.amount).includes(searchTerm.trim()))
         );
       }
-  
+
+      // Sắp xếp theo approvedAt
+      filtered = filtered.sort((a, b) => {
+        const dateA = new Date(a.approvedAt || a.createdAt); // fallback nếu chưa có approvedAt
+        const dateB = new Date(b.approvedAt || b.createdAt);
+        return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+      });
+
       setWithdrawals(filtered);
     } catch (err) {
       toast.error("Không thể nạp danh sách yêu cầu rút tiền!");
@@ -48,11 +55,10 @@ const AdminWithdrawPage = () => {
       setLoading(false);
     }
   };
-  
 
   useEffect(() => {
     loadWithdrawals();
-  }, [filter, searchTerm]);
+  }, [filter, searchTerm, sortOrder]);
 
   const openRejectModal = (id) => {
     setSelectedId(id);
@@ -105,10 +111,19 @@ const AdminWithdrawPage = () => {
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             >
+              <option value="">Tất cả</option>
               <option value="pending">Chờ duyệt</option>
               <option value="approved">Đã duyệt</option>
               <option value="rejected">Từ chối</option>
-              <option value="">Tất cả</option>
+            </select>
+
+            <select
+              className="form-select w-auto"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+            >
+              <option value="newest">Mới nhất</option>
+              <option value="oldest">Cũ nhất</option>
             </select>
 
             <input
