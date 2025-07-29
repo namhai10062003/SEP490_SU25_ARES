@@ -130,11 +130,11 @@ const AdminReportPage = () => {
           <h2 className="mb-0">Quản lý Báo cáo</h2>
         </div>
 
-        <div className="container">
-          <div className="mb-3 d-flex justify-content-end gap-3 flex-wrap">
+        <div className="mb-3 d-flex flex-column flex-md-row justify-content-end align-items-md-center gap-3">
+          <div className="d-flex align-items-center gap-2">
             <input
               type="text"
-              className="form-control"
+              className="form-control w-auto"
               placeholder="Tìm kiếm..."
               style={{ maxWidth: 280 }}
               value={searchTerm}

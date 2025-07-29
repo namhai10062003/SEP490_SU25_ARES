@@ -142,45 +142,45 @@ const ManageStaff = () => {
     return (
         <AdminDashboard>
             <div className="w-100">
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2 className="fw-bold mb-0">Quản lý Staff</h2>
-                    <button
-                        className="btn btn-primary fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm"
-                        onClick={openAdd}
-                    >
-                        <FontAwesomeIcon icon={faPlus} />
-                        Thêm Staff
-                    </button>
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+  {/* Bên trái */}
+  <h2 className="fw-bold mb-0">Quản lý Staff</h2>
 
-                </div>
-                <div className="mb-3 d-flex justify-content-end">
-                    <div className="d-flex gap-3">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Tìm kiếm..."
-                            style={{ maxWidth: 300 }}
-                            value={searchText}
-                            onChange={(e) => {
-                                setPage(1);
-                                setSearchText(e.target.value);
-                            }}
-                        />
-                        <select
-                            className="form-select w-auto"
-                            style={{ maxWidth: 220 }}
-                            value={filterStatus}
-                            onChange={(e) => {
-                                setPage(1);
-                                setFilterStatus(e.target.value);
-                            }}
-                        >
-                            <option value="">Tất cả trạng thái </option>
-                            <option value="1">Active</option>
-                            <option value="0">Blocked</option>
-                        </select>
-                    </div>
-                </div>
+  {/* Bên phải: input, select, button */}
+  <div className="d-flex gap-3 flex-wrap">
+    <input
+      type="text"
+      className="form-control"
+      placeholder="Tìm kiếm..."
+      style={{ maxWidth: 150 }}
+      value={searchText}
+      onChange={(e) => {
+        setPage(1);
+        setSearchText(e.target.value);
+      }}
+    />
+    <select
+      className="form-select"
+      style={{ maxWidth: 100 }}
+      value={filterStatus}
+      onChange={(e) => {
+        setPage(1);
+        setFilterStatus(e.target.value);
+      }}
+    >
+      <option value="">Tất cả</option>
+      <option value="1">Active</option>
+      <option value="0">Blocked</option>
+    </select>
+    <button
+      className="btn btn-primary fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm"
+      onClick={openAdd}
+    >
+      <FontAwesomeIcon icon={faPlus} />
+      Thêm Staff
+    </button>
+  </div>
+</div>
 
                 <div className="card w-100">
                     <div className="card-body p-0">

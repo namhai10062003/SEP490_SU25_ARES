@@ -97,6 +97,13 @@ const AdminProfileUpdatePage = () => {
         {/* Lọc trạng thái */}
         <div className="mb-3 d-flex flex-column flex-md-row justify-content-end align-items-md-center gap-3">
           <div className="d-flex align-items-center gap-2">
+          <input
+            type="text"
+            className="form-control w-auto"
+            placeholder="Tìm kiếm..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
             <select
               className="form-select w-auto"
               value={filter}
@@ -107,13 +114,7 @@ const AdminProfileUpdatePage = () => {
               <option value="rejected">Từ chối</option>
               <option value="">Tất cả</option>
             </select>
-            <input
-            type="text"
-            className="form-control w-auto"
-            placeholder="Tìm kiếm..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-          />
+            
           </div>
         </div>
 
