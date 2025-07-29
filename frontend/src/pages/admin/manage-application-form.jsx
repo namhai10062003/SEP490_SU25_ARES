@@ -121,11 +121,22 @@ const ManageApplicationForm = () => {
         }
     };
 
-    const handleView = (app) => {
-        setSelectedApp(app);
+    const handleView = async (app) => {
+      try {
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/resident-verifications/${app._id}`
+        );
+    
+        // Lưu toàn bộ dữ liệu vào state (bao gồm unpaidFees)
+        setSelectedApp(res.data.data);
+    
+        // Mở modal hiển thị
         setShowModal(true);
+      } catch (err) {
+        toast.error("Không thể tải chi tiết đơn.");
+        console.error(err);
+      }
     };
-
     const handleApprove = async (id) => {
         if (window.confirm("Xác nhận duyệt đơn này?")) {
             try {
@@ -392,24 +403,105 @@ const ManageApplicationForm = () => {
                                     </button>
                                 </div>
                                 <div className="modal-body">
-                                    <p><b>Họ tên:</b> {selectedApp.fullName}</p>
-                                    <p><b>Email:</b> {selectedApp.email}</p>
-                                    <p><b>Điện thoại:</b> {selectedApp.phone}</p>
-                                    <p><b>Căn hộ:</b> {selectedApp.apartmentCode}</p>
-                                    <p><b>Loại giấy tờ:</b> {selectedApp.documentType}</p>
-                                    <p><b>Thời hạn hợp đồng:</b> {selectedApp.contractStart ? new Date(selectedApp.contractStart).toLocaleDateString() : ""} - {selectedApp.contractEnd ? new Date(selectedApp.contractEnd).toLocaleDateString() : ""}</p>
-                                    <p><b>Trạng thái:</b> {selectedApp.status}</p>
-                                    {selectedApp.documentImage && (
-                                        <div className="mb-2">
-                                            <b>Ảnh tài liệu:</b><br />
-                                            <img
-                                                src={selectedApp.documentImage}
-                                                alt="Ảnh minh chứng"
-                                                style={{ maxWidth: "100%", maxHeight: 250, marginTop: 8, borderRadius: 8 }}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
+  {/* Thông tin hợp đồng */}
+  <div className="mb-4">
+    <h5 className="fw-bold mb-3 text-primary">📄 Thông tin hợp đồng</h5>
+    <ul className="list-group list-group-flush">
+      <li className="list-group-item"><strong>Loại giấy tờ:</strong> {selectedApp.documentType}</li>
+      <li className="list-group-item"><strong>Thời hạn:</strong> {selectedApp.contractStart ? new Date(selectedApp.contractStart).toLocaleDateString() : "-"} - {selectedApp.contractEnd ? new Date(selectedApp.contractEnd).toLocaleDateString() : "-"}</li>
+      <li className="list-group-item">
+  <strong>Trạng thái:</strong>{" "}
+  <span
+    className={`badge px-2 py-1 rounded-pill ${
+      selectedApp.status === "Chờ duyệt"
+        ? "bg-warning text-dark"
+        : selectedApp.status === "Đã từ chối"
+        ? "bg-danger"
+        : selectedApp.status === "Đã duyệt"
+        ? "bg-success"
+        : "bg-secondary"
+    }`}
+  >
+    {selectedApp.status}
+  </span>
+</li>
+      <li className="list-group-item"><strong>Ngày tạo đơn:</strong> {new Date(selectedApp.createdAt).toLocaleString()}</li>
+    </ul>
+
+    {selectedApp.documentImage && (
+      <div className="mt-3 text-center">
+        <label className="fw-semibold mb-2">Ảnh hợp đồng:</label><br />
+        <img
+          src={selectedApp.documentImage}
+          alt="Ảnh hợp đồng"
+          className="img-fluid rounded shadow-sm"
+          style={{ maxHeight: 250 }}
+        />
+      </div>
+    )}
+  </div>
+
+  <hr />
+
+  {/* Người thuê */}
+  <div className="mb-4">
+    <h5 className="fw-bold mb-3 text-primary">👤 Người thuê</h5>
+    <ul className="list-group list-group-flush">
+      <li className="list-group-item"><strong>Họ tên:</strong> {selectedApp.resident?.name || selectedApp.fullName}</li>
+      <li className="list-group-item"><strong>Email:</strong> {selectedApp.resident?.email || selectedApp.email}</li>
+      <li className="list-group-item"><strong>SĐT:</strong> {selectedApp.resident?.phone || selectedApp.phone}</li>
+    </ul>
+  </div>
+
+  <hr />
+
+  {/* Thông tin căn hộ */}
+  <div className="mb-4">
+    <h5 className="fw-bold mb-3 text-primary">🏢 Thông tin căn hộ</h5>
+    <ul className="list-group list-group-flush">
+      <li className="list-group-item"><strong>Mã căn hộ:</strong> {selectedApp.apartment?.code || selectedApp.apartmentCode}</li>
+      <li className="list-group-item"><strong>Tầng:</strong> {selectedApp.apartment?.floor}</li>
+      <li className="list-group-item"><strong>Diện tích:</strong> {selectedApp.apartment?.area} m²</li>
+      <li className="list-group-item"><strong>Nội thất:</strong> {selectedApp.apartment?.furniture}</li>
+      <li className="list-group-item"><strong>Hướng:</strong> {selectedApp.apartment?.direction}</li>
+      <li className="list-group-item"><strong>Trạng thái:</strong> {selectedApp.apartment?.status}</li>
+    </ul>
+  </div>
+
+  {/* Các tháng chưa thanh toán */}
+  {selectedApp.unpaidFees && selectedApp.unpaidFees.length > 0 && (
+    <div className="mb-3">
+      <h5 className="fw-bold mb-3 text-danger">📅 Các tháng chưa thanh toán</h5>
+      <div className="table-responsive">
+        <table className="table table-bordered table-hover table-striped align-middle">
+          <thead className="table-secondary text-center">
+            <tr>
+              <th>Tháng</th>
+              <th>Phí quản lý</th>
+              <th>Phí nước</th>
+              <th>Phí giữ xe</th>
+              <th>Tổng</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            {selectedApp.unpaidFees.map((fee, index) => (
+              <tr key={index}>
+                <td className="text-center">{fee.month}</td>
+                <td className="text-end">{fee.managementFee.toLocaleString()}đ</td>
+                <td className="text-end">{fee.waterFee.toLocaleString()}đ</td>
+                <td className="text-end">{fee.parkingFee.toLocaleString()}đ</td>
+                <td className="text-end fw-bold">{fee.total.toLocaleString()}đ</td>
+                <td className="text-center text-danger fw-semibold">{fee.status}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )}
+</div>
+
                                 <div className="modal-footer">
                                     <button
                                         type="button"
