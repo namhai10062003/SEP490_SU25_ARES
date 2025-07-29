@@ -1,4 +1,5 @@
 import Apartment from '../models/Apartment.js';
+import Fee from '../models/Fee.js';
 import Notification from '../models/Notification.js';
 import ResidentVerification from '../models/ResidentVerification.js';
 import User from '../models/User.js';
@@ -99,16 +100,140 @@ const getAllResidentVerifications = async (req, res) => {
 
 const getResidentVerificationById = async (req, res) => {
   try {
-    const form = await ResidentVerification.findById(req.params.id)
-      .populate('staff', 'name email')
-      .populate('user', 'name email')
-      .populate('apartment', 'apartmentCode name');
-    if (!form) return res.status(404).json({ error: "Resident verification not found" });
-    res.json(form);
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
+    const id = req.params.id;
+    const form = await ResidentVerification.findById(id)
+      .populate("user", "-password")
+      .populate("staff", "-password");
+
+    if (!form) {
+      return res.status(404).json({ error: "Không tìm thấy form xác minh cư dân" });
+    }
+
+    console.log("✅ Form đã tìm thấy:", form);
+    console.log("🔑 Mã căn hộ:", form.apartmentCode);
+
+    // Tìm căn hộ theo apartmentCode
+    // Tìm thông tin căn hộ theo apartmentCode
+const apt = await Apartment.findOne({ apartmentCode: form.apartmentCode })
+.populate("isOwner", "-password")
+.populate("isRenter", "-password")
+.lean();
+
+if (!apt) {
+return res.status(404).json({ error: "Không có thông tin căn hộ liên kết" });
+}
+
+    // Nếu tìm thấy thì gắn vào form
+if (apt) {
+  form.owner = apt.isOwner;
+  form.renter = apt.isRenter;
+}
+
+    if (!apt) {
+      console.log("❌ Không tìm thấy căn hộ:", form.apartmentCode);
+      return res.status(404).json({ error: "Không có thông tin căn hộ liên kết" });
+    }
+
+    // Lấy tháng hiện tại
+    const selectedMonth = req.query.month; // VD: '07/2025' từ FE truyền lên
+const now = new Date();
+const formattedMonth = selectedMonth || `${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()}`;
+
+    console.log("🔍 Đang tìm phí với:", {
+      apartmentCode: apt.apartmentCode,
+      month: formattedMonth
+    });
+
+    // Tìm phí theo tháng hiện tại
+    // Chỉ tìm đúng tháng được truyền vào, không fallback
+const fee = await Fee.findOne({
+  apartmentCode: apt.apartmentCode,
+  month: formattedMonth,
+}).lean();
+
+// Tìm các tháng chưa thanh toán (paymentStatus = 'unpaid') cho căn hộ
+const unpaidFees = await Fee.find({
+  apartmentCode: apt.apartmentCode,
+  paymentStatus: "unpaid",
+}).lean();
+
+
+if (!fee) {
+  console.log(`⚠️ Không tìm thấy phí cho tháng ${formattedMonth}`);
+}
+    if (!fee) {
+      console.log("❌ Không tìm thấy bất kỳ phí nào cho căn hộ này.");
+    } else {
+      console.log("✅ Phí tìm thấy:", fee);
+    }
+
+    // Trả kết quả
+    const result = {
+      requestId: form._id,
+      documentType: form.documentType,
+      status: form.status,
+      note: form.note,
+      contractStart: form.contractStart,
+      contractEnd: form.contractEnd,
+      documentImage: form.documentImage,
+      createdAt: form.createdAt,
+
+      resident: {
+        name: form.fullName,
+        email: form.email,
+        phone: form.phone,
+      },
+
+      apartment: {
+        id: apt._id,
+        code: apt.apartmentCode,
+        floor: apt.floor,
+        area: apt.area,
+        furniture: apt.furniture,
+        direction: apt.direction,
+        status: apt.status,
+      },
+
+      owner: apt.isOwner ? {
+        name: apt.isOwner.name,
+        email: apt.isOwner.email,
+        phone: apt.isOwner.phone,
+      } : null,
+
+      renter: apt.isRenter ? {
+        name: apt.isRenter.name,
+        email: apt.isRenter.email,
+        phone: apt.isRenter.phone,
+      } : null,
+
+      unpaidFees: unpaidFees.map(f => ({
+        month: f.month,
+        managementFee: f.managementFee,
+        waterFee: f.waterFee,
+        parkingFee: f.parkingFee,
+        total: f.total,
+        status: f.paymentStatus,
+      })),
+    };
+
+// Lấy danh sách các tháng chưa thanh toán
+const unpaidMonths = unpaidFees.map(f => f.month);
+return res.json({
+  success: true,
+  data: {
+    ...result,
+    unpaidMonths, // thêm danh sách tháng chưa thanh toán
+  }
+});
+
+  } catch (error) {
+    console.error("❌ Lỗi getResidentVerificationById:", error);
+    res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };
+
+
+
 
 const approveResidentVerification = async (req, res) => {
   try {
@@ -123,27 +248,54 @@ const approveResidentVerification = async (req, res) => {
 
     const apartment = await Apartment.findOne({ apartmentCode: application.apartmentCode });
     if (!apartment) return res.status(404).json({ error: "Không tìm thấy căn hộ" });
-    console.log("application.user:", application.user);
-
 
     const user = await User.findById(application.user);
     if (!user) return res.status(404).json({ error: "Không tìm thấy người dùng" });
 
+    // 🔍 Kiểm tra các khoản phí chưa thanh toán
+// 🔍 Kiểm tra các khoản phí chưa thanh toán
+const unpaidFees = await Fee.find({
+  apartmentCode: apartment.apartmentCode,
+  paymentStatus: "unpaid",
+});
+
+if (unpaidFees.length > 0) {
+  // ❌ Không gửi cho renter — chỉ gửi owner nếu có, nếu không thì gửi cho người nộp đơn
+  let targetUserId = null;
+
+  if (apartment.isOwner) {
+    targetUserId = apartment.isOwner;
+  } else {
+    targetUserId = user._id; // người làm đơn
+  }
+
+  if (targetUserId) {
+    await Notification.create({
+      userId: targetUserId,
+      message: `Vui lòng thanh toán đầy đủ các khoản phí trước khi xác nhận cư dân cho căn hộ ${apartment.apartmentCode}.`,
+    });
+  }
+
+  return res.status(400).json({
+    error: "Không thể duyệt đơn vì còn các khoản phí chưa thanh toán.",
+    unpaidMonths: unpaidFees.map(f => f.month),
+  });
+}
+
+    // ✅ Nếu không còn phí chưa thanh toán thì tiến hành duyệt
     if (application.documentType === "Hợp đồng mua bán" || application.documentType === "ownership" || application.documentType === 'Giấy chủ quyền') {
-      // Transfer ownership, clear renter
       apartment.ownerName = application.fullName;
       apartment.ownerPhone = application.phone;
       apartment.isOwner = user._id;
       apartment.isRenter = null;
       apartment.status = "đang ở";
-      apartment.legalDocuments = "sổ hồng"; // Đảm bảo có sổ
+      apartment.legalDocuments = "sổ hồng";
     } else if (application.documentType === "Hợp đồng cho thuê" || application.documentType === "rental") {
       if (apartment.isRenter) {
         return res.status(403).json({ error: "Căn hộ này đã có người thuê!" });
       }
-      apartment.isRenter = user._id;     // <-- ObjectId
+      apartment.isRenter = user._id;
       apartment.status = "đang cho thuê";
-      // Do not change owner info or isOwner
     } else {
       return res.status(400).json({ error: "Loại giấy tờ không hợp lệ" });
     }
@@ -152,19 +304,21 @@ const approveResidentVerification = async (req, res) => {
 
     application.status = "Đã duyệt";
     await application.save();
-    // Notify user
+
+    // Gửi thông báo xác nhận duyệt
     await Notification.create({
       userId: user._id,
       message: `Đơn xác nhận cư dân của bạn cho căn hộ ${apartment.apartmentCode} đã được duyệt.`,
     });
 
-
     res.json({ success: true, message: "Đã duyệt đơn thành công!" });
+
   } catch (err) {
     console.error("Error approving resident verification:", err);
     res.status(500).json({ error: "Lỗi server khi duyệt đơn" });
   }
 };
+
 
 const getUserWithApartment = async (req, res) => {
   try {
