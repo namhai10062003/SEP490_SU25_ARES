@@ -108,11 +108,9 @@ const ManageUsers = () => {
             <div className="w-100 postion-relative">
                 {/* Loading Modal */}
                 {loading && <LoadingModal />}
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h2 className="font-weight-bold">Quản lý User</h2>
-                </div>
-                <div className="mb-3 d-flex justify-content-end">
-                    <div className="d-flex gap-3 flex-wrap">
+                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <h2 className="font-weight-bold mb-0">Quản lý User</h2>
+                    <div className="d-flex gap-3 flex-nowrap align-items-center">
                         <input
                             type="text"
                             className="form-control"
@@ -139,7 +137,6 @@ const ManageUsers = () => {
                         </select>
                     </div>
                 </div>
-
 
                 <div className="card w-100">
                     <div className="card-body p-0">

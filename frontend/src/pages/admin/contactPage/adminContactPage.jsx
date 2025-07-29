@@ -81,7 +81,7 @@ const AdminContactPage = () => {
                     <input
                         type="text"
                         className="form-control"
-                        placeholder="Tìm kiếm liên hệ..."
+                        placeholder="Tìm kiếm..."
                         style={{ maxWidth: 200 }}
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
