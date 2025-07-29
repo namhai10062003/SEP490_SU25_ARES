@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
 import Apartment from "../models/Apartment.js";
 import Expense from "../models/Expense.js";
-import Fee from "../models/Fee.js"; // 🆕 Fee model mới
+import Fee from "../models/Fee.js";
 import ParkingRegistration from "../models/ParkingRegistration.js";
 import WaterUsage from "../models/WaterUsage.js";
+
+// Tính và lưu tất cả các phí theo tháng
 const calculateAndSaveFees = async (req, res) => {
   try {
     const apartments = await Apartment.find().lean();
@@ -33,27 +35,26 @@ const calculateAndSaveFees = async (req, res) => {
 
       const months = new Set();
 
-      // Gom các tháng có chi phí
+      // Gom các tháng có chi phí nước
       waterForApt.forEach((w) => {
         const [year, month] = w.month.split("-");
-        const key = `${month}/${year}`;
+        const key = `${year}-${month.padStart(2, "0")}`;
         months.add(key);
       });
 
-      // Gom các tháng đăng ký gửi xe (duyệt mỗi tháng từ ngày bắt đầu -> hiện tại)
+      // Gom các tháng đăng ký gửi xe
       parkingForApt.forEach((p) => {
         const start = new Date(p.registerDate);
-        const end = new Date(); // không dùng expireDate
-
+        const end = new Date();
         const cur = new Date(start.getFullYear(), start.getMonth(), 1);
+
         while (cur <= end) {
-          const key = `${(cur.getMonth() + 1).toString().padStart(2, "0")}/${cur.getFullYear()}`;
+          const key = `${cur.getFullYear()}-${(cur.getMonth() + 1).toString().padStart(2, "0")}`;
           months.add(key);
           cur.setMonth(cur.getMonth() + 1);
         }
       });
 
-      // Nếu không có tháng nào
       if (months.size === 0) {
         feeDocs.push({
           apartmentId: apt._id,
@@ -64,7 +65,6 @@ const calculateAndSaveFees = async (req, res) => {
           waterFee: 0,
           parkingFee: 0,
           total: managementFee,
-          // 👇 Thêm các trường này
           paymentStatus: "unpaid",
           orderCode: null,
           paymentDate: null
@@ -73,22 +73,19 @@ const calculateAndSaveFees = async (req, res) => {
       }
 
       for (const month of months) {
-        const [m, y] = month.split("/");
+        const [y, m] = month.split("-");
         const monthDate = new Date(`${y}-${m}-01`);
-        const waterFee = waterForApt.find((w) => {
-          const [year, mon] = w.month.split("-");
-          const formatted = `${mon}/${year}`;
-          return formatted === month;
-        })?.total || 0;
 
-        const matchingParking = parkingForApt.filter((p) => {
-          const start = new Date(p.registerDate);
-          const [m, y] = month.split("/");
-          const check = new Date(`${y}-${m}-01`);
-          return start <= check;
-        });
+        const waterFee = waterForApt.find((w) => w.month === `${y}-${m}`)?.total || 0;
 
-        const parkingFee = matchingParking.reduce((sum, p) => sum + (p.price || 0), 0);
+        const parkingFee = parkingForApt.reduce((sum, p) => {
+          const register = new Date(p.registerDate);
+          const targetMonth = new Date(`${y}-${m}-01`);
+          if (register <= targetMonth) {
+            return sum + (p.price || 0);
+          }
+          return sum;
+        }, 0);
 
         const total = managementFee + waterFee + parkingFee;
 
@@ -96,13 +93,12 @@ const calculateAndSaveFees = async (req, res) => {
           apartmentId: apt._id,
           apartmentCode: aptCode,
           ownerName,
-          month,
+          month: `${m}/${y}`,
           monthDate,
           managementFee,
           waterFee,
           parkingFee,
           total,
-          // 👇 Thêm các trường này
           paymentStatus: "unpaid",
           orderCode: null,
           paymentDate: null
@@ -110,8 +106,6 @@ const calculateAndSaveFees = async (req, res) => {
       }
     }
 
-    // 🧹 Xoá dữ liệu cũ để tránh trùng lặp
-    // 🧹 Xoá dữ liệu cũ để tránh trùng lặp
     await Fee.deleteMany({});
     await Fee.insertMany(feeDocs);
 
@@ -135,8 +129,9 @@ const getAllFees = async (req, res) => {
     res.status(500).json({ error: "Lỗi server khi lấy danh sách phí" });
   }
 };
-// hàm lấy tiền theo tháng 
-export const getMonthlyFeeByApartment = async (req, res) => {
+
+// Lấy tổng phí theo tháng của 1 căn hộ
+const getMonthlyFeeByApartment = async (req, res) => {
   try {
     const { apartmentId } = req.params;
 
@@ -145,11 +140,7 @@ export const getMonthlyFeeByApartment = async (req, res) => {
     }
 
     const fees = await Fee.aggregate([
-      {
-        $match: {
-          apartmentId: new mongoose.Types.ObjectId(apartmentId)
-        }
-      },
+      { $match: { apartmentId: new mongoose.Types.ObjectId(apartmentId) } },
       {
         $group: {
           _id: "$month",
@@ -174,16 +165,14 @@ export const getMonthlyFeeByApartment = async (req, res) => {
     res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };
-// get ra dữ liệu của các phí 
-export const getFeeByApartmentAndMonth = async (req, res) => {
+
+// Lấy chi tiết phí theo căn hộ và tháng
+const getFeeByApartmentAndMonth = async (req, res) => {
   try {
     const { apartmentId, month } = req.params;
-
-    // ✅ Chuyển "2025-07" thành "07/2025"
     const formattedMonth = `${month.slice(5, 7)}/${month.slice(0, 4)}`;
 
-    // ✅ Tìm theo đúng trường "apartmentId" (chứ không phải "apartment")
-    const fee = await Fee.findOne({ apartmentId: apartmentId, month: formattedMonth });
+    const fee = await Fee.findOne({ apartmentId, month: formattedMonth });
 
     if (!fee) {
       return res.status(404).json({ message: "Không tìm thấy phí", success: false });
@@ -201,23 +190,22 @@ export const getFeeByApartmentAndMonth = async (req, res) => {
       total: fee.total,
       paymentStatus: fee.paymentStatus || "unpaid",
     });
-
   } catch (error) {
     console.error("❌ Lỗi getFeeByApartmentAndMonth:", error);
     res.status(500).json({ message: "Lỗi server", success: false });
   }
 };
 
-// tính phí gửi xe vào 
-export const updateParkingFee = async (req, res) => {
+// Cập nhật phí gửi xe cho 1 tháng và căn hộ
+const updateParkingFee = async (req, res) => {
   const { apartmentId, month } = req.params;
   const { parkingFee } = req.body;
 
   try {
     const fee = await Fee.findOneAndUpdate(
-      { apartmentId, month }, // VD: month = "07/2025"
+      { apartmentId, month },
       { $set: { parkingFee } },
-      { new: true, upsert: true } // tạo mới nếu chưa có
+      { new: true, upsert: true }
     );
 
     res.status(200).json({ success: true, data: fee });
@@ -227,6 +215,10 @@ export const updateParkingFee = async (req, res) => {
   }
 };
 
-
-export { calculateAndSaveFees, getAllFees };
-
+export {
+  calculateAndSaveFees,
+  getAllFees,
+  getMonthlyFeeByApartment,
+  getFeeByApartmentAndMonth,
+  updateParkingFee
+};

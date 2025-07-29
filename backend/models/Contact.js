@@ -7,7 +7,7 @@ const contactSchema = new mongoose.Schema({
   message: { type: String, required: true },
   status: {
     type: String,
-    enum: ["pending", "reviewed"],
+    enum: ["pending", "reviewed", "archived"],
     default: "pending"
   },
   isDeleted: {
