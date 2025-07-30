@@ -63,8 +63,8 @@ const RevenueDeposit = () => {
             const matchText =
                 !searchText ||
                 (c.apartmentCode && c.apartmentCode.toLowerCase().includes(lower)) ||
-                (c.contactInfo?.name && c.contactInfo.name.toLowerCase().includes(lower)) ||
-                (c.ownerName && c.ownerName.toLowerCase().includes(lower)) ||
+                (c.fullNameA && c.fullNameA.toLowerCase().includes(lower)) ||
+                (c.fullNameB && c.fullNameB.toLowerCase().includes(lower)) ||
                 (c.orderCode && c.orderCode.toLowerCase().includes(lower)) ||
                 (c.depositAmount && c.depositAmount.toString().includes(lower)) ||
                 (c.commission && c.commission.toString().includes(lower));
@@ -183,7 +183,7 @@ const RevenueDeposit = () => {
                         <input
                             type="text"
                             className="form-control"
-                            placeholder="Tìm theo mã căn, khách thuê, chủ nhà, cọc, hoa hồng, mã GD..."
+                            placeholder="Tìm kiếm..."
                             value={searchText}
                             onChange={(e) => setSearchText(e.target.value)}
                         />
