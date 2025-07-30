@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
-import { FaBuilding, FaExchangeAlt, FaHome } from "react-icons/fa";
+import CountUp from 'react-countup';
 import { useNavigate } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 import Footer from "../../components/footer";
@@ -330,43 +330,45 @@ const Home = () => {
       </section>
 
       {/* STATISTICS */}
-      <div className="row mt-4">
-  <div className="col-md-4 mb-3">
-    <div className="card shadow-sm border-0 text-white" style={{ backgroundColor: "#28a745", borderRadius: "15px" }}>
-      <div className="card-body d-flex align-items-center">
-        <FaHome size={40} className="me-3" />
-        <div>
-          <h5 className="card-title mb-1">Tin đăng bán</h5>
-          <h3 className="mb-0">{postStats?.data?.forSale ?? 0}</h3>
-        </div>
-      </div>
-    </div>
-  </div>
+      <section className="container py-5">
+  <div className="row g-4 justify-content-center">
 
-  <div className="col-md-4 mb-3">
-    <div className="card shadow-sm border-0 text-white" style={{ backgroundColor: "#007bff", borderRadius: "15px" }}>
-      <div className="card-body d-flex align-items-center">
-        <FaBuilding size={40} className="me-3" />
-        <div>
-          <h5 className="card-title mb-1">Tin cho thuê</h5>
-          <h3 className="mb-0">{postStats?.data?.forRent ?? 0}</h3>
+    <div className="col-12 col-md-4">
+      <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
+        <div className="display-3 fw-bold text-warning">
+          <CountUp end={postStats?.data?.forSale ?? 0} duration={2} />
+        </div>
+        <div className="text-dark fs-5 mt-3">
+          Tin đăng bán
         </div>
       </div>
     </div>
-  </div>
 
-  <div className="col-md-4 mb-3">
-    <div className="card shadow-sm border-0 text-white" style={{ backgroundColor: "#ffc107", borderRadius: "15px" }}>
-      <div className="card-body d-flex align-items-center">
-        <FaExchangeAlt size={40} className="me-3" />
-        <div>
-          <h5 className="card-title mb-1">Dịch vụ</h5>
-          <h3 className="mb-0">{postStats?.data?.saleAndRent ?? 0}</h3>
+    <div className="col-12 col-md-4">
+      <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
+        <div className="display-3 fw-bold text-warning">
+          <CountUp end={postStats?.data?.forRent ?? 0} duration={2} />
+        </div>
+        <div className="text-dark fs-5 mt-3">
+          Tin cho thuê
         </div>
       </div>
     </div>
+
+    <div className="col-12 col-md-4">
+      <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
+        <div className="display-3 fw-bold text-warning">
+          <CountUp end={postStats?.data?.saleAndRent ?? 0} duration={2} />
+        </div>
+        <div className="text-dark fs-5 mt-3">
+          Dịch vụ (bán & cho thuê)
+        </div>
+      </div>
+    </div>
+
   </div>
-</div>
+</section>
+
 
       {/* PROJECTS */}
       {/* PLAZAS - DỰ ÁN NỔI BẬT */}
