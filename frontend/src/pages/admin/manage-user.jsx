@@ -263,33 +263,48 @@ const ManageUsers = () => {
                         </div>
                     </div>
                 )}
-
                 {/* Delete Modal */}
                 {showDeleteModal && (
-                    <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,0.3)" }}>
-                        <div className="modal-dialog">
-                            <div className="modal-content">
-                                <div className="modal-header">
+                    <div
+                        className="modal fade show"
+                        style={{
+                            display: "block",
+                            backgroundColor: "rgba(0, 0, 0, 0.3)",
+                        }}
+                    >
+                        <div className="modal-dialog modal-dialog-centered">
+                            <div className="modal-content position-relative">
+
+                                {/* Close Button */}
+                                <button
+                                    type="button"
+                                    className="btn-close position-absolute"
+                                    aria-label="Close"
+                                    style={{ top: "1rem", right: "1rem" }}
+                                    onClick={() => setShowDeleteModal(false)}
+                                ></button>
+
+                                <div className="modal-header border-0 pt-4 pb-2">
                                     <h5 className="modal-title">Xác nhận xóa user</h5>
-                                    <button type="button" className="close" onClick={() => setShowDeleteModal(false)}>
-                                        <span>&times;</span>
+                                </div>
+                                <hr className="my-0" />
+                                <div className="modal-body py-4">
+                                    <p className="mb-2">
+                                        Bạn có chắc chắn muốn xóa user{" "}
+                                        <strong>{userToDelete?.name}</strong>?
+                                    </p>
+                                </div>
+
+                                <div className="modal-footer border-0 pb-4 d-flex justify-content-end gap-2">
+                                    <button
+                                        className="btn btn-secondary"
+                                        onClick={() => setShowDeleteModal(false)}
+                                    >
+                                        Hủy
                                     </button>
-                                </div>
-                                <div className="modal-body">
-                                    <p>Bạn có chắc chắn muốn xóa user <strong>{userToDelete?.name}</strong>?</p>
-                                </div>
-                                <div
-                                    className="modal-footer"
-                                    style={{
-                                        display: "flex",
-                                        flexDirection: "row",
-                                        justifyContent: "flex-end",
-                                        gap: 8,
-                                        flexWrap: "nowrap", // Prevent wrapping
-                                    }}
-                                >
-                                    <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Hủy</button>
-                                    <button className="btn btn-danger" onClick={handleDeleteUser}>Xóa</button>
+                                    <button className="btn btn-danger" onClick={handleDeleteUser}>
+                                        Xóa
+                                    </button>
                                 </div>
                             </div>
                         </div>
