@@ -38,7 +38,7 @@ const apartmentSchema = new Schema({
   },
   building: {
     type: String,
-    enum: ['Plaza 1', 'Plaza 2'],
+    enum: ['Plaza 1', 'Plaza 2', 'Plaza 3', 'Plaza 4', 'Plaza 5', 'Plaza 6'],
     required: true
   },
   legalDocuments: {
