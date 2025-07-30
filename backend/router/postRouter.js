@@ -1,13 +1,13 @@
 import express from "express";
-import { createPost, deletePostByAdmin, getActivePosts, getPost, getPostActive, getPostDetail, getPostDetailForAdmin, getPostForGuest, getPostStats, getPostbyUser, rejectPostByAdmin, updatePost, updatePostStatusByAdmin, verifyPostByAdmin } from "../controllers/postController.js";
+import { createPost, deletePostByAdmin, getApprovedPosts, getPost, getPostApproved, getPostDetail, getPostDetailForAdmin, getPostForGuest, getPostStats, getPostbyUser, rejectPostByAdmin, updatePost, updatePostStatusByAdmin, verifyPostByAdmin } from "../controllers/postController.js";
 import { upload } from "../db/cloudinary.js";
 import verifyUser from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.post("/create-post", verifyUser, upload.array("images"), createPost);
 router.get("/get-post", verifyUser, getPost);
-router.get("/get-post-active", verifyUser, getPostActive);
-router.get("/active", verifyUser, getActivePosts);
+router.get("/get-post-active", verifyUser, getPostApproved);
+router.get("/active", verifyUser, getApprovedPosts);
 router.get("/guest/get-post", getPostForGuest); // 👈 KHÔNG verifyUser
 //post detail 
 router.get("/postdetail/:id", verifyUser, getPostDetail);

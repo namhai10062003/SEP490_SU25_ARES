@@ -129,8 +129,8 @@ const PostDetail = () => {
           const others = res.data.data
             .filter((p) =>
               p._id !== id &&
-              p.status === "active" &&
-              p.isActive === true && // kiểm tra thêm isActive
+              p.status === "approved" &&
+              p.isActive === false && // kiểm tra thêm isActive
               (!p.expiredAt || new Date(p.expiredAt) > now)
             )
             .slice(0, 3);
