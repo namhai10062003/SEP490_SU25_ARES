@@ -1,9 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { FaFilter, FaTimes } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import Footer from "../../../../components/footer";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
 import { getAllPostsActive } from "../../../service/postService";
-import { FaFilter, FaMoneyBill, FaTimes } from "react-icons/fa";
-import { Link } from "react-router-dom";
 const BlogList = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState([]);
@@ -440,6 +441,7 @@ const BlogList = () => {
           </div>
         </div>
       </div >
+      <Footer />
     </div >
   );
 };

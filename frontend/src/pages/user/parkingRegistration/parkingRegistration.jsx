@@ -41,7 +41,8 @@ const getFilteredAndSortedData = (data) => {
 
   const filtered = data.filter(item => {
     const statusNormalized = normalizeText(item.trạngThái);
-
+    // ❌ Bỏ qua trạng thái cancelled
+    if (statusNormalized === 'cancelled') return false;
     const matchesStatus =
       filterStatus === 'all' || statusNormalized === mappedStatus;
 
@@ -90,6 +91,12 @@ const handleCancel = (id) => {
 };
 
 const doCancel = async (id) => {
+  if (!id) {
+    console.error("❌ Không có ID để huỷ");
+    toast.error("Không tìm thấy đơn để huỷ.");
+    return;
+  }
+
   try {
     const token = localStorage.getItem('token');
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/cancel/${id}`, {
@@ -100,17 +107,27 @@ const doCancel = async (id) => {
       },
     });
 
-    if (!res.ok) throw new Error('Không thể huỷ đơn');
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.message || 'Không thể huỷ đơn');
+    }
 
-    setCarRegistrations(prev => prev.filter(p => p.id !== id));
-    setBikeRegistrations(prev => prev.filter(p => p.id !== id));
+    // ✅ Xoá item khỏi danh sách hiển thị
+    setCarRegistrations(prev => prev.filter(p => `${p._id || p.id}` !== `${id}`));
+    setBikeRegistrations(prev => prev.filter(p => `${p._id || p.id}` !== `${id}`));
 
     toast.success('✅ Đã huỷ đơn đăng ký gửi xe thành công.');
   } catch (err) {
     console.error('❌ Lỗi huỷ đơn:', err);
-    toast.error('🚫 Đã có lỗi xảy ra khi huỷ đơn.');
+    toast.error(`🚫 ${err.message}`);
   }
 };
+
+
+
+
+
+
 
 
   // Lấy quyền đăng ký
@@ -242,16 +259,20 @@ const doCancel = async (id) => {
     Xem chi tiết
   </Link>
 
-  {item.trạngThái === 'pending' && (
-  <button
-    className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 shadow-sm px-3 py-1 rounded-pill"
-    onClick={() => handleCancel(item.id)}
-    title="Huỷ đăng ký gửi xe"
-  >
-    <i className="bi bi-x-circle-fill"></i>
-    Huỷ
-  </button>
+  {(item.trạngThái === 'pending' || item.trạngThái === 'approved') && (
+  <>
+    {console.log("🧾 item:", item)} {/* Thêm dòng này để debug */}
+    <button
+      className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 shadow-sm px-3 py-1 rounded-pill"
+      onClick={() => handleCancel(item._id || item.id)} // ✅ thông minh hơn
+// đang sai nếu _id không tồn tại
+    >
+      <i className="bi bi-x-circle-fill"></i>
+      Huỷ
+    </button>
+  </>
 )}
+
 
 </td>
 

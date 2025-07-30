@@ -11,7 +11,10 @@ const ResidentVerificationSchema = new Schema({
     documentType: { type: String, enum: ['Hợp đồng mua bán', 'Hợp đồng cho thuê', 'Giấy chủ quyền'], required: true },
     contractStart: { type: Date },
     contractEnd: { type: Date },
-    documentImage: { type: String }, // use this if your data uses documentImage
+    documentImage: {
+        type: [String], // <-- Mảng các chuỗi
+        required: true
+      },
     status: { type: String, enum: ['Chờ duyệt', 'Đã duyệt', 'Đã từ chối'], default: 'Chờ duyệt' },
     note: { type: String }
 }, { timestamps: true });

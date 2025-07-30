@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../context/authContext";
 import { getAllPosts } from "../../../service/postService";
 import AdminDashboard from "../adminDashboard";
@@ -114,11 +114,14 @@ const PostManagement = () => {
   const totalPages = Math.ceil(filteredPosts.length / perPage);
 
   const latestPosts = posts
-    .slice()
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 3);
+  .filter(p => p.status === "approved" && !p.deletedAt) // chỉ bài đã duyệt & chưa bị xoá
+  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  .slice(0, 3);
 
-  const expiringPosts = posts.filter((p) => expiringSoon(p.expiredDate)).slice(0, 3);
+
+  const expiringPosts = posts
+  .filter(p => p.status === "approved" && !p.deletedAt && expiringSoon(p.expiredDate))
+  .slice(0, 3);
 
   return (
     <AdminDashboard>
@@ -189,6 +192,7 @@ const PostManagement = () => {
                 <option value="pending">Chờ duyệt</option>
                 <option value="approved">Đã duyệt</option>
                 <option value="rejected">Đã từ chối</option>
+                <option value="deleted">Đã xóa</option>
               </select>
               <div className="text-muted small">
                 Tổng: <strong>{filteredPosts.length}</strong> bài

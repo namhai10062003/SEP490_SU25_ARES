@@ -78,7 +78,7 @@ export const createPost = async (req, res) => {
 // get ra xem all post
 
 export const getPost = async (req, res) => {
-    try {
+    try {   
         const post = await Post.find()
             .populate('contactInfo', 'name email phone')
             .populate('postPackage', 'type price expireAt')
@@ -110,7 +110,7 @@ export const getPostForGuest = async (req, res) => {
         const now = new Date(); // thời gian hiện tại
 
         const post = await Post.find({
-            status: "active", // chỉ lấy bài đã được admin duyệt
+            status: "approved", // chỉ lấy bài đã được admin duyệt
             // chỉ lấy bài còn hạn
         })
             .populate('contactInfo', 'name email phone')
@@ -573,3 +573,28 @@ export const deletePost = async (req, res) => {
         });
     }
 };
+
+// hàm thực hiện đếm áp dụng trang home 
+export const getPostStats = async (req, res) => {
+    try {
+      const [forSale, forRent, saleAndRent] = await Promise.all([
+        Post.countDocuments({ type: "ban" }),
+        Post.countDocuments({ type: "cho_thue" }),
+        Post.countDocuments({ type: "dich_vu" }),
+      ]);
+  
+      return res.status(200).json({
+        message: "Post statistics fetched successfully",
+        success: true,
+        error: false,
+        data: { forSale, forRent, saleAndRent }
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: error.message,
+        success: false,
+        error: true
+      });
+    }
+  };
+  

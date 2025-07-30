@@ -46,24 +46,28 @@ router.get("/fee/:userId/:apartmentId/:month", async (req, res) => {
     }
   });
   // PATCH - Chuyển trạng thái gửi xe sang "cancelled"
-router.patch('/cancel/:id', async (req, res) => {
-  try {
-    const updated = await ParkingRegistration.findByIdAndUpdate(
-      req.params.id,
-      { status: 'cancelled' },
-      { new: true }
-    );
-
-    if (!updated) {
-      return res.status(404).json({ message: 'Không tìm thấy đơn đăng ký gửi xe' });
+  router.patch('/cancel/:id', async (req, res) => {
+    try {
+      const registration = await ParkingRegistration.findById(req.params.id);
+  
+      if (!registration) {
+        return res.status(404).json({ message: 'Không tìm thấy đơn đăng ký gửi xe' });
+      }
+  
+      // ✅ Chỉ được huỷ nếu trạng thái là pending hoặc approved
+      if (!['pending', 'approved'].includes(registration.status)) {
+        return res.status(400).json({ message: 'Chỉ có thể huỷ đơn ở trạng thái đang đăng ký hoặc đã duyệt' });
+      }
+  
+      registration.status = 'cancelled';
+      await registration.save();
+  
+      res.status(200).json({
+        message: '✅ Đã huỷ gửi xe thành công',
+        data: registration,
+      });
+    } catch (err) {
+      res.status(500).json({ message: 'Lỗi server', error: err.message });
     }
-
-    res.status(200).json({
-      message: 'Đã huỷ gửi xe thành công',
-      data: updated,
-    });
-  } catch (err) {
-    res.status(500).json({ message: 'Lỗi server', error: err.message });
-  }
-});
+  });
 export default router;

@@ -14,7 +14,10 @@ const MyVerifiedApplications = () => {
   const [searchText, setSearchText] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-
+  const [showModal, setShowModal] = useState(false);
+  const [currentImages, setCurrentImages] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
   useEffect(() => {
     const fetchVerifiedApplications = async () => {
       const token = localStorage.getItem("token");
@@ -146,37 +149,55 @@ const MyVerifiedApplications = () => {
             <p className="text-center">Không có đơn xác nhận nào đã được duyệt.</p>
           ) : (
             <div className="row row-cols-1 row-cols-md-2 g-4">
-              {applications.map((app) => (
-                <div key={app._id} className="col">
-                  <div className="card h-100 shadow-sm">
-                    {app.documentImage && (
-                      <img
-                        src={app.documentImage}
-                        className="card-img-top"
-                        alt="Hình ảnh hợp đồng"
-                        style={{ objectFit: "cover", height: 250 }}
-                      />
-                    )}
-                    <div className="card-body">
-                      <h5 className="card-title">{app.fullName}</h5>
-                      <p className="card-text">
-                        <strong>Email:</strong> {app.email}<br />
-                        <strong>SĐT:</strong> {app.phone}<br />
-                        <strong>Căn hộ:</strong> {app.apartmentCode}<br />
-                        <strong>Loại giấy tờ:</strong> {app.documentType}<br />
-                        <strong>Thời gian hợp đồng:</strong><br />
-                        {new Date(app.contractStart).toLocaleDateString()} -{" "}
-                        {new Date(app.contractEnd).toLocaleDateString()}<br />
-                        <strong>Trạng thái:</strong>{" "}
-                        <span className="badge bg-success">{app.status}</span>
-                      </p>
-                    </div>
-                    <div className="card-footer text-muted text-end small">
-                      Cập nhật: {new Date(app.updatedAt).toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-              ))}
+             {applications.map((app) => (
+  <div key={app._id} className="col">
+    <div className="card h-100 shadow-sm">
+
+      {/* Hiển thị nhiều ảnh từ documentImage */}
+      {Array.isArray(app.documentImage) && app.documentImage.length > 0 && (
+        <div style={{ overflowX: "auto", whiteSpace: "nowrap" }} className="p-2">
+          {app.documentImage.map((img, index) => (
+  <img
+    key={index}
+    src={img}
+    alt={`Hợp đồng ${index + 1}`}
+    style={{
+      height: 200,
+      width: "auto",
+      marginRight: 10,
+      borderRadius: 8,
+      display: "inline-block",
+      cursor: "pointer",
+    }}
+    onClick={() => {
+      setCurrentImages(app.documentImage);
+      setCurrentIndex(index);
+      setShowModal(true);
+    }}
+  />
+))}
+        </div>
+      )}
+
+      <div className="card-body">
+        <h5 className="card-title">{app.fullName}</h5>
+        <p className="card-text">
+          <strong>Email:</strong> {app.email}<br />
+          <strong>SĐT:</strong> {app.phone}<br />
+          <strong>Căn hộ:</strong> {app.apartmentCode}<br />
+          <strong>Loại giấy tờ:</strong> {app.documentType}<br />
+          <strong>Trạng thái:</strong>{" "}
+          <span className="badge bg-success">{app.status}</span>
+        </p>
+      </div>
+
+      <div className="card-footer text-muted text-end small">
+        Cập nhật: {new Date(app.updatedAt).toLocaleString()}
+      </div>
+    </div>
+  </div>
+))}
+
             </div>
           )}
         </div>
@@ -185,6 +206,61 @@ const MyVerifiedApplications = () => {
           &copy; 2025 Danh sách cư dân đã xác thực
         </footer>
       </div>
+      {showModal && (
+  <div
+    className="modal fade show"
+    style={{
+      display: "block",
+      backgroundColor: "rgba(0,0,0,0.7)",
+      zIndex: 9999,
+    }}
+    onClick={() => setShowModal(false)}
+  >
+    <div
+      className="modal-dialog modal-dialog-centered modal-lg"
+      onClick={(e) => e.stopPropagation()} // không đóng khi click trong modal
+    >
+      <div className="modal-content bg-dark text-white">
+        <div className="modal-header">
+          <h5 className="modal-title">Xem ảnh hợp đồng</h5>
+          <button
+            type="button"
+            className="btn-close btn-close-white"
+            onClick={() => setShowModal(false)}
+          ></button>
+        </div>
+        <div className="modal-body text-center">
+          <img
+            src={currentImages[currentIndex]}
+            alt="Preview"
+            style={{ maxHeight: "70vh", maxWidth: "100%", borderRadius: 10 }}
+          />
+        </div>
+        <div className="modal-footer justify-content-between">
+          <button
+            className="btn btn-light"
+            onClick={() =>
+              setCurrentIndex((prev) => (prev - 1 + currentImages.length) % currentImages.length)
+            }
+            disabled={currentImages.length <= 1}
+          >
+            ← Trước
+          </button>
+          <span>
+            {currentIndex + 1}/{currentImages.length}
+          </span>
+          <button
+            className="btn btn-light"
+            onClick={() => setCurrentIndex((prev) => (prev + 1) % currentImages.length)}
+            disabled={currentImages.length <= 1}
+          >
+            Sau →
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 };

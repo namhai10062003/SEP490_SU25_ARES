@@ -44,7 +44,7 @@ export const submitVerification = async (req, res) => {
     console.log("req.body:", req.body);
     const data = req.body;
     console.log("data.userId:", data.userId);
-    const imageUrls = req.file?.path;
+    const imageUrls = req.files?.map(file => file.path);
     console.log(imageUrls);
 
     const newVerification = new ResidentVerification({

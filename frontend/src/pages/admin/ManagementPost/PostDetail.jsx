@@ -1,26 +1,25 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "react-toastify";
 import {
+    FaCalendarAlt,
     FaCheck,
+    FaEnvelope,
+    FaMapMarkerAlt,
+    FaPhone,
+    FaRulerCombined,
+    FaStar,
     FaTimes,
     FaTrash,
-    FaRulerCombined,
-    FaMapMarkerAlt,
-    FaCalendarAlt,
-    FaStar,
     FaUser,
-    FaEnvelope,
-    FaPhone,
 } from "react-icons/fa";
+import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 import { useAuth } from "../../../../context/authContext.jsx";
 import {
-    getPostByIdForAdmin,
-    updatePostStatus,
     deletePostByAdmin,
+    getPostByIdForAdmin,
     rejectPostByAdmin,
-    verifyPostByAdmin,
+    verifyPostByAdmin
 } from "../../../service/postService.js";
 import AdminDashboard from "../adminDashboard.jsx";
 
@@ -79,7 +78,7 @@ const AdminPostDetail = () => {
     const handleDelete = async () => {
         if (!window.confirm("Xác nhận xoá bài đăng?")) return;
         try {
-            await deletePostByAdmin(id);
+            await deletePostByAdmin(id, { status: "deleted" });
             toast.success("🗑️ Đã xoá bài đăng.");
             navigate(-1);
         } catch {
@@ -166,7 +165,8 @@ const AdminPostDetail = () => {
                                 <button
                                     className="btn btn-danger"
                                     onClick={handleDelete}
-                                    disabled={post.isActive && post.status !== "rejected"}
+                                    disabled={post.status 
+                                        === "deleted"}
                                 >
                                     <FaTrash /> {post.status == "deleted" ? "Đã xoá" : "Xoá"}
                                 </button>

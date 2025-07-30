@@ -1,12 +1,12 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
+import { FaBuilding, FaExchangeAlt, FaHome } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import 'react-toastify/dist/ReactToastify.css';
 import Footer from "../../components/footer";
 import Header from "../../components/header";
 import { useAuth } from "../../context/authContext";
-
 const CountUpOnView = ({ end, duration = 2000 }) => {
   const [count, setCount] = useState(0);
   const ref = useRef();
@@ -173,7 +173,20 @@ const Home = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
+  const [postStats, setPostStats] = useState(null);
 
+  useEffect(() => {
+    const fetchPostStats = async () => {
+      try {
+        const res = await axios.get('http://localhost:4000/api/posts/stats');
+        setPostStats(res.data); // Đúng là res.data nếu bạn trả về { forSale, forRent, saleAndRent }
+      } catch (error) {
+        console.error("Lỗi khi fetch postStats:", error);
+      }
+    };
+  
+    fetchPostStats();
+  }, []);
 
   useEffect(() => {
     // Giả sử bạn xác định người dùng chưa cập nhật nếu thiếu identityNumber hoặc phone
@@ -317,40 +330,43 @@ const Home = () => {
       </section>
 
       {/* STATISTICS */}
-      <section className="container py-5">
-        <div className="row g-4 justify-content-center">
-          <div className="col-12 col-md-4">
-            <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-              <div className="display-3 fw-bold text-warning">
-                <CountUpOnView end={176} />
-              </div>
-              <div className="text-secondary fs-5 mt-3">
-                Căn hộ bán trong khu vực
-              </div>
-            </div>
-          </div>
-          <div className="col-12 col-md-4">
-            <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-              <div className="display-3 fw-bold text-warning">
-                <CountUpOnView end={216} />
-              </div>
-              <div className="text-secondary fs-5 mt-3">
-                Căn hộ cho thuê
-              </div>
-            </div>
-          </div>
-          <div className="col-12 col-md-4">
-            <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-              <div className="display-3 fw-bold text-warning">
-                <CountUpOnView end={88} />
-              </div>
-              <div className="text-secondary fs-5 mt-3">
-                Căn hộ bán cho thuê
-              </div>
-            </div>
-          </div>
+      <div className="row mt-4">
+  <div className="col-md-4 mb-3">
+    <div className="card shadow-sm border-0 text-white" style={{ backgroundColor: "#28a745", borderRadius: "15px" }}>
+      <div className="card-body d-flex align-items-center">
+        <FaHome size={40} className="me-3" />
+        <div>
+          <h5 className="card-title mb-1">Tin đăng bán</h5>
+          <h3 className="mb-0">{postStats?.data?.forSale ?? 0}</h3>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+
+  <div className="col-md-4 mb-3">
+    <div className="card shadow-sm border-0 text-white" style={{ backgroundColor: "#007bff", borderRadius: "15px" }}>
+      <div className="card-body d-flex align-items-center">
+        <FaBuilding size={40} className="me-3" />
+        <div>
+          <h5 className="card-title mb-1">Tin cho thuê</h5>
+          <h3 className="mb-0">{postStats?.data?.forRent ?? 0}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div className="col-md-4 mb-3">
+    <div className="card shadow-sm border-0 text-white" style={{ backgroundColor: "#ffc107", borderRadius: "15px" }}>
+      <div className="card-body d-flex align-items-center">
+        <FaExchangeAlt size={40} className="me-3" />
+        <div>
+          <h5 className="card-title mb-1">Dịch vụ</h5>
+          <h3 className="mb-0">{postStats?.data?.saleAndRent ?? 0}</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
       {/* PROJECTS */}
       {/* PLAZAS - DỰ ÁN NỔI BẬT */}
@@ -439,16 +455,45 @@ const Home = () => {
                     alt={post.title}
                     style={{ height: 200, objectFit: "cover" }}
                   />
-                  <span
+                   {/* 🟢 Badge Bán / Cho thuê - góc trái */}
+<span
+  className={`position-absolute top-0 start-0 m-2 px-3 py-1 rounded-pill shadow-lg border border-white ${post.type === "ban" ? "bg-danger bg-opacity-75" : "bg-primary bg-opacity-75"} text-white`}
+  style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: 0.5 }}
+>
+  {post.type === "ban" ? "🏠 Bán" : "💼 Cho thuê"}
+</span>
+
+{/* 🔵 Badge VIP - góc phải */}
+<span
+  className={`${getPackageBadgeClass(post.postPackage?.type)} position-absolute top-0 end-0 m-2 px-3 py-1 rounded-pill shadow-lg border border-white text-white`}
+  style={{ fontSize: "0.75rem", fontWeight: 700, letterSpacing: 0.5 }}
+>
+  {post.postPackage?.type?.toUpperCase() || "KHÔNG GÓI"}
+</span>
+
+                  {/* <span
                     className={`${getPackageBadgeClass(post.postPackage?.type)} position-absolute top-0 end-0 m-2 px-3 py-2 rounded-pill shadow`}
                     style={{ fontSize: "0.9rem", fontWeight: "bold" }}
                   >
                     {post.postPackage?.type?.toUpperCase() || "KHÔNG CÓ GÓI"}
-                  </span>
+                  </span> */}
                 </div>
                 <div className="card-body d-flex flex-column bg-white">
                   <h5 className="card-title fw-bold">{post.title}</h5>
                   <p className="card-text flex-grow-1">{post.address}</p>
+                  <p
+    className="card-text text-truncate"
+    style={{
+      maxHeight: "3.6em", // 2 dòng
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      display: "-webkit-box",
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: "vertical",
+    }}
+  >
+    {post.description}
+  </p>
                   <div className="d-flex justify-content-center mt-2">
                     <Button
                       variant="outline-warning"
