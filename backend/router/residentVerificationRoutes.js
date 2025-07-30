@@ -17,7 +17,7 @@ const router = express.Router();
 
 router.get("/search-user", searchUser);
 router.get("/apartments", getApartments);
-router.post("/verification", upload2.single("documentImage"), submitVerification);
+router.post("/verification", upload2.array("documentImage", 5), submitVerification);
 router.get("/", getAllResidentVerifications);
 router.get("/get-user-apartment", getUserWithApartment);
 

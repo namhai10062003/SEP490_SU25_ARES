@@ -230,6 +230,12 @@ const ManageApplicationForm = () => {
         setPage(1); // Reset page khi filter/search thay đổi
     }, [searchTerm, filterStatus]);
 
+    const documentImages = Array.isArray(selectedApp?.documentImage)
+  ? selectedApp.documentImage
+  : typeof selectedApp?.documentImage === "string"
+    ? JSON.parse(selectedApp.documentImage)
+    : [];
+
     return (
         <AdminDashboard>
             <div className="w-100">
@@ -428,17 +434,22 @@ const ManageApplicationForm = () => {
       <li className="list-group-item"><strong>Ngày tạo đơn:</strong> {new Date(selectedApp.createdAt).toLocaleString()}</li>
     </ul>
 
-    {selectedApp.documentImage && (
-      <div className="mt-3 text-center">
-        <label className="fw-semibold mb-2">Ảnh hợp đồng:</label><br />
+    {documentImages.length > 0 && (
+  <div className="mt-3">
+    <label className="fw-semibold mb-2 d-block">Ảnh hợp đồng:</label>
+    <div className="d-flex flex-wrap gap-3">
+      {documentImages.map((img, idx) => (
         <img
-          src={selectedApp.documentImage}
-          alt="Ảnh hợp đồng"
-          className="img-fluid rounded shadow-sm"
-          style={{ maxHeight: 250 }}
+          key={idx}
+          src={img}
+          alt={`Hợp đồng ${idx + 1}`}
+          className="rounded shadow-sm"
+          style={{ maxHeight: 200, maxWidth: 300, objectFit: "cover" }}
         />
-      </div>
-    )}
+      ))}
+    </div>
+  </div>
+)}
   </div>
 
   <hr />
