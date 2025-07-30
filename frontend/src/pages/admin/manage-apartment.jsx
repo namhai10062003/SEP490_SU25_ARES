@@ -167,6 +167,7 @@ const ManageApartment = () => {
 
   const filteredApartments = apartments.filter((apt) => {
     const term = searchTerm.toLowerCase();
+    console.log("📌 Trạng thái căn hộ:", apt.status);
 
     return (
       apt.apartmentCode?.toLowerCase().includes(term) ||
@@ -178,6 +179,7 @@ const ManageApartment = () => {
       apt.direction?.toLowerCase().includes(term) ||
       apt.area?.toString().includes(term)  // 🔍 tìm theo diện tích
     );
+
   });
 
   return (
@@ -306,9 +308,9 @@ const ManageApartment = () => {
             <div className="modal-content">
               <form onSubmit={handleSubmit}>
                 <div className="container py-2">
-                <div className="text-center mb-4">
-  <h2 className="fw-bold text-primary">Tạo Căn Hộ</h2>
-</div>
+                  <div className="text-center mb-4">
+                    <h2 className="fw-bold text-primary">Tạo Căn Hộ</h2>
+                  </div>
                   <div className="row g-3">
                     {/* Mã căn hộ */}
                     <div className="col-md-6">
@@ -353,9 +355,9 @@ const ManageApartment = () => {
                         onChange={(e) => setForm({ ...form, furniture: e.target.value })}
                       >
                         <option value="">-- Chọn --</option>
-                        <option value="full">Đầy đủ</option>
-                        <option value="partial">Một phần</option>
-                        <option value="none">Không có</option>
+                        <option value="Đầy đủ">Đầy đủ</option>
+                        <option value="Cơ bản">Cơ bản</option>
+                        <option value="Không có">Không có</option>
                       </select>
                     </div>
 
@@ -393,11 +395,14 @@ const ManageApartment = () => {
                         className="form-select"
                         value={form.status}
                         onChange={(e) => setForm({ ...form, status: e.target.value })}
+                        disabled={isEdit}
                       >
                         <option value="">-- Chọn --</option>
-                        <option value="available">Sẵn sàng</option>
-                        <option value="occupied">Đã thuê</option>
+                        <option value="đang ở">Đang ở</option>
+                        <option value="đang cho thuê">Đang cho thuê</option>
+                        <option value="chưa có chủ sở hữu">Chưa có chủ sở hữu</option>
                       </select>
+
                     </div>
 
                     {/* Tòa nhà */}
@@ -419,6 +424,7 @@ const ManageApartment = () => {
                         className="form-control"
                         placeholder="Không bắt buộc"
                         value={form.ownerName}
+                        disabled={isEdit}
                         onChange={(e) => setForm({ ...form, ownerName: e.target.value })}
                       />
                     </div>
@@ -434,9 +440,8 @@ const ManageApartment = () => {
                         }
                       >
                         <option value="">-- Chọn --</option>
-                        <option value="sổ đỏ">Sổ đỏ</option>
                         <option value="sổ hồng">Sổ hồng</option>
-                        <option value="khác">Khác</option>
+                        <option value="chưa có sổ">Chưa có sổ</option>
                       </select>
                     </div>
 
@@ -448,6 +453,7 @@ const ManageApartment = () => {
                         className="form-control"
                         placeholder="Không bắt buộc"
                         value={form.ownerPhone}
+                        disabled={isEdit}
                         onChange={(e) => setForm({ ...form, ownerPhone: e.target.value })}
                       />
                     </div>
