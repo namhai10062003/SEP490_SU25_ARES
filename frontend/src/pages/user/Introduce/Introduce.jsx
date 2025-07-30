@@ -3,9 +3,11 @@ import Footer from "../../../../components/footer";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
 import h2 from "../../../home/anhtienich.jpg";
-import { default as team1, default as team2 } from "../../../home/hai_vest.png";
+import team1 from "../../../home/hai_vest.png";
 import team4 from "../../../home/tin_vest.png";
 import team3 from "../../../home/tuan_vest.jpg";
+import team2 from "../../../home/vy_vest.png";
+
 const Introduce = () => {
   const { user, logout } = useAuth();
 
@@ -87,29 +89,29 @@ const Introduce = () => {
   <div className="bg-white p-4 shadow rounded-4">
     <h2 className="text-center fw-bold mb-4">ARES TEAM MEMBER</h2>
     <div className="row g-4 text-center">
-      <div className="col-md-3">
-        <img src={team1} alt="Nam Hải" className="img-fluid rounded-4 mb-3 shadow" />
-        <h5 className="fw-bold">Nam Hải (Alex)</h5>
-        <p className="text-muted">CEO</p>
-      </div>
-      <div className="col-md-3">
-        <img src={team2} alt="Khánh Vy" className="img-fluid rounded-4 mb-3 shadow" />
-        <h5 className="fw-bold">Khánh Vy</h5>
-        <p className="text-muted">Sales Manager</p>
-      </div>
-      <div className="col-md-3">
-        <img src={team3} alt="Thái Tuấn" className="img-fluid rounded-4 mb-3 shadow" />
-        <h5 className="fw-bold">Thái Tuấn</h5>
-        <p className="text-muted">CEO & General Director</p>
-      </div>
-      <div className="col-md-3">
-        <img src={team4} alt="Trung Tín" className="img-fluid rounded-4 mb-3 shadow" />
-        <h5 className="fw-bold">Trung Tín (Sunny)</h5>
-        <p className="text-muted">Thành viên</p>
-      </div>
+      {[
+        { img: team1, name: "Nam Hải ", role: "CEO" },
+        { img: team2, name: "Khánh Vy", role: "Sales Manager" },
+        { img: team3, name: "Thái Tuấn", role: "CEO & General Director" },
+        { img: team4, name: "Trung Tín", role: "Thành viên" },
+      ].map((member, idx) => (
+        <div key={idx} className="col-md-3">
+          <div className="ratio ratio-1x1 rounded-4 overflow-hidden shadow mb-3">
+            <img
+              src={member.img}
+              alt={member.name}
+              className="w-100 h-100 object-fit-cover"
+              style={{ objectPosition: "top" }} // 👉 THÊM DÒNG NÀY
+            />
+          </div>
+          <h5 className="fw-bold">{member.name}</h5>
+          <p className="text-muted">{member.role}</p>
+        </div>
+      ))}
     </div>
   </div>
 </section>
+
 
       {/* LỢI ÍCH */}
       <section className="container py-5">

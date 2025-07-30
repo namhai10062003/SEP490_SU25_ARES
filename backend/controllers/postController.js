@@ -140,35 +140,45 @@ export const getPostForGuest = async (req, res) => {
     }
 };
 // list ra all post have status active
-export const getActivePosts = async (req, res) => {
+export const getApprovedPosts = async (req, res) => {
     try {
-        const activePosts = await Post.find({ status: "active", isActive: true }) // thêm điều kiện isActive
+        console.log("📌 Đang tìm bài với điều kiện: status = 'approved'");
+
+        const approvedPosts = await Post.find({
+            status: "approved" // KHÔNG lọc theo isActive nữa
+        })
             .populate('contactInfo', 'name email phone')
             .populate('postPackage', 'type price expireAt')
             .sort({ createdAt: -1 });
 
-        if (activePosts.length === 0) {
+        console.log("📦 Kết quả truy vấn:", approvedPosts.length, "bài");
+
+        if (!approvedPosts || approvedPosts.length === 0) {
+            console.warn("⚠️ Không có bài nào đã được duyệt.");
             return res.status(404).json({
-                message: "No active posts found",
+                message: "Không có bài đăng nào đã được duyệt",
                 success: false,
                 error: true
             });
         }
 
+        console.log("✅ Trả về bài viết thành công.");
         return res.status(200).json({
-            message: "Active posts retrieved successfully",
+            message: "Lấy danh sách bài đăng đã được duyệt thành công",
             success: true,
             error: false,
-            data: activePosts
+            data: approvedPosts
         });
     } catch (error) {
+        console.error("❌ Lỗi khi lấy danh sách bài đăng:", error);
         return res.status(500).json({
-            message: error.message,
+            message: "Lỗi server: " + error.message,
             success: false,
             error: true
         });
     }
 };
+
 
 
 export const getPostbyUser = async (req, res) => {
@@ -201,23 +211,25 @@ export const getPostbyUser = async (req, res) => {
     }
 };
 
-export const getPostActive = async (req, res) => {
+export const getPostApproved = async (req, res) => {
     try {
-        const post = await Post.find({ status: "active", isActive: true })
+        const posts = await Post.find({ status: "approved"}) // KHÔNG lọc isActive
             .populate('contactInfo', 'name email phone')
-            .populate('postPackage', 'type price expireAt')
-        if (post.length === 0) {
+            .populate('postPackage', 'type price expireAt');
+
+        if (posts.length === 0) {
             return res.status(404).json({
-                message: "Post not found",
+                message: "Không tìm thấy bài viết đã duyệt nào",
                 success: false,
                 error: true
             });
         }
+
         return res.status(200).json({
-            message: "Post retrieved successfully",
+            message: "Lấy bài viết đã duyệt thành công",
             success: true,
             error: false,
-            data: post
+            data: posts
         });
     } catch (error) {
         return res.status(500).json({
@@ -227,7 +239,9 @@ export const getPostActive = async (req, res) => {
         });
     }
 };
+
 // lấy bài đăng chi tiết 
+
 export const getPostDetail = async (req, res) => {
     try {
         const { id } = req.params;
@@ -235,39 +249,39 @@ export const getPostDetail = async (req, res) => {
         // 1️⃣ Kiểm tra ObjectId hợp lệ
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({
-                message: "Invalid post ID",
+                message: "ID bài đăng không hợp lệ",
                 success: false,
                 error: true,
             });
         }
 
-        // 2️⃣ Truy vấn đúng ID
+        // 2️⃣ Truy vấn bài đăng theo ID
         const post = await Post.findById(id)
             .populate("contactInfo", "name email phone identityNumber address")
             .populate("postPackage", "type price expireAt")
             .lean();
 
+        // 3️⃣ Không tìm thấy bài đăng
         if (!post) {
-            // Không hề tồn tại trong DB
             return res.status(404).json({
-                message: "Post not found",
+                message: "Không tìm thấy bài đăng",
                 success: false,
                 error: true,
             });
         }
 
-        // 3️⃣ Kiểm tra trạng thái
-        if (post.status !== "active" || !post.isActive) {
+        // 4️⃣ Bài đăng tồn tại nhưng chưa được duyệt hoặc không hoạt động
+        if (post.status !== "approved") {
             return res.status(403).json({
-                message: "bài đăng tồn tại nhưng không hoạt động (inactive)",
+                message: "Bài đăng không hoạt động hoặc chưa được duyệt",
                 success: false,
                 error: true,
             });
         }
 
-        // 4️⃣ Thành công
+        // 5️⃣ Trả về chi tiết bài đăng thành công
         return res.status(200).json({
-            message: "Post details retrieved successfully",
+            message: "Lấy chi tiết bài đăng thành công",
             success: true,
             error: false,
             data: {
@@ -279,13 +293,15 @@ export const getPostDetail = async (req, res) => {
             },
         });
     } catch (error) {
+        console.error("❌ Lỗi khi lấy chi tiết bài đăng:", error);
         return res.status(500).json({
-            message: error.message,
+            message: "Lỗi server: " + error.message,
             success: false,
             error: true,
         });
     }
 };
+
 export const updatePost = async (req, res) => {
     try {
         const postId = req.params.id;
