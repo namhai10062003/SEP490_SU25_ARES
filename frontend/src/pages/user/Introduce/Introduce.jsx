@@ -1,8 +1,11 @@
 import React from "react";
+import Footer from "../../../../components/footer";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
-import h1 from "../../../home/anhteam.png";
 import h2 from "../../../home/anhtienich.jpg";
+import { default as team1, default as team2 } from "../../../home/hai_vest.png";
+import team4 from "../../../home/tin_vest.png";
+import team3 from "../../../home/tuan_vest.jpg";
 const Introduce = () => {
   const { user, logout } = useAuth();
 
@@ -80,33 +83,33 @@ const Introduce = () => {
 
       {/* THÀNH VIÊN */}
       <section className="container py-5">
-        <h3 className="fw-bold text-uppercase text-center mb-4 text-warning">👥 Thành viên</h3>
-        <div className="bg-white p-4 shadow rounded-4">
-          <img
-            src={h1}
-            alt="ARES Team"
-            className="img-fluid rounded-4 w-100 mb-4"
-          />
-          <div className="row g-4 text-center">
-            <div className="col-md-3">
-              <h5 className="fw-bold">Nam Hải (Alex)</h5>
-              <p className="text-muted">CEO</p>
-            </div>
-            <div className="col-md-3">
-              <h5 className="fw-bold">Khánh Vy</h5>
-              <p className="text-muted">Sales Manager</p>
-            </div>
-            <div className="col-md-3">
-              <h5 className="fw-bold">Thái Tuấn</h5>
-              <p className="text-muted">CEO & General Director</p>
-            </div>
-            <div className="col-md-3">
-              <h5 className="fw-bold">Trung Tín (Sunny)</h5>
-              <p className="text-muted">Thành viên</p>
-            </div>
-          </div>
-        </div>
-      </section>
+  <h3 className="fw-bold text-uppercase text-center mb-4 text-warning">👥 Thành viên</h3>
+  <div className="bg-white p-4 shadow rounded-4">
+    <h2 className="text-center fw-bold mb-4">ARES TEAM MEMBER</h2>
+    <div className="row g-4 text-center">
+      <div className="col-md-3">
+        <img src={team1} alt="Nam Hải" className="img-fluid rounded-4 mb-3 shadow" />
+        <h5 className="fw-bold">Nam Hải (Alex)</h5>
+        <p className="text-muted">CEO</p>
+      </div>
+      <div className="col-md-3">
+        <img src={team2} alt="Khánh Vy" className="img-fluid rounded-4 mb-3 shadow" />
+        <h5 className="fw-bold">Khánh Vy</h5>
+        <p className="text-muted">Sales Manager</p>
+      </div>
+      <div className="col-md-3">
+        <img src={team3} alt="Thái Tuấn" className="img-fluid rounded-4 mb-3 shadow" />
+        <h5 className="fw-bold">Thái Tuấn</h5>
+        <p className="text-muted">CEO & General Director</p>
+      </div>
+      <div className="col-md-3">
+        <img src={team4} alt="Trung Tín" className="img-fluid rounded-4 mb-3 shadow" />
+        <h5 className="fw-bold">Trung Tín (Sunny)</h5>
+        <p className="text-muted">Thành viên</p>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* LỢI ÍCH */}
       <section className="container py-5">
@@ -137,40 +140,7 @@ const Introduce = () => {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-dark text-light py-5 mt-5">
-        <div className="container">
-          <div className="row">
-            <div className="col-md-4 mb-4">
-              <h4 className="fw-bold mb-3 text-warning">Liên hệ</h4>
-              <p>1234 Apartment St.</p>
-              <p>TP. Hồ Chí Minh</p>
-              <p>Email: info@apartments.com</p>
-              <p>Phone: (123) 456-7890</p>
-            </div>
-            <div className="col-md-4 mb-4">
-              <h4 className="fw-bold mb-3 text-warning">Liên kết nhanh</h4>
-              <ul className="list-unstyled">
-                <li><a href="#" className="text-light text-decoration-none">Trang chủ</a></li>
-                <li><a href="#" className="text-light text-decoration-none">Căn hộ nổi bật</a></li>
-                <li><a href="#" className="text-light text-decoration-none">Về chúng tôi</a></li>
-                <li><a href="#" className="text-light text-decoration-none">Liên hệ</a></li>
-              </ul>
-            </div>
-            <div className="col-md-4 mb-4">
-              <h4 className="fw-bold mb-3 text-warning">Kết nối với chúng tôi</h4>
-              <div className="d-flex gap-3">
-                <a href="#" className="text-light fs-4"><i className="fab fa-facebook-f"></i></a>
-                <a href="#" className="text-light fs-4"><i className="fab fa-twitter"></i></a>
-                <a href="#" className="text-light fs-4"><i className="fab fa-instagram"></i></a>
-                <a href="#" className="text-light fs-4"><i className="fab fa-linkedin-in"></i></a>
-              </div>
-            </div>
-          </div>
-          <div className="text-center mt-4 text-secondary small">
-            © {new Date().getFullYear()} Ares Apartment. All rights reserved.
-          </div>
-        </div>
-      </footer>
+     <Footer/>
     </div>
   );
 };

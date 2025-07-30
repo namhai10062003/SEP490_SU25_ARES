@@ -11,7 +11,7 @@ export default function ResidentVerificationForm() {
     documentImage: null,
   });
   const fileInputRef = useRef(null);
-  const [previewImage, setPreviewImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState([]);
   const [query, setQuery] = useState("");
   const [user, setUser] = useState(null);
   const [apartments, setApartments] = useState([]);
@@ -149,8 +149,18 @@ export default function ResidentVerificationForm() {
 
     setFormData((prev) => ({
       ...prev,
-      [name]: files ? files[0] : value,
+      [name]: files ? Array.from(files) : value, // Lưu nhiều ảnh
     }));
+    
+    
+    // 👉 Update luôn preview
+    if (files && files.length > 0 && name === "documentImage") {
+      const previews = Array.from(files).map((file) =>
+        URL.createObjectURL(file)
+      );
+      setPreviewImage(previews); // đổi previewImage thành mảng
+    }
+    
   };
 
   // hàm sumit form
@@ -170,7 +180,10 @@ export default function ResidentVerificationForm() {
     data.append("phone", user.phone || "");
     data.append("documentType", formData.documentType);
     data.append("apartmentCode", formData.apartmentCode);
-
+    formData.documentImage.forEach((img) => {
+      data.append("documentImage", img);
+    });
+    
     // 👉 Nếu là hợp đồng cho thuê thì thêm ngày bắt đầu và kết thúc
     if (formData.documentType === "Hợp đồng cho thuê") {
       if (formData.contractStart && formData.contractEnd) {
@@ -409,25 +422,40 @@ export default function ResidentVerificationForm() {
                   <div className="col-md-12">
                     <label className="form-label">Ảnh hợp đồng</label>
                     <input
-                      type="file"
-                      name="documentImage"
-                      accept="image/*"
-                      onChange={handleChange}
-                      className="form-control"
-                      ref={fileInputRef}
-                      required
-                    />
-                    {previewImage && (
-                      <div className="mt-3 text-center">
-                        <span className="d-block mb-2 text-secondary">Ảnh hợp đồng đã chọn:</span>
-                        <img
-                          src={previewImage}
-                          alt="Ảnh hợp đồng"
-                          className="img-thumbnail"
-                          style={{ maxHeight: 220 }}
-                        />
-                      </div>
-                    )}
+  type="file"
+  name="documentImage"
+  accept="image/*"
+  multiple
+  ref={fileInputRef}
+  onChange={(e) => {
+    const files = Array.from(e.target.files);
+    setFormData((prev) => ({
+      ...prev,
+      documentImage: files,
+    }));
+
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setPreviewImage(previews);
+  }}
+/>
+
+{previewImage.length > 0 && (
+  <div className="mt-3">
+    <span className="d-block mb-2 text-secondary">Ảnh hợp đồng đã chọn:</span>
+    <div className="d-flex flex-wrap gap-2">
+      {previewImage.map((imgUrl, idx) => (
+        <img
+          key={idx}
+          src={imgUrl}
+          alt={`Ảnh ${idx + 1}`}
+          className="img-thumbnail"
+          style={{ maxHeight: 180 }}
+        />
+      ))}
+    </div>
+  </div>
+)}
+
                   </div>
                 </div>
                 <div className="d-flex justify-content-between mt-4">
