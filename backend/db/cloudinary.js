@@ -43,8 +43,8 @@ const storage2 = new CloudinaryStorage({
             throw new Error("Invalid file format. Only JPG, PNG, and GIF are allowed!");
         },
         public_id: (req, file) => {
-            return `contract-photo${Date.now()}`; // Đặt tên file duy nhất
-        },
+            return `contract-photo-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+        }        
     },
 });
 

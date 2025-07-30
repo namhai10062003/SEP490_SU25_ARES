@@ -19,77 +19,77 @@ export default function ResidentVerificationForm() {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
 
-  
-const customStyles = {
-  menu: (provided) => ({
-    ...provided,
-    maxHeight: 200,
-    overflowY: 'auto',
-  }),
-};
-// hàm sort apartment 
-// 🛠️ Di chuyển HÀM NÀY LÊN ĐÂU FILE, TRƯỚC KHI GỌI
-const sortApartments = (apartments) => {
-  console.log("Danh sách apartments đầu vào:", apartments);
-  return apartments
-    .slice() // tạo bản sao
-    .sort((a, b) => {
-      // Tách block và phần số: "P1-10.01" => ["P1", "10.01"]
-      const [blockA, numberA] = a.apartmentCode.split("-");
-      const [blockB, numberB] = b.apartmentCode.split("-");
 
-      // Tách tầng và phòng: "10.01" => [10, 1]
-      const [floorA, roomA] = numberA.split(".").map(Number);
-      const [floorB, roomB] = numberB.split(".").map(Number);
+  const customStyles = {
+    menu: (provided) => ({
+      ...provided,
+      maxHeight: 200,
+      overflowY: 'auto',
+    }),
+  };
+  // hàm sort apartment 
+  // 🛠️ Di chuyển HÀM NÀY LÊN ĐÂU FILE, TRƯỚC KHI GỌI
+  const sortApartments = (apartments) => {
+    console.log("Danh sách apartments đầu vào:", apartments);
+    return apartments
+      .slice() // tạo bản sao
+      .sort((a, b) => {
+        // Tách block và phần số: "P1-10.01" => ["P1", "10.01"]
+        const [blockA, numberA] = a.apartmentCode.split("-");
+        const [blockB, numberB] = b.apartmentCode.split("-");
 
-      // So sánh theo block (P1 < P2 < P3 ...)
-      if (blockA !== blockB) return blockA.localeCompare(blockB);
+        // Tách tầng và phòng: "10.01" => [10, 1]
+        const [floorA, roomA] = numberA.split(".").map(Number);
+        const [floorB, roomB] = numberB.split(".").map(Number);
 
-      // So sánh theo tầng
-      if (floorA !== floorB) return floorA - floorB;
+        // So sánh theo block (P1 < P2 < P3 ...)
+        if (blockA !== blockB) return blockA.localeCompare(blockB);
 
-      // So sánh theo phòng
-      return roomA - roomB;
-    });
-};
+        // So sánh theo tầng
+        if (floorA !== floorB) return floorA - floorB;
 
-// 👇 Lúc này gọi mới hợp lệ
-const sortedApartments = sortApartments(apartments);
-const apartmentOptions = sortedApartments.map((ap) => ({
-  value: ap.apartmentCode,
-  label: ap.apartmentCode, // hoặc `${ap.apartmentCode} (Tầng ${tầng}, Phòng ${phòng})` nếu muốn chi tiết hơn
-}));
-// list ra all users
-useEffect(() => {
-  const fetchAllUsers = async () => {
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/users?limit=1000`);
-
-      let users = [];
-
-      if (Array.isArray(res.data)) {
-        users = res.data;
-      } else if (res.data && res.data.users && Array.isArray(res.data.users)) {
-        users = res.data.users;
-      } else {
-        console.error("❌ API không trả về danh sách người dùng hợp lệ:", res.data);
-        return;
-      }
-
-      // 🔥 Lọc ra chỉ những user không phải admin hoặc staff
-      const filtered = users.filter(
-        (u) => u.role !== "admin" && u.role !== "staff"
-      );
-
-      setAllUsers(filtered);
-      setFilteredUsers(filtered);
-    } catch (err) {
-      console.error("❌ Lỗi khi gọi API lấy tất cả người dùng:", err.message);
-    }
+        // So sánh theo phòng
+        return roomA - roomB;
+      });
   };
 
-  fetchAllUsers();
-}, []);
+  // 👇 Lúc này gọi mới hợp lệ
+  const sortedApartments = sortApartments(apartments);
+  const apartmentOptions = sortedApartments.map((ap) => ({
+    value: ap.apartmentCode,
+    label: ap.apartmentCode, // hoặc `${ap.apartmentCode} (Tầng ${tầng}, Phòng ${phòng})` nếu muốn chi tiết hơn
+  }));
+  // list ra all users
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+      try {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/users?limit=1000`);
+
+        let users = [];
+
+        if (Array.isArray(res.data)) {
+          users = res.data;
+        } else if (res.data && res.data.users && Array.isArray(res.data.users)) {
+          users = res.data.users;
+        } else {
+          console.error("❌ API không trả về danh sách người dùng hợp lệ:", res.data);
+          return;
+        }
+
+        // 🔥 Lọc ra chỉ những user không phải admin hoặc staff
+        const filtered = users.filter(
+          (u) => u.role !== "admin" && u.role !== "staff"
+        );
+
+        setAllUsers(filtered);
+        setFilteredUsers(filtered);
+      } catch (err) {
+        console.error("❌ Lỗi khi gọi API lấy tất cả người dùng:", err.message);
+      }
+    };
+
+    fetchAllUsers();
+  }, []);
 
 
   useEffect(() => {
@@ -129,7 +129,7 @@ useEffect(() => {
       setFilteredUsers(allUsers);
       return;
     }
-  
+
     const filtered = allUsers.filter((u) =>
       (u.name?.toLowerCase().includes(keyword) ||
         u.email?.toLowerCase().includes(keyword) ||
@@ -137,7 +137,7 @@ useEffect(() => {
       u.role !== "admin" &&
       u.role !== "staff"
     );
-  
+
     setFilteredUsers(filtered);
   };
   const handleChange = (e) => {
@@ -163,17 +163,17 @@ useEffect(() => {
     
   };
 
-// hàm sumit form
+  // hàm sumit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     if (!user || !formData.documentType || !formData.apartmentCode) {
       alert("Vui lòng điền đủ thông tin bắt buộc.");
       return;
     }
-  
+
     const data = new FormData(); // 👉 Đưa lên đầu tiên
-  
+
     data.append("user", user._id);
     data.append("fullName", user.name || "");
     data.append("email", user.email || "");
@@ -183,6 +183,7 @@ useEffect(() => {
     formData.documentImage.forEach((img) => {
       data.append("documentImage", img);
     });
+    
     // 👉 Nếu là hợp đồng cho thuê thì thêm ngày bắt đầu và kết thúc
     if (formData.documentType === "Hợp đồng cho thuê") {
       if (formData.contractStart && formData.contractEnd) {
@@ -198,7 +199,7 @@ useEffect(() => {
         return;
       }
     }
-  
+
     try {
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/resident-verifications/verification`,
@@ -209,9 +210,9 @@ useEffect(() => {
           },
         }
       );
-  
+
       alert("Gửi yêu cầu xác thực thành công!");
-  
+
       setFormData({
         documentType: "",
         apartmentCode: "",
@@ -220,11 +221,11 @@ useEffect(() => {
         documentImage: null,
       });
       setPreviewImage(null);
-  
+
       if (fileInputRef.current) {
         fileInputRef.current.value = null;
       }
-  
+
       setUser(null);
       setQuery("");
     } catch (err) {
@@ -232,7 +233,7 @@ useEffect(() => {
       alert("Gửi thất bại! Vui lòng kiểm tra lại.");
     }
   };
-  
+
 
   return (
     <div className="d-flex min-vh-100 bg-light">
@@ -273,58 +274,58 @@ useEffect(() => {
               </form>
             </div>
           )} */}
-<div className="table-responsive mt-4">
-  <h4 className="fw-bold mb-3">Danh sách tất cả người dùng</h4>
-  <form onSubmit={handleSearch} className="mb-3 row g-2">
-    <div className="col-md-10">
-      <input
-        type="text"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        className="form-control"
-        placeholder="Tìm theo tên, email hoặc số điện thoại"
-      />
-    </div>
-    <div className="col-md-2 d-grid">
-      <button className="btn btn-primary" type="submit">Tìm kiếm</button>
-    </div>
-  </form>
-  <table className="table table-bordered table-striped">
-    <thead className="table-light">
-      <tr>
-        <th>#</th>
-        <th>Họ và tên</th>
-        <th>Email</th>
-        <th>Số điện thoại</th>
-        <th>Hành động</th>
-      </tr>
-    </thead>
-    <tbody>
-      {filteredUsers.length === 0 ? (
-        <tr>
-          <td colSpan="5" className="text-center">Không có người dùng phù hợp.</td>
-        </tr>
-      ) : (
-        filteredUsers.map((u, index) => (
-          <tr key={u._id}>
-            <td>{index + 1}</td>
-            <td>{u.name}</td>
-            <td>{u.email}</td>
-            <td>{u.phone}</td>
-            <td>
-              <button
-                className="btn btn-sm btn-outline-primary"
-                onClick={() => setUser(u)}
-              >
-                Xác thực
-              </button>
-            </td>
-          </tr>
-        ))
-      )}
-    </tbody>
-  </table>
-</div>
+          <div className="table-responsive mt-4">
+            <h4 className="fw-bold mb-3">Danh sách tất cả người dùng</h4>
+            <form onSubmit={handleSearch} className="mb-3 row g-2">
+              <div className="col-md-10">
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="form-control"
+                  placeholder="Tìm theo tên, email hoặc số điện thoại"
+                />
+              </div>
+              <div className="col-md-2 d-grid">
+                <button className="btn btn-primary" type="submit">Tìm kiếm</button>
+              </div>
+            </form>
+            <table className="table table-bordered table-striped">
+              <thead className="table-light">
+                <tr>
+                  <th>#</th>
+                  <th>Họ và tên</th>
+                  <th>Email</th>
+                  <th>Số điện thoại</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="text-center">Không có người dùng phù hợp.</td>
+                  </tr>
+                ) : (
+                  filteredUsers.map((u, index) => (
+                    <tr key={u._id}>
+                      <td>{index + 1}</td>
+                      <td>{u.name}</td>
+                      <td>{u.email}</td>
+                      <td>{u.phone}</td>
+                      <td>
+                        <button
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={() => setUser(u)}
+                        >
+                          Xác thực
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
           {user && (
             <div className="bg-white rounded-4 shadow p-4 mx-auto">
@@ -359,64 +360,65 @@ useEffect(() => {
                     />
                   </div>
                   <div className="col-md-6">
-  <label className="form-label">Loại hợp đồng</label>
-  <select
-    name="documentType"
-    value={formData.documentType}
-    onChange={handleChange}
-    className="form-select"
-    required
-  >
-    <option value="">-- Loại hợp đồng --</option>
-    <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
-    <option value="Hợp đồng mua bán">Hợp đồng mua bán</option>
-    <option value="Khác">Khác</option>
-  </select>
-</div>
+                    <label className="form-label">Loại hợp đồng</label>
+                    <select
+                      name="documentType"
+                      value={formData.documentType}
+                      onChange={handleChange}
+                      className="form-select"
+                      required
+                    >
+                      <option value="">-- Loại hợp đồng --</option>
+                      <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
+                      <option value="Hợp đồng mua bán">Hợp đồng mua bán</option>
+                      <option value="Khác">Khác</option>
+                    </select>
+                  </div>
 
-<div className="col-md-6">
-  <label className="form-label">Căn hộ</label>
-  <Select
-    options={apartmentOptions}
-    value={apartmentOptions.find(opt => opt.value === formData.apartmentCode)}
-    onChange={(selected) =>
-      setFormData((prev) => ({
-        ...prev,
-        apartmentCode: selected ? selected.value : ""
-      }))
-    }
-    placeholder="Nhập hoặc chọn căn hộ"
-    styles={customStyles}
-    isClearable
-  />
-</div>
+                  <div className="col-md-6">
+                    <label className="form-label">Căn hộ</label>
+                    <Select
+                      options={apartmentOptions}
+                      value={apartmentOptions.find(opt => opt.value === formData.apartmentCode)}
+                      onChange={(selected) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          apartmentCode: selected ? selected.value : ""
+                        }))
+                      }
+                      placeholder="Nhập hoặc chọn căn hộ"
+                      styles={customStyles}
+                      isClearable
+                    />
+                  </div>
 
-{formData.documentType === "Hợp đồng cho thuê" && (
-  <>
-    <div className="col-md-6">
-      <label className="form-label">Ngày bắt đầu hợp đồng</label>
-      <input
-        type="date"
-        name="contractStart"
-        value={formData.contractStart}
-        onChange={handleChange}
-        className="form-control"
-        required
-      />
-    </div>
-    <div className="col-md-6">
-      <label className="form-label">Ngày kết thúc hợp đồng</label>
-      <input
-        type="date"
-        name="contractEnd"
-        value={formData.contractEnd}
-        onChange={handleChange}
-        className="form-control"
-        required
-      />
-    </div>
-  </>
-)}
+                  {formData.documentType === "Hợp đồng cho thuê" && (
+                    <>
+                      <div className="col-md-6">
+                        <label className="form-label">Ngày bắt đầu hợp đồng</label>
+                        <input
+                          type="date"
+                          name="contractStart"
+                          value={formData.contractStart}
+                          onChange={handleChange}
+                          className="form-control"
+                          required
+                        />
+                      </div>
+                      <div className="col-md-6">
+                        <label className="form-label">Ngày kết thúc hợp đồng</label>
+                        <input
+                          type="date"
+                          name="contractEnd"
+                          value={formData.contractEnd}
+                          onChange={handleChange}
+                          className="form-control"
+                          required
+                          min={formData.contractStart}
+                        />
+                      </div>
+                    </>
+                  )}
                   <div className="col-md-12">
                     <label className="form-label">Ảnh hợp đồng</label>
                     <input
