@@ -19,40 +19,30 @@ const PAGE_SIZE = 5;
 
 const RevenueApartment = () => {
     const [fees, setFees] = useState([]);
-    const [startDate, setStartDate] = useState("");
-    const [endDate, setEndDate] = useState("");
+    const [selectedMonth, setSelectedMonth] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [searchText, setSearchText] = useState("");
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
-    useEffect(() => {
-        const now = new Date();
 
-        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-        // Convert to YYYY-MM-DD string for input fields
-        const toInputDate = (date) => {
-            const y = date.getFullYear();
-            const m = String(date.getMonth() + 1).padStart(2, '0');
-            const d = String(date.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
-        };
-
-        setStartDate(toInputDate(firstDayOfMonth));
-        setEndDate(toInputDate(lastDayOfMonth));
-    }, []);
     const formatDate = (d) =>
         d ? new Date(d).toLocaleDateString("vi-VN") : "Chưa thanh toán";
     const formatPrice = (p) =>
         new Intl.NumberFormat("vi-VN").format(p || 0) + " đ";
 
     const filteredFees = fees.filter((f) => {
-        const paidDate = f.paymentDate ? new Date(f.paymentDate) : null;
+        const matchDate = !selectedMonth || (() => {
+            if (!f.month || f.month === "---") return false;
 
-        const matchDate =
-            (!startDate || (paidDate && paidDate >= new Date(startDate))) &&
-            (!endDate || (paidDate && paidDate <= new Date(endDate)));
+            const [year, month] = selectedMonth.split("-");
+            const selectedMonthFormatted = `${month}/${year}`; // "01/2025"
+
+            // So sánh chính xác
+            return f.month === selectedMonthFormatted;
+        })();
+
+
 
         const matchStatus =
             statusFilter === "all" ||
@@ -68,7 +58,10 @@ const RevenueApartment = () => {
             f.managementFee?.toString().includes(lowerSearch) ||
             f.waterFee?.toString().includes(lowerSearch) ||
             f.parkingFee?.toString().includes(lowerSearch) ||
-            f.total?.toString().includes(lowerSearch);
+            f.total?.toString().includes(lowerSearch) ||
+            (month && month.includes(lowerSearch)) ||       // ✅ "01/2025"
+            (m && m.includes(lowerSearch)) ||               // ✅ "01"
+            (y && y.includes(lowerSearch));
 
         return matchDate && matchStatus && matchSearch;
     });
@@ -98,7 +91,7 @@ const RevenueApartment = () => {
         );
         setTotalPages(newTotalPages);
         if (page > newTotalPages) setPage(1);
-    }, [fees, startDate, endDate, statusFilter, searchText]);
+    }, [fees, selectedMonth, statusFilter, searchText]);
 
 
     const exportToExcel = () => {
@@ -155,45 +148,34 @@ const RevenueApartment = () => {
                     <h2 className="mb-0">Thống Kê Doanh Thu Căn Hộ</h2>
                 </div>
 
-                <div className="row g-3 mb-3 align-items-end">
-                    {/* Từ ngày */}
+                <div className="row g-3 align-items-end mb-3">
+                    {/* Chọn tháng */}
                     <div className="col-md-2">
-                        <label className="form-label fw-semibold">Từ ngày</label>
+                        <label className="form-label fw-semibold">Chọn tháng</label>
                         <input
-                            type="date"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            className="form-control"
-                        />
-                    </div>
-
-                    {/* Đến ngày */}
-                    <div className="col-md-2">
-                        <label className="form-label fw-semibold">Đến ngày</label>
-                        <input
-                            type="date"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
+                            type="month"
+                            value={selectedMonth}
+                            onChange={(e) => setSelectedMonth(e.target.value)}
                             className="form-control"
                         />
                     </div>
 
                     {/* Trạng thái */}
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                         <label className="form-label fw-semibold">Trạng thái</label>
                         <select
                             className="form-select"
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                         >
-                            <option value="all">Tất cả</option>
+                            <option value="all">Tất cả trạng thái</option>
                             <option value="paid">Đã thanh toán</option>
                             <option value="unpaid">Chưa thanh toán</option>
                         </select>
                     </div>
 
                     {/* Tìm kiếm */}
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                         <label className="form-label fw-semibold">Tìm kiếm</label>
                         <input
                             type="text"
@@ -209,8 +191,7 @@ const RevenueApartment = () => {
                         <button
                             className="btn btn-secondary fw-semibold"
                             onClick={() => {
-                                setStartDate("");
-                                setEndDate("");
+                                setSelectedMonth("");
                                 setStatusFilter("all");
                                 setSearchText("");
                             }}
@@ -218,12 +199,15 @@ const RevenueApartment = () => {
                             Xóa bộ lọc
                         </button>
                     </div>
-                    <div className="col-md-2 d-grid">
+
+                    {/* Nút Xuất Excel – nằm sát phải */}
+                    <div className="col-md-2 ms-auto d-grid">
                         <button className="btn btn-success fw-semibold" onClick={exportToExcel}>
                             Xuất Excel
                         </button>
                     </div>
                 </div>
+
 
                 {/* Tổng doanh thu */}
                 <div className="d-flex justify-content-end align-items-center gap-3 mb-3">
