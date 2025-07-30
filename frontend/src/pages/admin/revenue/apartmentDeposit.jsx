@@ -59,7 +59,8 @@ const RevenueDeposit = () => {
             const paidDate = new Date(c.paymentDate);
             const matchDate =
                 (!startDate || paidDate >= new Date(startDate)) &&
-                (!endDate || paidDate <= new Date(endDate));
+                (!endDate || paidDate <= new Date(endDate)) &&
+                (!paymentDate || new Date(c.paymentDate).toDateString() === new Date(paymentDate).toDateString());
             const matchText =
                 !searchText ||
                 (c.apartmentCode && c.apartmentCode.toLowerCase().includes(lower)) ||
@@ -73,7 +74,7 @@ const RevenueDeposit = () => {
         });
         setFilteredPosts(filtered);
         setPage(1);
-    }, [contracts, searchText, startDate, endDate]);
+    }, [contracts, searchText, startDate, endDate, paymentDate]);
 
     const formatDate = (date) => date ? new Date(date).toLocaleDateString("vi-VN") : "-";
     const formatPrice = (amount) => new Intl.NumberFormat("vi-VN").format(amount || 0) + " đ";
@@ -197,6 +198,7 @@ const RevenueDeposit = () => {
                                 setStartDate("");
                                 setEndDate("");
                                 setSearchText("");
+                                setPaymentDate("");
                             }}
                         >
                             Xóa lọc
