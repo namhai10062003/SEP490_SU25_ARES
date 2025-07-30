@@ -3,12 +3,26 @@ import User from '../models/User.js';
 // Lấy tất cả staff
 const getAllStaff = async (req, res) => {
     try {
-        const staff = await User.find({ role: "staff" });
-        res.json(staff);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const skip = (page - 1) * limit;
+
+        const [staff, total] = await Promise.all([
+            User.find({ role: "staff" }).skip(skip).limit(limit),
+            User.countDocuments({ role: "staff" })
+        ]);
+
+        res.json({
+            data: staff,
+            page,
+            totalPages: Math.ceil(total / limit),
+            totalItems: total
+        });
     } catch (err) {
         res.status(500).json({ error: "Server error" });
     }
 };
+
 
 // Lấy 1 staff theo ID
 const getStaffById = async (req, res) => {

@@ -3,7 +3,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import AdminDashboard from "./adminDashboard.jsx";
-
+import Pagination from "../../../components/Pagination.jsx";
+import ReusableModal from "../../../components/ReusableModal.jsx";
 const ManageStaff = () => {
     const [staffList, setStaffList] = useState([]);
     const [showModal, setShowModal] = useState(false);
@@ -14,22 +15,23 @@ const ManageStaff = () => {
     const [searchText, setSearchText] = useState("");
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
-    const PAGE_SIZE = 10;
-
+    const [pageSize, setPageSize] = useState(10);
     useEffect(() => {
         fetchStaff();
-    }, []);
+    }, [page, pageSize]);
 
     const fetchStaff = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/staff`);
-            const data = await res.json();
-            setStaffList(data);
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/staff?page=${page}&limit=${pageSize}`);
+            const result = await res.json();
+            setStaffList(Array.isArray(result.data) ? result.data : []);
             setPage(1); // Reset page về 1 khi load lại
         } catch (err) {
             toast.error("Không thể tải danh sách staff!");
+            setStaffList([]); // fallback tránh lỗi .filter
         }
     };
+
 
     const openAdd = () => {
         setIsUpdate(false);
@@ -136,51 +138,111 @@ const ManageStaff = () => {
         return matchesStatus && (searchText === "" || matchesSearch);
     });
 
-    const pagedStaff = filteredStaff.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-    const totalPages = Math.ceil(filteredStaff.length / PAGE_SIZE) || 1;
+    const pagedStaff = filteredStaff.slice((page - 1) * pageSize, page * pageSize);
+    const totalPages = Math.ceil(filteredStaff.length / pageSize) || 1;
+    const renderModalBody = () => (
+        <>
+            <div className="form-group mb-3">
+                <label>Tên tài khoản</label>
+                <input
+                    type="text"
+                    className="form-control"
+                    name="username"
+                    value={form.username}
+                    onChange={handleChange}
+                    required
+                />
+            </div>
+            <div className="form-group mb-3">
+                <label>Email</label>
+                <input
+                    type="email"
+                    className="form-control"
+                    name="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    required
+                />
+            </div>
+            <div className="form-group mb-0">
+                <label>Mật khẩu</label>
+                <div className="input-group">
+                    <input
+                        type={showPassword ? "text" : "password"}
+                        className="form-control"
+                        name="password"
+                        value={form.password}
+                        onChange={handleChange}
+                        required
+                    />
+                    <button
+                        type="button"
+                        className="btn btn-outline-secondary"
+                        onClick={() => setShowPassword(!showPassword)}
+                    >
+                        <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                    </button>
+                </div>
+            </div>
+        </>
+    );
 
+    const modalButtons = [
+        {
+            label: loading ? "Đang xử lý..." : isUpdate ? "Cập nhật" : "Tạo",
+            onClick: handleSubmit,
+            variant: "primary",
+            disabled: loading,
+        },
+        {
+            label: "Hủy",
+            onClick: () => setShowModal(false),
+            variant: "secondary",
+            disabled: loading,
+        },
+    ];
     return (
         <AdminDashboard>
             <div className="w-100">
-            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-  {/* Bên trái */}
-  <h2 className="fw-bold mb-0">Quản lý Staff</h2>
+                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    {/* Bên trái */}
+                    <h2 className="fw-bold mb-0">Quản lý Staff</h2>
 
-  {/* Bên phải: input, select, button */}
-  <div className="d-flex gap-3 flex-wrap">
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Tìm kiếm..."
-      style={{ maxWidth: 150 }}
-      value={searchText}
-      onChange={(e) => {
-        setPage(1);
-        setSearchText(e.target.value);
-      }}
-    />
-    <select
-      className="form-select"
-      style={{ maxWidth: 100 }}
-      value={filterStatus}
-      onChange={(e) => {
-        setPage(1);
-        setFilterStatus(e.target.value);
-      }}
-    >
-      <option value="">Tất cả</option>
-      <option value="1">Active</option>
-      <option value="0">Blocked</option>
-    </select>
-    <button
-      className="btn btn-primary fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm"
-      onClick={openAdd}
-    >
-      <FontAwesomeIcon icon={faPlus} />
-      Thêm Staff
-    </button>
-  </div>
-</div>
+                    {/* Bên phải: input, select, button */}
+                    <div className="d-flex gap-3 flex-wrap">
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Tìm kiếm..."
+                            style={{ maxWidth: 150 }}
+                            value={searchText}
+                            onChange={(e) => {
+                                setPage(1);
+                                setSearchText(e.target.value);
+                            }}
+                        />
+                        <select
+                            className="form-select"
+                            style={{ maxWidth: 100 }}
+                            value={filterStatus}
+                            onChange={(e) => {
+                                setPage(1);
+                                setFilterStatus(e.target.value);
+                            }}
+                        >
+                            <option value="">Tất cả</option>
+                            <option value="1">Active</option>
+                            <option value="0">Blocked</option>
+                        </select>
+                        <button
+                            className="btn btn-primary fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm"
+                            onClick={openAdd}
+                        >
+                            <FontAwesomeIcon icon={faPlus} />
+                            Thêm Staff
+                        </button>
+                    </div>
+                </div>
 
                 <div className="card w-100">
                     <div className="card-body p-0">
@@ -196,9 +258,10 @@ const ManageStaff = () => {
                                 </tr>
                             </thead>
                             <tbody>
+
                                 {pagedStaff.map((staff, idx) => (
                                     <tr key={staff._id}>
-                                        <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
+                                        <td>{(page - 1) * pageSize + idx + 1}</td>
                                         <td>{staff.name}</td>
                                         <td>{staff.email}</td>
                                         {/* <td>
@@ -246,7 +309,7 @@ const ManageStaff = () => {
                                         </td>
                                     </tr>
                                 ))}
-                                {staffList.length === 0 && (
+                                {pagedStaff.length === 0 && (
                                     <tr>
                                         <td colSpan="6" className="text-center text-muted py-4">
                                             Không có staff nào.
@@ -259,110 +322,23 @@ const ManageStaff = () => {
                 </div>
 
                 {/* Pagination */}
-                <div className="d-flex justify-content-center align-items-center mt-4">
-                    <button
-                        className="btn btn-outline-secondary me-2"
-                        onClick={() => setPage(page - 1)}
-                        disabled={page <= 1}
-                    >
-                        &lt; Prev
-                    </button>
-                    <span style={{ minWidth: 90, textAlign: "center" }}>
-                        Trang {page} / {totalPages}
-                    </span>
-                    <button
-                        className="btn btn-outline-secondary ms-2"
-                        onClick={() => setPage(page + 1)}
-                        disabled={page >= totalPages}
-                    >
-                        Next &gt;
-                    </button>
-                </div>
+                <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                    pageSize={pageSize}
+                    onPageSizeChange={setPageSize}
+                />
 
                 {/* Modal */}
                 {showModal && (
-                    <div
-                        className="modal fade show"
-                        style={{ display: "block", background: "rgba(0,0,0,0.3)" }}
-                        tabIndex="-1"
-                    >
-                        <div className="modal-dialog">
-                            <div className="modal-content">
-                                <form onSubmit={handleSubmit}>
-                                    <div className="modal-header">
-                                        <h5 className="modal-title">
-                                            {isUpdate ? "Cập nhật tài khoản" : "Thêm tài khoản"}
-                                        </h5>
-                                        <button
-                                            type="button"
-                                            className="close"
-                                            onClick={() => setShowModal(false)}
-                                        >
-                                            <span>&times;</span>
-                                        </button>
-                                    </div>
-                                    <div className="modal-body">
-                                        <div className="form-group">
-                                            <label>Tên tài khoản</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                name="username"
-                                                value={form.username}
-                                                onChange={handleChange}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="form-group">
-                                            <label>Email</label>
-                                            <input
-                                                type="email"
-                                                className="form-control"
-                                                name="email"
-                                                value={form.email}
-                                                onChange={handleChange}
-                                                required
-                                            />
-                                        </div>
-                                        <div className="form-group">
-                                            <label>Mật khẩu</label>
-                                            <div className="input-group">
-                                                <input
-                                                    type={showPassword ? "text" : "password"}
-                                                    className="form-control"
-                                                    name="password"
-                                                    value={form.password}
-                                                    onChange={handleChange}
-                                                    required
-                                                />
-                                                <button
-                                                    className="btn btn-outline-secondary"
-                                                    type="button"
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    tabIndex={-1}
-                                                >
-                                                    <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="modal-footer">
-                                        <button type="submit" className="btn btn-primary" disabled={loading}>
-                                            {loading ? "Đang xử lý..." : isUpdate ? "Cập nhật" : "Tạo"}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn btn-secondary"
-                                            onClick={() => setShowModal(false)}
-                                            disabled={loading}
-                                        >
-                                            Hủy
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                    <ReusableModal
+                        show={showModal}
+                        title={isUpdate ? "Cập nhật tài khoản" : "Thêm tài khoản"}
+                        body={renderModalBody()}
+                        footerButtons={modalButtons}
+                        onClose={() => setShowModal(false)}
+                    />
                 )}
             </div>
         </AdminDashboard>

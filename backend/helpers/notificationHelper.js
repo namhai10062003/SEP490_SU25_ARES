@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import twilio from "twilio";
-
+import dotenv from "dotenv";
+dotenv.config();
 function formatVietnamPhoneNumber(number) {
     if (!number) return number;
     const cleaned = number.replace(/[\s-]/g, '');
@@ -12,6 +13,8 @@ function formatVietnamPhoneNumber(number) {
 }
 
 // Nodemailer setup (use Gmail for free, or any SMTP)
+console.log("EMAIL_USER:", process.env.EMAIL_USER);
+console.log("EMAIL_PASS:", process.env.EMAIL_PASS);
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -38,6 +41,8 @@ export async function sendEmailNotification({ to, subject, text, html }) {
 
 // Twilio setup
 const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+console.log("TWILIO_ACCOUNT_SID:", process.env.TWILIO_ACCOUNT_SID);
+console.log("TWILIO_AUTH_TOKEN:", process.env.TWILIO_AUTH_TOKEN);
 
 export async function sendSMSNotification({ to, body }) {
     if (process.env.TWILIO_ENABLE !== "true") {

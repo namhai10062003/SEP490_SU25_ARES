@@ -96,7 +96,7 @@ export const blockUser = async (req, res) => {
     if (user.phone) {
       await sendSMSNotification({
         to: user.phone,
-        body: message
+        body: '[ARES] ' + message // Prefix with [ARES] for SMS
       });
     }
     // --- END EMAIL & SMS NOTIFICATION ---
@@ -139,7 +139,7 @@ export const unBlockUser = async (req, res) => {
     if (user.phone) {
       await sendSMSNotification({
         to: user.phone,
-        body: "Tai khoan cua ban da duoc mo chan dang bai."
+        body: "[ARES] Tài khoản của bạn đã được mở chặn đăng bài."
       });
     }
     // --- END EMAIL & SMS NOTIFICATION ---

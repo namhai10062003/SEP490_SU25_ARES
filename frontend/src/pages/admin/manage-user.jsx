@@ -1,12 +1,10 @@
-import { faEye, faEyeSlash, faPlus } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import LoadingModal from "../../../components/LoadingModal.jsx";
 import AdminDashboard from "./adminDashboard.jsx";
-
-
-const PAGE_SIZE = 10;
+import ReusableModal from "../../../components/ReusableModal.jsx";
+import Pagination from "../../../components/Pagination.jsx";
 
 const ManageUsers = () => {
     const [userList, setUserList] = useState([]);
@@ -20,14 +18,15 @@ const ManageUsers = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [filterStatus, setFilterStatus] = useState("");
     const [loading, setLoading] = useState(false);
+    const [pageSize, setPageSize] = useState(10);
 
     useEffect(() => {
         fetchUsers();
-    }, [page, filterStatus]);
+    }, [page, filterStatus, pageSize]);
 
     const fetchUsers = async () => {
         try {
-            let url = `${import.meta.env.VITE_API_URL}/api/users?page=${page}&limit=${PAGE_SIZE}&role=customer`;
+            let url = `${import.meta.env.VITE_API_URL}/api/users?page=${page}&limit=${pageSize}&role=customer`;
             if (filterStatus) url += `&status=${filterStatus}`;
             const res = await fetch(url);
             const data = await res.json();
@@ -155,7 +154,7 @@ const ManageUsers = () => {
                             <tbody>
                                 {filteredUsers.map((user, idx) => (
                                     <tr key={user._id}>
-                                        <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
+                                        <td>{(page - 1) * pageSize + idx + 1}</td>
                                         <td>{user.name}</td>
                                         <td>{user.email}</td>
                                         <td>{user.phone || "-"}</td>
@@ -210,91 +209,57 @@ const ManageUsers = () => {
                     </div>
                 </div>
                 {/* Pagination */}
-                <div className="d-flex justify-content-center align-items-center mt-3">
-                    <button
-                        className="btn btn-outline-secondary mr-2"
-                        onClick={() => setPage(page - 1)}
-                        disabled={page <= 1}
-                    >
-                        &lt; Prev
-                    </button>
-                    <span style={{ minWidth: 90, textAlign: "center" }}>Trang {page} / {totalPages}</span>
-                    <button
-                        className="btn btn-outline-secondary ml-2"
-                        onClick={() => setPage(page + 1)}
-                        disabled={page >= totalPages}
-                    >
-                        Next &gt;
-                    </button>
-                </div>
-
+                <Pagination
+                    page={page}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                    pageSize={pageSize}
+                    onPageSizeChange={setPageSize}
+                />
                 {/* Block Modal */}
-                {showBlockModal && (
-                    <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,0.3)" }}>
-                        <div className="modal-dialog">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">Chặn người dùng</h5>
-                                    <button type="button" className="close" onClick={() => setShowBlockModal(false)}>
-                                        <span>&times;</span>
-                                    </button>
-                                </div>
-                                <div className="modal-body">
-                                    <p>Nhập lý do chặn <strong>{userToBlock?.name}</strong>:</p>
-                                    <textarea
-                                        className="form-control"
-                                        rows="3"
-                                        value={blockReason}
-                                        onChange={(e) => setBlockReason(e.target.value)}
-                                        placeholder="Nhập lý do..."
-                                    ></textarea>
-                                </div>
-                                <div className="modal-footer">
-                                    <button className="btn btn-secondary" onClick={() => setShowBlockModal(false)}>Hủy</button>
-                                    <button
-                                        className="btn btn-danger"
-                                        onClick={() => handleToggleStatus(userToBlock, blockReason)}
-                                        disabled={!blockReason.trim()}
-                                    >
-                                        Chặn
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <ReusableModal
+                    show={showBlockModal}
+                    onClose={() => setShowBlockModal(false)}
+                    title="Chặn người dùng"
+                    body={
+                        <>
+                            <p>Nhập lý do chặn <strong>{userToBlock?.name}</strong>:</p>
+                            <textarea
+                                className="form-control"
+                                rows="3"
+                                value={blockReason}
+                                onChange={(e) => setBlockReason(e.target.value)}
+                                placeholder="Nhập lý do..."
+                            ></textarea>
+                        </>
+                    }
+                    footerButtons={[
+                        { label: "Hủy", variant: "secondary", onClick: () => setShowBlockModal(false) },
+                        {
+                            label: "Chặn",
+                            variant: "danger",
+                            onClick: () => handleToggleStatus(userToBlock, blockReason),
+                            disabled: !blockReason.trim()
+                        }
+                    ]}
+                />
 
                 {/* Delete Modal */}
-                {showDeleteModal && (
-                    <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,0.3)" }}>
-                        <div className="modal-dialog">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">Xác nhận xóa user</h5>
-                                    <button type="button" className="close" onClick={() => setShowDeleteModal(false)}>
-                                        <span>&times;</span>
-                                    </button>
-                                </div>
-                                <div className="modal-body">
-                                    <p>Bạn có chắc chắn muốn xóa user <strong>{userToDelete?.name}</strong>?</p>
-                                </div>
-                                <div
-                                    className="modal-footer"
-                                    style={{
-                                        display: "flex",
-                                        flexDirection: "row",
-                                        justifyContent: "flex-end",
-                                        gap: 8,
-                                        flexWrap: "nowrap", // Prevent wrapping
-                                    }}
-                                >
-                                    <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Hủy</button>
-                                    <button className="btn btn-danger" onClick={handleDeleteUser}>Xóa</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
+                <ReusableModal
+                    show={showDeleteModal}
+                    onClose={() => setShowDeleteModal(false)}
+                    title="Xác nhận xóa user"
+                    body={
+                        <p>
+                            Bạn có chắc chắn muốn xóa user <strong>{userToDelete?.name}</strong>?
+                        </p>
+                    }
+                    footerButtons={[
+                        { label: "Hủy", variant: "secondary", onClick: () => setShowDeleteModal(false) },
+                        { label: "Xóa", variant: "danger", onClick: handleDeleteUser }
+                    ]}
+                />
+
             </div>
         </AdminDashboard>
     );
