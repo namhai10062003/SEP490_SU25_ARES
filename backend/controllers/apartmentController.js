@@ -16,16 +16,31 @@ export const createApartment = async (req, res) => {
 };
 
 // Lấy tất cả căn hộ
+
+// GET /api/apartments?page=1&pageSize=10
 export const getAllApartments = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const pageSize = parseInt(req.query.pageSize) || 10;
+
   try {
+    const total = await Apartment.countDocuments();
     const apartments = await Apartment.find()
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .sort({ createdAt: -1 })
       .populate('isOwner', 'name phone')
       .populate('isRenter', 'name phone');
-    res.json(apartments);
+    res.json({
+      data: apartments,
+      total,
+      page,
+      totalPages: Math.ceil(total / pageSize),
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "Server error" });
   }
 };
+
 
 // Lấy 1 căn hộ theo ID
 export const getApartmentById = async (req, res) => {
