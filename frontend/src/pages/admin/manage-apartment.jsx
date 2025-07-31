@@ -1,10 +1,10 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import AdminDashboard from "./adminDashboard.jsx"; // Assuming similar structure
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import Pagination from "../../../components/Pagination.jsx"; // Assuming similar structure
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css'; // Đảm bảo đã import CSS
 import ApartmentFormModal from "../../../components/ApartmentFormModal.jsx"; // Assuming similar structure
+import Pagination from "../../../components/Pagination.jsx"; // Assuming similar structure
+import AdminDashboard from "./adminDashboard.jsx"; // Assuming similar structure
 const ManageApartment = () => {
   const [apartments, setApartments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,16 +55,29 @@ const ManageApartment = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc muốn xóa căn hộ này?")) {
-      try {
-        await axios.delete(`${import.meta.env.VITE_API_URL}/api/apartments/${id}`);
-        setApartments(apartments.filter(apt => apt._id !== id));
-        alert("Xóa căn hộ thành công!");
-      } catch (err) {
-        console.error("Lỗi khi xóa căn hộ:", err);
-        alert("Xóa căn hộ thất bại!");
-      }
-    }
+    confirmAlert({
+      title: 'Xác nhận xóa',
+      message: 'Bạn có chắc muốn xóa căn hộ này?',
+      buttons: [
+        {
+          label: 'Có',
+          onClick: async () => {
+            try {
+              await axios.delete(`${import.meta.env.VITE_API_URL}/api/apartments/${id}`);
+              setApartments(apartments.filter(apt => apt._id !== id));
+              toast.success("✅ Xóa căn hộ thành công!");
+            } catch (err) {
+              console.error("Lỗi khi xóa căn hộ:", err);
+              toast.error("❌ Xóa căn hộ thất bại!");
+            }
+          }
+        },
+        {
+          label: 'Không',
+          onClick: () => { /* Không làm gì cả */ }
+        }
+      ]
+    });
   };
 
   const handleEdit = (apt) => {

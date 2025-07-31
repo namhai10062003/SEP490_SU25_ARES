@@ -1,9 +1,9 @@
-import Contract from "../models/Contract.js";
-import Post from "../models/Post.js"; // để lấy giá từ bài đăng
-import Notification from "../models/Notification.js";
 import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
-import User from "../models/User.js";
 import { emitNotification } from "../helpers/socketHelper.js";
+import Contract from "../models/Contract.js";
+import Notification from "../models/Notification.js";
+import Post from "../models/Post.js"; // để lấy giá từ bài đăng
+import User from "../models/User.js";
 
 export const createContract = async (req, res) => {
   try {
@@ -197,17 +197,23 @@ export const rejectContract = async (req, res) => {
 
 // [DELETE] Xóa hợp đồng
 export const deleteContract = async (req, res) => {
-  const contract = await Contract.findById(req.params.id);
-  if (!contract) return res.status(404).json({ message: "Không tìm thấy hợp đồng" });
-  if (contract.status === "pending" || contract.status === "approved") {  // Không cho phép xóa hợp đồng đang chờ duyệt hay đã duyệt
-    return res.status(400).json({ message: "Không thể xóa hợp đồng đang chờ duyệt hay đã duyệt" });
+  try {
+    const contract = await Contract.findById(req.params.id);
+    if (!contract) {
+      return res.status(404).json({ message: "Không tìm thấy hợp đồng" });
+    }
+
+    // Thực hiện soft delete (cho phép xóa dù ở trạng thái nào)
+    contract.deletedAt = new Date(); // Đánh dấu thời gian xóa
+    await contract.save();
+
+    res.json({ message: "Đã xóa hợp đồng" });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi khi xóa hợp đồng", error: error.message });
   }
-  // Thực hiện soft delete
-  contract.deletedAt = new Date(); // Đánh dấu thời gian xóa
-  await contract.save();
-  res.json({ message: "Đã xóa hợp đồng" });
 };
-// xem chi tiết hợp đồng 
+
+// xem chi tiết hợp đồng v
 // ✅ Lấy chi tiết 1 hợp đồng
 export const getContractById = async (req, res) => {
   try {

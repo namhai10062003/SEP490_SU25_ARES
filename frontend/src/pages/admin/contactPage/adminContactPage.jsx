@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import { toast } from "react-toastify";
 import AdminDashboard from "../adminDashboard";
-
 const AdminContactPage = () => {
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -40,16 +41,30 @@ const AdminContactPage = () => {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Bạn có chắc muốn xoá liên hệ này?")) return;
-        try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/api/contact/list/${id}`);
-            toast.success("🗑️ Đã xoá liên hệ!");
-            loadContacts();
-        } catch (err) {
-            console.error("❌ Xoá thất bại:", err);
-            toast.error("❌ Xoá liên hệ thất bại!");
-        }
-    };
+        confirmAlert({
+          title: 'Xác nhận xóa liên hệ',
+          message: 'Bạn có chắc muốn xoá liên hệ này?',
+          buttons: [
+            {
+              label: 'Có',
+              onClick: async () => {
+                try {
+                  await axios.delete(`${import.meta.env.VITE_API_URL}/api/contact/list/${id}`);
+                  toast.success("🗑️ Đã xoá liên hệ!");
+                  loadContacts(); // Tải lại danh sách sau khi xoá
+                } catch (err) {
+                  console.error("❌ Xoá thất bại:", err);
+                  toast.error("❌ Xoá liên hệ thất bại!");
+                }
+              }
+            },
+            {
+              label: 'Không',
+              onClick: () => { /* Không làm gì nếu chọn Không */ }
+            }
+          ]
+        });
+      };
 
     const handleMarkReviewed = async (id) => {
         try {

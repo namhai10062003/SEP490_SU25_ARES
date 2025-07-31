@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import { useNavigate } from "react-router-dom";
+import { toast } from 'react-toastify';
 import Header from "../../../../components/header.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
 import {
@@ -8,7 +11,6 @@ import {
   getPostsByUser,
   updatePost,
 } from "../../../service/postService.js";
-
 const PAGE_SIZE = 5;
 
 const CustomerPostManagement = () => {
@@ -121,16 +123,33 @@ const CustomerPostManagement = () => {
 
   // Handle delete post
   const handleDelete = async (postId) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa bài đăng này?")) {
-      try {
-        const response = await deletePost(postId);
-        if (response.data.success) {
-          setPosts((prev) => prev.filter((post) => post._id !== postId));
+    confirmAlert({
+      title: 'Xác nhận xoá bài đăng',
+      message: 'Bạn có chắc chắn muốn xóa bài đăng này?',
+      buttons: [
+        {
+          label: '🗑️ Xoá',
+          onClick: async () => {
+            try {
+              const response = await deletePost(postId);
+              if (response.data.success) {
+                // Cập nhật danh sách bài đăng
+                setPosts((prev) => prev.filter((post) => post._id !== postId));
+  
+                // Hiển thị thông báo thành công
+                toast.success(response.data.message || "Đã xoá bài đăng thành công!");
+              }
+            } catch (error) {
+              toast.error("Không thể xoá bài đăng. Vui lòng thử lại!");
+            }
+          }
+        },
+        {
+          label: 'Huỷ',
+          onClick: () => {}
         }
-      } catch (error) {
-        // ignore
-      }
-    }
+      ]
+    });
   };
 
   // Handle edit post
@@ -247,6 +266,7 @@ const CustomerPostManagement = () => {
                 <option value="pending">Chờ duyệt</option>
                 <option value="approved">Đã duyệt</option>
                 <option value="rejected">Từ chối</option>
+                <option value="deleted">Đã Xóa</option>
               </select>
             </div>
 
@@ -381,14 +401,19 @@ const CustomerPostManagement = () => {
                           ? "Chỉnh sửa"
                           : "Không thể sửa"}
                     </button>
-                    <button
-                      onClick={() => handleDelete(post._id)}
-                      className="btn btn-danger btn-sm rounded-pill d-flex align-items-center gap-1"
-                      title="Xóa"
-                    >
-                      <span className="material-symbols-rounded" style={{ fontSize: 18 }}>delete</span>
-                      Xóa
-                    </button>
+                    {post.status !== "deleted" && (
+  <button
+    onClick={() => handleDelete(post._id)}
+    className="btn btn-danger btn-sm rounded-pill d-flex align-items-center gap-1"
+    title="Xóa"
+  >
+    <span className="material-symbols-rounded" style={{ fontSize: 18 }}>
+      delete
+    </span>
+    Xóa
+  </button>
+)}
+
                     <button
                       onClick={() => handlePayment(post._id)}
                       className={`btn btn-primary btn-sm rounded-pill d-flex align-items-center gap-1 ${post.paymentStatus !== "unpaid" || post.status !== "approved" ? "disabled" : ""}`}

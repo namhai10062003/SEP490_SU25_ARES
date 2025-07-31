@@ -138,17 +138,30 @@ const ManageApplicationForm = () => {
       }
     };
     const handleApprove = async (id) => {
-        if (window.confirm("Xác nhận duyệt đơn này?")) {
-            try {
-                await axios.patch(`${import.meta.env.VITE_API_URL}/api/resident-verifications/${id}/approve`);
-                fetchApplications();
-                toast.success("Đã duyệt đơn thành công!");
-            } catch (err) {
-                const msg = err?.response?.data?.error || "Duyệt đơn thất bại!";
-                toast.error(msg);
-            }
+  confirmAlert({
+    title: 'Xác nhận duyệt',
+    message: 'Bạn có chắc muốn duyệt đơn này?',
+    buttons: [
+      {
+        label: 'Có',
+        onClick: async () => {
+          try {
+            await axios.patch(`${import.meta.env.VITE_API_URL}/api/resident-verifications/${id}/approve`);
+            fetchApplications();
+            toast.success("✅ Đã duyệt đơn thành công!");
+          } catch (err) {
+            const msg = err?.response?.data?.error || "❌ Duyệt đơn thất bại!";
+            toast.error(msg);
+          }
         }
-    };
+      },
+      {
+        label: 'Không',
+        onClick: () => { /* Không làm gì cả */ }
+      }
+    ]
+  });
+};
 
     const handleReject = async (id) => {
       let reasonInput = "";

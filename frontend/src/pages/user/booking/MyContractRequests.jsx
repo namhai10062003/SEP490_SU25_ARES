@@ -1,10 +1,11 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
-
 const MyContractRequests = () => {
   const { user, loading } = useAuth();
   const [requests, setRequests] = useState([]);
@@ -73,17 +74,32 @@ const MyContractRequests = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Bạn muốn xóa hợp đồng này?")) return;
-    try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/api/contracts/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      toast.success("🗑️ Đã xóa");
-      setRequests(prev => prev.filter(c => c._id !== id));
-    } catch {
-      toast.error("❌ Không thể xóa");
-    }
+    confirmAlert({
+      title: 'Xác nhận xoá hợp đồng',
+      message: 'Bạn muốn xóa hợp đồng này?',
+      buttons: [
+        {
+          label: '🗑️ Xoá',
+          onClick: async () => {
+            try {
+              await axios.delete(`${import.meta.env.VITE_API_URL}/api/contracts/${id}`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+              });
+              toast.success("🗑️ Đã xóa");
+              setRequests(prev => prev.filter(c => c._id !== id));
+            } catch {
+              toast.error("❌ Không thể xóa");
+            }
+          }
+        },
+        {
+          label: 'Huỷ',
+          onClick: () => {} // Không làm gì nếu huỷ
+        }
+      ]
+    });
   };
+  
 
   const filteredRequests = requests.filter((c) => {
     const matchStatus =

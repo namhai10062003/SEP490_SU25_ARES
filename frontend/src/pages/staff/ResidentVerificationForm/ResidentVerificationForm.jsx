@@ -96,8 +96,8 @@ export default function ResidentVerificationForm() {
     const fetchApartments = async () => {
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/apartments`);
-        if (Array.isArray(res.data)) {
-          setApartments(res.data);
+        if (Array.isArray(res.data.data)) {
+          setApartments(res.data.data);
         } else {
           console.error("API không trả về danh sách hợp lệ");
         }
