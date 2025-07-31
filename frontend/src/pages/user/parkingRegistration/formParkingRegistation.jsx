@@ -38,7 +38,7 @@ const FormParkingRegistration = () => {
 
         const userId = String(user._id);
 
-        const filtered = data.filter(apt => {
+        const filtered = data.data.filter(apt => {
           const isOwner = String(apt.isOwner?._id) === userId;
           const isRenter = String(apt.isRenter?._id) === userId;
           if (isRenter) return true;

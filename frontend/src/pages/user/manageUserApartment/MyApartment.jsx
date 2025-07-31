@@ -171,6 +171,7 @@ const MyApartment = () => {
             const isRenter = String(apartment?.isRenter?._id) === user._id;
             const isOwner = String(apartment?.isOwner?._id) === user._id;
             const roleText = isRenter ? "Người thuê" : isOwner ? "Chủ hộ" : "Không xác định";
+            console.log(roleText);
 
             return (
               <div key={apartment._id} className="bg-white shadow rounded-4 p-4">
