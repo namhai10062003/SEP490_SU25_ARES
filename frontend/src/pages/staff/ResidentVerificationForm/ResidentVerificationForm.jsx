@@ -173,7 +173,7 @@ export default function ResidentVerificationForm() {
     }
 
     const data = new FormData(); // 👉 Đưa lên đầu tiên
-
+    console.log(data);
     data.append("user", user._id);
     data.append("fullName", user.name || "");
     data.append("email", user.email || "");
