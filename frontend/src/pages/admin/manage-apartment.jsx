@@ -5,6 +5,9 @@ import 'react-confirm-alert/src/react-confirm-alert.css'; // Đảm bảo đã i
 import ApartmentFormModal from "../../../components/ApartmentFormModal.jsx"; // Assuming similar structure
 import Pagination from "../../../components/Pagination.jsx"; // Assuming similar structure
 import AdminDashboard from "./adminDashboard.jsx"; // Assuming similar structure
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 const ManageApartment = () => {
   const [apartments, setApartments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,16 +64,20 @@ const ManageApartment = () => {
       buttons: [
         {
           label: 'Có',
-          onClick: async () => {
-            try {
-              await axios.delete(`${import.meta.env.VITE_API_URL}/api/apartments/${id}`);
+          onClick: () => {
+            toast.promise(
+              axios.delete(`${import.meta.env.VITE_API_URL}/api/apartments/${id}`),
+              {
+                pending: "Đang xóa căn hộ...",
+                success: "✅ Xóa căn hộ thành công!",
+                error: "❌ Xóa căn hộ thất bại!",
+              }
+            ).then(() => {
               setApartments(apartments.filter(apt => apt._id !== id));
-              toast.success("✅ Xóa căn hộ thành công!");
-            } catch (err) {
+            }).catch(err => {
               console.error("Lỗi khi xóa căn hộ:", err);
-              toast.error("❌ Xóa căn hộ thất bại!");
-            }
-          }
+            });
+          }          
         },
         {
           label: 'Không',
