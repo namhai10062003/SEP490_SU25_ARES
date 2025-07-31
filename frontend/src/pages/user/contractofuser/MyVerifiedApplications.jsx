@@ -182,13 +182,23 @@ const MyVerifiedApplications = () => {
       <div className="card-body">
         <h5 className="card-title">{app.fullName}</h5>
         <p className="card-text">
-          <strong>Email:</strong> {app.email}<br />
-          <strong>SĐT:</strong> {app.phone}<br />
-          <strong>Căn hộ:</strong> {app.apartmentCode}<br />
-          <strong>Loại giấy tờ:</strong> {app.documentType}<br />
-          <strong>Trạng thái:</strong>{" "}
-          <span className="badge bg-success">{app.status}</span>
-        </p>
+  <strong>Email:</strong> {app.email}<br />
+  <strong>SĐT:</strong> {app.phone}<br />
+  <strong>Căn hộ:</strong> {app.apartmentCode}<br />
+  <strong>Loại giấy tờ:</strong> {app.documentType}<br />
+
+  {/* ✅ Hiển thị thời gian hợp đồng nếu là Hợp đồng cho thuê */}
+  {app.documentType.toLowerCase() === "hợp đồng cho thuê" && app.contractStart && app.contractEnd && (
+    <>
+      <strong>Thời gian hợp đồng:</strong>{" "}
+      {new Date(app.contractStart).toLocaleDateString()} - {new Date(app.contractEnd).toLocaleDateString()}<br />
+    </>
+  )}
+
+  <strong>Trạng thái:</strong>{" "}
+  <span className="badge bg-success">{app.status}</span>
+</p>
+
       </div>
 
       <div className="card-footer text-muted text-end small">
