@@ -564,20 +564,24 @@ export const deletePost = async (req, res) => {
     try {
         const postId = req.params.id;
 
-        // Kiểm tra xem bài đăng có tồn tại không
+        // Kiểm tra bài đăng có tồn tại không
         const existingPost = await Post.findById(postId);
         if (!existingPost) {
             return res.status(404).json({
-                message: "Post not found",
+                message: "Không tìm thấy bài đăng",
                 success: false,
                 error: true
             });
         }
 
-        await Post.findByIdAndDelete(postId);
+        // Cập nhật trạng thái bài đăng là đã xoá (soft delete)
+        existingPost.status = "deleted";
+        existingPost.deletedAt = new Date();
+
+        await existingPost.save();
 
         return res.status(200).json({
-            message: "Post deleted successfully",
+            message: `Bài đăng đã được xoá thành công lúc ${existingPost.deletedAt.toLocaleString("vi-VN")}`,
             success: true,
             error: false
         });
@@ -589,6 +593,7 @@ export const deletePost = async (req, res) => {
         });
     }
 };
+
 
 // hàm thực hiện đếm áp dụng trang home 
 export const getPostStats = async (req, res) => {

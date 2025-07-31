@@ -23,13 +23,16 @@ export const getAllApartments = async (req, res) => {
   const pageSize = parseInt(req.query.pageSize) || 10;
 
   try {
-    const total = await Apartment.countDocuments();
-    const apartments = await Apartment.find()
+    const filter = { deletedAt: null }; // Chỉ lấy những căn chưa bị xóa
+
+    const total = await Apartment.countDocuments(filter);
+    const apartments = await Apartment.find(filter)
       .skip((page - 1) * pageSize)
       .limit(pageSize)
       .sort({ createdAt: -1 })
       .populate('isOwner', 'name phone')
       .populate('isRenter', 'name phone');
+
     res.json({
       data: apartments,
       total,
@@ -40,6 +43,7 @@ export const getAllApartments = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 
 // Lấy 1 căn hộ theo ID
@@ -67,9 +71,13 @@ export const updateApartment = async (req, res) => {
 // Xoá căn hộ
 export const deleteApartment = async (req, res) => {
   try {
-    const apartment = await Apartment.findByIdAndDelete(req.params.id);
-    if (!apartment) return res.status(404).json({ error: 'Not found' });
-    res.json({ message: 'Deleted successfully' });
+    const apartment = await Apartment.findByIdAndUpdate(
+      req.params.id,
+      { deletedAt: new Date() },
+      { new: true }
+    );
+    if (!apartment) return res.status(404).json({ error: 'Không tìm thấy căn hộ' });
+    res.json({ message: 'Căn hộ đã được đánh dấu xóa (soft delete)' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

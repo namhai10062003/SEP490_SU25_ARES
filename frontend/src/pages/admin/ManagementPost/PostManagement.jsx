@@ -54,7 +54,12 @@ const PostManagement = () => {
       setLoading(true);
       try {
         const res = await getAllPosts();
-        setPosts(res.data.data);
+        const sortedData = res.data.data.sort((a, b) => {
+          const dateA = new Date(a.updatedAt || a.createdAt);
+          const dateB = new Date(b.updatedAt || b.createdAt);
+          return dateB - dateA; // Mới nhất lên đầu
+        });
+        setPosts(sortedData);
       } catch (err) {
         console.error(err);
       } finally {
@@ -114,9 +119,13 @@ const PostManagement = () => {
   const totalPages = Math.ceil(filteredPosts.length / perPage);
 
   const latestPosts = posts
-  .filter(p => p.status === "approved" && !p.deletedAt) // chỉ bài đã duyệt & chưa bị xoá
+  .filter(p => p.status === "approved" && p.paymentStatus === "unpaid")
   .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-  .slice(0, 3);
+  .slice(0, 5);
+
+  
+  console.log("All approved posts:", posts.filter(p => p.status === "approved"));
+  console.log("Latest posts:", latestPosts);
 
 
   const expiringPosts = posts
@@ -207,12 +216,13 @@ const PostManagement = () => {
               ) : (
                 paginatedPosts.map((p) => (
                   <PostItemButton
-                    key={p._id}
-                    p={p}
-                    navigate={navigate}
-                    formatSmartTime={formatSmartTime}
-                    tagLabel={tagLabel}
-                  />
+                  key={p._id}
+                  p={p}
+                  navigate={navigate}
+                  formatSmartTime={formatSmartTime}
+                  tagLabel={tagLabel}
+                  isSmall
+                />
                 ))
               )}
             </div>

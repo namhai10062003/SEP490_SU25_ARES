@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-
 const AdminResidentApproval = () => {
   const [residents, setResidents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,28 +27,41 @@ const AdminResidentApproval = () => {
   }, []);
 
   const handleApprove = async (id) => {
-    if (!window.confirm('✅ Bạn có chắc muốn duyệt nhân khẩu này không?')) return;
-
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/residents/verify-by-admin/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+    confirmAlert({
+      title: 'Xác nhận duyệt nhân khẩu',
+      message: '✅ Bạn có chắc muốn duyệt nhân khẩu này không?',
+      buttons: [
+        {
+          label: 'Có',
+          onClick: async () => {
+            try {
+              const token = localStorage.getItem('token');
+              const res = await fetch(`${import.meta.env.VITE_API_URL}/api/residents/verify-by-admin/${id}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+  
+              const result = await res.json();
+              if (res.ok) {
+                toast.success(result.message);
+                setResidents((prev) => prev.filter((r) => r._id !== id));
+              } else {
+                toast.error(result.message);
+              }
+            } catch (err) {
+              toast.error('❌ Lỗi xác minh bởi admin');
+            }
+          }
         },
-      });
-
-      const result = await res.json();
-      if (res.ok) {
-        toast.success(result.message);
-        setResidents((prev) => prev.filter((r) => r._id !== id));
-      } else {
-        toast.error(result.message);
-      }
-    } catch (err) {
-      toast.error('❌ Lỗi xác minh bởi admin');
-    }
+        {
+          label: 'Không',
+          onClick: () => { /* Không làm gì */ }
+        }
+      ]
+    });
   };
 
   const openImage = (url) => {

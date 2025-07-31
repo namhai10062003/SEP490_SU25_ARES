@@ -1,9 +1,10 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import StaffNavbar from "./staffNavbar";
-
 const API_URL = import.meta.env.VITE_API_URL || "https://api.ares.io.vn";
 
 const TYPE_LABELS = {
@@ -101,16 +102,29 @@ const Expenses = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm("Bạn có chắc muốn xóa loại chi phí này?")) {
-            try {
-                await axios.delete(`${API_URL}/api/expenses/${id}`);
-                toast.success("Đã xóa chi phí!");
-                fetchExpenses();
-            } catch (err) {
-                toast.error("Xóa thất bại!");
+        confirmAlert({
+          title: 'Xác nhận xoá chi phí',
+          message: 'Bạn có chắc muốn xóa loại chi phí này?',
+          buttons: [
+            {
+              label: 'Có',
+              onClick: async () => {
+                try {
+                  await axios.delete(`${API_URL}/api/expenses/${id}`);
+                  toast.success("🗑️ Đã xóa chi phí!");
+                  fetchExpenses(); // Refresh lại danh sách
+                } catch (err) {
+                  toast.error("❌ Xóa thất bại!");
+                }
+              }
+            },
+            {
+              label: 'Không',
+              onClick: () => { /* Không làm gì nếu hủy */ }
             }
-        }
-    };
+          ]
+        });
+      };
 
 
     const handleAdd = async (e) => {
@@ -353,12 +367,13 @@ const Expenses = () => {
                                                 {row.total?.toLocaleString()} đ
                                             </td>
                                             <td className="text-end">
-                                                {row.paymentStatus === "paid" ? (
-                                                    <span className="text-success">✔️ Đã thanh toán</span>
-                                                ) : (
-                                                    <span className="text-danger">❌ Chưa thanh toán</span>
-                                                )}
-                                            </td>
+    {(row.paymentStatus || "").toLowerCase().trim() === "paid" ? (
+        <span className="text-success">✔️ Đã thanh toán</span>
+    ) : (
+        <span className="text-danger">❌ Chưa thanh toán</span>
+    )}
+</td>
+
                                         </tr>
                                     ))}
                                 </tbody>

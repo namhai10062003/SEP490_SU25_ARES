@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import {
     FaCalendarAlt,
     FaCheck,
@@ -13,7 +15,6 @@ import {
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-
 import { useAuth } from "../../../../context/authContext.jsx";
 import {
     deletePostByAdmin,
@@ -75,16 +76,31 @@ const AdminPostDetail = () => {
         }
     };
 
-    const handleDelete = async () => {
-        if (!window.confirm("Xác nhận xoá bài đăng?")) return;
-        try {
-            await deletePostByAdmin(id, { status: "deleted" });
-            toast.success("🗑️ Đã xoá bài đăng.");
-            navigate(-1);
-        } catch {
-            toast.error("❌ Lỗi xoá bài đăng.");
+    
+const handleDelete = async () => {
+    confirmAlert({
+      title: 'Xác nhận xoá bài đăng',
+      message: 'Bạn có chắc chắn muốn xoá bài đăng này?',
+      buttons: [
+        {
+          label: 'Có',
+          onClick: async () => {
+            try {
+              await deletePostByAdmin(id, { status: "deleted" });
+              toast.success("🗑️ Đã xoá bài đăng.");
+              navigate(-1); // Quay lại trang trước
+            } catch {
+              toast.error("❌ Lỗi xoá bài đăng.");
+            }
+          }
+        },
+        {
+          label: 'Không',
+          onClick: () => { /* Không làm gì nếu người dùng chọn Không */ }
         }
-    };
+      ]
+    });
+  };
 
     if (loading) {
         return (

@@ -63,6 +63,10 @@ const apartmentSchema = new Schema({
     unique: true,
     trim: true
   },
+  deletedAt: {
+    type: Date,
+    default: null
+  },
   // userId: {
   //   type: Schema.Types.ObjectId,
   //   ref: 'User'
