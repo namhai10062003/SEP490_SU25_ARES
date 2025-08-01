@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function VerifyEmail() {
   const [otp, setOtp] = useState("");
@@ -20,26 +21,27 @@ export default function VerifyEmail() {
 
   const handleVerify = async () => {
     if (!otp) {
-      alert("Vui lòng nhập mã OTP!");
+      toast.warn("⚠️ Vui lòng nhập mã OTP!");
       return;
     }
+  
     setLoading(true);
     try {
       const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/verify-otp`, {
         email,
         otp
       });
-
+  
       if (res.data.success) {
-        alert("✅ Xác minh thành công!");
+        toast.success("✅ Xác minh thành công!");
         localStorage.removeItem("emailForVerify");
-        navigate("/login");
+        setTimeout(() => navigate("/login"), 2000); // Chờ toast hiển thị rồi mới chuyển trang
       } else {
-        alert(res.data.error || "❌ Xác minh thất bại");
+        toast.error(res.data.error || "❌ Xác minh thất bại");
       }
     } catch (err) {
       console.error("Error verifying OTP:", err);
-      alert("❌ Lỗi hệ thống khi xác minh.");
+      toast.error("❌ Lỗi hệ thống khi xác minh.");
     } finally {
       setLoading(false);
     }

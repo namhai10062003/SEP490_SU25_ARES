@@ -267,10 +267,17 @@ const register = async (req, res) => {
   try {
     const { name, email, password, phone, role } = req.body;
 
-    // Kiểm tra email đã tồn tại chưa,  không bị xóa
+    // Kiểm tra email đã tồn tại chưa và chưa bị xóa
     const existingUser = await User.findOne({ email, deletedAt: null });
+
     if (existingUser) {
-      return res.status(400).json({ success: false, error: "Email đã tồn tại!" });
+      if (existingUser.verified) {
+        // Đã xác minh → không cho đăng ký lại
+        return res.status(400).json({ success: false, error: "Email đã tồn tại!" });
+      } else {
+        // Chưa xác minh → xóa người dùng cũ để đăng ký lại
+        await User.deleteOne({ _id: existingUser._id });
+      }
     }
 
     // Hash mật khẩu
@@ -295,10 +302,6 @@ const register = async (req, res) => {
       otp,
       otpExpires,
     });
-    // Gán chính xác:
-    // Gán chính xác:
-    newUser.otp = otp;
-    newUser.otpExpires = otpExpires;
 
     await newUser.save();
 
@@ -306,10 +309,9 @@ const register = async (req, res) => {
     try {
       await sendOTP(email, otp);
     } catch (error) {
-      await User.deleteOne({ email }); // Xóa nếu lỗi gửi OTP
+      await User.deleteOne({ _id: newUser._id }); // Xóa nếu lỗi gửi OTP
       return res.status(500).json({ success: false, error: "Lỗi gửi OTP!" });
     }
-
 
     return res.status(201).json({
       success: true,
@@ -322,6 +324,7 @@ const register = async (req, res) => {
     return res.status(500).json({ success: false, error: "Lỗi đăng ký tài khoản!" });
   }
 };
+
 // login with gooogle
 const googleAuth = async (req, res) => {
   try {

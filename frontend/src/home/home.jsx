@@ -178,7 +178,7 @@ const Home = () => {
   useEffect(() => {
     const fetchPostStats = async () => {
       try {
-        const res = await axios.get('http://localhost:4000/api/posts/stats');
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/posts/stats`);
         setPostStats(res.data); // Đúng là res.data nếu bạn trả về { forSale, forRent, saleAndRent }
       } catch (error) {
         console.error("Lỗi khi fetch postStats:", error);
@@ -235,7 +235,7 @@ const Home = () => {
         // Lấy token từ localStorage (bạn có thể đổi theo cách bạn lưu token)
         const token = localStorage.getItem("token");
 
-        const res = await axios.get("http://localhost:4000/api/posts/guest/get-post", {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/posts/guest/get-post`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
