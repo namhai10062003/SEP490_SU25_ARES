@@ -21,9 +21,15 @@ export const createApartment = async (req, res) => {
 export const getAllApartments = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.pageSize) || 10;
+  const status = req.query.status; // "active" | "deleted" | undefined
 
   try {
-    const filter = { deletedAt: null }; // Chỉ lấy những căn chưa bị xóa
+    let filter = {};
+    if (status === "active") {
+      filter.deletedAt = null;
+    } else if (status === "deleted") {
+      filter.deletedAt = { $ne: null };
+    }
 
     const total = await Apartment.countDocuments(filter);
     const apartments = await Apartment.find(filter)
@@ -43,8 +49,6 @@ export const getAllApartments = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
-
-
 
 // Lấy 1 căn hộ theo ID
 export const getApartmentById = async (req, res) => {

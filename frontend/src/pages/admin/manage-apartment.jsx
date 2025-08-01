@@ -15,6 +15,7 @@ const ManageApartment = () => {
   const [showModal, setShowModal] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [statusFilter, setStatusFilter] = useState("all"); // all | active | deleted
   const [pageSize, setPageSize] = useState(10);
   const [form, setForm] = useState({
     _id: "",
@@ -34,16 +35,21 @@ const ManageApartment = () => {
 
   useEffect(() => {
     fetchApartments();
-  }, [page, pageSize]);
+  }, [page, pageSize, statusFilter]);
 
   const fetchApartments = async () => {
     try {
       setLoading(true);
+
+      // Nếu lọc "all" hoặc "deleted" thì cần lấy cả bản ghi bị xóa
+      const includeDeleted = statusFilter !== "active";
+
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/apartments?page=${page}&pageSize=${pageSize}`
+        `${import.meta.env.VITE_API_URL}/api/apartments?page=${page}&pageSize=${pageSize}&includeDeleted=${includeDeleted}&status=${statusFilter}`
       );
+
       setApartments(res?.data?.data || []);
-      ; // hoặc res.data.apartments nếu backend dùng tên khác
+      console.log("🚀 Danh sách căn hộ:", res.data.data);
       setTotalPages(res.data.totalPages);
     } catch (err) {
       console.error("Lỗi khi lấy danh sách căn hộ:", err);
@@ -51,6 +57,7 @@ const ManageApartment = () => {
       setLoading(false);
     }
   };
+
 
 
   const handleBlock = (id) => {
@@ -77,7 +84,7 @@ const ManageApartment = () => {
             }).catch(err => {
               console.error("Lỗi khi xóa căn hộ:", err);
             });
-          }          
+          }
         },
         {
           label: 'Không',
@@ -196,23 +203,19 @@ const ManageApartment = () => {
   };
 
   const filteredApartments = (apartments || []).filter((apt) => {
-
     const term = searchTerm.toLowerCase();
-    console.log("📌 Trạng thái căn hộ:", apt.status);
-
+  
     return (
       apt.apartmentCode?.toLowerCase().includes(term) ||
       apt.ownerName?.toLowerCase().includes(term) ||
       apt.ownerPhone?.toLowerCase().includes(term) ||
-      apt.status?.toLowerCase().includes(term) ||
       apt.building?.toLowerCase().includes(term) ||
       apt.furniture?.toLowerCase().includes(term) ||
       apt.direction?.toLowerCase().includes(term) ||
-      apt.area?.toString().includes(term)  // 🔍 tìm theo diện tích
+      apt.area?.toString().includes(term)
     );
-
   });
-
+  
   return (
     <AdminDashboard >
       <div className="w-100">
@@ -227,6 +230,17 @@ const ManageApartment = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
+            <select
+              className="form-select me-2"
+              style={{ maxWidth: "100px" }}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">Tất cả</option>
+              <option value="active">Hoạt động</option>
+              <option value="deleted">Đã xóa</option>
+            </select>
+
             <button
               className="btn btn-primary fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm"
               onClick={() => {
@@ -265,7 +279,8 @@ const ManageApartment = () => {
                   <th>Trạng thái</th>
                   <th>Chủ sở hữu</th>
                   <th>SĐT</th>
-                  <th>Hành Động</th>
+                  <th>Thao tác</th>
+                  <th>Hành động</th>
                 </tr>
               </thead>
               <tbody>
@@ -284,7 +299,7 @@ const ManageApartment = () => {
                 ) : (
                   filteredApartments.map((apt, index) => (
                     <tr key={apt._id}>
-                      <td>{index + 1}</td>
+                      <td>{(page - 1) * pageSize + index + 1}</td>
                       <td>{apt.apartmentCode || "Không rõ"}</td>
                       <td>{apt.floor}</td>
                       <td>{apt.area || "-"}</td>
@@ -309,6 +324,7 @@ const ManageApartment = () => {
                           </button>
                         </div>
                       </td>
+                      <td>{apt.deletedAt ? "Đã xóa" : "Hoạt động"}</td>
                     </tr>
                   ))
                 )}
