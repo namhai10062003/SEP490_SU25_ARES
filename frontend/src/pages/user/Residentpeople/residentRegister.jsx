@@ -30,19 +30,36 @@ const ResidentRegister = () => {
 
   // 🔄 Lấy căn hộ có liên quan đến user (isOwner / isRenter)
   useEffect(() => {
+    if (!user?._id) return; // ⚠️ Tránh gọi khi chưa có user
+  
     (async () => {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/apartments`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
+  
         const data = await res.json();
-        const filtered = data.filter(
+        console.log('📦 API response:', data);
+  
+        const apartmentsArray = data.data || [];
+  
+        const filtered = apartmentsArray.filter(
           (apt) =>
             String(apt.isOwner?._id) === String(user._id) ||
             String(apt.isRenter?._id) === String(user._id)
         );
+  
+        console.log("✅ Căn hộ của user:", filtered); // 👈 Log kết quả lọc
+        console.log("👀 Check từng căn hộ:");
+        apartmentsArray.forEach((apt) => {
+          console.log({
+            aptCode: apt.apartmentCode,
+            owner: apt.isOwner?._id,
+            renter: apt.isRenter?._id,
+            match: String(apt.isOwner?._id) === String(user._id) || String(apt.isRenter?._id) === String(user._id),
+          });
+        });
         setApartments(filtered);
       } catch (err) {
         console.error('❌ Không lấy được danh sách căn hộ:', err);
@@ -50,6 +67,7 @@ const ResidentRegister = () => {
       }
     })();
   }, [user]);
+  
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
