@@ -2,11 +2,11 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css'; // Đảm bảo đã import CSS
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import ApartmentFormModal from "../../../components/ApartmentFormModal.jsx"; // Assuming similar structure
 import Pagination from "../../../components/Pagination.jsx"; // Assuming similar structure
 import AdminDashboard from "./adminDashboard.jsx"; // Assuming similar structure
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 const ManageApartment = () => {
   const [apartments, setApartments] = useState([]);
@@ -119,8 +119,7 @@ const ManageApartment = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Chỉ kiểm tra các trường bắt buộc (bỏ qua ownerName và ownerPhone)
+  
     const requiredFields = [
       "apartmentCode",
       "floor",
@@ -132,24 +131,24 @@ const ManageApartment = () => {
       "building",
       "legalDocuments"
     ];
-
+  
     const isMissing = requiredFields.some((field) => !form[field]);
-
+  
     if (isMissing) {
-      alert("Vui lòng điền đầy đủ thông tin (trừ Chủ sở hữu và SĐT có thể bỏ trống)!");
+      toast.error("❌ Vui lòng điền đầy đủ thông tin (trừ Chủ sở hữu và SĐT có thể bỏ trống)!");
       return;
     }
-
+  
     const floor = parseInt(form.floor);
     const area = parseInt(form.area);
     const bedrooms = parseInt(form.bedrooms);
     if (isNaN(floor) || isNaN(area) || isNaN(bedrooms)) {
-      alert("Tầng, Diện tích, và Số phòng ngủ phải là số!");
+      toast.error("❌ Tầng, Diện tích, và Số phòng ngủ phải là số!");
       return;
     }
-
+  
     const slug = form.apartmentCode.toLowerCase().replace(/ /g, "-");
-
+  
     const payload = {
       apartmentCode: form.apartmentCode,
       slug,
@@ -165,15 +164,15 @@ const ManageApartment = () => {
       legalDocuments: form.legalDocuments,
       // userId: isEdit ? form.userId : null,
     };
-
+  
     try {
       const url = isEdit
         ? `${import.meta.env.VITE_API_URL}/api/apartments/${form._id}`
         : `${import.meta.env.VITE_API_URL}/api/apartments`;
       const method = isEdit ? "PUT" : "POST";
-
+  
       const res = await axios({ method, url, data: payload });
-
+  
       if (res.status === 200 || res.status === 201) {
         fetchApartments();
         setShowModal(false);
@@ -193,12 +192,14 @@ const ManageApartment = () => {
           userId: null,
         });
         setIsEdit(false);
-        alert(isEdit ? "Cập nhật căn hộ thành công!" : "Tạo căn hộ thành công!");
+        toast.success(isEdit ? "✅ Cập nhật căn hộ thành công!" : "✅ Tạo căn hộ thành công!");
       }
     } catch (err) {
       console.error("Lỗi khi xử lý căn hộ:", err.response?.data || err.message);
       console.log("Chi tiết lỗi:", err.response?.data);
-      alert(isEdit ? "Cập nhật căn hộ thất bại!" : "Tạo căn hộ thất bại! Vui lòng kiểm tra dữ liệu hoặc liên hệ admin.");
+      toast.error(isEdit
+        ? "❌ Cập nhật căn hộ thất bại!"
+        : "❌ Tạo căn hộ thất bại! Vui lòng kiểm tra dữ liệu hoặc liên hệ admin.");
     }
   };
 

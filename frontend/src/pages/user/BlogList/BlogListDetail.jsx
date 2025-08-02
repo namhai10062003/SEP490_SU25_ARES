@@ -130,18 +130,23 @@ const PostDetail = () => {
             .filter((p) =>
               p._id !== id &&
               p.status === "approved" &&
-              p.isActive === false && // kiểm tra thêm isActive
+              // p.isActive === false &&
+              // p.paymentStatus === "paid" &&
               (!p.expiredAt || new Date(p.expiredAt) > now)
             )
             .slice(0, 3);
+  
+          console.log("👉 Related posts:", others); // log sau khi lọc
+  
           setRelatedPosts(others);
         }
-      } catch {
-        console.error("Lỗi gợi ý");
+      } catch (err) {
+        console.error("Lỗi gợi ý:", err); // log lỗi chi tiết
       }
     };
     fetchRelated();
   }, [id]);
+  
 
   const formatPrice = (price) =>
     new Intl.NumberFormat("vi-VN", {

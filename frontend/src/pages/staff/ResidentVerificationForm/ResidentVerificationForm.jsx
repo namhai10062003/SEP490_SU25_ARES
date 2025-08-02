@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import Select from "react-select";
+import { toast } from "react-toastify";
 import StaffNavbar from "../staffNavbar";
 export default function ResidentVerificationForm() {
   const [formData, setFormData] = useState({
@@ -166,40 +167,39 @@ export default function ResidentVerificationForm() {
   // hàm sumit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!user || !formData.documentType || !formData.apartmentCode) {
-      alert("Vui lòng điền đủ thông tin bắt buộc.");
+      toast.error("❌ Vui lòng điền đủ thông tin bắt buộc.");
       return;
     }
-
-    const data = new FormData(); // 👉 Đưa lên đầu tiên
-    console.log(data);
+  
+    const data = new FormData();
     data.append("user", user._id);
     data.append("fullName", user.name || "");
     data.append("email", user.email || "");
     data.append("phone", user.phone || "");
     data.append("documentType", formData.documentType);
     data.append("apartmentCode", formData.apartmentCode);
+  
     formData.documentImage.forEach((img) => {
       data.append("documentImage", img);
     });
-    
-    // 👉 Nếu là hợp đồng cho thuê thì thêm ngày bắt đầu và kết thúc
+  
     if (formData.documentType === "Hợp đồng cho thuê") {
       if (formData.contractStart && formData.contractEnd) {
         try {
           data.append("contractStart", new Date(formData.contractStart).toISOString());
           data.append("contractEnd", new Date(formData.contractEnd).toISOString());
         } catch (err) {
-          alert("Ngày không hợp lệ. Vui lòng chọn lại.");
+          toast.error("❌ Ngày không hợp lệ. Vui lòng chọn lại.");
           return;
         }
       } else {
-        alert("Vui lòng nhập ngày bắt đầu và kết thúc hợp đồng cho thuê.");
+        toast.error("❌ Vui lòng nhập ngày bắt đầu và kết thúc hợp đồng cho thuê.");
         return;
       }
     }
-
+  
     try {
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/resident-verifications/verification`,
@@ -210,9 +210,9 @@ export default function ResidentVerificationForm() {
           },
         }
       );
-
-      alert("Gửi yêu cầu xác thực thành công!");
-
+  
+      toast.success("✅ Gửi yêu cầu xác thực thành công!");
+  
       setFormData({
         documentType: "",
         apartmentCode: "",
@@ -221,16 +221,16 @@ export default function ResidentVerificationForm() {
         documentImage: null,
       });
       setPreviewImage(null);
-
+  
       if (fileInputRef.current) {
         fileInputRef.current.value = null;
       }
-
+  
       setUser(null);
       setQuery("");
     } catch (err) {
       console.error("Gửi thất bại:", err?.response || err);
-      alert("Gửi thất bại! Vui lòng kiểm tra lại.");
+      toast.error("❌ Gửi thất bại! Vui lòng kiểm tra lại.");
     }
   };
 
