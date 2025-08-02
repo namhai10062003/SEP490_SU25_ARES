@@ -66,7 +66,12 @@ const ResidentList = () => {
             <span className="fw-bold">Chủ căn hộ:</span> <span>{apt.ownerName || 'Không rõ'}</span>
           </div>
           <div className="col-md-3 mb-2">
-            <span className="fw-bold">Số nhân khẩu:</span> <span>{apt.residentCount}</span>
+            <span className="fw-bold">Số nhân khẩu:</span> <span>
+              {
+                apt.residents?.filter(r => r.verifiedByStaff === "true").length || 0
+              }
+            </span>
+
           </div>
         </div>
 
@@ -97,10 +102,10 @@ const ResidentList = () => {
                   .filter((r) => {
                     const nameMatch = r.fullName.toLowerCase().includes(searchText.toLowerCase());
                     const statusMatch =
-  filterStatus === "all" ||
-  (filterStatus === "true" && r.verifiedByStaff === "true") ||
-  (filterStatus === "false" && r.verifiedByStaff === "false") ||
-  (filterStatus === "pending" && r.verifiedByStaff === "pending");
+                      filterStatus === "all" ||
+                      (filterStatus === "true" && r.verifiedByStaff === "true") ||
+                      (filterStatus === "false" && r.verifiedByStaff === "false") ||
+                      (filterStatus === "pending" && r.verifiedByStaff === "pending");
 
 
                     const relationMatch =
@@ -120,14 +125,14 @@ const ResidentList = () => {
                       <td>{r.gender}</td>
                       <td>{r.relationWithOwner}</td>
                       <td>
-  {r.verifiedByStaff === "true" ? (
-    <span className="badge bg-success">✅ Đã xác minh</span>
-  ) : r.verifiedByStaff === "false" ? (
-    <span className="badge bg-danger">❌ Đã từ chối</span>
-  ) : (
-    <span className="badge bg-warning text-dark">🟡 Chờ duyệt</span>
-  )}
-</td>
+                        {r.verifiedByStaff === "true" ? (
+                          <span className="badge bg-success">✅ Đã xác minh</span>
+                        ) : r.verifiedByStaff === "false" ? (
+                          <span className="badge bg-danger">❌ Đã từ chối</span>
+                        ) : (
+                          <span className="badge bg-warning text-dark">🟡 Chờ duyệt</span>
+                        )}
+                      </td>
 
 
 

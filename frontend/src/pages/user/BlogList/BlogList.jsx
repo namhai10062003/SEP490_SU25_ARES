@@ -20,7 +20,7 @@ const BlogList = () => {
     minArea: "",
     maxArea: "",
     location: "",
-    status: "all",
+    type: "all",
   });
   const postsPerPage = 9;
   const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -72,8 +72,8 @@ const BlogList = () => {
       filtered = filtered.filter((p) =>
         p.location?.toLowerCase().includes(filter.location.toLowerCase())
       );
-    if (filter.status !== "all")
-      filtered = filtered.filter((p) => p.status === filter.status);
+    if (filter.type !== "all")
+      filtered = filtered.filter((p) => p.type === filter.type);
     setFilteredPosts(filtered);
   };
 
@@ -230,13 +230,13 @@ const BlogList = () => {
                     <div className="col-6 col-lg-12">
                       <select
                         className="form-select mb-2"
-                        value={filter.status}
-                        onChange={e => setFilter(f => ({ ...f, status: e.target.value }))}
+                        value={filter.type}
+                        onChange={e => setFilter(f => ({ ...f, type: e.target.value }))}
                       >
                         <option value="all">Tất cả</option>
-                        <option value="active">Đang hoạt động</option>
-                        <option value="pending">Chờ duyệt</option>
-                        <option value="rejected">Từ chối</option>
+                        <option value="ban">Bán</option>
+                        <option value="cho_thue">Cho thuê</option>
+                        <option value="dich_vu">Dịch vụ</option>
                       </select>
                     </div>
                     <div className="col-12 d-flex gap-2">
@@ -249,7 +249,7 @@ const BlogList = () => {
                             minArea: "",
                             maxArea: "",
                             location: "",
-                            status: "all",
+                            type: "all",
                           })
                         }
                       >
