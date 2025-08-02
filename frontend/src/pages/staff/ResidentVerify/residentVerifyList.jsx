@@ -13,7 +13,7 @@ const ResidentVerifyList = () => {
   const [issueDateFilter, setIssueDateFilter] = useState(""); // ngày cấp
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-const itemsPerPage = 10;
+  const itemsPerPage = 10;
 
 
   const fetchResidents = async () => {
@@ -122,48 +122,48 @@ const itemsPerPage = 10;
     if (url) window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  
+
   const filteredResidents = useMemo(() => {
     const result = residents.filter((r) => {
       const fullText = `${r.fullName} ${r.apartmentId?.apartmentCode || ""} ${r.gender} ${r.nationality} ${r.idNumber}`.toLowerCase();
       const matchText = fullText.includes(filterText.toLowerCase());
-  
+
       const dobMatch = dobFilter
         ? new Date(r.dateOfBirth).toISOString().split("T")[0] === dobFilter
         : true;
-  
+
       const issueDateMatch = issueDateFilter
         ? new Date(r.issueDate).toISOString().split("T")[0] === issueDateFilter
         : true;
-  
+
       const statusMatch =
         statusFilter === "all"
           ? true
           : String(r.verifiedByStaff) === statusFilter;
-  
+
       return matchText && dobMatch && issueDateMatch && statusMatch;
     });
-  
+
     // ✅ Log toàn bộ danh sách resident đang là pending
     const pendingList = residents.filter(
       (r) => String(r.verifiedByStaff) === "pending"
     );
     console.log("🟡 Resident có trạng thái pending:", pendingList);
-  
+
     // ✅ Log kết quả lọc final
     console.log("✅ filteredResidents sau khi lọc:", result);
-  
+
     return result;
   }, [residents, filterText, dobFilter, issueDateFilter, statusFilter]);
 
   const totalPages = Math.ceil(filteredResidents.length / itemsPerPage);
 
-const paginatedResidents = useMemo(() => {
-  const start = (currentPage - 1) * itemsPerPage;
-  return filteredResidents.slice(start, start + itemsPerPage);
-}, [filteredResidents, currentPage]);
+  const paginatedResidents = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredResidents.slice(start, start + itemsPerPage);
+  }, [filteredResidents, currentPage]);
 
-  
+
   return (
     <div className="bg-light min-vh-100 d-flex">
       <StaffNavbar />
@@ -254,22 +254,43 @@ const paginatedResidents = useMemo(() => {
                     <td>{r.idNumber}</td>
                     <td>{r.issueDate ? new Date(r.issueDate).toLocaleDateString("vi-VN") : ""}</td>
                     <td>
-                      {r.documentFront ? (
-                        <img
-                          src={r.documentFront}
-                          alt="front"
-                          style={{
-                            width: 60,
-                            height: 40,
-                            objectFit: "cover",
-                            cursor: "pointer",
-                            borderRadius: 4,
-                            border: "1px solid #ccc",
-                          }}
-                          onClick={() => openImage(r.documentFront)}
-                        />
-                      ) : "---"}
+                      <div className="d-flex gap-2">
+                        {r.documentFront && (
+                          <img
+                            src={r.documentFront}
+                            alt="CCCD mặt trước"
+                            title="Mặt trước"
+                            style={{
+                              width: 60,
+                              height: 40,
+                              objectFit: "cover",
+                              cursor: "pointer",
+                              borderRadius: 4,
+                              border: "1px solid #ccc",
+                            }}
+                            onClick={() => openImage(r.documentFront)}
+                          />
+                        )}
+                        {r.documentBack && (
+                          <img
+                            src={r.documentBack}
+                            alt="CCCD mặt sau"
+                            title="Mặt sau"
+                            style={{
+                              width: 60,
+                              height: 40,
+                              objectFit: "cover",
+                              cursor: "pointer",
+                              borderRadius: 4,
+                              border: "1px solid #ccc",
+                            }}
+                            onClick={() => openImage(r.documentBack)}
+                          />
+                        )}
+                        {!r.documentFront && !r.documentBack && "---"}
+                      </div>
                     </td>
+
                     <td>
                       {r.verifiedByStaff === "pending" && (
                         <>
@@ -377,16 +398,16 @@ const paginatedResidents = useMemo(() => {
           </div>
         )}
         <div className="d-flex justify-content-center mt-4 gap-2 flex-wrap">
-        {Array.from({ length: totalPages }, (_, index) => (
-          <button
-            key={index}
-            className={`btn ${currentPage === index + 1 ? "btn-primary" : "btn-outline-primary"}`}
-            onClick={() => setCurrentPage(index + 1)}
-          >
-            {index + 1}
-          </button>
-        ))}
-      </div>      
+          {Array.from({ length: totalPages }, (_, index) => (
+            <button
+              key={index}
+              className={`btn ${currentPage === index + 1 ? "btn-primary" : "btn-outline-primary"}`}
+              onClick={() => setCurrentPage(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </div>
       </main>
     </div>
   );

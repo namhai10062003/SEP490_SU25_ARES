@@ -385,7 +385,8 @@ const UserRevenue = () => {
                           })
                         }
                       >
-                        Rút toàn bộ ({formatPrice(totalWithdrawable)})
+                        Rút toàn bộ 
+                        {/* ({formatPrice(totalWithdrawable)}) */}
                       </button>
                       {withdrawMessage && (
                         <div className="alert alert-info mt-3 text-center">
