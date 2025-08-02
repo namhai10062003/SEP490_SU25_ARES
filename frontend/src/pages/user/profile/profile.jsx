@@ -52,7 +52,7 @@ const Profile = () => {
         return "Chưa cập nhật";
     }
   };
-
+console.log(userData);
   return (
     <div className="bg-light min-vh-100">
       <Header user={userData} name={name} logout={logout} />
@@ -71,15 +71,36 @@ const Profile = () => {
           </div>
 
           <div className="mb-4">
-            <p><strong>Họ tên:</strong> {userData?.name || "Chưa cập nhật"}</p>
-            <p><strong>SĐT:</strong> {userData?.phone || "Chưa cập nhật"}</p>
-            <p><strong>Giới tính:</strong> {displayGender(userData?.gender)}</p>
-            <p><strong>Ngày sinh:</strong> {userData?.dob ? userData.dob.split("T")[0] : "Chưa cập nhật"}</p>
-            <p><strong>Địa chỉ:</strong> {userData?.address || "Chưa cập nhật"}</p>
-            <p><strong>CMND/CCCD:</strong> {userData?.identityNumber || "Chưa cập nhật"}</p>
-            <p><strong>Nghề nghiệp:</strong> {userData?.jobTitle || "Chưa cập nhật"}</p>
-            <p><strong>Giới thiệu:</strong> {userData?.bio || "Chưa có giới thiệu"}</p>
-          </div>
+  <p><strong>Họ tên:</strong> {userData?.name || "Chưa cập nhật"}</p>
+  <p><strong>SĐT:</strong> {userData?.phone || "Chưa cập nhật"}</p>
+  <p><strong>Giới tính:</strong> {displayGender(userData?.gender)}</p>
+  <p><strong>Ngày sinh:</strong> {userData?.dob ? userData.dob.split("T")[0] : "Chưa cập nhật"}</p>
+  <p><strong>Địa chỉ:</strong> {userData?.address || "Chưa cập nhật"}</p>
+  <p><strong>CMND/CCCD:</strong> {userData?.identityNumber || "Chưa cập nhật"}</p>
+  <p><strong>Nghề nghiệp:</strong> {userData?.jobTitle || "Chưa cập nhật"}</p>
+  <p><strong>Giới thiệu:</strong> {userData?.bio || "Chưa có giới thiệu"}</p>
+
+  {/* Ảnh CCCD mặt trước */}
+  <div className="mt-3">
+    <p><strong>Ảnh CCCD mặt trước:</strong></p>
+    {userData?.cccdFrontImage ? (
+      <img src={userData.cccdFrontImage} alt="CCCD mặt trước" style={{ maxWidth: "300px", borderRadius: "8px" }} />
+    ) : (
+      <p>Chưa cập nhật</p>
+    )}
+  </div>
+
+  {/* Ảnh CCCD mặt sau */}
+  <div className="mt-3">
+    <p><strong>Ảnh CCCD mặt sau:</strong></p>
+    {userData?.cccdBackImage ? (
+      <img src={userData.cccdBackImage} alt="CCCD mặt sau" style={{ maxWidth: "300px", borderRadius: "8px" }} />
+    ) : (
+      <p>Chưa cập nhật</p>
+    )}
+  </div>
+</div>
+
 
           <div className="d-flex justify-content-center gap-3 mt-4">
             <button

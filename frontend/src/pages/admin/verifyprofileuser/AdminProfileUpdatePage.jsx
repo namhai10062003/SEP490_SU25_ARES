@@ -18,6 +18,7 @@ const AdminProfileUpdatePage = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [rejectModalOpen, setRejectModalOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [previewImage, setPreviewImage] = useState(null);
 
   const loadRequests = async () => {
     setLoading(true);
@@ -86,7 +87,20 @@ const AdminProfileUpdatePage = () => {
       toast.error("❌ Lỗi từ chối hồ sơ!");
     }
   };
-
+  {requests.map((req) => {
+    console.log("👉 Kiểm tra CCCD của user:", {
+      newIdentityNumber: req.newIdentityNumber,
+      identityNumber: req.userId?.identityNumber,
+      userId: req.userId?._id,
+    });
+  
+    return (
+      <tr key={req._id}>
+        <td>{req.newIdentityNumber || req.userId?.identityNumber || "-"}</td>
+      </tr>
+    );
+  })}
+  
   return (
     <AdminDashboard active="profile-requests">
       <div className="container py-4">
@@ -133,51 +147,115 @@ const AdminProfileUpdatePage = () => {
                   <th>Tên</th>
                   <th>Email</th>
                   <th>CCCD</th>
+                  <th>Ảnh CCCD Trước</th>
+                   <th>Ảnh CCCD Sau</th>
                   <th>Trạng thái</th>
                   <th>Hành động</th>
                 </tr>
               </thead>
               <tbody>
-                {Array.isArray(requests) && requests.length > 0 ? (
-                  requests.map((req) => (
-                    <tr key={req._id}>
-                      <td>
-                        <img
-                          src={req.newProfileImage || "/default-avatar.png"}
-                          alt="avatar"
-                          style={{ width: 60, height: 60, borderRadius: "50%" }}
-                        />
-                      </td>
-                      <td>{req.userId?.name}</td>
-                      <td>{req.userId?.email}</td>
-                      <td>{req.newIdentityNumber}</td>
-                      <td>{req.status}</td>
-                      <td>
-                        <button
-                          className="btn btn-success btn-sm me-2"
-                          onClick={() => handleApprove(req._id)}
-                          disabled={req.status !== "pending"}
-                        >
-                          Duyệt
-                        </button>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => openRejectModal(req)}
-                          disabled={req.status !== "pending"}
-                        >
-                          Từ chối
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="text-center">
-                      Không có yêu cầu nào.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
+  {Array.isArray(requests) && requests.length > 0 ? (
+    requests.map((req) => (
+      <tr key={req._id}>
+        <td>
+          <img
+            src={req.newProfileImage || "/default-avatar.png"}
+            alt="avatar"
+            style={{ width: 60, height: 60, borderRadius: "50%" }}
+          />
+        </td>
+        <td>{req.userId?.name}</td>
+        <td>{req.userId?.email}</td>
+        <td>{req.newIdentityNumber || req.userId?.identityNumber || "-"}</td>
+
+
+        {/* ẢNH CCCD TRƯỚC */}
+        <td>
+          {req.newCccdFrontImage ? (
+           <img
+           src={req.newCccdFrontImage}
+           alt="CCCD Trước"
+           style={{ width: 80, height: 50, objectFit: "cover", borderRadius: 4, cursor: "pointer" }}
+           onClick={() => setPreviewImage(req.newCccdFrontImage)}
+         />
+          ) : (
+            <span className="text-muted">-</span>
+          )}
+        </td>
+
+        {/* ẢNH CCCD SAU */}
+        <td>
+          {req.newCccdBackImage ? (
+            <img
+            src={req.newCccdBackImage}
+            alt="CCCD Sau"
+            style={{ width: 80, height: 50, objectFit: "cover", borderRadius: 4, cursor: "pointer" }}
+            onClick={() => setPreviewImage(req.newCccdBackImage)}
+          />
+          
+          ) : (
+            <span className="text-muted">-</span>
+          )}
+        </td>
+        {previewImage && (
+  <div
+    className="modal fade show"
+    style={{
+      display: "block",
+      background: "rgba(0,0,0,0.8)",
+      position: "fixed",
+      inset: 0,
+      zIndex: 1060,
+    }}
+    onClick={() => setPreviewImage(null)}
+  >
+    <div
+      className="modal-dialog modal-dialog-centered"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="modal-content bg-transparent border-0">
+        <img
+          src={previewImage}
+          alt="Xem ảnh"
+          style={{ maxWidth: "100%", maxHeight: "80vh", margin: "auto", borderRadius: 8 }}
+        />
+        <button
+          className="btn btn-light mt-3"
+          onClick={() => setPreviewImage(null)}
+        >
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+        <td>{req.status}</td>
+        <td>
+          <button
+            className="btn btn-success btn-sm me-2"
+            onClick={() => handleApprove(req._id)}
+            disabled={req.status !== "pending"}
+          >
+            Duyệt
+          </button>
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => openRejectModal(req)}
+            disabled={req.status !== "pending"}
+          >
+            Từ chối
+          </button>
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan={8} className="text-center">
+        Không có yêu cầu nào.
+      </td>
+    </tr>
+  )}
+</tbody>
             </table>
           </div>
         )}

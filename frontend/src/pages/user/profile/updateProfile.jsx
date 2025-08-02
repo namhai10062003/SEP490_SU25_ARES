@@ -16,7 +16,32 @@ const UpdateProfileForm = () => {
   const token = localStorage.getItem("token");
   const [updateStatus, setUpdateStatus] = useState(null); // "pending", "approved", "rejected"
   const [rejectionReason, setRejectionReason] = useState("");
-  
+  const [cccdFrontImage, setCccdFrontImage] = useState(null);
+const [cccdBackImage, setCccdBackImage] = useState(null);
+const [previewFront, setPreviewFront] = useState(null);
+const [previewBack, setPreviewBack] = useState(null);
+
+//hàm cccd 
+const handleCccdFrontChange = (e) => {
+  const file = e.target.files[0];
+  setCccdFrontImage(file);
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => setPreviewFront(reader.result);
+    reader.readAsDataURL(file);
+  }
+};
+
+const handleCccdBackChange = (e) => {
+  const file = e.target.files[0];
+  setCccdBackImage(file);
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => setPreviewBack(reader.result);
+    reader.readAsDataURL(file);
+  }
+};
+
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -27,7 +52,10 @@ const UpdateProfileForm = () => {
     bio: "",
     jobTitle: "",
   });
-
+  const [originalData, setOriginalData] = useState({
+    identityNumber: "",
+    address: "",
+  });
   // Lấy dữ liệu user để fill vào form
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -52,7 +80,10 @@ const UpdateProfileForm = () => {
           bio: userInfo.bio || "",
           jobTitle: userInfo.jobTitle || "",
         });
-  
+        setOriginalData({
+          identityNumber: userInfo.identityNumber || "",
+          address: userInfo.address || "",
+        });
         setPreviewImage(userInfo.profileImage || null);
         setName(userInfo.name);
   
@@ -116,24 +147,44 @@ const UpdateProfileForm = () => {
       return;
     }
   
+    const isSensitiveChanged =
+      form.identityNumber !== originalData.identityNumber ||
+      // form.address !== originalData.address ||
+      profileImage ||
+      cccdFrontImage ||
+      cccdBackImage;
+  
     try {
       const formData = new FormData();
       for (let key in form) {
         formData.append(key, form[key]);
       }
-      if (profileImage) {
-        formData.append("profileImage", profileImage);
+  
+      if (profileImage) formData.append("profileImage", profileImage);
+      if (cccdFrontImage) formData.append("cccdFrontImage", cccdFrontImage);
+      if (cccdBackImage) formData.append("cccdBackImage", cccdBackImage);
+  
+      if (isSensitiveChanged) {
+        // Gửi yêu cầu để admin duyệt trước
+        await axios.patch(`${import.meta.env.VITE_API_URL}/api/users/updateprofile`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+  
+        toast.success("📤 Yêu cầu cập nhật thông tin nhạy cảm đã được gửi, chờ admin duyệt!");
+      } else {
+        // Gửi trực tiếp, cho phép cập nhật luôn (không cần admin duyệt)
+        await axios.patch(`${import.meta.env.VITE_API_URL}/api/users/updateprofile`, formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+  
+        toast.success("✅ Cập nhật thông tin thành công!");
       }
-  
-      // Gửi yêu cầu cập nhật (nhưng để admin duyệt)
-      await axios.patch(`${import.meta.env.VITE_API_URL}/api/users/updateprofile`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-  
-      toast.success("📤 Yêu cầu cập nhật đã được gửi, chờ admin duyệt!");
   
       setTimeout(() => {
         navigate("/profile");
@@ -143,6 +194,42 @@ const UpdateProfileForm = () => {
       toast.error("❌ Gửi yêu cầu thất bại, thử lại sau!");
     }
   };
+  
+// const handleSubmit = async (e) => {
+//   e.preventDefault();
+
+//   if (!form.name || !form.phone || !form.gender || !form.dob || !form.address) {
+//     toast.warn("⚠️ Vui lòng điền đầy đủ các trường bắt buộc!");
+//     return;
+//   }
+
+//   try {
+//     const formData = new FormData();
+//     for (let key in form) {
+//       formData.append(key, form[key]);
+//     }
+//     if (profileImage) {
+//       formData.append("profileImage", profileImage);
+//     }
+
+//     // Gửi yêu cầu cập nhật (nhưng để admin duyệt)
+//     await axios.patch(`${import.meta.env.VITE_API_URL}/api/users/updateprofile`, formData, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         "Content-Type": "multipart/form-data",
+//       },
+//     });
+
+//     toast.success("📤 Yêu cầu cập nhật đã được gửi, chờ admin duyệt!");
+
+//     setTimeout(() => {
+//       navigate("/profile");
+//     }, 1500);
+//   } catch (err) {
+//     console.error("Lỗi cập nhật hồ sơ:", err);
+//     toast.error("❌ Gửi yêu cầu thất bại, thử lại sau!");
+//   }
+// };
 
   return (
     <div className="bg-light min-vh-100">
@@ -226,6 +313,31 @@ const UpdateProfileForm = () => {
     pattern="^\d{9}$|^\d{12}$"
     title="CMND/CCCD phải gồm 12 chữ số"
   />
+</div>
+<div className="mb-3">
+  <label className="form-label">Ảnh CCCD mặt trước</label>
+  <input type="file" accept="image/*" className="form-control" onChange={handleCccdFrontChange} />
+  {previewFront && (
+    <img
+      src={previewFront}
+      alt="CCCD mặt trước"
+      className="img-thumbnail mt-2"
+      style={{ maxHeight: 150 }}
+    />
+  )}
+</div>
+
+<div className="mb-3">
+  <label className="form-label">Ảnh CCCD mặt sau</label>
+  <input type="file" accept="image/*" className="form-control" onChange={handleCccdBackChange} />
+  {previewBack && (
+    <img
+      src={previewBack}
+      alt="CCCD mặt sau"
+      className="img-thumbnail mt-2"
+      style={{ maxHeight: 150 }}
+    />
+  )}
 </div>
 
             <div className="mb-3">

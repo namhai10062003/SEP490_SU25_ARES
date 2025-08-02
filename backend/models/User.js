@@ -47,6 +47,8 @@ const userSchema = new mongoose.Schema(
     identityNumber: { type: String },
     bio: { type: String },
     jobTitle: { type: String },
+    cccdFrontImage: { type: String }, // ảnh CCCD mặt trước
+    cccdBackImage: { type: String },  // ảnh CCCD mặt sau  
   },
   {
     timestamps: true, // Tự động createdAt & updatedAt

@@ -5,13 +5,13 @@ import User from "../models/User.js";
 export const getAllProfileUpdateRequests = async (req, res) => {
   try {
     const { status } = req.query;
-
     const filter = {};
-    if (status) {
-      filter.status = status;
-    }
+    if (status) filter.status = status;
 
-    const requests = await ProfileUpdateRequest.find(filter).populate("userId", "name email");
+    const requests = await ProfileUpdateRequest.find(filter).populate(
+      "userId",
+      "name email identityNumber address profileImage cccdFrontImage cccdBackImage"
+    );
 
     res.status(200).json(requests);
   } catch (err) {
@@ -19,12 +19,13 @@ export const getAllProfileUpdateRequests = async (req, res) => {
     res.status(500).json({ message: "Lỗi server" });
   }
 };
+
 /**
  * GET all pending profile update requests (Admin)
  */
 export const getPendingRequests = async (req, res) => {
   try {
-    const requests = await ProfileUpdateRequest.find({ status: "pending" }).populate("userId", "name email");
+    const requests = await ProfileUpdateRequest.find({ status: "pending" }).populate("userId", "name email identityNumber");
     res.status(200).json(requests);
   } catch (err) {
     console.error("❌ Lỗi lấy yêu cầu:", err.message);
@@ -47,6 +48,8 @@ export const approveRequest = async (req, res) => {
     const updateData = {};
     if (request.newIdentityNumber) updateData.identityNumber = request.newIdentityNumber;
     if (request.newProfileImage) updateData.profileImage = request.newProfileImage;
+    if (request.newCccdFrontImage) updateData.cccdFrontImage = request.newCccdFrontImage;
+    if (request.newCccdBackImage) updateData.cccdBackImage = request.newCccdBackImage;
 
     await User.findByIdAndUpdate(request.userId, { $set: updateData });
 
@@ -60,6 +63,7 @@ export const approveRequest = async (req, res) => {
     res.status(500).json({ message: "Lỗi server" });
   }
 };
+
 
 /**
  * REJECT a request (Admin)

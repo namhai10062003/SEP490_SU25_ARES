@@ -1,9 +1,9 @@
 import bcrypt from "bcryptjs";
+import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
+import { emitNotification } from "../helpers/socketHelper.js";
 import Notification from '../models/Notification.js';
 import ProfileUpdateRequest from "../models/ProfileUpdateRequest.js";
 import User from '../models/User.js';
-import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
-import { emitNotification } from "../helpers/socketHelper.js";
 
 // GET /api/users?page=1&limit=10&role=staff&status=1
 export const getUsers = async (req, res) => {
@@ -192,9 +192,17 @@ export const deleteUser = async (req, res) => {
 };
 
 // update profile 
+
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
+
+    // 👉 Log để debug dữ liệu gửi từ frontend
+    console.log("=== req.body ===");
+    console.log(req.body);
+
+    console.log("=== req.files ===");
+    console.log(req.files);
 
     const {
       name,
@@ -207,62 +215,59 @@ export const updateProfile = async (req, res) => {
       jobTitle,
     } = req.body;
 
-
     const currentUser = await User.findById(userId);
     if (!currentUser) {
       return res.status(404).json({ message: "Không tìm thấy người dùng" });
     }
 
-    const updateData = {
-      name,
-      phone,
-      gender,
-      dob,
-      address,
-      identityNumber,
-      bio,
-      jobTitle,
-    };
+    console.log("=== Thông tin người dùng hiện tại ===");
+    console.log(currentUser);
 
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (phone !== undefined) updateData.phone = phone;
+    if (gender !== undefined) updateData.gender = gender;
+    if (dob !== undefined) updateData.dob = dob;
+    if (address !== undefined) updateData.address = address;
+    if (bio !== undefined) updateData.bio = bio;
+    if (jobTitle !== undefined) updateData.jobTitle = jobTitle;
 
-    // Check nếu CCCD hoặc ảnh thay đổi → tạo yêu cầu chờ duyệt
+    const profileImage = req.files?.profileImage?.[0]?.path;
+    const cccdFrontImage = req.files?.cccdFrontImage?.[0]?.path;
+    const cccdBackImage = req.files?.cccdBackImage?.[0]?.path;
+
     const changedCCCD = identityNumber && identityNumber !== currentUser.identityNumber;
-    const changedImage = req.file && req.file.path && req.file.path !== currentUser.profileImage;
+    const changedProfileImage = profileImage && profileImage !== currentUser.profileImage;
+    const hasCCCDImageChanged = !!(cccdFrontImage || cccdBackImage);
 
-    if (changedCCCD || changedImage) {
+    const requiresApproval = changedCCCD || changedProfileImage || hasCCCDImageChanged;
+
+    if (requiresApproval) {
+      await ProfileUpdateRequest.deleteMany({ userId });
       await ProfileUpdateRequest.create({
         userId,
         newIdentityNumber: changedCCCD ? identityNumber : undefined,
-        newProfileImage: changedImage ? req.file.path : undefined,
+        newProfileImage: changedProfileImage ? profileImage : undefined,
+        newCccdFrontImage: cccdFrontImage,
+        newCccdBackImage: cccdBackImage,
       });
     }
 
-    // Cập nhật các trường còn lại (không phải CCCD/ảnh)
+    const updatedUser = await User.findByIdAndUpdate(userId, { $set: updateData }, { new: true });
 
-    // Nếu có ảnh đại diện mới từ Cloudinary
-    if (req.file && req.file.path) {
-      updateData.profileImage = req.file.path;
-    }
-
-
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $set: updateData },
-      { new: true }
-    );
-
-    res.status(200).json({
-
-      message: changedCCCD || changedImage
+    return res.status(200).json({
+      message: requiresApproval
         ? "Đã cập nhật thông tin cơ bản. CCCD/ảnh đang chờ admin duyệt."
-        : "Cập nhật hồ sơ thành công",
+        : "Cập nhật hồ sơ thành công.",
       user: updatedUser,
     });
   } catch (error) {
-    console.error("Lỗi cập nhật hồ sơ:", error);
-    res.status(500).json({ message: "Lỗi server", error: error.message });
+    console.error("❌ Lỗi cập nhật hồ sơ:", error);
+    return res.status(500).json({ message: "Lỗi server", error: error.message });
   }
 };
+
+
 export const getUserProfileById = async (req, res) => {
   try {
     const _id = req.params.id;
@@ -272,7 +277,7 @@ export const getUserProfileById = async (req, res) => {
     }
 
     const user = await User.findById(_id).select(
-      'name phone gender dob address identityNumber jobTitle bio profileImage'
+      'name phone gender dob address identityNumber jobTitle bio profileImage cccdFrontImage cccdBackImage'
     );
 
     if (!user) {
