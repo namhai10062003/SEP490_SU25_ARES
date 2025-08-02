@@ -15,7 +15,7 @@ const ManageApartment = () => {
   const [showModal, setShowModal] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [statusFilter, setStatusFilter] = useState("all"); // all | active | deleted
+  const [statusFilter, setStatusFilter] = useState("active"); // all | active | deleted
   const [pageSize, setPageSize] = useState(10);
   const [form, setForm] = useState({
     _id: "",
@@ -204,7 +204,7 @@ const ManageApartment = () => {
 
   const filteredApartments = (apartments || []).filter((apt) => {
     const term = searchTerm.toLowerCase();
-  
+
     return (
       apt.apartmentCode?.toLowerCase().includes(term) ||
       apt.ownerName?.toLowerCase().includes(term) ||
@@ -215,7 +215,7 @@ const ManageApartment = () => {
       apt.area?.toString().includes(term)
     );
   });
-  
+
   return (
     <AdminDashboard >
       <div className="w-100">
@@ -312,6 +312,7 @@ const ManageApartment = () => {
                             className="btn btn-sm btn-outline-primary"
                             onClick={() => handleEdit(apt)}
                             style={{ padding: "0.25rem 0.5rem" }}
+                            disabled={!!apt.deletedAt}
                           >
                             Edit
                           </button>
@@ -319,11 +320,13 @@ const ManageApartment = () => {
                             className="btn btn-sm btn-outline-danger"
                             onClick={() => handleDelete(apt._id)}
                             style={{ padding: "0.25rem 0.5rem" }}
+                            disabled={!!apt.deletedAt}
                           >
                             Delete
                           </button>
                         </div>
                       </td>
+
                       <td>{apt.deletedAt ? "Đã xóa" : "Hoạt động"}</td>
                     </tr>
                   ))

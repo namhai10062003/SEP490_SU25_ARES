@@ -12,6 +12,8 @@ const ResidentVerifyList = () => {
   const [dobFilter, setDobFilter] = useState(""); // ngày sinh
   const [issueDateFilter, setIssueDateFilter] = useState(""); // ngày cấp
   const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+const itemsPerPage = 10;
 
 
   const fetchResidents = async () => {
@@ -47,7 +49,8 @@ const ResidentVerifyList = () => {
   useEffect(() => {
     setLoading(true);
     fetchResidents();
-  }, [statusFilter]);
+    setCurrentPage(1);
+  }, [filterText, dobFilter, issueDateFilter, statusFilter]);
 
   const handleVerify = async () => {
     if (!confirmId) return;
@@ -152,6 +155,14 @@ const ResidentVerifyList = () => {
   
     return result;
   }, [residents, filterText, dobFilter, issueDateFilter, statusFilter]);
+
+  const totalPages = Math.ceil(filteredResidents.length / itemsPerPage);
+
+const paginatedResidents = useMemo(() => {
+  const start = (currentPage - 1) * itemsPerPage;
+  return filteredResidents.slice(start, start + itemsPerPage);
+}, [filteredResidents, currentPage]);
+
   
   return (
     <div className="bg-light min-vh-100 d-flex">
@@ -168,7 +179,7 @@ const ResidentVerifyList = () => {
             <input
               type="text"
               className="form-control"
-              placeholder="🔍 Tìm theo tên, căn hộ, giới tính, quốc tịch, CCCD..."
+              placeholder=" Tìm kiếm..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
             />
@@ -203,8 +214,6 @@ const ResidentVerifyList = () => {
               <option value="true">Đã xác minh</option>
               <option value="false">Đã từ chối</option>
             </select>
-
-
           </div>
         </div>
 
@@ -234,7 +243,7 @@ const ResidentVerifyList = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredResidents.map((r) => (
+                {paginatedResidents.map((r) => (
                   <tr key={r._id}>
                     <td>{r.fullName}</td>
                     <td>{r.apartmentId?.apartmentCode || "---"}</td>
@@ -367,6 +376,17 @@ const ResidentVerifyList = () => {
             </div>
           </div>
         )}
+        <div className="d-flex justify-content-center mt-4 gap-2 flex-wrap">
+        {Array.from({ length: totalPages }, (_, index) => (
+          <button
+            key={index}
+            className={`btn ${currentPage === index + 1 ? "btn-primary" : "btn-outline-primary"}`}
+            onClick={() => setCurrentPage(index + 1)}
+          >
+            {index + 1}
+          </button>
+        ))}
+      </div>      
       </main>
     </div>
   );

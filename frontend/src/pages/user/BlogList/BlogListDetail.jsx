@@ -299,11 +299,10 @@ const PostDetail = () => {
             >
               🚩 Báo cáo
             </button>
-
-
             <button
               className="btn btn-success"
               onClick={() => navigate(`/booking/${post._id}`)}
+              disabled={post.type === "dich_vu"}
             >
               📄 Đặt chỗ
             </button>

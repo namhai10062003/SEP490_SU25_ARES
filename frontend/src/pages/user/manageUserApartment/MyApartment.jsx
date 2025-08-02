@@ -162,7 +162,12 @@ const MyApartment = () => {
           />
         </div>
 
-        <div className="d-flex flex-column gap-4">
+        <div className="d-flex flex-column gap-4 text-w">
+          {filteredApartments.length === 0 && (
+            <div className="text-center text-muted py-5">
+               🏢 Bạn không có căn hộ nào
+            </div>
+          )}
           {filteredApartments.map((apartment) => {
             const expenses = expensesMap[apartment._id] || {};
             const { maintenanceFee = 0, waterFee = 0, parkingRegs = [], parkingFee = 0, paymentStatus = "unpaid" } = expenses;
