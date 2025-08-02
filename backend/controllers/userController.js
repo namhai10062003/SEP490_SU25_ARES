@@ -299,12 +299,17 @@ export const changePassword = async (req, res) => {
     const userId = req.user._id; // Lấy ID từ middleware xác thực
     const { oldPassword, newPassword } = req.body;
 
+    // Kiểm tra thông tin đầu vào
     if (!oldPassword || !newPassword) {
       return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: "Mật khẩu mới phải có ít nhất 6 ký tự." });
+    // Regex kiểm tra mật khẩu mạnh và không có khoảng trắng
+    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])[\S]{6,}$/;
+    if (!strongPasswordRegex.test(newPassword)) {
+      return res.status(400).json({
+        message: "Mật khẩu mới phải có ít nhất 6 ký tự, bao gồm chữ hoa, chữ thường, số, ký tự đặc biệt và không chứa khoảng trắng."
+      });
     }
 
     const user = await User.findById(userId);
@@ -312,19 +317,23 @@ export const changePassword = async (req, res) => {
       return res.status(404).json({ message: "Người dùng không tồn tại." });
     }
 
+    // So sánh mật khẩu cũ
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Mật khẩu cũ không đúng." });
     }
 
+    // Kiểm tra mật khẩu mới có trùng với cũ không
     const isSameAsOld = await bcrypt.compare(newPassword, user.password);
     if (isSameAsOld) {
       return res.status(400).json({ message: "Mật khẩu mới không được trùng với mật khẩu cũ." });
     }
 
+    // Mã hóa mật khẩu mới
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
 
+    // Tạo thông báo đổi mật khẩu thành công
     const newNotification = await Notification.create({
       userId: user._id,
       message: 'Bạn đã đổi mật khẩu thành công'
@@ -357,3 +366,4 @@ export const changePassword = async (req, res) => {
     res.status(500).json({ message: "❌ Lỗi server.", error: err.message });
   }
 };
+
