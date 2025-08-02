@@ -304,11 +304,10 @@ export const changePassword = async (req, res) => {
       return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
     }
 
-    // Regex kiểm tra mật khẩu mạnh và không có khoảng trắng
-    const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])[\S]{6,}$/;
-    if (!strongPasswordRegex.test(newPassword)) {
+    // Kiểm tra mật khẩu ít nhất 6 ký tự và không chứa khoảng trắng
+    if (newPassword.length < 6 || /\s/.test(newPassword)) {
       return res.status(400).json({
-        message: "Mật khẩu mới phải có ít nhất 6 ký tự, bao gồm chữ hoa, chữ thường, số, ký tự đặc biệt và không chứa khoảng trắng."
+        message: "Mật khẩu mới phải có ít nhất 6 ký tự và không được chứa khoảng trắng."
       });
     }
 
@@ -323,7 +322,7 @@ export const changePassword = async (req, res) => {
       return res.status(400).json({ message: "Mật khẩu cũ không đúng." });
     }
 
-    // Kiểm tra mật khẩu mới có trùng với cũ không
+    // Kiểm tra mật khẩu mới có trùng với mật khẩu cũ không
     const isSameAsOld = await bcrypt.compare(newPassword, user.password);
     if (isSameAsOld) {
       return res.status(400).json({ message: "Mật khẩu mới không được trùng với mật khẩu cũ." });
@@ -333,14 +332,14 @@ export const changePassword = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
 
-    // Tạo thông báo đổi mật khẩu thành công
+    // Gửi thông báo đổi mật khẩu thành công
     const newNotification = await Notification.create({
       userId: user._id,
       message: 'Bạn đã đổi mật khẩu thành công'
     });
     emitNotification(user._id, newNotification);
 
-    // --- EMAIL & SMS NOTIFICATION ---
+    // Gửi email nếu có
     if (user.email) {
       await sendEmailNotification({
         to: user.email,
@@ -350,13 +349,13 @@ export const changePassword = async (req, res) => {
       });
     }
 
+    // Gửi SMS nếu có
     if (user.phone) {
       await sendSMSNotification({
         to: user.phone,
         body: "Bạn vừa đổi mật khẩu thành công."
       });
     }
-    // --- END EMAIL & SMS NOTIFICATION ---
 
     await user.save();
     res.status(200).json({ message: "✅ Đổi mật khẩu thành công!" });
@@ -366,4 +365,5 @@ export const changePassword = async (req, res) => {
     res.status(500).json({ message: "❌ Lỗi server.", error: err.message });
   }
 };
+
 
