@@ -49,6 +49,7 @@ const AdminReportPage = () => {
     try {
       await updateReportStatus(id, { status });
       toast.success("✅ Đã cập nhật trạng thái!", { position: "top-right" });
+      await loadAndFilterReports();
       loadReports();
     } catch (err) {
       toast.error(
@@ -70,6 +71,7 @@ const AdminReportPage = () => {
       });
       toast.success("❌ Báo cáo đã bị từ chối!");
       closeRejectModal();
+      await loadAndFilterReports();
       loadReports();
     } catch (err) {
       toast.error(
@@ -78,48 +80,48 @@ const AdminReportPage = () => {
     }
   };
 
+  const loadAndFilterReports = async () => {
+    setLoading(true);
+    try {
+      const res = await fetchAllReports(filter);
+      const fetchedReports = res.data.data || [];
+
+      setReports(fetchedReports);
+
+      // Lọc theo searchTerm
+      const filtered = fetchedReports.filter((rep) => {
+        if (!searchTerm.trim()) return true;
+
+        const post = rep.post || {};
+        const user = rep.user || {};
+
+        const fieldsToSearch = [
+          post.title,
+          post.description,
+          post.type,
+          post.property,
+          post.legalDocument,
+          user.name,
+          user.email,
+          rep.reason,
+          rep.description,
+        ];
+
+        return fieldsToSearch.some((field) =>
+          field?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      });
+
+      setFilteredReports(filtered);
+    } catch (err) {
+      console.error("Lỗi khi tải báo cáo:", err);
+      toast.error("Không thể nạp danh sách báo cáo!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadAndFilterReports = async () => {
-      setLoading(true);
-      try {
-        const res = await fetchAllReports(filter);
-        const fetchedReports = res.data.data || [];
-
-        setReports(fetchedReports);
-
-        // Lọc theo searchTerm
-        const filtered = fetchedReports.filter((rep) => {
-          if (!searchTerm.trim()) return true;
-
-          const post = rep.post || {};
-          const user = rep.user || {};
-
-          const fieldsToSearch = [
-            post.title,
-            post.description,
-            post.type,
-            post.property,
-            post.legalDocument,
-            user.name,
-            user.email,
-            rep.reason,
-            rep.description,
-          ];
-
-          return fieldsToSearch.some((field) =>
-            field?.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-        });
-
-        setFilteredReports(filtered);
-      } catch (err) {
-        console.error("Lỗi khi tải báo cáo:", err);
-        toast.error("Không thể nạp danh sách báo cáo!");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadAndFilterReports();
   }, [filter, searchTerm]);
 
