@@ -301,14 +301,25 @@ export const changePassword = async (req, res) => {
 
     if (!oldPassword || !newPassword) {
       return res.status(400).json({ message: "Vui lòng nhập đầy đủ thông tin." });
-
     }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "Mật khẩu mới phải có ít nhất 6 ký tự." });
+    }
+
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: "Người dùng không tồn tại." });
+    if (!user) {
+      return res.status(404).json({ message: "Người dùng không tồn tại." });
+    }
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Mật khẩu cũ không đúng." });
+    }
+
+    const isSameAsOld = await bcrypt.compare(newPassword, user.password);
+    if (isSameAsOld) {
+      return res.status(400).json({ message: "Mật khẩu mới không được trùng với mật khẩu cũ." });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -319,6 +330,7 @@ export const changePassword = async (req, res) => {
       message: 'Bạn đã đổi mật khẩu thành công'
     });
     emitNotification(user._id, newNotification);
+
     // --- EMAIL & SMS NOTIFICATION ---
     if (user.email) {
       await sendEmailNotification({
@@ -328,6 +340,7 @@ export const changePassword = async (req, res) => {
         html: "<b>Bạn vừa đổi mật khẩu thành công.</b>"
       });
     }
+
     if (user.phone) {
       await sendSMSNotification({
         to: user.phone,
@@ -335,8 +348,10 @@ export const changePassword = async (req, res) => {
       });
     }
     // --- END EMAIL & SMS NOTIFICATION ---
+
     await user.save();
     res.status(200).json({ message: "✅ Đổi mật khẩu thành công!" });
+
   } catch (err) {
     console.error("Lỗi đổi mật khẩu:", err);
     res.status(500).json({ message: "❌ Lỗi server.", error: err.message });

@@ -87,21 +87,27 @@ const ContractForm = ({
                 BÊN A (Chủ nhà)
               </div>
               <div className="card-body small">
-                <p>
-                  <strong>Họ tên:</strong> {landlordInfo.name}
-                </p>
-                <p>
-                  <strong>CMND/CCCD:</strong> {landlordInfo.identityNumber}
-                </p>
-                <p>
-                  <strong>Địa chỉ:</strong> {landlordInfo.address}
-                </p>
-                <p>
-                  <strong>Số điện thoại:</strong> {landlordInfo.phone}
-                </p>
-                <p>
-                  <strong>Email:</strong> {landlordInfo.email}
-                </p>
+              <p>
+  <strong>Họ tên:</strong>{" "}
+  {readOnly ? contractData?.fullNameA : landlordInfo.name}
+</p>
+<p>
+  <strong>CMND/CCCD:</strong>{" "}
+  {readOnly ? contractData?.cmndA : landlordInfo.identityNumber}
+</p>
+<p>
+  <strong>Địa chỉ:</strong>{" "}
+  {readOnly ? contractData?.addressA : landlordInfo.address}
+</p>
+<p>
+  <strong>Số điện thoại:</strong>{" "}
+  {readOnly ? contractData?.phoneA : landlordInfo.phone}
+</p>
+<p>
+  <strong>Email:</strong>{" "}
+  {readOnly ? contractData?.emailA : landlordInfo.email}
+</p>
+
               </div>
             </div>
           </div>
@@ -112,21 +118,27 @@ const ContractForm = ({
                 BÊN B (Khách hàng)
               </div>
               <div className="card-body small">
-                <p>
-                  <strong>Họ tên:</strong> {user?.name}
-                </p>
-                <p>
-                  <strong>CMND/CCCD:</strong> {user?.identityNumber}
-                </p>
-                <p>
-                  <strong>Địa chỉ:</strong> {user?.address}
-                </p>
-                <p>
-                  <strong>Số điện thoại:</strong> {user?.phone}
-                </p>
-                <p>
-                  <strong>Email:</strong> {user?.email}
-                </p>
+              <p>
+  <strong>Họ tên:</strong>{" "}
+  {readOnly ? contractData?.fullNameB : user?.name}
+</p>
+<p>
+  <strong>CMND/CCCD:</strong>{" "}
+  {readOnly ? contractData?.cmndB : user?.identityNumber}
+</p>
+<p>
+  <strong>Địa chỉ:</strong>{" "}
+  {readOnly ? contractData?.addressB : user?.address}
+</p>
+<p>
+  <strong>Số điện thoại:</strong>{" "}
+  {readOnly ? contractData?.phoneB : user?.phone}
+</p>
+<p>
+  <strong>Email:</strong>{" "}
+  {readOnly ? contractData?.emailB : user?.email}
+</p>
+
               </div>
             </div>
           </div>

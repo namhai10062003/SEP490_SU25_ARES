@@ -13,7 +13,7 @@ const ContractDetail = () => {
   const [contract, setContract] = useState(null);
   const [post, setPost] = useState(null);
   const today = new Date();
-
+  const { logout } = useAuth(); 
   const formatVNDate = (dateStr) => {
     if (!dateStr) return "....../....../......";
     const d = new Date(dateStr);
@@ -72,7 +72,7 @@ const ContractDetail = () => {
 
   return (
     <div className="bg-light min-vh-100">
-      <Header user={user} name={user?.name} />
+      <Header user={user} name={user?.name} logout={logout} />
       <div className="bg-light py-2 px-3 ">
         <button
           type="button"
@@ -84,20 +84,34 @@ const ContractDetail = () => {
         </button>
       </div>
       <ContractForm
-        contractData={{
-          startDate: contract.startDate,
-          endDate: contract.endDate,
-          depositAmount: contract.depositAmount,
-          terms: contract.contractTerms,
-          orderCode: contract.orderCode,        // ✅ phải có
-          paymentStatus: contract.paymentStatus,    // ✅ phải có
-        }}
-        post={post}
-        user={user}
-        landlord={post?.contactInfo}
-        readOnly={true}
-        headerDate={contract.createdAt}
-      />
+  contractData={{
+    startDate: contract.startDate,
+    endDate: contract.endDate,
+    depositAmount: contract.depositAmount,
+    terms: contract.contractTerms,
+    orderCode: contract.orderCode,
+    paymentStatus: contract.paymentStatus,
+
+    // 👇 Bổ sung đầy đủ BÊN A và BÊN B
+    fullNameA: contract.fullNameA,
+    cmndA : contract.cmndA,
+    phoneA: contract.phoneA,
+    emailA: contract.emailA,
+    addressA: contract.addressA,
+
+    fullNameB: contract.fullNameB,
+    cmndB: contract.cmndB,
+    phoneB: contract.phoneB,
+    emailB: contract.emailB,
+    addressB: contract.addressB
+  }}
+  post={post}
+  user={user}
+  landlord={post?.contactInfo}
+  readOnly={true}
+  headerDate={contract.createdAt}
+/>
+
       <Footer />
     </div>
   );
