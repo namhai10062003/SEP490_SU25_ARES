@@ -184,7 +184,7 @@ const Home = () => {
         console.error("Lỗi khi fetch postStats:", error);
       }
     };
-  
+
     fetchPostStats();
   }, []);
 
@@ -331,43 +331,43 @@ const Home = () => {
 
       {/* STATISTICS */}
       <section className="container py-5">
-  <div className="row g-4 justify-content-center">
+        <div className="row g-4 justify-content-center">
 
-    <div className="col-12 col-md-4">
-      <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-        <div className="display-3 fw-bold text-warning">
-          <CountUp end={postStats?.data?.forSale ?? 0} duration={2} />
-        </div>
-        <div className="text-dark fs-5 mt-3">
-          Tin đăng bán
-        </div>
-      </div>
-    </div>
+          <div className="col-12 col-md-4">
+            <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
+              <div className="display-3 fw-bold text-warning">
+                <CountUp end={postStats?.data?.forSale ?? 0} duration={2} />
+              </div>
+              <div className="text-dark fs-5 mt-3">
+                Tin đăng bán
+              </div>
+            </div>
+          </div>
 
-    <div className="col-12 col-md-4">
-      <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-        <div className="display-3 fw-bold text-warning">
-          <CountUp end={postStats?.data?.forRent ?? 0} duration={2} />
-        </div>
-        <div className="text-dark fs-5 mt-3">
-          Tin cho thuê
-        </div>
-      </div>
-    </div>
+          <div className="col-12 col-md-4">
+            <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
+              <div className="display-3 fw-bold text-warning">
+                <CountUp end={postStats?.data?.forRent ?? 0} duration={2} />
+              </div>
+              <div className="text-dark fs-5 mt-3">
+                Tin cho thuê
+              </div>
+            </div>
+          </div>
 
-    <div className="col-12 col-md-4">
-      <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-        <div className="display-3 fw-bold text-warning">
-          <CountUp end={postStats?.data?.saleAndRent ?? 0} duration={2} />
-        </div>
-        <div className="text-dark fs-5 mt-3">
-          Dịch vụ (bán & cho thuê)
-        </div>
-      </div>
-    </div>
+          <div className="col-12 col-md-4">
+            <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
+              <div className="display-3 fw-bold text-warning">
+                <CountUp end={postStats?.data?.saleAndRent ?? 0} duration={2} />
+              </div>
+              <div className="text-dark fs-5 mt-3">
+                Dịch vụ (bán & cho thuê)
+              </div>
+            </div>
+          </div>
 
-  </div>
-</section>
+        </div>
+      </section>
 
 
       {/* PROJECTS */}
@@ -457,21 +457,29 @@ const Home = () => {
                     alt={post.title}
                     style={{ height: 200, objectFit: "cover" }}
                   />
-                   {/* 🟢 Badge Bán / Cho thuê - góc trái */}
-<span
-  className={`position-absolute top-0 start-0 m-2 px-3 py-1 rounded-pill shadow-lg border border-white ${post.type === "ban" ? "bg-danger bg-opacity-75" : "bg-primary bg-opacity-75"} text-white`}
-  style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: 0.5 }}
->
-  {post.type === "ban" ? "🏠 Bán" : "💼 Cho thuê"}
-</span>
+                  {/* 🟢 Badge Bán / Cho thuê - góc trái */}
+                  <span
+                    className={`position-absolute top-0 start-0 m-2 px-3 py-1 rounded-pill shadow-lg border border-white ${post.type === "ban"
+                      ? "bg-danger bg-opacity-75"
+                      : post.type === "cho_thue"
+                        ? "bg-primary bg-opacity-75"
+                        : "bg-warning bg-opacity-75"} text-white`}
+                    style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: 0.5 }}
+                  >
+                    {post.type === "ban"
+                      ? "🏠 Bán"
+                      : post.type === "cho_thue"
+                        ? "💼 Cho thuê"
+                        : "🛠️ Dịch vụ"}
+                  </span>
 
-{/* 🔵 Badge VIP - góc phải */}
-<span
-  className={`${getPackageBadgeClass(post.postPackage?.type)} position-absolute top-0 end-0 m-2 px-3 py-1 rounded-pill shadow-lg border border-white text-white`}
-  style={{ fontSize: "0.75rem", fontWeight: 700, letterSpacing: 0.5 }}
->
-  {post.postPackage?.type?.toUpperCase() || "KHÔNG GÓI"}
-</span>
+                  {/* 🔵 Badge VIP - góc phải */}
+                  <span
+                    className={`${getPackageBadgeClass(post.postPackage?.type)} position-absolute top-0 end-0 m-2 px-3 py-1 rounded-pill shadow-lg border border-white text-white`}
+                    style={{ fontSize: "0.75rem", fontWeight: 700, letterSpacing: 0.5 }}
+                  >
+                    {post.postPackage?.type?.toUpperCase() || "KHÔNG GÓI"}
+                  </span>
 
                   {/* <span
                     className={`${getPackageBadgeClass(post.postPackage?.type)} position-absolute top-0 end-0 m-2 px-3 py-2 rounded-pill shadow`}
@@ -484,18 +492,18 @@ const Home = () => {
                   <h5 className="card-title fw-bold">{post.title}</h5>
                   <p className="card-text flex-grow-1">{post.address}</p>
                   <p
-    className="card-text text-truncate"
-    style={{
-      maxHeight: "3.6em", // 2 dòng
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      display: "-webkit-box",
-      WebkitLineClamp: 2,
-      WebkitBoxOrient: "vertical",
-    }}
-  >
-    {post.description}
-  </p>
+                    className="card-text text-truncate"
+                    style={{
+                      maxHeight: "3.6em", // 2 dòng
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                    }}
+                  >
+                    {post.description}
+                  </p>
                   <div className="d-flex justify-content-center mt-2">
                     <Button
                       variant="outline-warning"
