@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Header from "../../../../components/header.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
 import {
@@ -6,8 +8,6 @@ import {
   getApartmentList,
   getPlazaList,
 } from "../../../service/postService.js";
-
-
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
     loaiHinh: "",
@@ -224,13 +224,14 @@ const RegistrationForm = () => {
   const apartmentCode = selectedApartment?.apartmentCode || "";
   const handleSubmit = async () => {
     setIsSubmitting(true);
-
+  
     try {
       if (formData.images.length === 0) {
-        alert("Vui lòng upload ít nhất 1 ảnh");
+        toast.warning("Vui lòng upload ít nhất 1 ảnh");
         setIsSubmitting(false);
         return;
       }
+  
       const submitData = new FormData();
       submitData.append("type", loaiBaiDang);
       submitData.append("title", formData.tieuDe);
@@ -245,15 +246,15 @@ const RegistrationForm = () => {
       submitData.append("postPackage", formData.postPackage);
       submitData.append("phone", formData.thongTinNguoiDangBan);
       submitData.append("apartmentCode", apartmentCode);
-
+  
       formData.images.forEach((image) => {
         submitData.append("images", image);
       });
-
+  
       const response = await createPost(submitData);
-
+  
       if (response.data.success) {
-        alert("Đăng tin thành công!");
+        toast.success("Đăng tin thành công!");
         setFormData({
           loaiHinh: "",
           tenThanhPho: "",
@@ -279,7 +280,7 @@ const RegistrationForm = () => {
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Có lỗi xảy ra khi đăng tin. Vui lòng thử lại!");
+      toast.error("Có lỗi xảy ra khi đăng tin. Vui lòng thử lại!");
     } finally {
       setIsSubmitting(false);
     }
