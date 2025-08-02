@@ -307,7 +307,7 @@ const PostDetail = () => {
             <button
               className="btn btn-success"
               onClick={() => navigate(`/booking/${post._id}`)}
-              disabled={post.type === "dich_vu"}
+              disabled={post.property === "nha_dat" || post.type === "dich_vu"}
             >
               📄 Đặt chỗ
             </button>

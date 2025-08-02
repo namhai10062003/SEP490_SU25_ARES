@@ -9,6 +9,7 @@ export const createWithdrawRequest = async (req, res) => {
 
     const { accountHolder, bankNumber, bankName, amount } = req.body;
 
+    // Kiểm tra thông tin cơ bản
     if (!accountHolder || !bankNumber || !bankName || !amount) {
       return res.status(400).json({ message: "Thiếu thông tin cần thiết" });
     }
@@ -18,32 +19,43 @@ export const createWithdrawRequest = async (req, res) => {
       return res.status(400).json({ message: "Số tiền rút không hợp lệ" });
     }
 
-    // ✅ CHỈ lấy hợp đồng mà người dùng là landlord (chủ cho thuê)
+    // Tìm các hợp đồng đã thanh toán mà người dùng là landlord
     const contracts = await Contract.find({
       paymentStatus: "paid",
       landlordId: objectUserId,
     });
 
     console.log("✅ USER ID:", userId);
-    console.log("📦 Danh sách hợp đồng tìm được:", contracts.length);
+    console.log("📦 Số hợp đồng tìm được:", contracts.length);
 
-    if (contracts.length === 0) {
+    if (!contracts.length) {
       return res.status(400).json({ message: "Không tìm thấy hợp đồng hợp lệ" });
     }
 
-    // ✅ Tính tổng tiền có thể rút (dựa vào withdrawableAmount)
+    // Tính tổng tiền có thể rút
     let totalAvailable = 0;
+
     contracts.forEach((c) => {
-      let withdrawable = Number(c.withdrawableAmount);
-      if (isNaN(withdrawable) || withdrawable < 10) withdrawable = 0;
+      const withdrawable = Number(c.withdrawableAmount || 0);
       totalAvailable += withdrawable;
 
-      console.log(`🧾 HĐ ${c._id} | Căn: ${c.apartmentCode} | Có thể rút: ${withdrawable}`);
+      const aptCode =
+      c.postSnapshot?.apartmentCode ||
+      c.post?.apartmentCode || // nếu populate
+      c.apartmentCode || "??";
+    
+    const aptTitle =
+      c.postSnapshot?.title ||
+      c.post?.title ||
+      "Không có tiêu đề";
+
+      console.log(`🧾 HĐ ${c._id} | Căn: ${aptCode} - ${aptTitle} | Có thể rút: ${withdrawable.toLocaleString()} đ`);
     });
 
     totalAvailable = Number(totalAvailable.toFixed(2));
     console.log("💰 Tổng tiền có thể rút:", totalAvailable.toLocaleString());
 
+    // So sánh với số tiền yêu cầu
     const EPSILON = 0.01;
     if (numericAmount - totalAvailable > EPSILON) {
       return res.status(400).json({
@@ -51,7 +63,7 @@ export const createWithdrawRequest = async (req, res) => {
       });
     }
 
-    // ✅ Tạo yêu cầu rút tiền
+    // Tạo yêu cầu rút tiền
     const request = new WithdrawRequest({
       user: objectUserId,
       accountHolder,
@@ -66,12 +78,12 @@ export const createWithdrawRequest = async (req, res) => {
       message: "✅ Gửi yêu cầu rút tiền thành công",
       data: request,
     });
+
   } catch (err) {
     console.error("❌ Lỗi khi tạo yêu cầu rút tiền:", err);
-    res.status(500).json({ message: "Lỗi server" });
+    return res.status(500).json({ message: "Lỗi server" });
   }
 };
-
 
   
 // 🔍 GET /api/withdrawals/admin - Admin xem tất cả yêu cầu
