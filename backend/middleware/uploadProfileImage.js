@@ -9,26 +9,30 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Cấu hình storage riêng cho ảnh hồ sơ
+// Dùng chung 1 storage → tự động phân loại vào folder 'profile'
 const profileStorage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: "profile", // 📂 upload vào folder 'profile'
+    folder: "profile",
     allowed_formats: ["jpg", "jpeg", "png"],
   },
 });
 
 const upload = multer({ storage: profileStorage });
 
-// Middleware upload 1 ảnh đại diện profile
-const uploadProfileImage = (req, res, next) => {
-  const uploadSingle = upload.single("profileImage");
+// Middleware: Upload 3 ảnh (profile + CCCD front/back)
+const uploadProfileAndCCCD = (req, res, next) => {
+  const uploadFields = upload.fields([
+    { name: "profileImage", maxCount: 1 },
+    { name: "cccdFrontImage", maxCount: 1 },
+    { name: "cccdBackImage", maxCount: 1 },
+  ]);
 
-  uploadSingle(req, res, (err) => {
+  uploadFields(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       return res.status(400).json({
         status: "fail",
-        message: "Lỗi khi upload ảnh đại diện: " + err.message,
+        message: "Lỗi upload file: " + err.message,
       });
     } else if (err) {
       return res.status(400).json({
@@ -40,4 +44,5 @@ const uploadProfileImage = (req, res, next) => {
   });
 };
 
-export { uploadProfileImage };
+export { uploadProfileAndCCCD };
+
