@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import ProtectedLink from "../components/ProtectedLink";
 
 const Navbar = () => {
   const location = useLocation();
@@ -21,9 +22,9 @@ const Navbar = () => {
   return (
     <ul className="navbar-nav flex-row ms-3">
       <li className="nav-item mx-2">
-        <Link className={getNavClass("/")} to="/">
-          TRANG CHỦ
-        </Link>
+      <ProtectedLink className={getNavClass("/")} to="/">
+  TRANG CHỦ
+</ProtectedLink>
       </li>
       <li className="nav-item mx-2">
         <Link className={getNavClass("/gioi-thieu")} to="/gioi-thieu">
@@ -45,14 +46,14 @@ const Navbar = () => {
         </span>
         <ul className="dropdown-menu" aria-labelledby="dichvuDropdown">
           <li>
-            <Link className="dropdown-item" to="/dichvu/baidoxe">
+            <ProtectedLink className="dropdown-item" to="/dichvu/baidoxe">
               Đăng ký bãi đỗ xe
-            </Link>
+            </ProtectedLink>
           </li>
           <li>
-            <Link className="dropdown-item" to="/dichvu/dangtin">
+            <ProtectedLink className="dropdown-item" to="/dichvu/dangtin">
               Dịch vụ đăng tin
-            </Link>
+            </ProtectedLink>
           </li>
         </ul>
       </li>
@@ -71,14 +72,14 @@ const Navbar = () => {
         </span>
         <ul className="dropdown-menu" aria-labelledby="canhoDropdown">
           <li>
-            <Link className="dropdown-item" to="/canho/nhaukhau">
+            <ProtectedLink className="dropdown-item" to="/canho/nhaukhau">
               Nhân khẩu
-            </Link>
+            </ProtectedLink>
           </li>
           <li>
-            <Link className="dropdown-item" to="/canho/liked-posts">
+            <ProtectedLink className="dropdown-item" to="/canho/liked-posts">
               Yêu thích
-            </Link>
+            </ProtectedLink>
           </li>
         </ul>
       </li>

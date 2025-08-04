@@ -33,6 +33,39 @@ const sendOTP = async (email, otp) => {
   }
 
 };
+// gửi lại otp 
+export const resendOTP = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ success: false, message: "Thiếu email!" });
+  }
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy người dùng!" });
+    }
+
+    // ✅ Tạo mã OTP mới
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // Hết hạn sau 5 phút
+    const otpExpires = new Date(Date.now() + 60 * 1000); // 1 phút
+    // ✅ Cập nhật OTP và thời hạn
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
+
+    // ✅ Gửi email OTP
+    await sendOTP(user.email, otp); // tuỳ thuộc vào hàm bạn viết
+
+    res.json({ success: true, message: "✅ Mã OTP đã được gửi lại!" });
+  } catch (err) {
+    console.error("Lỗi gửi lại OTP:", err.message);
+    res.status(500).json({ success: false, message: "Lỗi hệ thống!" });
+  }
+};
 //forgotpassword
 const forgotPassword = async (req, res) => {
   try {
