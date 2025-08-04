@@ -25,7 +25,6 @@ const RevenueApartment = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-
     const formatDate = (d) =>
         d ? new Date(d).toLocaleDateString("vi-VN") : "Chưa thanh toán";
     const formatPrice = (p) =>
@@ -42,8 +41,6 @@ const RevenueApartment = () => {
             return f.month === selectedMonthFormatted;
         })();
 
-
-
         const matchStatus =
             statusFilter === "all" ||
             (statusFilter === "paid" && f.paymentStatus === "paid") ||
@@ -58,10 +55,7 @@ const RevenueApartment = () => {
             f.managementFee?.toString().includes(lowerSearch) ||
             f.waterFee?.toString().includes(lowerSearch) ||
             f.parkingFee?.toString().includes(lowerSearch) ||
-            f.total?.toString().includes(lowerSearch) ||
-            (month && month.includes(lowerSearch)) ||       // ✅ "01/2025"
-            (m && m.includes(lowerSearch)) ||               // ✅ "01"
-            (y && y.includes(lowerSearch));
+            f.total?.toString().includes(lowerSearch);
 
         return matchDate && matchStatus && matchSearch;
     });

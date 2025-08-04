@@ -40,25 +40,31 @@ const ManageApartment = () => {
   const fetchApartments = async () => {
     try {
       setLoading(true);
-
-      // Nếu lọc "all" hoặc "deleted" thì cần lấy cả bản ghi bị xóa
-      const includeDeleted = statusFilter !== "active";
-
+  
+      const includeDeleted = statusFilter === "deleted" || statusFilter === "all";
+      const statusParam = statusFilter === "active" ? "active" : ""; // Không truyền khi là all/deleted
+  
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/apartments?page=${page}&pageSize=${pageSize}&includeDeleted=${includeDeleted}&status=${statusFilter}`
+        `${import.meta.env.VITE_API_URL}/api/apartments?page=${page}&pageSize=${pageSize}&includeDeleted=${includeDeleted}&status=${statusParam}`
       );
-
-      setApartments(res?.data?.data || []);
-      console.log("🚀 Danh sách căn hộ:", res.data.data);
-      setTotalPages(res.data.totalPages);
+  
+      let fetched = res?.data?.data || [];
+  
+      // Lọc thêm nếu là "deleted"
+      if (statusFilter === "deleted") {
+        fetched = fetched.filter((apt) => !!apt.deletedAt);
+      } else if (statusFilter === "active") {
+        fetched = fetched.filter((apt) => !apt.deletedAt);
+      }
+  
+      setApartments(fetched);
+      setTotalPages(res.data.totalPages); // nếu cần, bạn có thể tính lại totalPages theo length mới
     } catch (err) {
       console.error("Lỗi khi lấy danh sách căn hộ:", err);
     } finally {
       setLoading(false);
     }
-  };
-
-
+  };  
 
   const handleBlock = (id) => {
     console.log("Block apartment with ID:", id);
