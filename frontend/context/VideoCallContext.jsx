@@ -30,6 +30,21 @@ export const VideoCallProvider = ({ userId, children }) => {
   const localVideoRef = useRef();
   const remoteVideoRef = useRef();
 
+  const getMediaStream = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+      setLocalStream(stream);
+      return stream;
+    } catch (err) {
+      toast.error("❌ Không thể truy cập camera/micro");
+      console.error("getUserMedia error:", err);
+      return null;
+    }
+  };
+  
   const sendMessage = async (msg) => {
     try {
       await fetch(`${import.meta.env.VITE_API_URL}/api/messages`, {
@@ -70,28 +85,55 @@ export const VideoCallProvider = ({ userId, children }) => {
 
   useEffect(() => {
     if (!userId) return;
+  
+    // ✅ Truyền userId để peerId cố định và có thể gọi đúng người
     let peer = createPeer(userId);
     peerRef.current = peer;
-
-    peer.on("open", () => setPeerReady(true));
-    peer.on("error", (err) => {
-      if (err.type === "unavailable-id") {
-        peer = createPeer();
-        peerRef.current = peer;
-        peer.on("open", () => setPeerReady(true));
-        peer.on("call", (call) => setIncomingCall(call));
-      }
+  
+    peer.on("open", (id) => {
+      console.log("✅ Peer ID:", id);
+      setPeerReady(true);
+  
+      // ✅ Gửi cả userId và peerId về server nếu cần
+      socket?.emit("register-user", { userId, peerId: id });
     });
-
-    peer.on("call", (call) => setIncomingCall(call));
-
-    navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .then(setLocalStream)
-      .catch((err) => console.error("❌ Không lấy được camera/mic:", err));
-
+  
+    peer.on("error", (err) => {
+      console.error("PeerJS error:", err);
+    });
+  
+    peer.on("call", (call) => {
+      setIncomingCall(call); // để hiển thị popup hoặc auto answer
+    });
+  
     return () => peer.destroy();
   }, [userId]);
+  
+  
+  // useEffect(() => {
+  //   if (!userId) return;
+  //   let peer = createPeer(userId);
+  //   peerRef.current = peer;
+
+  //   peer.on("open", () => setPeerReady(true));
+  //   peer.on("error", (err) => {
+  //     if (err.type === "unavailable-id") {
+  //       peer = createPeer();
+  //       peerRef.current = peer;
+  //       peer.on("open", () => setPeerReady(true));
+  //       peer.on("call", (call) => setIncomingCall(call));
+  //     }
+  //   });
+
+  //   peer.on("call", (call) => setIncomingCall(call));
+
+  //   // navigator.mediaDevices
+  //   //   .getUserMedia({ video: true, audio: true })
+  //   //   .then(setLocalStream)
+  //   //   .catch((err) => console.error("❌ Không lấy được camera/mic:", err));
+
+  //   return () => peer.destroy();
+  // }, [userId]);
 
   useEffect(() => {
     if (!socket) return;
@@ -118,40 +160,39 @@ export const VideoCallProvider = ({ userId, children }) => {
     };
   }, [socket]);
 
-  const callUser = (remoteUserId) => {
-    if (!peerRef.current || !peerReady || !localStream) return;
-    if (isCalling) {
-      toast.warning("⚠️ Bạn đang gọi người khác, hãy huỷ trước.");
-      return;
-    }
-
+  const callUser = async (remoteUserId) => {
+    if (!peerRef.current || !peerReady) return;
+  
+    const stream = localStream || await getMediaStream();
+    if (!stream) return;
+  
     setIsCalling(true);
     socket.emit("start-call", {
       from: userId,
       to: remoteUserId,
       name: user?.name || "Người dùng",
     });
-
-    const call = peerRef.current.call(remoteUserId, localStream);
+  
+    const call = peerRef.current.call(remoteUserId, stream);
     if (!call) {
       setIsCalling(false);
       return;
     }
-
+  
     call.on("stream", (remote) => {
       setRemoteStream(remote);
       setCallActive(true);
       setIsCalling(false);
-      callStartTime.current = new Date(); // ⏱️ bắt đầu đếm
+      callStartTime.current = new Date();
     });
-
+  
     call.on("error", () => setIsCalling(false));
     call.on("close", () => {
       endCall();
     });
-
+  
     currentCall.current = call;
-    currentCall.current.initiator = true; 
+    currentCall.current.initiator = true;
   };
 
   const cancelOutgoingCall = async () => {
@@ -180,21 +221,25 @@ export const VideoCallProvider = ({ userId, children }) => {
     }
   };
 
-  const answerCall = () => {
-    if (!incomingCall || !localStream) return;
-    incomingCall.answer(localStream);
-
+  const answerCall = async () => {
+    if (!incomingCall) return;
+  
+    const stream = localStream || await getMediaStream();
+    if (!stream) return;
+  
+    incomingCall.answer(stream);
+  
     incomingCall.on("stream", (remote) => {
       setRemoteStream(remote);
       setCallActive(true);
-      callStartTime.current = new Date(); // ⏱️ bắt đầu đếm
+      callStartTime.current = new Date();
     });
-
+  
     incomingCall.on("close", () => endCall());
     incomingCall.on("error", (err) =>
       console.error("❌ Lỗi khi nhận cuộc gọi:", err)
     );
-
+  
     currentCall.current = incomingCall;
     setIncomingCall(null);
     setCallerInfo(null);
@@ -228,7 +273,12 @@ export const VideoCallProvider = ({ userId, children }) => {
     setIncomingCall(null);
     setCallerInfo(null);
     setIsCalling(false);
-  
+    
+    if (localStream) {
+      localStream.getTracks().forEach((track) => track.stop());
+      setLocalStream(null);
+    }
+
     if (callStartTime.current) {
       const duration = Math.floor((new Date() - callStartTime.current) / 1000);
       callStartTime.current = null;

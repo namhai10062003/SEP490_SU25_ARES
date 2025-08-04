@@ -38,7 +38,7 @@ const VideoCallPopup = () => {
             📲 Cuộc gọi từ: <b>{callerInfo?.name || incomingCall?.peer || "Người lạ"}</b>
           </p>
           <div style={styles.actions}>
-            <button onClick={answerCall} style={styles.accept}>✅ Nhận</button>
+          <button onClick={async () => await answerCall()} style={styles.accept}>✅ Nhận</button>
             <button onClick={rejectCall} style={styles.reject}>❌ Từ chối</button>
           </div>
         </>
