@@ -1,5 +1,5 @@
 import express from "express";
-import { getNotifications, markAsRead, markAllAsRead, deleteNotification } from "../controllers/notificationController.js";
+import { getNotifications, markAsRead, markAllAsRead, deleteNotification, sendGlobalNotification, getAllNotifications } from "../controllers/notificationController.js";
 
 const router = express.Router();
 
@@ -15,4 +15,9 @@ router.patch("/:userId/read-all", markAllAsRead);
 // Delete notification
 router.delete("/:id", deleteNotification);
 
+// Global notification
+router.post("/sendAll", sendGlobalNotification);
+
+// Get All notification admin
+router.get("/", getAllNotifications);
 export default router;

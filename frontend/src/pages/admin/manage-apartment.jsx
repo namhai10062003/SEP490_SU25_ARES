@@ -119,7 +119,7 @@ const ManageApartment = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const requiredFields = [
       "apartmentCode",
       "floor",
@@ -131,14 +131,14 @@ const ManageApartment = () => {
       "building",
       "legalDocuments"
     ];
-  
+
     const isMissing = requiredFields.some((field) => !form[field]);
-  
+
     if (isMissing) {
       toast.error("❌ Vui lòng điền đầy đủ thông tin (trừ Chủ sở hữu và SĐT có thể bỏ trống)!");
       return;
     }
-  
+
     const floor = parseInt(form.floor);
     const area = parseInt(form.area);
     const bedrooms = parseInt(form.bedrooms);
@@ -146,9 +146,9 @@ const ManageApartment = () => {
       toast.error("❌ Tầng, Diện tích, và Số phòng ngủ phải là số!");
       return;
     }
-  
+
     const slug = form.apartmentCode.toLowerCase().replace(/ /g, "-");
-  
+
     const payload = {
       apartmentCode: form.apartmentCode,
       slug,
@@ -164,15 +164,15 @@ const ManageApartment = () => {
       legalDocuments: form.legalDocuments,
       // userId: isEdit ? form.userId : null,
     };
-  
+
     try {
       const url = isEdit
         ? `${import.meta.env.VITE_API_URL}/api/apartments/${form._id}`
         : `${import.meta.env.VITE_API_URL}/api/apartments`;
       const method = isEdit ? "PUT" : "POST";
-  
+
       const res = await axios({ method, url, data: payload });
-  
+
       if (res.status === 200 || res.status === 201) {
         fetchApartments();
         setShowModal(false);
@@ -279,7 +279,9 @@ const ManageApartment = () => {
                   <th>Diện tích (m²)</th>
                   <th>Trạng thái</th>
                   <th>Chủ sở hữu</th>
-                  <th>SĐT</th>
+                  <th>SĐT chủ sở hữu</th>
+                  <th>Người thuê</th>
+                  <th>SĐT người thuê</th>
                   <th>Thao tác</th>
                   <th>Hành động</th>
                 </tr>
@@ -307,6 +309,8 @@ const ManageApartment = () => {
                       <td>{apt.status || "Chưa xác định"}</td>
                       <td>{apt.ownerName || "Chưa có"}</td>
                       <td>{apt.ownerPhone || "-"}</td>
+                      <td>{apt.isOwner?.name || apt.isRenter?.name || "Chưa có"}</td>
+                      <td>{apt.isOwner?.phone || apt.isRenter?.phone || "-"}</td>
                       <td>
                         <div style={{ display: "flex", gap: "0.5rem", whiteSpace: "nowrap" }}>
                           <button

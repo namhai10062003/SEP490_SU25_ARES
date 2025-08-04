@@ -28,6 +28,7 @@ import ManageApartment from "./pages/admin/manage-apartment.jsx";
 import ManageApplicationForm from "./pages/admin/manage-application-form.jsx";
 import ManageStaff from "./pages/admin/manage-staff.jsx";
 import ManageUser from "./pages/admin/manage-user.jsx";
+import ManageNotifications from "./pages/admin/manage-notification.jsx";
 import AdminReportPage from "./pages/admin/report/AdminReportPage";
 import AdminResidentApproval from "./pages/admin/residentVerifyByAdmin/AdminResidentApproval";
 import AdminWithdrawPage from "./pages/admin/revenue/AdminWithdrawRequests.jsx";
@@ -138,7 +139,7 @@ function AppRoutes() {
           <Route path="/admin-dashboard/contact" element={<ProtectedRoute element={<AdminContactPage />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/posts/:id" element={<ProtectedRoute element={<AdminPostDetail />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/updateprofile" element={<ProtectedRoute element={<AdminProfileUpdatePage />} allowedRoles={["admin"]} />} />
-
+          <Route path="/admin-dashboard/manage-notification" element={<ManageNotifications />} />
           {/* Staff */}
           <Route path="/staff-dashboard" element={<ProtectedRoute element={<DashboardPage />} allowedRoles={["staff"]} />} />
           <Route path="staff-expenses" element={<ProtectedRoute element={<ManageExpense />} allowedRoles={["staff"]} />} />

@@ -20,7 +20,7 @@ export default function AdminDashboard({ children }) {
     }
     if (
       location.pathname.startsWith("/admin-dashboard/report") ||
-      location.pathname.startsWith("/admin-dashboard/contact")||
+      location.pathname.startsWith("/admin-dashboard/contact") ||
       location.pathname.startsWith("/admin-dashboard/updateprofile")
     ) {
       setShowFeedbackSub(true);
@@ -31,7 +31,7 @@ export default function AdminDashboard({ children }) {
     { to: "/admin-dashboard", label: "Tổng Quan" },
     // { to: "/admin-dashboard/create-account", label: "Tạo Tài Khoản" },
     { to: "/admin-dashboard/posts", label: "Quản Lý Bài Post" },
-    { to: "/admin-dashboard/notifications", label: "Gửi Thông Báo" },
+    { to: "/admin-dashboard/manage-notification", label: "Gửi Thông Báo" },
     { to: "/admin-dashboard/manage-user", label: "Quản Lý User" },
     { to: "/admin-dashboard/manage-staff", label: "Quản Lý Staff" },
     { to: "/admin-dashboard/manage-apartment", label: "Quản Lý Căn hộ" },
