@@ -327,7 +327,7 @@ const ManageApartment = () => {
                             className="btn btn-sm btn-outline-danger"
                             onClick={() => handleDelete(apt._id)}
                             style={{ padding: "0.25rem 0.5rem" }}
-                            disabled={!!apt.deletedAt}
+                            disabled={!!apt.deletedAt || apt.status === "đang ở" || apt.status === "đang cho thuê"}
                           >
                             Delete
                           </button>
