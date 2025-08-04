@@ -473,7 +473,7 @@ const CustomerPostManagement = () => {
             <p className="mb-3">Bạn chưa có bài đăng nào</p>
             <button
               className="btn btn-primary"
-              onClick={() => navigate("/create-post")}
+              onClick={() => navigate("/dichvu/dangtin")}
             >
               <span className="material-symbols-rounded align-middle" style={{ fontSize: 20 }}>add_circle</span>
               <span className="ms-1">Tạo bài đăng đầu tiên</span>
