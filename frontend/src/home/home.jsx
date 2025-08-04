@@ -571,7 +571,7 @@ const Home = () => {
             <div className="modal-content rounded-4 shadow">
               <div className="modal-header">
                 <h5 className="modal-title text-danger">Thông báo</h5>
-                <button type="button" className="btn-close" onClick={() => setShowUpdateModal(false)}></button>
+                {/* <button type="button" className="btn-close" onClick={() => setShowUpdateModal(false)}></button> */}
               </div>
               <div className="modal-body">
                 <p>Bạn chưa cập nhật đầy đủ thông tin cá nhân. Vui lòng cập nhật để tiếp tục sử dụng hệ thống.</p>

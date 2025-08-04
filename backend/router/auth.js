@@ -1,11 +1,12 @@
 import express from 'express';
-import { forgotPassword, googleAuth, googleCallback, login, register, resetPassword, verifyUser } from '../controllers/authController.js';
+import { forgotPassword, googleAuth, googleCallback, login, register, resendOTP, resetPassword, verifyUser } from '../controllers/authController.js';
 import verifysUser from '../middleware/authMiddleware.js';
 const router = express.Router()
 
 router.post('/login', login)
 router.post("/verify-otp",verifyUser);
 router.post('/verify', verifysUser, verifyUser)
+router.post("/send-otp", resendOTP);
 router.post('/register', register)
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);

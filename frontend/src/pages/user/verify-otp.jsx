@@ -8,6 +8,41 @@ export default function VerifyEmail() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [resendTimer, setResendTimer] = useState(15); 
+  useEffect(() => {
+    let timer;
+    if (resendTimer > 0) {
+      timer = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+  
+    return () => clearInterval(timer);
+  }, [resendTimer]);
+
+  const handleResendOTP = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/send-otp`, { email });
+  
+      if (res.data.success) {
+        toast.success("✅ Mã OTP mới đã được gửi!");
+        setResendTimer(15); // Reset lại 5 phút
+      } else {
+        toast.error(res.data.error || "❌ Gửi lại OTP thất bại");
+      }
+    } catch (err) {
+      console.error("Error resending OTP:", err);
+      toast.error("❌ Lỗi hệ thống khi gửi lại OTP.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
 
   useEffect(() => {
     const storedEmail = localStorage.getItem("emailForVerify");
@@ -108,6 +143,22 @@ export default function VerifyEmail() {
                 maxLength={8}
               />
             </div>
+            <div className="text-center mt-3">
+  {resendTimer > 0 ? (
+    <span className="text-muted small">
+      Bạn có thể gửi lại mã sau: {formatTime(resendTimer)}
+    </span>
+  ) : (
+    <button
+      className="btn btn-link text-decoration-none"
+      onClick={handleResendOTP}
+      disabled={loading}
+    >
+      🔁 Gửi lại mã OTP
+    </button>
+  )}
+</div>
+
             <button
               className="btn btn-primary btn-lg w-100 fw-bold"
               onClick={handleVerify}

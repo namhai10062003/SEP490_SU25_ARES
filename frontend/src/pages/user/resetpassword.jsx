@@ -8,6 +8,46 @@ const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const handleResendOTP = async () => {
+    if (!email) {
+      toast.warn("⚠️ Vui lòng nhập email trước khi gửi lại OTP!");
+      return;
+    }
+  
+    setResendLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        toast.success(data.message || "Đã gửi lại mã OTP!");
+        setResendCooldown(60); // Bắt đầu đếm ngược 60s
+      } else {
+        toast.error(data.error || "Gửi lại OTP thất bại.");
+      }
+    } catch (err) {
+      console.error("❌ Lỗi gửi lại OTP:", err.message);
+      toast.error("Lỗi server khi gửi lại OTP.");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (resendCooldown > 0) {
+      const interval = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [resendCooldown]);
 
   const handleReset = async (e) => {
     e.preventDefault();
@@ -125,6 +165,21 @@ const ResetPassword = () => {
                   required
                 />
               </div>
+              <div className="mb-2 d-flex justify-content-end">
+  <button
+    type="button"
+    className="btn btn-link px-0"
+    onClick={handleResendOTP}
+    disabled={resendLoading || resendCooldown > 0}
+    style={{ fontSize: "0.9rem" }}
+  >
+    {resendCooldown > 0
+      ? `Gửi lại OTP sau ${resendCooldown}s`
+      : resendLoading
+      ? "Đang gửi lại..."
+      : "Gửi lại mã OTP"}
+  </button>
+</div>
               <button type="submit" disabled={loading} className="btn btn-primary btn-lg w-100 fw-bold">
                 {loading ? "Đang xử lý..." : "✅ Đặt lại mật khẩu"}
               </button>
