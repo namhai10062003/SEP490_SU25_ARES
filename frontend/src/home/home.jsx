@@ -361,7 +361,7 @@ const Home = () => {
                 <CountUp end={postStats?.data?.saleAndRent ?? 0} duration={2} />
               </div>
               <div className="text-dark fs-5 mt-3">
-                Dịch vụ (bán & cho thuê)
+                Tin dịch vụ
               </div>
             </div>
           </div>
