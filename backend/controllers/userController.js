@@ -215,6 +215,11 @@ export const updateProfile = async (req, res) => {
       jobTitle,
     } = req.body;
 
+    // ✅ Kiểm tra nếu name không tồn tại hoặc là chuỗi trắng
+if (!name || name.trim() === "") {
+  return res.status(400).json({ message: "Vui lòng nhập họ tên." });
+}
+
     const currentUser = await User.findById(userId);
     if (!currentUser) {
       return res.status(404).json({ message: "Không tìm thấy người dùng" });
@@ -227,7 +232,25 @@ export const updateProfile = async (req, res) => {
     if (name !== undefined) updateData.name = name;
     if (phone !== undefined) updateData.phone = phone;
     if (gender !== undefined) updateData.gender = gender;
-    if (dob !== undefined) updateData.dob = dob;
+    if (dob !== undefined) {
+      const birthDate = new Date(dob);
+      if (isNaN(birthDate.getTime())) {
+        return res.status(400).json({ message: "Ngày sinh không hợp lệ." });
+      }
+    
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const hasHadBirthdayThisYear =
+        today.getMonth() > birthDate.getMonth() ||
+        (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+      const actualAge = hasHadBirthdayThisYear ? age : age - 1;
+    
+      if (actualAge < 18) {
+        return res.status(400).json({ message: "Người dùng phải đủ 18 tuổi để cập nhật hồ sơ." });
+      }
+    
+      updateData.dob = dob;
+    }
     if (address !== undefined) updateData.address = address;
     if (bio !== undefined) updateData.bio = bio;
     if (jobTitle !== undefined) updateData.jobTitle = jobTitle;

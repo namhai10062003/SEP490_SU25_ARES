@@ -33,6 +33,11 @@ export const createResident = async (req, res) => {
       issueDate
     } = req.body;
 
+    if (!idNumber?.trim() || !/^\d{12}$/.test(idNumber.trim())) {
+      return res.status(400).json({ message: 'Số CCCD không hợp lệ. Vui lòng nhập đúng 12 chữ số.' });
+    }
+    
+    
     const apartment = await Apartment.findById(apartmentId);
     if (!apartment) {
       return res.status(404).json({ message: 'Không tìm thấy căn hộ.' });

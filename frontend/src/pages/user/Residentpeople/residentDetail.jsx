@@ -89,10 +89,10 @@ const ResidentDetail = () => {
                   <strong>Quốc tịch:</strong> {resident.nationality}
                 </li>
                 <li className="list-group-item">
-                  <strong>Số CCCD:</strong> {resident.idNumber || "---"}
+                  <strong>Số CCCD/ Giấy khai sinh:</strong> {resident.idNumber || "---"}
                 </li>
                 <li className="list-group-item">
-                  <strong>Ngày cấp CCCD:</strong>{" "}
+                  <strong>Ngày cấp:</strong>{" "}
                   {resident.issueDate
                     ? new Date(resident.issueDate).toLocaleDateString('vi-VN')
                     : "---"}
@@ -118,7 +118,7 @@ const ResidentDetail = () => {
               </ul>
             </div>
             <div className="col-md-6">
-              <h5 className="fw-bold mb-3">Ảnh CCCD</h5>
+              <h5 className="fw-bold mb-3">Ảnh CCCD/ Giấy khai sinh</h5>
               <div className="d-flex gap-3 flex-wrap">
                 {resident.documentFront && (
                   <img

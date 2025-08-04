@@ -83,7 +83,10 @@ router.get("/recent-sender/:userId", async (req, res) => {
           post: { $ne: null }
         }).sort({ createdAt: -1 })
       ]);
-
+    
+      // ❗ Nếu không tìm thấy user thì bỏ qua
+      if (!user) continue;
+    
       result.push({
         _id: user._id,
         name: user.name,

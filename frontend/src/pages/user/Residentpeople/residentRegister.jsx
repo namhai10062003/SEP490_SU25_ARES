@@ -88,9 +88,31 @@ const ResidentRegister = () => {
     if (!form.gender) return toast.error('Chọn giới tính');
     if (!form.dateOfBirth) return toast.error('Chọn ngày sinh');
     if (!form.relationWithOwner.trim()) return toast.error('Nhập quan hệ với chủ hộ');
+  
+    const age = getAge(form.dateOfBirth);
+  
+    if (age >= 16) {
+      if (!form.idNumber.trim()) return toast.error('Nhập số CCCD');
+      if (!/^\d{12}$/.test(form.idNumber.trim())) return toast.error('CCCD phải gồm đúng 12 chữ số');
+    } else {
+      if (!form.documentFront) return toast.error('Vui lòng tải lên ảnh giấy khai sinh');
+    }
+  
     return true;
   };
-
+  
+  const getAge = (dob) => {
+    if (!dob) return 0;
+    const birthDate = new Date(dob);
+    const now = new Date();
+    let age = now.getFullYear() - birthDate.getFullYear();
+    const m = now.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
@@ -219,7 +241,7 @@ const ResidentRegister = () => {
               </div>
               {/* Số CCCD */}
               <div className="col-md-3">
-                <label className="form-label">Số CCCD</label>
+                <label className="form-label">Số CCCD/ Giấy khai sinh</label>
                 <input
                   type="text"
                   name="idNumber"
@@ -241,31 +263,41 @@ const ResidentRegister = () => {
               </div>
               {/* Ảnh giấy tờ */}
               <div className="col-md-6">
-                <label className="form-label">Mặt trước CCCD</label>
-                <input
-                  type="file"
-                  name="documentFront"
-                  accept="image/*"
-                  onChange={handleChange}
-                  className="form-control"
-                />
-                {previewFront && (
-                  <img src={previewFront} alt="front" className="img-thumbnail mt-2" style={{ maxHeight: 180 }} />
-                )}
-              </div>
-              <div className="col-md-6">
-                <label className="form-label">Mặt sau CCCD</label>
-                <input
-                  type="file"
-                  name="documentBack"
-                  accept="image/*"
-                  onChange={handleChange}
-                  className="form-control"
-                />
-                {previewBack && (
-                  <img src={previewBack} alt="back" className="img-thumbnail mt-2" style={{ maxHeight: 180 }} />
-                )}
-              </div>
+  <label className="form-label">
+    {getAge(form.dateOfBirth) < 16 ? 'Ảnh giấy khai sinh *' : 'Mặt trước CCCD'}
+  </label>
+  <input
+    type="file"
+    name="documentFront"
+    accept="image/*"
+    onChange={handleChange}
+    className="form-control"
+    required={getAge(form.dateOfBirth) < 16} // bắt buộc nếu là giấy khai sinh
+  />
+  {previewFront && (
+    <img src={previewFront} alt="front" className="img-thumbnail mt-2" style={{ maxHeight: 180 }} />
+  )}
+</div>
+{getAge(form.dateOfBirth) >= 16 && (
+  <div className="col-md-6">
+    <label className="form-label">Mặt sau CCCD</label>
+    <input
+      type="file"
+      name="documentBack"
+      accept="image/*"
+      onChange={handleChange}
+      className="form-control"
+    />
+    {previewBack && (
+      <img
+        src={previewBack}
+        alt="back"
+        className="img-thumbnail mt-2"
+        style={{ maxHeight: 180 }}
+      />
+    )}
+  </div>
+)}
               {/* Nút submit */}
               <div className="col-12">
                 <button type="submit" className="btn btn-primary btn-lg w-100 mt-3">

@@ -141,12 +141,45 @@ const handleCccdBackChange = (e) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    const errors = [];
+
+    if (!form.name?.trim()) errors.push("⚠️ Vui lòng nhập họ tên!");
+    if (!form.phone?.trim()) errors.push("⚠️ Vui lòng nhập số điện thoại! Số điện thoại bắt buộc 10 số");
+    if (!form.gender?.trim()) errors.push("⚠️ Vui lòng chọn giới tính!");
+    if (!form.dob?.trim()) errors.push("⚠️ Vui lòng chọn ngày sinh!");
+    if (!form.address?.trim()) errors.push("⚠️ Vui lòng nhập địa chỉ!");
   
-    if (!form.name || !form.phone || !form.gender || !form.dob || !form.address) {
-      toast.warn("⚠️ Vui lòng điền đầy đủ các trường bắt buộc!");
-      return;
+    if (!form.identityNumber?.trim()) {
+      errors.push("⚠️ Vui lòng nhập số CMND/CCCD!");
+    } else if (!/^\d{9}$|^\d{12}$/.test(form.identityNumber)) {
+      errors.push("⚠️ CMND/CCCD phải gồm 9 hoặc 12 chữ số!");
     }
   
+    if (!form.bio?.trim()) errors.push("⚠️ Vui lòng nhập phần giới thiệu!");
+    if (!form.jobTitle?.trim()) errors.push("⚠️ Vui lòng nhập nghề nghiệp!");
+  
+    // if (!cccdFrontImage) errors.push("⚠️ Vui lòng tải ảnh CCCD mặt trước!");
+    // if (!cccdBackImage) errors.push("⚠️ Vui lòng tải ảnh CCCD mặt sau!");
+  
+    if (errors.length > 0) {
+      errors.forEach((err) => toast.warn(err));
+      return;
+    }
+   // ✅ Validate tuổi phải >= 18
+   const dob = new Date(form.dob);
+   const today = new Date();
+   const age = today.getFullYear() - dob.getFullYear();
+   const hasHadBirthdayThisYear =
+     today.getMonth() > dob.getMonth() || 
+     (today.getMonth() === dob.getMonth() && today.getDate() >= dob.getDate());
+ 
+   const actualAge = hasHadBirthdayThisYear ? age : age - 1;
+ 
+   if (actualAge < 18) {
+     toast.error("❌ Bạn phải đủ 18 tuổi trở lên để cập nhật hồ sơ.");
+     return;
+   }
     const isSensitiveChanged =
       form.identityNumber !== originalData.identityNumber ||
       // form.address !== originalData.address ||
@@ -263,7 +296,7 @@ const handleCccdBackChange = (e) => {
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <label className="form-label">Họ tên</label>
-              <input type="text" name="name" value={form.name} onChange={handleChange} className="form-control" required />
+              <input type="text" name="name" value={form.name} onChange={handleChange} className="form-control" />
             </div>
 
             <div className="mb-3">
@@ -274,7 +307,6 @@ const handleCccdBackChange = (e) => {
   value={form.phone}
   onChange={handleChange}
   className="form-control"
-  required
   maxLength={11} // 👈 Giới hạn ký tự tối đa
   pattern="^0\d{9,10}$"
   title="Số điện thoại phải bắt đầu bằng số 0 và có 10-11 chữ số"
@@ -283,7 +315,7 @@ const handleCccdBackChange = (e) => {
 
             <div className="mb-3">
               <label className="form-label">Giới tính</label>
-              <select name="gender" value={form.gender} onChange={handleChange} className="form-select" required>
+              <select name="gender" value={form.gender} onChange={handleChange} className="form-select" >
                 <option value="">-- Chọn giới tính --</option>
                 <option value="male">Nam</option>
                 <option value="female">Nữ</option>
@@ -293,12 +325,12 @@ const handleCccdBackChange = (e) => {
 
             <div className="mb-3">
               <label className="form-label">Ngày sinh</label>
-              <input type="date" name="dob" value={form.dob} onChange={handleChange} className="form-control" required />
+              <input type="date" name="dob" value={form.dob} onChange={handleChange} className="form-control" />
             </div>
 
             <div className="mb-3">
               <label className="form-label">Địa Chỉ</label>
-              <input type="text" name="address" value={form.address} onChange={handleChange} className="form-control" required />
+              <input type="text" name="address" value={form.address} onChange={handleChange} className="form-control" />
             </div>
 
             <div className="mb-3">
@@ -309,7 +341,6 @@ const handleCccdBackChange = (e) => {
     value={form.identityNumber}
     onChange={handleChange}
     className="form-control"
-    required
     pattern="^\d{9}$|^\d{12}$"
     title="CMND/CCCD phải gồm 12 chữ số"
   />
@@ -342,12 +373,12 @@ const handleCccdBackChange = (e) => {
 
             <div className="mb-3">
               <label className="form-label">Giới thiệu</label>
-              <textarea name="bio" rows="3" value={form.bio} onChange={handleChange} className="form-control" required></textarea>
+              <textarea name="bio" rows="3" value={form.bio} onChange={handleChange} className="form-control" ></textarea>
             </div>
 
             <div className="mb-3">
               <label className="form-label">Nghề nghiệp</label>
-              <input type="text" name="jobTitle" value={form.jobTitle} onChange={handleChange} className="form-control" required />
+              <input type="text" name="jobTitle" value={form.jobTitle} onChange={handleChange} className="form-control"  />
             </div>
 
             <div className="d-flex justify-content-between gap-2 mt-4">
