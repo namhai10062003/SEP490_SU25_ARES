@@ -21,6 +21,8 @@ import {
   countWithdrawRequestsTodayAndYesterday,
   countContactsTodayAndYesterday,
   countReportsTodayAndYesterday,
+  countByDataTypeTodayAndYesterday,
+  countProfiles,
 
   // Lấy toàn bộ
   getAllUsers,
@@ -31,6 +33,7 @@ import {
   getAllWithdrawRequests,
   getAllReports,
   getAllContacts,
+  getAllProfiles,
   getRevenueSummary,
 } from "../controllers/adminDashboardController.js";
 
@@ -45,6 +48,7 @@ router.get("/stats/ResidentVerificationsList", countResidentVerifications);
 router.get("/stats/WithdrawRequestsList", countWithdrawRequests);
 router.get("/stats/ContactsList", countContacts);
 router.get("/stats/ReportsList", countReports);
+router.get("/stats/ProfilesList", countProfiles);
 router.get("/stats/RevenueMonthly", countRevenueMonthly);
 router.get("/stats/Revenue", calculateRevenue);
 
@@ -60,6 +64,7 @@ router.get("/stats/resident-verifications-today-and-yesterday", countResidentVer
 router.get("/stats/withdraw-requests-today-and-yesterday", countWithdrawRequestsTodayAndYesterday);
 router.get("/stats/contacts-today-and-yesterday", countContactsTodayAndYesterday);
 router.get("/stats/reports-today-and-yesterday", countReportsTodayAndYesterday);
+router.get("/stats/:dataType-today-and-yesterday", countByDataTypeTodayAndYesterday);
 
 
 // ----------- 📥 Lấy toàn bộ dữ liệu ----------- //
@@ -71,5 +76,6 @@ router.get("/get-all-resident-verifications", getAllResidentVerifications);
 router.get("/get-all-withdraw-requests", getAllWithdrawRequests);
 router.get("/get-all-reports", getAllReports);
 router.get("/get-all-contacts", getAllContacts);
+router.get("/get-all-profiles", getAllProfiles);
 
 export default router;

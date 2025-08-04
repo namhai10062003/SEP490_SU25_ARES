@@ -8,6 +8,8 @@ import Contact from "../models/Contact.js";
 import PostPackage from "../models/PostPackage.js";
 import Contract from "../models/Contract.js";
 import Fee from "../models/Fee.js";
+import ProfileUpdateRequest from "../models/ProfileUpdateRequest.js";
+
 import {
   countTodayAndYesterday,
   calculatePostRevenue,
@@ -158,6 +160,17 @@ export const countContacts = async (req, res) => {
   }
 };
 
+// Đếm tổng số cập nhật Profile (Profile)
+export const countProfiles = async (req, res) => {
+  try {
+    const total = await ProfileUpdateRequest.countDocuments();
+    res.status(200).json({ total });
+  } catch (err) {
+    console.error("❌ Lỗi đếm profiles:", err);
+    res.status(500).json({ message: "Lỗi server khi đếm profiles" });
+  }
+};
+
 // Tính tổng doanh thu
 export const calculateRevenue = async (req, res) => {
   try {
@@ -273,6 +286,17 @@ export const getAllContacts = async (req, res) => {
     res.status(200).json({ success: true, data: contacts });
   } catch (err) {
     console.error("❌ Lỗi khi lấy all contacts:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+// Lấy tất cả Profiles
+export const getAllProfiles = async (req, res) => {
+  try {
+    const reports = await Report.find();
+    res.status(200).json({ success: true, data: reports });
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy all reports:", err);
     res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };
@@ -404,6 +428,36 @@ export const getRevenueSummary = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
+export const countByDataTypeTodayAndYesterday = async (req, res) => {
+  const { dataType } = req.params;
+
+  const map = {
+    users: { model: User, filter: { role: "customer", $or: [{ deletedAt: null }, { deletedAt: { $exists: false } }] } },
+    staffs: { model: User, filter: { role: "staff" } },
+    apartments: { model: Apartment },
+    posts: { model: Post },
+    residentVerifications: { model: ResidentVerification },
+    withdrawRequests: { model: WithdrawRequest },
+    contacts: { model: Contact },
+    reports: { model: Report },
+  };
+
+  const entry = map[dataType];
+
+  if (!entry) {
+    return res.status(400).json({ error: "Loại dữ liệu không hợp lệ" });
+  }
+
+  try {
+    const counts = await countTodayAndYesterday(entry.model, entry.filter || {});
+    return res.status(200).json(counts);
+  } catch (err) {
+    console.error(`❌ Lỗi thống kê today/yesterday cho ${dataType}:`, err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
 
 
 
