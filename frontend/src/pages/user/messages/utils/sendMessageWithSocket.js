@@ -8,6 +8,7 @@ export const sendMessageWithSocket = async ({
   socket,
   setText,
   postInfo,
+  onSend,
 }) => {
   if (!content.trim() || senderId === receiverId) return;
 
@@ -31,14 +32,11 @@ export const sendMessageWithSocket = async ({
       senderId,
       receiverId,
       timestamp: res.data.data.createdAt,
-      // ✅ Gắn postInfo vào để socket gửi đi
-      postInfo: res.data.data.post || {
-        title: postInfo?.title,
-        thumbnail: postInfo?.image || postInfo?.thumbnail || "",
-      },
+      postInfo: res.data.data.post || postInfo,
     };
 
     socket.emit("sendMessage", msg);
+    onSend?.(msg);     // ✅ gọi callback
     setText("");
   } catch (err) {
     console.error("❌ Gửi tin nhắn thất bại:", err);

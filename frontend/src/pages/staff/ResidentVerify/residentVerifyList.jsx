@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import StaffNavbar from "../../staff/staffNavbar"; // ✅ Thêm dòng này
 
@@ -236,9 +236,9 @@ const ResidentVerifyList = () => {
                   <th>Ngày sinh</th>
                   <th>Quan hệ</th>
                   <th>Quốc tịch</th>
-                  <th>CCCD</th>
+                  <th>CCCD/ Giấy khai sinh</th>
                   <th>Ngày cấp</th>
-                  <th>Ảnh CCCD</th>
+                  <th>Ảnh CCCD/ Giấy khai sinh</th>
                   <th>Thao tác</th>
                 </tr>
               </thead>
