@@ -1,16 +1,27 @@
 // src/components/ProtectedLink.jsx
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/authContext";
 import { toast } from "react-toastify";
+import { useAuth } from "../context/authContext";
 
 const ProtectedLink = ({ to, children, className, allowWithoutProfile = false }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  console.log("🟡 Current user:", user);
 
   const isIncompleteProfile = () => {
-    return !user?.name || !user?.dob || !user?.phone || !user?.address;
+    const requiredFields = ["name", "dob", "phone", "address"];
+    return requiredFields.some(
+      (field) => !user?.[field] || String(user[field]).trim() === ""
+    );
   };
+  console.log("📋 Kiểm tra profile:", {
+    name: user?.name,
+    dob: user?.dob,
+    phone: user?.phone,
+    address: user?.address,
+  });
+  
 
   const handleClick = (e) => {
     if (!allowWithoutProfile && isIncompleteProfile()) {

@@ -194,7 +194,7 @@ const login = async (req, res) => {
     user.isOnline = true;
     await user.save();
     const token = jwt.sign(
-      { _id: user._id, role: user.role, name: user.name, phone: user.phone , address: user.address, identityNumber: user.identityNumber , email: user.email},
+      { _id: user._id, role: user.role, name: user.name, phone: user.phone , address: user.address, identityNumber: user.identityNumber , email: user.email, dob: user.dob},
       process.env.JWT_SECRET,
       { expiresIn: "10d" }
     );
@@ -202,7 +202,7 @@ const login = async (req, res) => {
     return res.status(200).json({
       success: true,
       token,
-      user: { _id: user._id, name: user.name, role: user.role, isOnline: user.isOnline, phone :user.phone ,address: user.address, identityNumber: user.identityNumber, email: user.email},
+      user: { _id: user._id, name: user.name, role: user.role, isOnline: user.isOnline, phone :user.phone ,address: user.address, identityNumber: user.identityNumber, email: user.email, dob: user.dob},
     });
   } catch (error) {
     console.error("❌ Lỗi đăng nhập:", error.message);
@@ -284,7 +284,8 @@ const verifyUser = async (req, res) => {
           email: user.email,
           identityNumber: user.identityNumber,
           address: user.address,
-          phone : user.phone
+          phone : user.phone,
+          dob: user.dob
         },
       });
     }
