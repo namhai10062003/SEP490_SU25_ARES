@@ -2,8 +2,10 @@ import { calcMaintenanceFee } from "../helpers/calculateMaitainceApartmentPrice.
 import Apartment from '../models/Apartment.js';
 import User from '../models/User.js';
 import Notification from '../models/Notification.js';
+import ResidentVerification from "../models/ResidentVerification.js";
 import { emitNotification } from "../helpers/socketHelper.js";
 import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
+import mongoose from "mongoose";
 // Thêm mới căn hộ
 export const createApartment = async (req, res) => {
   try {
@@ -53,10 +55,25 @@ export const getAllApartments = async (req, res) => {
 // Lấy 1 căn hộ theo ID
 export const getApartmentById = async (req, res) => {
   try {
-    const apartment = await Apartment.findById(req.params.id).populate('userId');
-    if (!apartment) return res.status(404).json({ error: 'Not found' });
+    const { id } = req.params;
+
+    // ✅ Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "ID không hợp lệ" });
+    }
+
+    // ✅ populate đúng field có tồn tại trong schema
+    const apartment = await Apartment.findById(id)
+      .populate("isOwner", "name phone email")
+      .populate("isRenter", "name phone email");
+
+    if (!apartment) {
+      return res.status(404).json({ error: "Không tìm thấy căn hộ" });
+    }
+
     res.json(apartment);
   } catch (err) {
+    console.error("🔥 Lỗi khi getApartmentById:", err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -173,3 +190,21 @@ export const getApartmentExpense = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const getApartmentHistory = async (req, res) => {
+  try {
+    const { code } = req.params;
+
+    const history = await ResidentVerification.find({
+      apartmentCode: code,
+      status: "Đã duyệt"
+    })
+      .sort({ contractStart: -1 }) // mới nhất trước
+      .populate("user", "name email phone"); // optional
+
+    res.json(history);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+

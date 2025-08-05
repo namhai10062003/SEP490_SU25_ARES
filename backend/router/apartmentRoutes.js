@@ -8,7 +8,8 @@ import {
   deleteApartment,
   assignUserToApartment,
   getUserApartment,
-  getApartmentExpense
+  getApartmentExpense,
+  getApartmentHistory
 } from "../controllers/apartmentController.js";
 const router = express.Router();
 
@@ -20,5 +21,7 @@ router.delete("/:id", deleteApartment);
 router.post("/:id/assign-user", assignUserToApartment);
 router.get('/my-apartment/:userId', getUserApartment);
 router.get("/expense/:apartmentId", getApartmentExpense);
+router.get("/history/:code", getApartmentHistory);
+
 
 export default router;

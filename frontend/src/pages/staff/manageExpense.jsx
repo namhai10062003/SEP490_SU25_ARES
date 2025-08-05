@@ -25,6 +25,7 @@ const Expenses = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [filterText, setFilterText] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
+    const [priceError, setPriceError] = useState('');
     const rowsPerPage = 10;
 
     const formattedFilterMonth = filterMonth
@@ -34,7 +35,18 @@ const Expenses = () => {
         })()
         : null;
 
-
+        const handlePriceChange = (e) => {
+            const value = e.target.value;
+        
+            // Cho phép xóa ô hoặc nhập hợp lệ (> 0)
+            if (value === '' || (/^[0-9]*$/.test(value) && Number(value) > 0)) {
+                setAddPrice(value);
+                setPriceError('');
+            } else {
+                setAddPrice(value);
+                setPriceError('Giá phải lớn hơn 0');
+            }
+        };
 
 
     // console.log("Filter month:", formattedFilterMonth);
@@ -127,12 +139,20 @@ const Expenses = () => {
       };
 
 
-    const handleAdd = async (e) => {
+      const handleAdd = async (e) => {
         e.preventDefault();
+    
         if (!addType || !addLabel || !addPrice) {
             toast.warn("Vui lòng nhập đầy đủ thông tin!");
             return;
         }
+    
+        if (Number(addPrice) <= 0) {
+            setPriceError("Giá phải lớn hơn 0");
+            toast.warn("Giá phải lớn hơn 0!");
+            return;
+        }
+    
         try {
             await axios.post(`${API_URL}/api/expenses`, {
                 type: Number(addType),
@@ -143,12 +163,14 @@ const Expenses = () => {
             setAddType("");
             setAddLabel("");
             setAddPrice("");
+            setPriceError(""); // Reset lỗi sau khi thành công
             fetchExpenses();
         } catch (err) {
             const msg = err?.response?.data?.error || "Thêm chi phí thất bại!";
             toast.error(msg);
         }
-    };
+    };    
+    
 
     const grouped = expenses.reduce((acc, exp) => {
         if (!acc[exp.label]) acc[exp.label] = [];
@@ -195,16 +217,19 @@ const Expenses = () => {
                         />
                     </div>
                     <div className="col-md-3">
-                        <input
-                            type="number"
-                            className="form-control"
-                            placeholder="Giá (VND/m²)"
-                            value={addPrice}
-                            onChange={(e) => setAddPrice(e.target.value)}
-                            min={0}
-                            required
-                        />
-                    </div>
+  <input
+    type="number"
+    className={`form-control ${priceError ? 'is-invalid' : ''}`}
+    placeholder="Giá (VND/m²)"
+    value={addPrice}
+    onChange={handlePriceChange}
+    min={1}
+    required
+  />
+  {priceError && <div className="invalid-feedback">{priceError}</div>}
+</div>
+
+
                     <div className="col-md-2">
                         <button className="btn btn-success w-100" type="submit">
                             Thêm mới
