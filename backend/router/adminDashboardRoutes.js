@@ -21,6 +21,7 @@ import {
   countWithdrawRequestsTodayAndYesterday,
   countContactsTodayAndYesterday,
   countReportsTodayAndYesterday,
+  countProfilesTodayAndYesterday,
   countByDataTypeTodayAndYesterday,
   countProfiles,
 
@@ -64,6 +65,7 @@ router.get("/stats/resident-verifications-today-and-yesterday", countResidentVer
 router.get("/stats/withdraw-requests-today-and-yesterday", countWithdrawRequestsTodayAndYesterday);
 router.get("/stats/contacts-today-and-yesterday", countContactsTodayAndYesterday);
 router.get("/stats/reports-today-and-yesterday", countReportsTodayAndYesterday);
+router.get("/stats/profiles-today-and-yesterday", countProfilesTodayAndYesterday);
 router.get("/stats/:dataType-today-and-yesterday", countByDataTypeTodayAndYesterday);
 
 

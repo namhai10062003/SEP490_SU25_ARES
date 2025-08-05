@@ -55,20 +55,20 @@ export default function DashboardHome() {
   const [withdrawRequestChartData, setWithdrawRequestChartData] = useState(null);
   const [reportChartData, setReportChartData] = useState(null);
   const [contactChartData, setContactChartData] = useState(null);
-  const [profileChartData, setProfileChartData] = useState(null);
+  // const [profileChartData, setProfileChartData] = useState(null);
 
   const renderChange = (today, yesterday) => {
-    const diff = today - yesterday;
-    const percent = yesterday === 0 ? 100 : Math.round((diff / yesterday) * 100);
-    if (diff > 0) {
-      return <span className="text-success ms-2">▲ {percent}%</span>;
-    } else if (diff < 0) {
-      return <span className="text-danger ms-2">▼ {Math.abs(percent)}%</span>;
+    const change = today - yesterday;
+    console.log(today, yesterday);
+    if (change > 0) {
+      return <span className="text-success ms-2">+{change}</span>;
+    } else if (change < 0) {
+      return <span className="text-danger ms-2">-{change}</span>; // vì change đã là số âm
     } else {
-      return <span className="text-muted ms-2">— 0%</span>;
+      return <span className="text-muted ms-2">±0</span>;
     }
   };
-
+  
   const [statsYesterday, setStatsYesterday] = useState({
     customers: 0,
     staffs: 0,
@@ -78,7 +78,7 @@ export default function DashboardHome() {
     withdrawRequests: 0,
     reports: 0,
     contacts: 0,
-    profile: 0,
+    profiles: 0,
   });
 
   useEffect(() => {
@@ -110,135 +110,180 @@ export default function DashboardHome() {
       };
     };
 
-    const fetchAllData = async () => {
-      try {
-        const urls = [
-          "UsersList",
-          "StaffsList",
-          "ApartmentsList",
-          "PostsList",
-          "ResidentVerificationsList",
-          "WithdrawRequestsList",
-          "ReportsList",
-          "ContactsList",
-          "ProfilesList",
-        ];
+const fetchAllData = async () => {
+  try {
+    const urls = [
+      "UsersList",
+      "StaffsList",
+      "ApartmentsList",
+      "PostsList",
+      "ResidentVerificationsList",
+      "WithdrawRequestsList",
+      "ReportsList",
+      "ContactsList",
+      "ProfilesList",
+    ];
 
-        const fetchCommonStats = await Promise.all(
-          urls.map((url) => fetch(`${API_URL}/api/admin-dashboard/stats/${url}`).then((res) => res.json()))
-        );
+    const typeKeys = [
+      "customers",
+      "staffs",
+      "apartments",
+      "posts",
+      "residentVerifications",
+      "withdrawRequests",
+      "reports",
+      "contacts",
+      "profiles",
+    ];
 
-        setStats({
-          customers: fetchCommonStats[0].total || 0,
-          staffs: fetchCommonStats[1].total || 0,
-          apartments: fetchCommonStats[2].total || 0,
-          posts: fetchCommonStats[3].total || 0,
-          residentVerifications: fetchCommonStats[4].total || 0,
-          withdrawRequests: fetchCommonStats[5].total || 0,
-          reports: fetchCommonStats[6].total || 0,
-          contacts: fetchCommonStats[7].total || 0,
-          profiles: fetchCommonStats[8].total || 0,
-        });
+    const statsResponses = await Promise.all(
+      urls.map((url) =>
+        fetch(`${API_URL}/api/admin-dashboard/stats/${url}`).then((res) =>
+          res.json()
+        )
+      )
+    );
 
-        // const revenueSummaryRes = await fetch(`${API_URL}/api/admin-dashboard/stats/revenue-summary`);
-        // const revenueSummaryData = await revenueSummaryRes.json();
+    const totals = {};
+    typeKeys.forEach((key, index) => {
+      totals[key] = statsResponses[index].total || 0;
+    });
 
-        // setRevenueStats({
-        //   postRevenue: revenueSummaryData.postRevenue || 0,
-        //   apartmentRevenue: revenueSummaryData.apartmentRevenue || 0,
-        //   contractRevenue: revenueSummaryData.contractRevenue || 0,
-        //   totalRevenue: revenueSummaryData.totalRevenue || 0,
-        //   postRevenueYesterday: revenueSummaryData.postRevenueYesterday || 0,
-        //   totalRevenueYesterday: revenueSummaryData.totalRevenueYesterday || 0,
-        // });
-
-        // const revenueRes = await fetch(`${API_URL}/api/admin-dashboard/stats/RevenueMonthly?year=${selectedYear}`);
-        // const revenueData = await revenueRes.json();
-        // setMonthlyRevenue(revenueData.monthlyData || []);
-
-        const postRes = await getAllPosts();
-        const allPosts = postRes.data.data || [];
-        // const paidPosts = allPosts.filter((p) => p.paymentStatus === "paid" && p.paymentDate);
-
-        // const totalPostRevenue = paidPosts.reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
-
-        const today = new Date();
-        const yesterday = new Date();
-        yesterday.setDate(today.getDate() - 1);
-
-        const isSameDay = (d1, d2) => d1.toDateString() === d2.toDateString();
-
-        // const calcRevenue = (filterFn) =>
-        //   paidPosts
-        //     .filter((p) => filterFn(new Date(p.paymentDate)))
-        //     .reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
-
-        // const apartmentRevenueToday = calcRevenue(
-        //   (d) => isSameDay(d, today) && p.postPackage?.type === "VIP2"
-        // );
-        // const apartmentRevenueYesterday = calcRevenue(
-        //   (d) => isSameDay(d, yesterday) && p.postPackage?.type === "VIP2"
-        // );
-
-        // const contractRevenueToday = calcRevenue(
-        //   (d) => isSameDay(d, today) && p.postPackage?.type === "VIP3"
-        // );
-        // const contractRevenueYesterday = calcRevenue(
-        //   (d) => isSameDay(d, yesterday) && p.postPackage?.type === "VIP3"
-        // );
-
-
-        // const todayRevenue = calcRevenue((d) => isSameDay(d, today));
-        // const yesterdayRevenue = calcRevenue((d) => isSameDay(d, yesterday));
-
-        // const apartmentRevenue = paidPosts
-        //   .filter((p) => p.postPackage?.type === "VIP2")
-        //   .reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
-
-        // const contractRevenue = paidPosts
-        //   .filter((p) => p.postPackage?.type === "VIP3")
-        //   .reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
-
-        // setRevenueStats((prev) => ({
-        //   ...prev,
-        //   postRevenue: totalPostRevenue,
-        //   apartmentRevenue,
-        //   contractRevenue,
-        //   postRevenueYesterday: yesterdayRevenue,
-        //   apartmentRevenueYesterday,
-        //   contractRevenueYesterday,
-        //   todayRevenue,
-        //   yesterdayRevenue,
-        //   totalRevenue: totalPostRevenue,
-        //   totalRevenueYesterday: yesterdayRevenue,
-        // }));
-
-
-        const [staffsRes, apartmentsRes, residentRes, withdrawRes, reportsRes, contactsRes, profilesRes] = await Promise.all([
-          fetch(`${API_URL}/api/admin-dashboard/get-all-staffs`).then((res) => res.json()),
-          fetch(`${API_URL}/api/admin-dashboard/get-all-apartments`).then((res) => res.json()),
-          fetch(`${API_URL}/api/admin-dashboard/get-all-resident-verifications`).then((res) => res.json()),
-          fetch(`${API_URL}/api/admin-dashboard/get-all-withdraw-requests`).then((res) => res.json()),
-          fetch(`${API_URL}/api/admin-dashboard/get-all-reports`).then((res) => res.json()),
-          fetch(`${API_URL}/api/admin-dashboard/get-all-contacts`).then((res) => res.json()),
-          fetch(`${API_URL}/api/admin-dashboard/get-all-profiles`).then((res) => res.json()),
-        ]);
-
-        setUserChartData(createMonthlyChartData(getMonthlyCountStats(allPosts, (u) => u.createdAt), "User mới"));
-        setStaffChartData(createMonthlyChartData(getMonthlyCountStats(staffsRes.data || [], (s) => s.createdAt), "Staff mới"));
-        setApartmentChartData(createMonthlyChartData(getMonthlyCountStats(apartmentsRes.data || [], (a) => a.createdAt), "Căn hộ mới"));
-        setPostChartData(createMonthlyChartData(getMonthlyCountStats(allPosts, (p) => p.createdAt), "Bài đăng mới"));
-        setResidentVerificationChartData(createMonthlyChartData(getMonthlyCountStats(residentRes.data || [], (r) => r.createdAt), "Xác nhận cư dân mới"));
-        setWithdrawRequestChartData(createMonthlyChartData(getMonthlyCountStats(withdrawRes.data || [], (w) => w.createdAt), "Đơn rút tiền mới"));
-        setReportChartData(createMonthlyChartData(getMonthlyCountStats(reportsRes.data || [], (r) => r.createdAt), "Báo cáo mới"));
-        setContactChartData(createMonthlyChartData(getMonthlyCountStats(contactsRes.data || [], (c) => c.createdAt), "Liên hệ mới"));
-        setProfileChartData(createMonthlyChartData(getMonthlyCountStats(profilesRes.data || [], (c) => c.createdAt), "Profile mới"));
-
-        setLoading(false);
-      } catch (err) {
-        console.error("Lỗi khi fetch dữ liệu:", err);
-      }
+    const fetchTodayAndYesterday = async (dataType) => {
+      const res = await fetch(
+        `${API_URL}/api/admin-dashboard/stats/${dataType}-today-and-yesterday`
+      );
+      return res.json();
     };
+
+    const todayYesterdayStats = await Promise.all(
+      typeKeys.map((key) =>
+        fetchTodayAndYesterday(
+          key === "customers" ? "users" : key // customers -> users
+        ).then((data) => ({ key, data }))
+      )
+    );
+
+    const fullStats = {};
+    todayYesterdayStats.forEach(({ key, data }) => {
+      const today = data.today || 0;
+      const yesterday = data.yesterday || 0;
+      let percentChange = 0;
+
+      if (yesterday === 0 && today > 0) {
+        percentChange = 100;
+      } else if (yesterday > 0) {
+        percentChange = ((today - yesterday) / yesterday) * 100;
+      }
+
+      fullStats[key] = {
+        total: totals[key],
+        today,
+        yesterday,
+        percentChange: Math.round(percentChange),
+      };
+    });
+
+    setStats(fullStats);
+
+    // Chart data
+    const postRes = await getAllPosts();
+    const allPosts = postRes.data.data || [];
+
+    const [
+      staffsRes,
+      apartmentsRes,
+      residentRes,
+      withdrawRes,
+      reportsRes,
+      contactsRes,
+      profilesRes,
+    ] = await Promise.all([
+      fetch(`${API_URL}/api/admin-dashboard/get-all-staffs`).then((res) =>
+        res.json()
+      ),
+      fetch(`${API_URL}/api/admin-dashboard/get-all-apartments`).then((res) =>
+        res.json()
+      ),
+      fetch(
+        `${API_URL}/api/admin-dashboard/get-all-resident-verifications`
+      ).then((res) => res.json()),
+      fetch(`${API_URL}/api/admin-dashboard/get-all-withdraw-requests`).then(
+        (res) => res.json()
+      ),
+      fetch(`${API_URL}/api/admin-dashboard/get-all-reports`).then((res) =>
+        res.json()
+      ),
+      fetch(`${API_URL}/api/admin-dashboard/get-all-contacts`).then((res) =>
+        res.json()
+      ),
+      fetch(`${API_URL}/api/admin-dashboard/get-all-profiles`).then((res) =>
+        res.json()
+      ),
+    ]);
+
+    setUserChartData(
+      createMonthlyChartData(
+        getMonthlyCountStats(allPosts, (u) => u.createdAt),
+        "User mới"
+      )
+    );
+    setStaffChartData(
+      createMonthlyChartData(
+        getMonthlyCountStats(staffsRes.data || [], (s) => s.createdAt),
+        "Staff mới"
+      )
+    );
+    setApartmentChartData(
+      createMonthlyChartData(
+        getMonthlyCountStats(apartmentsRes.data || [], (a) => a.createdAt),
+        "Căn hộ mới"
+      )
+    );
+    setPostChartData(
+      createMonthlyChartData(
+        getMonthlyCountStats(allPosts, (p) => p.createdAt),
+        "Bài đăng mới"
+      )
+    );
+    setResidentVerificationChartData(
+      createMonthlyChartData(
+        getMonthlyCountStats(residentRes.data || [], (r) => r.createdAt),
+        "Xác nhận cư dân mới"
+      )
+    );
+    setWithdrawRequestChartData(
+      createMonthlyChartData(
+        getMonthlyCountStats(withdrawRes.data || [], (w) => w.createdAt),
+        "Đơn rút tiền mới"
+      )
+    );
+    setReportChartData(
+      createMonthlyChartData(
+        getMonthlyCountStats(reportsRes.data || [], (r) => r.createdAt),
+        "Báo cáo mới"
+      )
+    );
+    setContactChartData(
+      createMonthlyChartData(
+        getMonthlyCountStats(contactsRes.data || [], (c) => c.createdAt),
+        "Liên hệ mới"
+      )
+    );
+    // Bỏ comment nếu cần:
+    // setProfileChartData(
+    //   createMonthlyChartData(
+    //     getMonthlyCountStats(profilesRes.data || [], (p) => p.createdAt),
+    //     "Profile mới"
+    //   )
+    // );
+
+    setLoading(false);
+  } catch (err) {
+    console.error("Lỗi khi fetch dữ liệu:", err);
+  }
+};
+
 
     fetchAllData();
   }, [selectedYear]);
@@ -256,8 +301,8 @@ export default function DashboardHome() {
               <div className="card-body">
                 <h6 className="mb-2">🏢 Tổng Apartment</h6>
                 <div className="fs-2 fw-bold text-primary">
-                  {stats.apartments}
-                  {renderChange(stats.apartments, statsYesterday.apartments)}
+                  {stats.apartments.total}
+                  {renderChange(stats.apartments.today, statsYesterday.apartments.yesterday)}
                 </div>
               </div>
             </div>
@@ -269,8 +314,8 @@ export default function DashboardHome() {
               <div className="card-body">
                 <h6 className="mb-2">👥 Tổng User</h6>
                 <div className="fs-2 fw-bold text-primary">
-                  {stats.customers}
-                  {renderChange(stats.customers, statsYesterday.customers)}
+                  {stats.customers.total}
+                  {renderChange(stats.customers.today, statsYesterday.customers.yesterday)}
                 </div>
               </div>
             </div>
@@ -282,8 +327,8 @@ export default function DashboardHome() {
               <div className="card-body">
                 <h6 className="mb-2">🧑‍💼 Tổng Staff</h6>
                 <div className="fs-2 fw-bold text-primary">
-                  {stats.staffs}
-                  {renderChange(stats.staffs, statsYesterday.staffs)}
+                  {stats.staffs.total}
+                  {renderChange(stats.staffs.today, statsYesterday.staffs.yesterday)}
                 </div>
               </div>
             </div>
@@ -295,8 +340,8 @@ export default function DashboardHome() {
               <div className="card-body">
                 <h6 className="mb-2">📝 Tổng Bài Post</h6>
                 <div className="fs-2 fw-bold text-primary">
-                  {stats.posts}
-                  {renderChange(stats.posts, statsYesterday.posts)}
+                  {stats.posts.total}
+                  {renderChange(stats.posts.today, statsYesterday.posts.yesterday)}
                 </div>
               </div>
             </div>
@@ -308,8 +353,8 @@ export default function DashboardHome() {
               <div className="card-body">
                 <h6 className="mb-2">✅ Đơn Xác Nhận Cư Dân</h6>
                 <div className="fs-2 fw-bold text-primary">
-                  {stats.residentVerifications}
-                  {renderChange(stats.residentVerifications, statsYesterday.residentVerifications)}
+                  {stats.residentVerifications.total}
+                  {renderChange(stats.residentVerifications.today, statsYesterday.residentVerifications.yesterday)}
                 </div>
               </div>
             </div>
@@ -321,8 +366,8 @@ export default function DashboardHome() {
               <div className="card-body">
                 <h6 className="mb-2">💸 Đơn Rút Tiền</h6>
                 <div className="fs-2 fw-bold text-primary">
-                  {stats.withdrawRequests}
-                  {renderChange(stats.withdrawRequests, statsYesterday.withdrawRequests)}
+                  {stats.withdrawRequests.total}
+                  {renderChange(stats.withdrawRequests.today, statsYesterday.withdrawRequests.yesterday)}
                 </div>
               </div>
             </div>
@@ -334,50 +379,21 @@ export default function DashboardHome() {
               <div className="card-body">
                 <h6 className="mb-2">📣 Tổng Phản Hồi</h6>
                 <div>
-                  📝 Báo cáo: <span className="fw-bold text-primary">{stats.reports}</span>
-                  {renderChange(stats.reports, statsYesterday.reports)}
+                  📝 Báo cáo: <span className="fw-bold text-primary">{stats.reports.total}</span>
+                  {renderChange(stats.reports.today, statsYesterday.reports.yesterday)}
                 </div>
                 <div>
-                  📩 Liên hệ: <span className="fw-bold text-primary">{stats.contacts}</span>
-                  {renderChange(stats.contacts, statsYesterday.contacts)}
+                  📩 Liên hệ: <span className="fw-bold text-primary">{stats.contacts.total}</span>
+                  {renderChange(stats.contacts.today, statsYesterday.contacts.yesterday)}
                 </div>
                 <div>
-                👥 Update Profile: <span className="fw-bold text-primary">{stats.profiles}</span>
-                  {renderChange(stats.profiles, statsYesterday.profiles)}
+                  👥 Update Profile: <span className="fw-bold text-primary">{stats.profiles.total}</span>
+                  {renderChange(stats.profiles.today, statsYesterday.profiles.yesterday)}
                 </div>
               </div>
             </div>
           </div>
 
-
-
-          {/* <div className="col-12">
-            <div className="card shadow-sm border-0 text-center h-100">
-              <div className="card-body">
-                <h6 className="mb-2">💰 Doanh Thu Hiện Tại ($)</h6>
-                <div className="row">
-                  <div className="col-md-4">
-                    Bài Post: <span className="fw-bold text-primary">{(revenueStats.postRevenue ?? 0).toLocaleString()}</span>
-                    {renderChange(revenueStats.postRevenue ?? 0, revenueStats.postRevenueYesterday ?? 0)}
-                  </div>
-                  <div className="col-md-4">
-                    Quản lý Căn hộ: <span className="fw-bold text-primary">{(revenueStats.apartmentRevenue ?? 0).toLocaleString()}</span>
-                    {renderChange(revenueStats.apartmentRevenue ?? 0, revenueStats.apartmentRevenueYesterday ?? 0)}
-                  </div>
-                  <div className="col-md-4">
-                    Hợp đồng: <span className="fw-bold text-primary">{(revenueStats.contractRevenue ?? 0).toLocaleString()}</span>
-                    {renderChange(revenueStats.contractRevenue ?? 0, revenueStats.contractRevenueYesterday ?? 0)}
-                  </div>
-                </div>
-                <hr />
-                <div className="fs-5">
-                  Tổng doanh thu: <span className="fw-bold text-success">{(revenueStats.totalRevenue ?? 0).toLocaleString()}</span>
-                  {renderChange(revenueStats.totalRevenue ?? 0, revenueStats.totalRevenueYesterday ?? 0)}
-
-                </div>
-              </div>
-            </div>
-          </div> */}
         </div>
 
         <div className="row g-4 mt-4">
@@ -457,16 +473,6 @@ export default function DashboardHome() {
               <div className="card-body">
                 <h6 className="mb-3 text-center">📩 Liên hệ theo tháng</h6>
                 {contactChartData ? <Bar data={contactChartData} /> : <div className="text-muted text-center">Đang tải...</div>}
-              </div>
-            </div>
-          </div>
-
-        {/* Update Profile theo tháng */}
-        <div className="col-12 col-md-6">
-            <div className="card shadow-sm border-0 h-100">
-              <div className="card-body">
-                <h6 className="mb-3 text-center">👥 Update Profile theo tháng</h6>
-                {profileChartData ? <Bar data={profileChartData} /> : <div className="text-muted text-center">Đang tải...</div>}
               </div>
             </div>
           </div>
