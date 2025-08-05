@@ -8,7 +8,11 @@ import { useSearchParams } from "react-router-dom";
 import ReusableModal from "../../../components/ReusableModal.jsx";
 import LoadingModal from "../../../components/loadingModal.jsx";
 import UniversalFilter from "../../../components/filter.jsx";
+import { Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+
 const ManageNotifications = () => {
+    const location = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
     const initialPage = Number(searchParams.get("page")) || 1;
     const initialPageSize = Number(searchParams.get("pageSize")) || 10;
@@ -103,8 +107,22 @@ const ManageNotifications = () => {
     };
 
     useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const email = params.get("email") || "";
+        const from = params.get("from") || "";
+        const to = params.get("to") || "";
+
+        // Nếu không có filter nào nhưng vẫn còn state filter → reset
+        if (!email && !from && !to && (filters.email || filters.from || filters.to)) {
+            setFilters({ email: "", from: "", to: "" });
+            setPage(1);
+            setPageSize(10);
+            updateQuery({ page: 1, pageSize: 10 });
+            return;
+        }
+
         fetchNotifications();
-    }, [page, pageSize, searchParams]);
+    }, [location.key, page, pageSize]);
 
     return (
 
@@ -159,7 +177,15 @@ const ManageNotifications = () => {
                         ) : (
                             notifications.map((n) => (
                                 <tr key={n._id}>
-                                    <td>{n.userId?._id || "Tất cả"}</td>
+                                    <td>
+                                        {n.userId?._id ? (
+                                            <Link to={`/admin-dashboard/manage-user/${n.userId._id}`}>
+                                                {n.userId.name}
+                                            </Link>
+                                        ) : (
+                                            "Tất cả"
+                                        )}
+                                    </td>
                                     <td>{n.userId?.email || "—"}</td>
                                     <td>{n.userId?.phone ? formatPhoneNumber(n.userId.phone) : "—"}</td>
                                     <td style={{ whiteSpace: "normal", maxWidth: 250 }}>{n.message}</td>

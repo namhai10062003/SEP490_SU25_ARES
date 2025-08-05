@@ -7,18 +7,22 @@ const SocketListener = () => {
     const { socket } = useSocket();
     const { user, logout } = useAuth();
 
+    // ❌ Khi bị block khỏi hệ thống (status 2), sẽ logout sau 3s
     useEffect(() => {
         if (!socket) return;
 
-        const handler = (data) => {
-            toast.error(data.message || "Tài khoản của bạn đã bị khóa!");
+        const handleBlockedAccount = (data) => {
+            toast.error(data.message || "Tài khoản của bạn đã bị khóa vĩnh viễn. Đăng xuất sau 3 giây...");
+            setTimeout(() => {
+                logout();
+            }, 3000);
         };
 
-        socket.on("blocked_posting", handler);
-
-        return () => socket.off("blocked_posting", handler);
+        socket.on("blocked_account", handleBlockedAccount);
+        return () => socket.off("blocked_account", handleBlockedAccount);
     }, [socket, logout]);
 
+    // 🔔 Notification realtime 
     useEffect(() => {
         if (!socket || !user?._id) return;
 

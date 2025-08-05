@@ -55,6 +55,10 @@ export const getStatusLabel = (status) => {
         active: { label: "🟢 Đang hoạt động", color: "success" },
         inactive: { label: "⚪ Ngưng hoạt động", color: "secondary" },
         blocked: { label: "🚫 Đã chặn", color: "danger" },
+        // user status
+        1: { label: "🟢 Đang hoạt động", color: "success" },
+        0: { label: "🔒 Chặn đăng bài", color: "warning" },
+        2: { label: "🚫 Khoá hoàn toàn", color: "danger" },
     };
     return map[status] || { label: status, color: "secondary" };
 };

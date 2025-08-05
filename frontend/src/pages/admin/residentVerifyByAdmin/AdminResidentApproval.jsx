@@ -43,7 +43,7 @@ const AdminResidentApproval = () => {
                   Authorization: `Bearer ${token}`,
                 },
               });
-  
+
               const result = await res.json();
               if (res.ok) {
                 toast.success(result.message);
@@ -79,7 +79,7 @@ const AdminResidentApproval = () => {
           <li><Link to="/admin-dashboard/create-account" className="nav-link text-white">• Tạo tài khoản</Link></li>
           <li><Link to="/admin-dashboard/posts" className="nav-link text-white">• Quản lí bài Post</Link></li>
           <li><Link to="/admin-dashboard/revenue" className="nav-link text-white">• Phân tích doanh thu</Link></li>
-          <li><Link to="/admin-dashboard/notifications" className="nav-link text-white">• Gửi thông báo</Link></li>
+          <li><Link to="/admin-dashboard/notifications" className="nav-link text-white">• Quản lý thông báo</Link></li>
           <li><Link to="/admin-dashboard/manage-user" className="nav-link text-white">• Quản lí User</Link></li>
           <li><Link to="/admin-dashboard/manage-staff" className="nav-link text-white">• Quản lí Staff</Link></li>
           <li><Link to="/admin-dashboard/manage-apartment" className="nav-link text-white">• Quản lí Căn hộ</Link></li>

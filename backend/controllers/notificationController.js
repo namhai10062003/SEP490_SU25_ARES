@@ -113,7 +113,7 @@ const getAllNotifications = async (req, res) => {
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
-                .populate("userId", "email phone fullName")
+                .populate("userId", "email phone name")
         ]);
 
         res.json({ total, notifications });
