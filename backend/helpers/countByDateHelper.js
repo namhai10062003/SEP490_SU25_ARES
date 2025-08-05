@@ -24,17 +24,21 @@ export const countTodayAndYesterday = async (Model, filter = {}) => {
 
 export const calculatePostRevenue = async () => {
     const posts = await Post.find({ paymentStatus: "paid" }).populate('postPackage');
-  
+
     let total = 0;
     posts.forEach(post => {
-      total += post.postPackage?.price || 0;
-      console.log(`✅ Post: ${post._id} | Gói: ${post.postPackage?.type}`);
-      console.log(`🔹 Đã lọc được ${posts.length} bài post paid`);
+        total += post.postPackage?.price || 0;
+        console.log(`✅ Post: ${post._id} | Gói: ${post.postPackage?.type}`);
+        console.log(`🔹 Đã lọc được ${posts.length} bài post paid`);
     });
-  
+
     return total;
+};
+
+const fetchPosts = async () => {
+    const posts = await Post.find({ paymentStatus: "paid" }).populate('postPackage').lean();
+    console.log(posts.length);
   };
-  
 
 export const calculateApartmentRevenue = async () => {
     const fees = await Fee.find({ paymentStatus: "paid" });

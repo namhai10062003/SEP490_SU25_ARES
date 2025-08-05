@@ -14,12 +14,12 @@ import {
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend);
 
-const PACKAGE_PRICES = {
-  VIP1: 10000,
-  VIP2: 20000,
-  VIP3: 30000,
-  normal: 0,
-};
+// const PACKAGE_PRICES = {
+//   VIP1: 10000,
+//   VIP2: 20000,
+//   VIP3: 30000,
+//   normal: 0,
+// };
 
 export default function DashboardHome() {
   const [selectedYear, setSelectedYear] = useState("2025");
@@ -32,18 +32,19 @@ export default function DashboardHome() {
     withdrawRequests: 0,
     reports: 0,
     contacts: 0,
+    profiles: 0,
   });
 
-  const [revenueStats, setRevenueStats] = useState({
-    postRevenue: 0,
-    postRevenueYesterday: 0,
-    apartmentRevenue: 0,
-    contractRevenue: 0,
-    totalRevenue: 0,
-    totalRevenueYesterday: 0,
-  });
+  // const [revenueStats, setRevenueStats] = useState({
+  //   postRevenue: 0,
+  //   postRevenueYesterday: 0,
+  //   apartmentRevenue: 0,
+  //   contractRevenue: 0,
+  //   totalRevenue: 0,
+  //   totalRevenueYesterday: 0,
+  // });
 
-  const [monthlyRevenue, setMonthlyRevenue] = useState([]);
+  // const [monthlyRevenue, setMonthlyRevenue] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [userChartData, setUserChartData] = useState(null);
@@ -54,6 +55,7 @@ export default function DashboardHome() {
   const [withdrawRequestChartData, setWithdrawRequestChartData] = useState(null);
   const [reportChartData, setReportChartData] = useState(null);
   const [contactChartData, setContactChartData] = useState(null);
+  const [profileChartData, setProfileChartData] = useState(null);
 
   const renderChange = (today, yesterday) => {
     const diff = today - yesterday;
@@ -76,6 +78,7 @@ export default function DashboardHome() {
     withdrawRequests: 0,
     reports: 0,
     contacts: 0,
+    profile: 0,
   });
 
   useEffect(() => {
@@ -118,6 +121,7 @@ export default function DashboardHome() {
           "WithdrawRequestsList",
           "ReportsList",
           "ContactsList",
+          "ProfilesList",
         ];
 
         const fetchCommonStats = await Promise.all(
@@ -133,29 +137,30 @@ export default function DashboardHome() {
           withdrawRequests: fetchCommonStats[5].total || 0,
           reports: fetchCommonStats[6].total || 0,
           contacts: fetchCommonStats[7].total || 0,
+          profiles: fetchCommonStats[8].total || 0,
         });
 
-        const revenueSummaryRes = await fetch(`${API_URL}/api/admin-dashboard/stats/revenue-summary`);
-        const revenueSummaryData = await revenueSummaryRes.json();
+        // const revenueSummaryRes = await fetch(`${API_URL}/api/admin-dashboard/stats/revenue-summary`);
+        // const revenueSummaryData = await revenueSummaryRes.json();
 
-        setRevenueStats({
-          postRevenue: revenueSummaryData.postRevenue || 0,
-          apartmentRevenue: revenueSummaryData.apartmentRevenue || 0,
-          contractRevenue: revenueSummaryData.contractRevenue || 0,
-          totalRevenue: revenueSummaryData.totalRevenue || 0,
-          postRevenueYesterday: revenueSummaryData.postRevenueYesterday || 0,
-          totalRevenueYesterday: revenueSummaryData.totalRevenueYesterday || 0,
-        });
+        // setRevenueStats({
+        //   postRevenue: revenueSummaryData.postRevenue || 0,
+        //   apartmentRevenue: revenueSummaryData.apartmentRevenue || 0,
+        //   contractRevenue: revenueSummaryData.contractRevenue || 0,
+        //   totalRevenue: revenueSummaryData.totalRevenue || 0,
+        //   postRevenueYesterday: revenueSummaryData.postRevenueYesterday || 0,
+        //   totalRevenueYesterday: revenueSummaryData.totalRevenueYesterday || 0,
+        // });
 
-        const revenueRes = await fetch(`${API_URL}/api/admin-dashboard/stats/RevenueMonthly?year=${selectedYear}`);
-        const revenueData = await revenueRes.json();
-        setMonthlyRevenue(revenueData.monthlyData || []);
+        // const revenueRes = await fetch(`${API_URL}/api/admin-dashboard/stats/RevenueMonthly?year=${selectedYear}`);
+        // const revenueData = await revenueRes.json();
+        // setMonthlyRevenue(revenueData.monthlyData || []);
 
         const postRes = await getAllPosts();
         const allPosts = postRes.data.data || [];
-        const paidPosts = allPosts.filter((p) => p.paymentStatus === "paid" && p.paymentDate);
+        // const paidPosts = allPosts.filter((p) => p.paymentStatus === "paid" && p.paymentDate);
 
-        const totalPostRevenue = paidPosts.reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
+        // const totalPostRevenue = paidPosts.reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
 
         const today = new Date();
         const yesterday = new Date();
@@ -163,59 +168,60 @@ export default function DashboardHome() {
 
         const isSameDay = (d1, d2) => d1.toDateString() === d2.toDateString();
 
-        const calcRevenue = (filterFn) =>
-          paidPosts
-            .filter((p) => filterFn(new Date(p.paymentDate)))
-            .reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
+        // const calcRevenue = (filterFn) =>
+        //   paidPosts
+        //     .filter((p) => filterFn(new Date(p.paymentDate)))
+        //     .reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
 
-        const apartmentRevenueToday = calcRevenue(
-          (d) => isSameDay(d, today) && p.postPackage?.type === "VIP2"
-        );
-        const apartmentRevenueYesterday = calcRevenue(
-          (d) => isSameDay(d, yesterday) && p.postPackage?.type === "VIP2"
-        );
+        // const apartmentRevenueToday = calcRevenue(
+        //   (d) => isSameDay(d, today) && p.postPackage?.type === "VIP2"
+        // );
+        // const apartmentRevenueYesterday = calcRevenue(
+        //   (d) => isSameDay(d, yesterday) && p.postPackage?.type === "VIP2"
+        // );
 
-        const contractRevenueToday = calcRevenue(
-          (d) => isSameDay(d, today) && p.postPackage?.type === "VIP3"
-        );
-        const contractRevenueYesterday = calcRevenue(
-          (d) => isSameDay(d, yesterday) && p.postPackage?.type === "VIP3"
-        );
-
-
-        const todayRevenue = calcRevenue((d) => isSameDay(d, today));
-        const yesterdayRevenue = calcRevenue((d) => isSameDay(d, yesterday));
-
-        const apartmentRevenue = paidPosts
-          .filter((p) => p.postPackage?.type === "VIP2")
-          .reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
-
-        const contractRevenue = paidPosts
-          .filter((p) => p.postPackage?.type === "VIP3")
-          .reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
-
-        setRevenueStats((prev) => ({
-          ...prev,
-          postRevenue: totalPostRevenue,
-          apartmentRevenue,
-          contractRevenue,
-          postRevenueYesterday: yesterdayRevenue,
-          apartmentRevenueYesterday,
-          contractRevenueYesterday,
-          todayRevenue,
-          yesterdayRevenue,
-          totalRevenue: totalPostRevenue,
-          totalRevenueYesterday: yesterdayRevenue,
-        }));
+        // const contractRevenueToday = calcRevenue(
+        //   (d) => isSameDay(d, today) && p.postPackage?.type === "VIP3"
+        // );
+        // const contractRevenueYesterday = calcRevenue(
+        //   (d) => isSameDay(d, yesterday) && p.postPackage?.type === "VIP3"
+        // );
 
 
-        const [staffsRes, apartmentsRes, residentRes, withdrawRes, reportsRes, contactsRes] = await Promise.all([
+        // const todayRevenue = calcRevenue((d) => isSameDay(d, today));
+        // const yesterdayRevenue = calcRevenue((d) => isSameDay(d, yesterday));
+
+        // const apartmentRevenue = paidPosts
+        //   .filter((p) => p.postPackage?.type === "VIP2")
+        //   .reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
+
+        // const contractRevenue = paidPosts
+        //   .filter((p) => p.postPackage?.type === "VIP3")
+        //   .reduce((sum, p) => sum + (PACKAGE_PRICES[p.postPackage?.type] || 0), 0);
+
+        // setRevenueStats((prev) => ({
+        //   ...prev,
+        //   postRevenue: totalPostRevenue,
+        //   apartmentRevenue,
+        //   contractRevenue,
+        //   postRevenueYesterday: yesterdayRevenue,
+        //   apartmentRevenueYesterday,
+        //   contractRevenueYesterday,
+        //   todayRevenue,
+        //   yesterdayRevenue,
+        //   totalRevenue: totalPostRevenue,
+        //   totalRevenueYesterday: yesterdayRevenue,
+        // }));
+
+
+        const [staffsRes, apartmentsRes, residentRes, withdrawRes, reportsRes, contactsRes, profilesRes] = await Promise.all([
           fetch(`${API_URL}/api/admin-dashboard/get-all-staffs`).then((res) => res.json()),
           fetch(`${API_URL}/api/admin-dashboard/get-all-apartments`).then((res) => res.json()),
           fetch(`${API_URL}/api/admin-dashboard/get-all-resident-verifications`).then((res) => res.json()),
           fetch(`${API_URL}/api/admin-dashboard/get-all-withdraw-requests`).then((res) => res.json()),
           fetch(`${API_URL}/api/admin-dashboard/get-all-reports`).then((res) => res.json()),
           fetch(`${API_URL}/api/admin-dashboard/get-all-contacts`).then((res) => res.json()),
+          fetch(`${API_URL}/api/admin-dashboard/get-all-profiles`).then((res) => res.json()),
         ]);
 
         setUserChartData(createMonthlyChartData(getMonthlyCountStats(allPosts, (u) => u.createdAt), "User mới"));
@@ -226,6 +232,7 @@ export default function DashboardHome() {
         setWithdrawRequestChartData(createMonthlyChartData(getMonthlyCountStats(withdrawRes.data || [], (w) => w.createdAt), "Đơn rút tiền mới"));
         setReportChartData(createMonthlyChartData(getMonthlyCountStats(reportsRes.data || [], (r) => r.createdAt), "Báo cáo mới"));
         setContactChartData(createMonthlyChartData(getMonthlyCountStats(contactsRes.data || [], (c) => c.createdAt), "Liên hệ mới"));
+        setProfileChartData(createMonthlyChartData(getMonthlyCountStats(profilesRes.data || [], (c) => c.createdAt), "Profile mới"));
 
         setLoading(false);
       } catch (err) {
@@ -334,13 +341,17 @@ export default function DashboardHome() {
                   📩 Liên hệ: <span className="fw-bold text-primary">{stats.contacts}</span>
                   {renderChange(stats.contacts, statsYesterday.contacts)}
                 </div>
+                <div>
+                👥 Update Profile: <span className="fw-bold text-primary">{stats.profiles}</span>
+                  {renderChange(stats.profiles, statsYesterday.profiles)}
+                </div>
               </div>
             </div>
           </div>
 
 
 
-          <div className="col-12">
+          {/* <div className="col-12">
             <div className="card shadow-sm border-0 text-center h-100">
               <div className="card-body">
                 <h6 className="mb-2">💰 Doanh Thu Hiện Tại ($)</h6>
@@ -366,7 +377,7 @@ export default function DashboardHome() {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         <div className="row g-4 mt-4">
@@ -446,6 +457,16 @@ export default function DashboardHome() {
               <div className="card-body">
                 <h6 className="mb-3 text-center">📩 Liên hệ theo tháng</h6>
                 {contactChartData ? <Bar data={contactChartData} /> : <div className="text-muted text-center">Đang tải...</div>}
+              </div>
+            </div>
+          </div>
+
+        {/* Update Profile theo tháng */}
+        <div className="col-12 col-md-6">
+            <div className="card shadow-sm border-0 h-100">
+              <div className="card-body">
+                <h6 className="mb-3 text-center">👥 Update Profile theo tháng</h6>
+                {profileChartData ? <Bar data={profileChartData} /> : <div className="text-muted text-center">Đang tải...</div>}
               </div>
             </div>
           </div>
