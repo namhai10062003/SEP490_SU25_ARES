@@ -186,17 +186,77 @@ const CustomerPostManagement = () => {
 
   // Handle save edit
   const handleSaveEdit = async () => {
+    // Kiểm tra lỗi từng trường
+    if (!editForm.title) {
+      toast.error("Vui lòng nhập tiêu đề");
+      return;
+    } else if (editForm.title.length > 200) {
+      toast.error("Tiêu đề không được vượt quá 50 ký tự");
+      return;
+    }
+  
+    if (!editForm.description) {
+      toast.error("Vui lòng nhập mô tả");
+      return;
+    } else if (editForm.description.trim().split(/\s+/).length > 200) {
+      toast.error("Mô tả không được vượt quá 50 từ");
+      return;
+    }
+  
+    if (editForm.area === "" || editForm.area < 0) {
+      toast.error("Diện tích không hợp lệ");
+      return;
+    }
+  
+    if (editForm.price === "" || editForm.price <= 0) {
+      toast.error("Giá không hợp lệ, giá phải có một con số cụ thể");
+      return;
+    }
+  
+    if (!editForm.legalDocument && editForm.type !== "dich_vu") {
+      toast.error("Vui lòng nhập giấy tờ pháp lý");
+      return;
+    }
+  
+    if (!editForm.interiorStatus && editForm.type !== "dich_vu") {
+      toast.error("Vui lòng nhập tình trạng nội thất");
+      return;
+    }
+  
+    if (!editForm.amenities && editForm.type !== "dich_vu") {
+      toast.error("Vui lòng nhập tiện ích");
+      return;
+    }
+  
+    if (!editForm.location) {
+      toast.error("Vui lòng nhập địa chỉ cụ thể");
+      return;
+    }
+  
+    if (!editForm.property) {
+      toast.error("Vui lòng chọn loại hình");
+      return;
+    }
+  
+    if (!editForm.postPackagename) {
+      toast.error("Vui lòng chọn gói đăng tin");
+      return;
+    }
+  
+    // Không có lỗi thì gửi request update
     try {
       const response = await updatePost(editingPost._id, editForm);
       if (response.data.success) {
+        toast.success("Cập nhật bài đăng thành công!");
         setShowEditModal(false);
         setEditingPost(null);
         fetchPosts();
       }
     } catch (error) {
-      // ignore
+      toast.error("Có lỗi xảy ra khi cập nhật bài đăng");
     }
   };
+  
 
   const handlePayment = async (postId) => {
     try {

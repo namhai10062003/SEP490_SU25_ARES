@@ -1,10 +1,11 @@
 import bcrypt from "bcryptjs";
+import { decrypt, encrypt } from "../db/encryption.js";
 import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
 import { emitNotification, emitToUser } from "../helpers/socketHelper.js";
+import getUserDependencies from "../helpers/userDependencyChecker.js";
 import Notification from '../models/Notification.js';
 import ProfileUpdateRequest from "../models/ProfileUpdateRequest.js";
 import User from '../models/User.js';
-import getUserDependencies from "../helpers/userDependencyChecker.js"
 // GET /api/users?page=1&limit=10&role=staff&status=1
 export const getUsers = async (req, res) => {
   try {
@@ -251,16 +252,24 @@ export const checkUserDependencies = async (req, res) => {
 };
 // update profile 
 
+// Hàm giải mã an toàn
+function safeDecrypt(value) {
+  const isHex = /^[0-9a-fA-F]+$/.test(value);
+  if (!value || !isHex) return value; // Nếu không phải hex thì trả nguyên giá trị
+  try {
+    return decrypt(value);
+  } catch (err) {
+    console.warn("⚠️ Không thể giải mã CCCD:", err.message);
+    return value;
+  }
+}
+
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // 👉 Log để debug dữ liệu gửi từ frontend
-    console.log("=== req.body ===");
-    console.log(req.body);
-
-    console.log("=== req.files ===");
-    console.log(req.files);
+    console.log("=== req.body ===", req.body);
+    console.log("=== req.files ===", req.files);
 
     const {
       name,
@@ -273,7 +282,6 @@ export const updateProfile = async (req, res) => {
       jobTitle,
     } = req.body;
 
-    // ✅ Kiểm tra nếu name không tồn tại hoặc là chuỗi trắng
     if (!name || name.trim() === "") {
       return res.status(400).json({ message: "Vui lòng nhập họ tên." });
     }
@@ -283,13 +291,13 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy người dùng" });
     }
 
-    console.log("=== Thông tin người dùng hiện tại ===");
-    console.log(currentUser);
+    console.log("=== Thông tin người dùng hiện tại ===", currentUser);
 
     const updateData = {};
     if (name !== undefined) updateData.name = name;
     if (phone !== undefined) updateData.phone = phone;
     if (gender !== undefined) updateData.gender = gender;
+
     if (dob !== undefined) {
       const birthDate = new Date(dob);
       if (isNaN(birthDate.getTime())) {
@@ -300,7 +308,8 @@ export const updateProfile = async (req, res) => {
       const age = today.getFullYear() - birthDate.getFullYear();
       const hasHadBirthdayThisYear =
         today.getMonth() > birthDate.getMonth() ||
-        (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+        (today.getMonth() === birthDate.getMonth() &&
+          today.getDate() >= birthDate.getDate());
       const actualAge = hasHadBirthdayThisYear ? age : age - 1;
 
       if (actualAge < 18) {
@@ -309,6 +318,7 @@ export const updateProfile = async (req, res) => {
 
       updateData.dob = dob;
     }
+
     if (address !== undefined) updateData.address = address;
     if (bio !== undefined) updateData.bio = bio;
     if (jobTitle !== undefined) updateData.jobTitle = jobTitle;
@@ -317,7 +327,10 @@ export const updateProfile = async (req, res) => {
     const cccdFrontImage = req.files?.cccdFrontImage?.[0]?.path;
     const cccdBackImage = req.files?.cccdBackImage?.[0]?.path;
 
-    const changedCCCD = identityNumber && identityNumber !== currentUser.identityNumber;
+    // ✅ Giải mã CCCD hiện tại an toàn
+    const oldIdentityNumber = safeDecrypt(currentUser.identityNumber);
+
+    const changedCCCD = identityNumber && identityNumber !== oldIdentityNumber;
     const changedProfileImage = profileImage && profileImage !== currentUser.profileImage;
     const hasCCCDImageChanged = !!(cccdFrontImage || cccdBackImage);
 
@@ -327,14 +340,21 @@ export const updateProfile = async (req, res) => {
       await ProfileUpdateRequest.deleteMany({ userId });
       await ProfileUpdateRequest.create({
         userId,
-        newIdentityNumber: changedCCCD ? identityNumber : undefined,
+        newIdentityNumber: changedCCCD ? encrypt(identityNumber) : undefined,
         newProfileImage: changedProfileImage ? profileImage : undefined,
         newCccdFrontImage: cccdFrontImage,
         newCccdBackImage: cccdBackImage,
       });
     }
 
+    if (changedCCCD) {
+      updateData.identityNumber = encrypt(identityNumber);
+    }
+
     const updatedUser = await User.findByIdAndUpdate(userId, { $set: updateData }, { new: true });
+
+    // ✅ Giải mã trước khi trả về
+    updatedUser.identityNumber = safeDecrypt(updatedUser.identityNumber);
 
     return res.status(200).json({
       message: requiresApproval
@@ -358,11 +378,21 @@ export const getUserProfileById = async (req, res) => {
     }
 
     const user = await User.findById(_id).select(
-      'name phone gender dob address identityNumber jobTitle bio profileImage cccdFrontImage cccdBackImage'
+      "name phone gender dob address identityNumber jobTitle bio profileImage cccdFrontImage cccdBackImage"
     );
 
     if (!user) {
       return res.status(404).json({ error: "Không tìm thấy người dùng" });
+    }
+
+    // ✅ Giải mã CCCD trước khi trả về
+    if (user.identityNumber) {
+      try {
+        user.identityNumber = decrypt(user.identityNumber);
+      } catch (e) {
+        console.warn("⚠️ Không thể giải mã CCCD:", e.message);
+        user.identityNumber = null; // hoặc ẩn hẳn nếu lỗi giải mã
+      }
     }
 
     res.status(200).json(user);

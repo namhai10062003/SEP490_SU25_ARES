@@ -1,20 +1,44 @@
 // controllers/residentController.js
 import { cloudinary } from '../db/cloudinary.js';
+import { decrypt, encrypt } from "../db/encryption.js";
 import Apartment from '../models/Apartment.js';
 import Resident from '../models/Resident.js';
+// Hàm giải mã an toàn
+function safeDecrypt(value) {
+  const isHex = /^[0-9a-fA-F]+$/.test(value);
+  if (!value || !isHex) return value; // Nếu không phải hex thì trả nguyên
+  try {
+    return decrypt(value);
+  } catch (err) {
+    console.warn("⚠️ Không thể giải mã CCCD:", err.message);
+    return value;
+  }
+}
 
 // Lấy chi tiết nhân khẩu
 export const getResidentDetail = async (req, res) => {
   try {
     const { id } = req.params;
-    const resident = await Resident.findById(id).populate('apartmentId');
+    const resident = await Resident.findById(id).populate("apartmentId");
+
     if (!resident) {
-      return res.status(404).json({ message: 'Không tìm thấy nhân khẩu.' });
+      return res.status(404).json({ message: "Không tìm thấy nhân khẩu." });
     }
-    res.status(200).json({ message: 'Lấy thông tin chi tiết nhân khẩu thành công', data: resident });
+
+    // ✅ Giải mã CCCD trước khi trả về
+    const residentObj = resident.toObject();
+    residentObj.idNumber = safeDecrypt(residentObj.idNumber);
+
+    res.status(200).json({
+      message: "Lấy thông tin chi tiết nhân khẩu thành công",
+      data: residentObj
+    });
   } catch (err) {
-    console.error('❌ Lỗi khi lấy chi tiết nhân khẩu:', err);
-    res.status(500).json({ message: 'Lỗi server', error: err.message });
+    console.error("❌ Lỗi khi lấy chi tiết nhân khẩu:", err);
+    res.status(500).json({
+      message: "Lỗi server",
+      error: err.message
+    });
   }
 };
 
@@ -33,16 +57,18 @@ export const createResident = async (req, res) => {
       issueDate
     } = req.body;
 
+    // ✅ Kiểm tra CCCD hợp lệ
     if (!idNumber?.trim() || !/^\d{12}$/.test(idNumber.trim())) {
       return res.status(400).json({ message: 'Số CCCD không hợp lệ. Vui lòng nhập đúng 12 chữ số.' });
     }
-    
-    
+
+    // ✅ Tìm căn hộ
     const apartment = await Apartment.findById(apartmentId);
     if (!apartment) {
       return res.status(404).json({ message: 'Không tìm thấy căn hộ.' });
     }
 
+    // ✅ Kiểm tra quyền sở hữu hoặc thuê
     const userId = req.user?._id;
     const isOwnerMatch = apartment.isOwner && apartment.isOwner.equals(userId);
     const isRenterMatch = apartment.isRenter && apartment.isRenter.equals(userId);
@@ -51,18 +77,30 @@ export const createResident = async (req, res) => {
       return res.status(403).json({ message: 'Bạn không có quyền đăng ký nhân khẩu cho căn hộ này.' });
     }
 
+    // ✅ Upload ảnh nếu có
     let documentFrontUrl = '';
     let documentBackUrl = '';
 
     if (req.files?.documentFront?.[0]) {
-      const uploaded = await cloudinary.uploader.upload(req.files.documentFront[0].path, { folder: 'residents' });
+      const uploaded = await cloudinary.uploader.upload(
+        req.files.documentFront[0].path,
+        { folder: 'residents' }
+      );
       documentFrontUrl = uploaded.secure_url;
     }
+
     if (req.files?.documentBack?.[0]) {
-      const uploaded = await cloudinary.uploader.upload(req.files.documentBack[0].path, { folder: 'residents' });
+      const uploaded = await cloudinary.uploader.upload(
+        req.files.documentBack[0].path,
+        { folder: 'residents' }
+      );
       documentBackUrl = uploaded.secure_url;
     }
 
+    // ✅ Mã hóa CCCD trước khi lưu
+    const encryptedIdNumber = encrypt(idNumber.trim());
+
+    // ✅ Tạo resident mới
     const resident = await Resident.create({
       apartmentId,
       fullName,
@@ -71,7 +109,7 @@ export const createResident = async (req, res) => {
       relationWithOwner,
       moveInDate,
       nationality,
-      idNumber,
+      idNumber: encryptedIdNumber, // lưu bản mã hóa
       issueDate,
       documentFront: documentFrontUrl,
       documentBack: documentBackUrl,
@@ -79,6 +117,7 @@ export const createResident = async (req, res) => {
       verifiedByStaff: "pending"
     });
 
+    // ✅ Emit socket nếu có
     if (global._io) {
       global._io.emit('new-resident-registered', {
         _id: resident._id,
@@ -91,39 +130,66 @@ export const createResident = async (req, res) => {
       });
     }
 
-    return res.status(201).json({ message: 'Thêm nhân khẩu thành công, vui lòng đợi xác minh.', data: resident });
+    return res.status(201).json({
+      message: 'Thêm nhân khẩu thành công, vui lòng đợi xác minh.',
+      data: resident
+    });
   } catch (err) {
     console.error('[createResident] ❌', err);
-    return res.status(500).json({ message: 'Lỗi server', error: err.message });
+    return res.status(500).json({
+      message: 'Lỗi server',
+      error: err.message
+    });
   }
 };
 
 // Lấy danh sách nhân khẩu chưa xác minh
 export const getResidentsUnverifiedByStaff = async (req, res) => {
   try {
-    const residents = await Resident.find({ verifiedByStaff: "pending" }).populate('apartmentId').sort({ createdAt: -1 });
+    const residentsRaw = await Resident.find({ verifiedByStaff: "pending" })
+      .populate("apartmentId")
+      .sort({ createdAt: -1 });
+
+    // ✅ Giải mã idNumber
+    const residents = residentsRaw.map(r => ({
+      ...r.toObject(),
+      idNumber: safeDecrypt(r.idNumber)
+    }));
+
     res.status(200).json({ residents });
   } catch (err) {
-    console.error('❌ Lỗi khi lấy danh sách nhân khẩu chưa xác minh:', err);
-    res.status(500).json({ message: 'Lỗi server', error: err.message });
+    console.error("❌ Lỗi khi lấy danh sách nhân khẩu chưa xác minh:", err);
+    res.status(500).json({ message: "Lỗi server", error: err.message });
   }
 };
+
 
 // Xác minh nhân khẩu
 export const verifyResidentByStaff = async (req, res) => {
   try {
     const resident = await Resident.findById(req.params.id);
-    if (!resident) return res.status(404).json({ message: 'Không tìm thấy nhân khẩu' });
+    if (!resident) {
+      return res.status(404).json({ message: 'Không tìm thấy nhân khẩu' });
+    }
+
     resident.verifiedByStaff = "true";
     resident.rejectReason = null;
     resident.rejectedAt = null;
     await resident.save();
-    return res.status(200).json({ message: '✅ Nhân khẩu đã được nhân viên xác minh' });
+
+    return res.status(200).json({
+      message: '✅ Nhân khẩu đã được nhân viên xác minh',
+      data: {
+        ...resident.toObject(),
+        idNumber: safeDecrypt(resident.idNumber) // ✅ chỉ giải mã khi trả ra
+      }
+    });
   } catch (err) {
     console.error('❌ Lỗi xác minh:', err);
     return res.status(500).json({ message: 'Lỗi server', error: err.message });
   }
 };
+
 
 // Từ chối nhân khẩu
 export const rejectResidentByStaff = async (req, res) => {
@@ -225,9 +291,29 @@ export const getResidentsByStatus = async (req, res) => {
   else if (status === "rejected") filter = { verifiedByStaff: "false" };
 
   try {
-    const residents = await Resident.find(filter).populate("apartmentId");
-    res.status(200).json(residents);
+    const residents = await Resident.find(filter)
+      .populate("apartmentId", "apartmentCode") // ✅ lấy mã căn hộ
+      .sort({ createdAt: -1 });
+
+    const formatted = residents.map(r => ({
+      _id: r._id,
+      fullName: r.fullName,
+      apartmentCode: r.apartmentId?.apartmentCode || "", // ✅ thêm mã căn hộ
+      gender: r.gender,
+      dateOfBirth: r.dateOfBirth,
+      relationWithOwner: r.relationWithOwner,
+      nationality: r.nationality,
+      idNumber: safeDecrypt(r.idNumber),
+      issueDate: r.issueDate,
+      documentFront: r.documentFront,
+      documentBack: r.documentBack,
+      verifiedByStaff: r.verifiedByStaff,
+      rejectReason: r.rejectReason,
+    }));
+
+    res.status(200).json(formatted);
   } catch (err) {
+    console.error("❌ Lỗi khi lấy danh sách nhân khẩu:", err);
     res.status(500).json({ error: "Lỗi server" });
   }
 };

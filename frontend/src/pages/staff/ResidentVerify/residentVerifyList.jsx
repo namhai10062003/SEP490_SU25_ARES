@@ -246,7 +246,7 @@ const ResidentVerifyList = () => {
                 {paginatedResidents.map((r) => (
                   <tr key={r._id}>
                     <td>{r.fullName}</td>
-                    <td>{r.apartmentId?.apartmentCode || "---"}</td>
+                    <td>{r.apartmentCode|| "---"}</td>
                     <td>{r.gender}</td>
                     <td>{r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString("vi-VN") : ""}</td>
                     <td>{r.relationWithOwner}</td>

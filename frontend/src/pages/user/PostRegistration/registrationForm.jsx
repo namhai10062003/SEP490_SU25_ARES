@@ -96,58 +96,59 @@ const RegistrationForm = () => {
     setName(user?.name || null);
   }, [user]);
   // hàm xử lí tất cả dữ liệu input 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  // validate khi nhập
+const handleInputChange = (e) => {
+  const { name, value } = e.target;
 
-    // Validate số điện thoại
-    if (name === "thongTinNguoiDangBan") {
-      // Chỉ cho nhập số
-      if (!/^\d*$/.test(value)) return;
-
-      setFormData((prev) => ({
+  // Validate số điện thoại
+  if (name === "thongTinNguoiDangBan") {
+    if (!/^\d*$/.test(value)) return;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (value.length !== 10) {
+      setFormErrors((prev) => ({
         ...prev,
-        [name]: value,
+        [name]: "Số điện thoại phải gồm đúng 10 chữ số",
       }));
-
-      // Kiểm tra đúng 10 chữ số
-      if (value.length !== 10) {
-        setFormErrors((prev) => ({
-          ...prev,
-          [name]: "Số điện thoại phải gồm đúng 10 chữ số",
-        }));
-      } else {
-        setFormErrors((prev) => ({
-          ...prev,
-          [name]: "",
-        }));
-      }
-
-      return; // Dừng tại đây
-    }
-
-    // Nếu chọn loại hình là căn hộ
-    if (name === "loaiHinh") {
-      if (value === "nha_can_ho") {
-        setFormData((prev) => ({
-          ...prev,
-          [name]: value,
-          diaChiCuThe: "FPT City",
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          [name]: value,
-          diaChiCuThe: "",
-        }));
-      }
     } else {
-      // Trường còn lại
+      setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+    return;
+  }
+
+  // Giới hạn số ký tự cho tiêu đề và mô tả
+  if (name === "tieuDe" && value.length > 200) {
+    return; // không cho nhập thêm
+  }
+  if (name === "moTaChiTiet" && value.length > 200) {
+    return; // không cho nhập thêm
+  }
+
+  // Không cho nhập giá hoặc diện tích âm
+  if ((name === "gia" || name === "dienTich") && value !== "" && Number(value) <= 0) {
+    return;
+}
+
+
+  // Nếu là căn hộ thì diện tích readonly
+  if (name === "dienTich" && loaiHinhCon === "nha_can_ho") {
+    return; // không cho sửa nếu là căn hộ
+  }
+
+  // Loại hình căn hộ tự gán địa chỉ
+  if (name === "loaiHinh") {
+    if (value === "nha_can_ho") {
       setFormData((prev) => ({
         ...prev,
         [name]: value,
+        diaChiCuThe: "FPT City",
       }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value, diaChiCuThe: "" }));
     }
-  };
+  } else {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  }
+};
 
   const [formErrors, setFormErrors] = useState({});
 
@@ -225,13 +226,39 @@ const RegistrationForm = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
   
-    try {
-      if (formData.images.length === 0) {
-        toast.warning("Vui lòng upload ít nhất 1 ảnh");
-        setIsSubmitting(false);
-        return;
-      }
+    const errors = {};
   
+    if (!formData.loaiHinh) errors.loaiHinh = "Vui lòng chọn loại hình";
+    if (!formData.diaChiCuThe) errors.diaChiCuThe = "Vui lòng nhập địa chỉ";
+    if (!formData.tieuDe) errors.tieuDe = "Vui lòng nhập tiêu đề";
+    if (!formData.moTaChiTiet) errors.moTaChiTiet = "Vui lòng nhập mô tả";
+    if (formData.dienTich === "" || formData.dienTich < 0)
+      errors.dienTich = "Diện tích không hợp lệ";
+    if (formData.gia === "" || formData.gia < 0)
+      errors.gia = "Giá không hợp lệ";
+    if (!formData.giayto) errors.giayto = "Vui lòng nhập giấy tờ pháp lý";
+    if (!formData.tinhtrang) errors.tinhtrang = "Vui lòng nhập tình trạng";
+    if (!formData.huongdat) errors.huongdat = "Vui lòng nhập hướng đất";
+    if (!formData.thongTinNguoiDangBan)
+      errors.thongTinNguoiDangBan = "Vui lòng nhập số điện thoại";
+    if (formData.images.length === 0)
+      errors.images = "Vui lòng upload ít nhất 1 ảnh";
+    if (!formData.postPackage)
+      errors.postPackage = "Vui lòng chọn gói đăng tin";
+  
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+  
+      // ✅ Hiển thị từng lỗi riêng
+      Object.values(errors).forEach((msg) => {
+        toast.error(msg);
+      });
+  
+      setIsSubmitting(false);
+      return;
+    }
+  
+    try {
       const submitData = new FormData();
       submitData.append("type", loaiBaiDang);
       submitData.append("title", formData.tieuDe);
@@ -263,8 +290,8 @@ const RegistrationForm = () => {
           tieuDe: "",
           moTaChiTiet: "",
           dienTich: "",
-          toaplaza: "",
-          socanho: "",
+          toaPlaza: "",
+          soCanHo: "",
           gia: "",
           trongTinViec: "",
           thongTinNguoiDangBan: "",
@@ -272,7 +299,6 @@ const RegistrationForm = () => {
           giayto: "",
           tinhtrang: "",
           huongdat: "",
-          loaiBaiDang: "",
           postPackage: "",
         });
       } else {
@@ -285,6 +311,7 @@ const RegistrationForm = () => {
       setIsSubmitting(false);
     }
   };
+  
   // hàm xử lí lọc plaza vs căn hộ
   const selectedPlaza = plazaOptions.find(
     (plaza) => plaza._id === formData.toaPlaza
