@@ -1,10 +1,10 @@
 import bcrypt from "bcryptjs";
 import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
-import { emitNotification } from "../helpers/socketHelper.js";
+import { emitNotification, emitToUser } from "../helpers/socketHelper.js";
 import Notification from '../models/Notification.js';
 import ProfileUpdateRequest from "../models/ProfileUpdateRequest.js";
 import User from '../models/User.js';
-
+import getUserDependencies from "../helpers/userDependencyChecker.js"
 // GET /api/users?page=1&limit=10&role=staff&status=1
 export const getUsers = async (req, res) => {
   try {
@@ -66,7 +66,7 @@ export const getUsersDepartment = async (req, res) => {
 };
 
 // Block or unblock user from posting
-export const blockUser = async (req, res) => {
+export const blockUserFromPosting = async (req, res) => {
   try {
     const { reason } = req.body;
     const user = await User.findById(req.params.id).select('-password -otp -otpExpires');
@@ -83,7 +83,7 @@ export const blockUser = async (req, res) => {
     // --- SOCKET.IO NOTIFICATION ---
     const newNotification = await Notification.create({ userId: user._id, message });
     emitNotification(user._id, newNotification);
-
+    emitToUser(user._id, "blocked_posting", { message });
     // --- SEND EMAIL & SMS NOTIFICATION ---
     if (user.email) {
       await sendEmailNotification({
@@ -107,8 +107,7 @@ export const blockUser = async (req, res) => {
   }
 };
 
-
-export const unBlockUser = async (req, res) => {
+export const unBlockUserFromPosting = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password -otp -otpExpires');
     if (!user) return res.status(404).json({ error: "User not found" });
@@ -126,7 +125,7 @@ export const unBlockUser = async (req, res) => {
     });
     // --- SOCKET.IO NOTIFICATION ---
     emitNotification(user._id, newNotification);
-
+    emitToUser(user._id, "newNotification", { message });
     // --- SEND EMAIL & SMS NOTIFICATION ---
     if (user.email) {
       await sendEmailNotification({
@@ -149,6 +148,57 @@ export const unBlockUser = async (req, res) => {
   }
 };
 
+// Block and unblock user from login
+export const blockUserAccount = async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const user = await User.findById(req.params.id).select('-password -otp -otpExpires');
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    if (user.status === 2) {
+      return res.status(200).json({ message: "Tài khoản đã bị khoá hoàn toàn" });
+    }
+
+    user.status = 2;
+    await user.save();
+
+    const message = `Tài khoản của bạn đã bị khoá vĩnh viễn. ${reason ? "Lý do: " + reason : "Vui lòng liên hệ admin để biết thêm chi tiết."}`;
+
+    const newNotification = await Notification.create({ userId: user._id, message });
+
+    emitNotification(user._id, newNotification);
+    emitToUser(user._id, "blocked_account", { message });
+
+    res.json({ message: "Đã khoá tài khoản hoàn toàn", user });
+  } catch (err) {
+    res.status(500).json({ error: "Server error", message: err.message });
+  }
+};
+
+export const unblockUserAccount = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password -otp -otpExpires');
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    if (user.status === 1) {
+      return res.status(200).json({ message: "Tài khoản đã hoạt động" });
+    }
+
+    user.status = 1;
+    await user.save();
+
+    const message = "Tài khoản của bạn đã được mở khoá.";
+
+    const newNotification = await Notification.create({ userId: user._id, message });
+
+    emitNotification(user._id, newNotification);
+    res.json({ message, user });
+  } catch (err) {
+    res.status(500).json({ error: "Server error", message: err.message });
+  }
+};
+
+
 
 export const getUserById = async (req, res) => {
   try {
@@ -159,38 +209,46 @@ export const getUserById = async (req, res) => {
     res.status(500).json({ error: "Server error", message: err.message });
   }
 };
+
 export const deleteUser = async (req, res) => {
   try {
+    const userId = req.params.id;
+
+    // ✅ Kiểm tra dependencies
+    const deps = await getUserDependencies(userId);
+    if (deps.owns > 0 || deps.rents > 0 || deps.contractsAsTenant > 0 || deps.contractsAsLandlord > 0) {
+      return res.status(400).json({
+        message: `Không thể xoá. Người dùng này đang sở hữu ${deps.owns} căn hộ, thuê ${deps.rents} căn hộ, có ${deps.contractsAsTenant + deps.contractsAsLandlord} hợp đồng.`,
+        dependencies: deps,
+      });
+    }
+
+    // ✅ Soft delete user
     const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { $set: { deletedAt: new Date() } },
+      userId,
+      { deletedAt: new Date() },
       { new: true }
     );
-    if (!user) return res.status(404).json({ error: "User not found" });
 
-    // --- EMAIL & SMS NOTIFICATION ---
-    if (user.email) {
-      await sendEmailNotification({
-        to: user.email,
-        subject: "Thông báo xoá tài khoản",
-        text: "Tài khoản của bạn đã bị xoá.",
-        html: "<b>Tài khoản của bạn đã bị xoá.</b>"
-      });
-    }
-    if (user.phone) {
-      await sendSMSNotification({
-        to: user.phone,
-        body: "Tài khoản của bạn đã bị xoá."
-      });
-    }
-    // --- END EMAIL & SMS NOTIFICATION ---
+    if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng." });
 
-    res.json({ success: true });
+    res.status(200).json({ message: "Đã xoá người dùng.", user });
   } catch (err) {
-    res.status(500).json({ error: "Server error", message: err.message });
+    res.status(500).json({ message: "Lỗi xoá người dùng.", error: err.message });
   }
 };
+export const checkUserDependencies = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findOne({ _id: userId, deletedAt: null });
+    if (!user) return res.status(404).json({ message: "Không tìm thấy người dùng." });
 
+    const deps = await getUserDependencies(userId);
+    return res.status(200).json({ message: "OK", dependencies: deps });
+  } catch (err) {
+    return res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
 // update profile 
 
 export const updateProfile = async (req, res) => {
@@ -216,9 +274,9 @@ export const updateProfile = async (req, res) => {
     } = req.body;
 
     // ✅ Kiểm tra nếu name không tồn tại hoặc là chuỗi trắng
-if (!name || name.trim() === "") {
-  return res.status(400).json({ message: "Vui lòng nhập họ tên." });
-}
+    if (!name || name.trim() === "") {
+      return res.status(400).json({ message: "Vui lòng nhập họ tên." });
+    }
 
     const currentUser = await User.findById(userId);
     if (!currentUser) {
@@ -237,18 +295,18 @@ if (!name || name.trim() === "") {
       if (isNaN(birthDate.getTime())) {
         return res.status(400).json({ message: "Ngày sinh không hợp lệ." });
       }
-    
+
       const today = new Date();
       const age = today.getFullYear() - birthDate.getFullYear();
       const hasHadBirthdayThisYear =
         today.getMonth() > birthDate.getMonth() ||
         (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
       const actualAge = hasHadBirthdayThisYear ? age : age - 1;
-    
+
       if (actualAge < 18) {
         return res.status(400).json({ message: "Người dùng phải đủ 18 tuổi để cập nhật hồ sơ." });
       }
-    
+
       updateData.dob = dob;
     }
     if (address !== undefined) updateData.address = address;

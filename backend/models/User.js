@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema(
     googleId: { type: String, unique: true, sparse: true },
     picture: { type: String },
 
-    status: { type: Number, enum: [0, 1], default: 1 }, // 1: active, 0: blocked
+    status: { type: Number, enum: [0, 1, 2], default: 1 }, // 1: active, 0: blocked from posting, 3: blocked completely cant login
     deletedAt: { type: Date, default: null }, // Soft delete
     // update profile 
     gender: {

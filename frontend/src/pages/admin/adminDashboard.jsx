@@ -31,7 +31,7 @@ export default function AdminDashboard({ children }) {
     { to: "/admin-dashboard", label: "Tổng Quan" },
     // { to: "/admin-dashboard/create-account", label: "Tạo Tài Khoản" },
     { to: "/admin-dashboard/posts", label: "Quản Lý Bài Post" },
-    { to: "/admin-dashboard/manage-notification", label: "Gửi Thông Báo" },
+    { to: "/admin-dashboard/manage-notification", label: "Quản lý Notification" },
     { to: "/admin-dashboard/manage-user", label: "Quản Lý User" },
     { to: "/admin-dashboard/manage-staff", label: "Quản Lý Staff" },
     { to: "/admin-dashboard/manage-apartment", label: "Quản Lý Căn hộ" },
@@ -44,9 +44,10 @@ export default function AdminDashboard({ children }) {
       <div className="row g-0 flex-nowrap">
         {/* Sidebar */}
         <aside
-          className="col-12 col-md-3 col-lg-2 bg-primary text-white d-flex flex-column p-0 shadow"
-          style={{ minHeight: "100vh", zIndex: 100 }}
+          className="bg-primary text-white d-flex flex-column p-0 shadow position-fixed"
+          style={{ minHeight: "100vh", zIndex: 100, overflowY: "auto", width: "240px", }}
         >
+
           <div className="py-4 px-3 border-bottom border-2 border-warning bg-gradient">
             <h5
               className="fw-bold text-uppercase mb-0 text-warning text-center"
@@ -231,7 +232,17 @@ export default function AdminDashboard({ children }) {
         </aside>
 
         {/* Main Content */}
-        <main className="col-12 col-md-9 col-lg-10 p-4">{children}</main>
+        <main
+          className="p-4"
+          style={{
+            marginLeft: "240px", // Trùng với chiều rộng sidebar
+            width: "calc(100% - 240px)",
+            minHeight: "100vh",
+            overflowX: "hidden",
+          }}
+        >
+          {children}
+        </main>
       </div>
     </div>
   );

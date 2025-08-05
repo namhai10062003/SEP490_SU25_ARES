@@ -92,24 +92,24 @@ const PostManagement = () => {
 
   const filteredPosts = posts.filter((p) => {
     const label = tagLabel(p.type).toLowerCase();
-  
+
     const textMatch =
       p.title?.toLowerCase().includes(searchText.toLowerCase()) ||
       p.contactInfo?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
       p.location?.toLowerCase().includes(searchText.toLowerCase()) ||
       label.includes(searchText.toLowerCase());
-  
+
     const dateMatch = filterDate
       ? new Date(p.createdAt).toDateString() ===
-        new Date(filterDate).toDateString()
+      new Date(filterDate).toDateString()
       : true;
-  
+
     const statusMatch =
       categoryFilter === "all" ? true : p.status === categoryFilter;
-  
+
     return textMatch && dateMatch && statusMatch;
   });
-  
+
 
   const paginatedPosts = filteredPosts.slice(
     (currentPage - 1) * perPage,
@@ -119,24 +119,24 @@ const PostManagement = () => {
   const totalPages = Math.ceil(filteredPosts.length / perPage);
 
   const latestPosts = posts
-  .filter(p => p.status === "approved" && p.paymentStatus === "unpaid")
-  .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-  .slice(0, 5);
+    .filter(p => p.status === "approved" && p.paymentStatus === "unpaid")
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5);
 
-  
+
   console.log("All approved posts:", posts.filter(p => p.status === "approved"));
   console.log("Latest posts:", latestPosts);
 
 
   const expiringPosts = posts
-  .filter(p => p.status === "approved" && !p.deletedAt && expiringSoon(p.expiredDate))
-  .slice(0, 3);
+    .filter(p => p.status === "approved" && !p.deletedAt && expiringSoon(p.expiredDate))
+    .slice(0, 3);
 
   return (
     <AdminDashboard>
       <div className="container py-3">
-        <div className="bg-primary text-white rounded p-2 text-center mb-3">
-          <h4>Quản Lý Bài Đăng</h4>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h4 className="mb-0">📰 Quản lý bài đăng</h4>
         </div>
 
         <div className="row g-3 align-items-end mb-3">
@@ -216,13 +216,13 @@ const PostManagement = () => {
               ) : (
                 paginatedPosts.map((p) => (
                   <PostItemButton
-                  key={p._id}
-                  p={p}
-                  navigate={navigate}
-                  formatSmartTime={formatSmartTime}
-                  tagLabel={tagLabel}
-                  isSmall
-                />
+                    key={p._id}
+                    p={p}
+                    navigate={navigate}
+                    formatSmartTime={formatSmartTime}
+                    tagLabel={tagLabel}
+                    isSmall
+                  />
                 ))
               )}
             </div>
