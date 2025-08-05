@@ -4,8 +4,8 @@ import dotenv from "dotenv";
 import { OAuth2Client } from "google-auth-library";
 import jwt from 'jsonwebtoken';
 import nodemailer from "nodemailer";
+import { decrypt } from "../db/encryption.js";
 import User from '../models/User.js';
-
 dotenv.config();
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
@@ -211,6 +211,17 @@ const login = async (req, res) => {
 };
 
 // verify email 
+function safeDecrypt(value) {
+  const isHex = /^[0-9a-fA-F]+$/.test(value);
+  if (!value || !isHex) return value;
+  try {
+    return decrypt(value);
+  } catch (err) {
+    console.warn("⚠️ Không thể giải mã CCCD:", err.message);
+    return value;
+  }
+}
+
 const verifyUser = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -261,7 +272,6 @@ const verifyUser = async (req, res) => {
 
     // Trường hợp xác thực token thông thường (đã đăng nhập)
     if (req.user) {
-      // Always fetch the latest user data from DB
       const user = await User.findById(req.user._id);
 
       if (!user) {
@@ -282,7 +292,7 @@ const verifyUser = async (req, res) => {
           name: user.name,
           role: user.role,
           email: user.email,
-          identityNumber: user.identityNumber,
+          identityNumber: safeDecrypt(user.identityNumber), // ✅ giải mã trước khi trả
           address: user.address,
           phone: user.phone,
           dob: user.dob

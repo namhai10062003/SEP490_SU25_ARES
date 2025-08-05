@@ -76,7 +76,7 @@ console.log(userData);
   <p><strong>Giới tính:</strong> {displayGender(userData?.gender)}</p>
   <p><strong>Ngày sinh:</strong> {userData?.dob ? userData.dob.split("T")[0] : "Chưa cập nhật"}</p>
   <p><strong>Địa chỉ:</strong> {userData?.address || "Chưa cập nhật"}</p>
-  <p><strong>CMND/CCCD:</strong> {userData?.identityNumber || "Chưa cập nhật"}</p>
+  {/* <p><strong>CMND/CCCD:</strong> {userData?.identityNumber || "Chưa cập nhật"}</p> */}
   <p><strong>Nghề nghiệp:</strong> {userData?.jobTitle || "Chưa cập nhật"}</p>
   <p><strong>Giới thiệu:</strong> {userData?.bio || "Chưa có giới thiệu"}</p>
 

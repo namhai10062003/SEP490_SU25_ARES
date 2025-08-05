@@ -1,7 +1,21 @@
 import mongoose from "mongoose";
+import { decrypt } from "../db/encryption.js"; // nhớ import hàm decrypt
 import ProfileUpdateRequest from "../models/ProfileUpdateRequest.js";
 import User from "../models/User.js";
-// hàm lấy ra tất cả các request 
+
+// Hàm giải mã an toàn
+function safeDecrypt(value) {
+  const isHex = /^[0-9a-fA-F]+$/.test(value);
+  if (!value || !isHex) return value;
+  try {
+    return decrypt(value);
+  } catch (err) {
+    console.warn("⚠️ Không thể giải mã CCCD:", err.message);
+    return value;
+  }
+}
+
+// 📌 Lấy tất cả yêu cầu cập nhật
 export const getAllProfileUpdateRequests = async (req, res) => {
   try {
     const { status } = req.query;
@@ -13,6 +27,16 @@ export const getAllProfileUpdateRequests = async (req, res) => {
       "name email identityNumber address profileImage cccdFrontImage cccdBackImage"
     );
 
+    // ✅ Giải mã
+    requests.forEach(r => {
+      if (r.userId?.identityNumber) {
+        r.userId.identityNumber = safeDecrypt(r.userId.identityNumber);
+      }
+      if (r.newIdentityNumber) {
+        r.newIdentityNumber = safeDecrypt(r.newIdentityNumber);
+      }
+    });
+
     res.status(200).json(requests);
   } catch (err) {
     console.error("❌ Lỗi lấy danh sách yêu cầu:", err.message);
@@ -20,12 +44,22 @@ export const getAllProfileUpdateRequests = async (req, res) => {
   }
 };
 
-/**
- * GET all pending profile update requests (Admin)
- */
+// 📌 Lấy tất cả yêu cầu pending
 export const getPendingRequests = async (req, res) => {
   try {
-    const requests = await ProfileUpdateRequest.find({ status: "pending" }).populate("userId", "name email identityNumber");
+    const requests = await ProfileUpdateRequest.find({ status: "pending" })
+      .populate("userId", "name email identityNumber");
+
+    // ✅ Giải mã
+    requests.forEach(r => {
+      if (r.userId?.identityNumber) {
+        r.userId.identityNumber = safeDecrypt(r.userId.identityNumber);
+      }
+      if (r.newIdentityNumber) {
+        r.newIdentityNumber = safeDecrypt(r.newIdentityNumber);
+      }
+    });
+
     res.status(200).json(requests);
   } catch (err) {
     console.error("❌ Lỗi lấy yêu cầu:", err.message);
@@ -33,9 +67,7 @@ export const getPendingRequests = async (req, res) => {
   }
 };
 
-/**
- * APPROVE a request (Admin)
- */
+// 📌 Admin duyệt yêu cầu
 export const approveRequest = async (req, res) => {
   try {
     const requestId = req.params.id;
@@ -64,14 +96,11 @@ export const approveRequest = async (req, res) => {
   }
 };
 
-
-/**
- * REJECT a request (Admin)
- */
+// 📌 Admin từ chối yêu cầu
 export const rejectRequest = async (req, res) => {
   try {
     const requestId = req.params.id;
-    const { reason } = req.body; // ✅ Nhận lý do từ client gửi lên
+    const { reason } = req.body;
 
     const request = await ProfileUpdateRequest.findById(requestId);
 
@@ -81,17 +110,20 @@ export const rejectRequest = async (req, res) => {
 
     request.status = "rejected";
     request.reviewedAt = new Date();
-    request.rejectionReason = reason || "Không rõ lý do"; // ✅ Ghi lại lý do
+    request.rejectionReason = reason || "Không rõ lý do";
     await request.save();
 
-    res.status(200).json({ message: "❌ Đã từ chối yêu cầu cập nhật", rejectionReason: request.rejectionReason });
+    res.status(200).json({
+      message: "❌ Đã từ chối yêu cầu cập nhật",
+      rejectionReason: request.rejectionReason
+    });
   } catch (err) {
     console.error("❌ Lỗi từ chối yêu cầu:", err.message);
     res.status(500).json({ message: "Lỗi server" });
   }
 };
-// 🔍 Lấy các yêu cầu cập nhật của chính user
 
+// 📌 Lấy yêu cầu mới nhất của user
 export const getLatestRequestByUser = async (req, res) => {
   try {
     const { userId } = req.query;
@@ -103,8 +135,12 @@ export const getLatestRequestByUser = async (req, res) => {
     const request = await ProfileUpdateRequest.find({
       userId: new mongoose.Types.ObjectId(userId),
     })
-      .sort({ createdAt: -1 }) // lấy bản mới nhất
+      .sort({ createdAt: -1 })
       .limit(1);
+
+    if (request.length > 0 && request[0].newIdentityNumber) {
+      request[0].newIdentityNumber = safeDecrypt(request[0].newIdentityNumber);
+    }
 
     res.status(200).json(request);
   } catch (err) {
