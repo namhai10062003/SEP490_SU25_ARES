@@ -1,5 +1,7 @@
 import React from "react";
 import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
+import { useSearchParams } from "react-router-dom";
+
 const Pagination = ({
     page,
     totalPages,
@@ -8,6 +10,35 @@ const Pagination = ({
     onPageSizeChange,
     pageSizeOptions = [10, 20, 50, 100],
 }) => {
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const updateQuery = (newParams = {}) => {
+        const updated = {
+            ...Object.fromEntries(searchParams.entries()),
+            ...newParams,
+        };
+
+        // Clean empty values
+        Object.keys(updated).forEach(
+            (key) =>
+                (updated[key] === "" || updated[key] == null) && delete updated[key]
+        );
+
+        setSearchParams(updated);
+    };
+
+    const handlePageChange = (newPage) => {
+        if (newPage < 1 || newPage > totalPages) return;
+        onPageChange(newPage);
+        updateQuery({ page: newPage });
+    };
+
+    const handlePageSizeChange = (newSize) => {
+        onPageSizeChange(newSize);
+        onPageChange(1); // Reset về trang 1
+        updateQuery({ pageSize: newSize, page: 1 });
+    };
+
     return (
         <div className="mt-4">
             {/* Top controls */}
@@ -18,7 +49,7 @@ const Pagination = ({
                         className="form-select form-select-sm"
                         style={{ width: "100px" }}
                         value={pageSize}
-                        onChange={(e) => onPageSizeChange(Number(e.target.value))}
+                        onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                     >
                         {pageSizeOptions.map((size) => (
                             <option key={size} value={size}>
@@ -42,7 +73,7 @@ const Pagination = ({
                         cursor: page <= 1 ? "not-allowed" : "pointer",
                         transition: "all 0.2s ease",
                     }}
-                    onClick={() => onPageChange(page - 1)}
+                    onClick={() => handlePageChange(page - 1)}
                     disabled={page <= 1}
                 >
                     <FiArrowLeft size={16} />
@@ -59,7 +90,7 @@ const Pagination = ({
                         cursor: page >= totalPages ? "not-allowed" : "pointer",
                         transition: "all 0.2s ease",
                     }}
-                    onClick={() => onPageChange(page + 1)}
+                    onClick={() => handlePageChange(page + 1)}
                     disabled={page >= totalPages}
                 >
                     <FiArrowRight size={16} />
