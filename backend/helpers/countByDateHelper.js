@@ -3,24 +3,32 @@ import Fee from "../models/Fee.js";
 import Contract from "../models/Contract.js";
 
 export const countTodayAndYesterday = async (Model, filter = {}) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Lấy thời gian hiện tại ở VN
+    const now = new Date();
+    const vnOffset = 7 * 60 * 60 * 1000; // 7 tiếng tính theo milliseconds
 
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    // Lấy 0h hôm nay ở VN (UTC+7)
+    const today = new Date(now.getTime() + vnOffset);
+    today.setHours(0, 0, 0, 0);
+    const todayUTC = new Date(today.getTime() - vnOffset);
+
+    // Lấy 0h hôm qua ở VN (UTC+7)
+    const yesterdayUTC = new Date(todayUTC);
+    yesterdayUTC.setDate(yesterdayUTC.getDate() - 1);
 
     const todayCount = await Model.countDocuments({
         ...filter,
-        createdAt: { $gte: today },
+        createdAt: { $gte: todayUTC },
     });
 
     const yesterdayCount = await Model.countDocuments({
         ...filter,
-        createdAt: { $gte: yesterday, $lt: today },
+        createdAt: { $gte: yesterdayUTC, $lt: todayUTC },
     });
 
     return { today: todayCount, yesterday: yesterdayCount };
 };
+
 
 export const calculatePostRevenue = async () => {
     const posts = await Post.find({ paymentStatus: "paid" }).populate('postPackage');

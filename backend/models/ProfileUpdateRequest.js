@@ -14,8 +14,9 @@ const ProfileUpdateRequestSchema = new mongoose.Schema({
     default: "pending",
   },
   rejectionReason: { type: String },
-  createdAt: { type: Date, default: Date.now },
   reviewedAt: { type: Date },
+}, {
+  timestamps: true  // ✅ Dòng này để Mongoose tự thêm `createdAt` và `updatedAt`
 });
 
 export default mongoose.model("ProfileUpdateRequest", ProfileUpdateRequestSchema);
