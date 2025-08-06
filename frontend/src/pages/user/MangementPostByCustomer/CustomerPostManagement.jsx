@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
@@ -153,11 +154,36 @@ const CustomerPostManagement = () => {
   };
 
   // Handle edit post
-  const handleEdit = (post) => {
+  const handleEdit = async (post) => {
     if (post.status === "approved") {
       alert("Không thể chỉnh sửa bài đăng đã được duyệt!");
       return;
     }
+  
+    // Lấy token từ localStorage
+    const token = localStorage.getItem("token");
+  
+    if (!token) {
+      alert("Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn.");
+      return;
+    }
+  
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/posts/${post._id}/start-editing`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+    } catch (err) {
+      console.error("Lỗi khi bật isEditing:", err);
+      alert("Có lỗi khi bật chế độ chỉnh sửa, vui lòng thử lại.");
+      return; // Không mở modal nếu bật chỉnh sửa thất bại
+    }
+  
     setEditingPost(post);
     setEditForm({
       title: post.title,
@@ -174,6 +200,8 @@ const CustomerPostManagement = () => {
     });
     setShowEditModal(true);
   };
+  
+  
 
   // Handle form input change
   const handleInputChange = (e) => {
@@ -247,10 +275,13 @@ const CustomerPostManagement = () => {
     try {
       const response = await updatePost(editingPost._id, editForm);
       if (response.data.success) {
+        // ✅ Cập nhật lại trạng thái isEditing: false
+        await updatePost(editingPost._id, { isEditing: false });
+      
         toast.success("Cập nhật bài đăng thành công!");
         setShowEditModal(false);
         setEditingPost(null);
-        fetchPosts();
+        fetchPosts(); // làm mới danh sách
       }
     } catch (error) {
       toast.error("Có lỗi xảy ra khi cập nhật bài đăng");
@@ -456,7 +487,7 @@ const CustomerPostManagement = () => {
                     >
                       <span className="material-symbols-rounded" style={{ fontSize: 18 }}>edit</span>
                       {post.status === "rejected"
-                        ? "Bị từ chối"
+                        ? "Chỉnh sửa"
                         : post.status === "pending"
                           ? "Chỉnh sửa"
                           : "Không thể sửa"}

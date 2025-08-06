@@ -15,15 +15,16 @@ import {
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import EditHistoryModal from "../../../../components/showHistory.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
 import {
     deletePostByAdmin,
     getPostByIdForAdmin,
+    getPostHistoryByPostId,
     rejectPostByAdmin,
     verifyPostByAdmin
 } from "../../../service/postService.js";
 import AdminDashboard from "../adminDashboard.jsx";
-
 const AdminPostDetail = () => {
     const { id } = useParams();
     const { user } = useAuth();
@@ -32,35 +33,77 @@ const AdminPostDetail = () => {
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [mainImage, setMainImage] = useState(null);
-
+    const [history, setHistory] = useState([]);
     useEffect(() => {
-        const fetchPost = async () => {
+        const fetchPostAndHistory = async () => {
             try {
                 const res = await getPostByIdForAdmin(id);
-                if (res.data.success) {
+                console.log("📦 getPostByIdForAdmin response:", res);
+    
+                if (!res || !res.data) throw new Error("❌ Không có phản hồi từ getPostByIdForAdmin");
+    
+                if (res.data.success && res.data.data) {
                     setPost(res.data.data);
                     setMainImage(res.data.data.images?.[0]);
                 } else {
                     toast.error("❌ Không tìm thấy bài đăng.");
-                    navigate(-1);
+                    return navigate(-1);
                 }
-            } catch {
+    
+                // Lấy lịch sử chỉnh sửa
+                const historyRes = await getPostHistoryByPostId(id);
+                console.log("📦 getPostHistoryByPostId response:", historyRes);
+    
+                if (!historyRes || !historyRes.data) throw new Error("❌ Không có phản hồi từ getPostHistoryByPostId");
+    
+                if (historyRes.data) {
+                    setHistory(historyRes.data);
+                } else {
+                    toast.error("⚠️ Không thể lấy lịch sử chỉnh sửa");
+                }
+            } catch (err) {
+                console.error("🚨 Lỗi khi tải dữ liệu bài đăng:", err);
                 toast.error("❌ Lỗi khi tải bài đăng.");
                 navigate(-1);
             } finally {
                 setLoading(false);
             }
         };
-        fetchPost();
+    
+        if (id) fetchPostAndHistory();
     }, [id, navigate]);
+    
+    
+
+    // useEffect(() => {
+    //     const fetchPost = async () => {
+    //         try {
+    //             const res = await getPostByIdForAdmin(id);
+    //             if (res.data.success) {
+    //                 setPost(res.data.data);
+    //                 setMainImage(res.data.data.images?.[0]);
+    //             } else {
+    //                 toast.error("❌ Không tìm thấy bài đăng.");
+    //                 navigate(-1);
+    //             }
+    //         } catch {
+    //             toast.error("❌ Lỗi khi tải bài đăng.");
+    //             navigate(-1);
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     };
+    //     fetchPost();
+    // }, [id, navigate]);
 
     const handleApprove = async () => {
         try {
-            await verifyPostByAdmin(id, { status: "approved" });
+            await verifyPostByAdmin(id);
             toast.success("✅ Đã duyệt bài đăng.");
             navigate(-1);
-        } catch {
-            toast.error("❌ Lỗi duyệt bài đăng.");
+        } catch (error) {
+            const errorMessage = error?.response?.data?.message || "❌ Lỗi duyệt bài đăng.";
+            toast.error(errorMessage);
         }
     };
 
@@ -151,7 +194,7 @@ const handleDelete = async () => {
                                     ))}
                                 </div>
                             </div>
-
+                            <EditHistoryModal history={history} />
                             <div className="card-footer text-muted ">
 
                                 <h6 className="fw-bold">👤 Thông tin liên hệ</h6>
@@ -163,18 +206,18 @@ const handleDelete = async () => {
                                 </p>
                             </div>
                             <div className="card-footer d-flex justify-content-between">
-                                <button
-                                    className="btn btn-success"
-                                    onClick={handleApprove}
-                                    disabled={post.status !== "pending"}
-                                >
-                                    <FaCheck /> {post.status === "approved" ? "Đã duyệt" : "Duyệt"}
-                                </button>
+                            <button
+  className="btn btn-success"
+  onClick={handleApprove}
+  disabled={post.status !== "pending" || post.isEditing} // <- thêm điều kiện
+>
+  <FaCheck /> {post.status === "approved" ? "Đã duyệt" : "Duyệt"}
+</button>
 
                                 <button
                                     className="btn btn-warning"
                                     onClick={handleReject}
-                                    disabled={post.status !== "pending"}
+                                    disabled={post.status !== "pending" || post.isEditing} 
                                 >
                                     <FaTimes /> {post.status === "rejected" ? "Đã từ chối" : "Từ chối"}
                                 </button>
@@ -182,7 +225,7 @@ const handleDelete = async () => {
                                     className="btn btn-danger"
                                     onClick={handleDelete}
                                     disabled={post.status 
-                                        === "deleted"}
+                                        === "deleted" || post.isEditing}
                                 >
                                     <FaTrash /> {post.status == "deleted" ? "Đã xoá" : "Xoá"}
                                 </button>
@@ -237,18 +280,27 @@ const handleDelete = async () => {
                                     <strong>Nội thất:</strong> {post.interiorStatus}
                                 </p>
                                 <p>
-                                    <strong>Trạng thái:</strong>{" "}
-                                    <span
-                                        className={`badge ${post.status === "approved"
-                                            ? "bg-success"
-                                            : post.status === "pending"
-                                                ? "bg-warning text-dark"
-                                                : "bg-danger"
-                                            }`}
-                                    >
-                                        {post.status}
-                                    </span>
-                                </p>
+  <strong>Trạng thái:</strong> {post.status}
+</p>
+
+{post.isEditing && (
+  <p className="text-danger fw-bold mt-2">
+    ⚠️ Người dùng đang chỉnh sửa bài viết này! Không thể duyệt cho đến khi họ hoàn tất.
+  </p>
+)}
+
+<p>
+  <span
+    className={`badge ${post.status === "approved"
+      ? "bg-success"
+      : post.status === "pending"
+      ? "bg-warning text-dark"
+      : "bg-danger"
+    }`}
+  >
+    {post.status}
+  </span>
+</p>
                                 {/* <p>
                                     <strong>Thanh toán:</strong>{" "}
                                     <span
