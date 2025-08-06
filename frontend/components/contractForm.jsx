@@ -1,5 +1,6 @@
 import React from "react";
 
+
 const ContractForm = ({
   contractData,
   post,
@@ -7,6 +8,7 @@ const ContractForm = ({
   landlord,
   readOnly = false,
   headerDate,
+  signaturePartyBUrl,
 }) => {
   const getAutoEndDateVN = (startDate, plusDays = 7) => {
     if (!startDate) return "....../....../......";
@@ -87,26 +89,26 @@ const ContractForm = ({
                 BÊN A (Chủ nhà)
               </div>
               <div className="card-body small">
-              <p>
-  <strong>Họ tên:</strong>{" "}
-  {readOnly ? contractData?.fullNameA : landlordInfo.name}
-</p>
-<p>
-  <strong>CMND/CCCD:</strong>{" "}
-  {readOnly ? contractData?.cmndA : landlordInfo.identityNumber}
-</p>
-<p>
-  <strong>Địa chỉ:</strong>{" "}
-  {readOnly ? contractData?.addressA : landlordInfo.address}
-</p>
-<p>
-  <strong>Số điện thoại:</strong>{" "}
-  {readOnly ? contractData?.phoneA : landlordInfo.phone}
-</p>
-<p>
-  <strong>Email:</strong>{" "}
-  {readOnly ? contractData?.emailA : landlordInfo.email}
-</p>
+                <p>
+                  <strong>Họ tên:</strong>{" "}
+                  {readOnly ? contractData?.fullNameA : landlordInfo.name}
+                </p>
+                <p>
+                  <strong>CMND/CCCD:</strong>{" "}
+                  {readOnly ? contractData?.cmndA : landlordInfo.identityNumber}
+                </p>
+                <p>
+                  <strong>Địa chỉ:</strong>{" "}
+                  {readOnly ? contractData?.addressA : landlordInfo.address}
+                </p>
+                <p>
+                  <strong>Số điện thoại:</strong>{" "}
+                  {readOnly ? contractData?.phoneA : landlordInfo.phone}
+                </p>
+                <p>
+                  <strong>Email:</strong>{" "}
+                  {readOnly ? contractData?.emailA : landlordInfo.email}
+                </p>
 
               </div>
             </div>
@@ -118,26 +120,26 @@ const ContractForm = ({
                 BÊN B (Khách hàng)
               </div>
               <div className="card-body small">
-              <p>
-  <strong>Họ tên:</strong>{" "}
-  {readOnly ? contractData?.fullNameB : user?.name}
-</p>
-<p>
-  <strong>CMND/CCCD:</strong>{" "}
-  {readOnly ? contractData?.cmndB : user?.identityNumber}
-</p>
-<p>
-  <strong>Địa chỉ:</strong>{" "}
-  {readOnly ? contractData?.addressB : user?.address}
-</p>
-<p>
-  <strong>Số điện thoại:</strong>{" "}
-  {readOnly ? contractData?.phoneB : user?.phone}
-</p>
-<p>
-  <strong>Email:</strong>{" "}
-  {readOnly ? contractData?.emailB : user?.email}
-</p>
+                <p>
+                  <strong>Họ tên:</strong>{" "}
+                  {readOnly ? contractData?.fullNameB : user?.name}
+                </p>
+                <p>
+                  <strong>CMND/CCCD:</strong>{" "}
+                  {readOnly ? contractData?.cmndB : user?.identityNumber}
+                </p>
+                <p>
+                  <strong>Địa chỉ:</strong>{" "}
+                  {readOnly ? contractData?.addressB : user?.address}
+                </p>
+                <p>
+                  <strong>Số điện thoại:</strong>{" "}
+                  {readOnly ? contractData?.phoneB : user?.phone}
+                </p>
+                <p>
+                  <strong>Email:</strong>{" "}
+                  {readOnly ? contractData?.emailB : user?.email}
+                </p>
 
               </div>
             </div>
@@ -193,20 +195,20 @@ const ContractForm = ({
             <strong>Tiền đặt cọc:</strong>{" "}
             {depositAmount.toLocaleString("vi-VN")} VNĐ
           </h6>
-            <h6>
+          <h6>
             <li className="list-group-item">
-            <strong>Mã đơn hàng:</strong> {contractData?.orderCode || "Chưa có"}
-          </li>
-          <li className="list-group-item">
-            <strong>Trạng thái thanh toán:</strong>{" "}
-            {contractData?.paymentStatus === "paid"
-              ? "✅ Đã thanh toán"
-              : contractData?.paymentStatus === "pending"
-              ? "⏳ Chờ thanh toán"
-              : "❌ Chưa thanh toán"}
-          </li>
-            </h6>
-         
+              <strong>Mã đơn hàng:</strong> {contractData?.orderCode || "Chưa có"}
+            </li>
+            <li className="list-group-item">
+              <strong>Trạng thái thanh toán:</strong>{" "}
+              {contractData?.paymentStatus === "paid"
+                ? "✅ Đã thanh toán"
+                : contractData?.paymentStatus === "pending"
+                  ? "⏳ Chờ thanh toán"
+                  : "❌ Chưa thanh toán"}
+            </li>
+          </h6>
+
         </div>
 
         {/* Điều khoản */}
@@ -260,38 +262,38 @@ const ContractForm = ({
           <p>
             <strong>3. Cam kết và nghĩa vụ:</strong>
           </p>
-      
 
-<p><strong>3.1. Cam kết của Bên A:</strong></p>
-<ul>
-  <li>Giữ chỗ cho Bên B trong thời gian đặt cọc nêu trên.</li>
-  <li>Cung cấp đầy đủ và minh bạch thông tin liên quan đến bất động sản.</li>
-  <li>Thông báo và mời Bên B ký hợp đồng mua bán / thuê chính thức trong thời hạn giữ chỗ.</li>
-  <li>Hoàn lại toàn bộ tiền cọc nếu không thể thực hiện giao dịch do lỗi của Bên A.</li>
-</ul>
 
-<p><strong>Nghĩa vụ của Bên A:</strong></p>
-<ul>
-  <li>Hỗ trợ Bên B hoàn tất các thủ tục pháp lý liên quan đến giao dịch.</li>
-  <li>Chịu trách nhiệm về tính pháp lý của bất động sản trong giao dịch.</li>
-  <li>Bàn giao tài sản đúng thời hạn và tình trạng như đã cam kết.</li>
-</ul>
+          <p><strong>3.1. Cam kết của Bên A:</strong></p>
+          <ul>
+            <li>Giữ chỗ cho Bên B trong thời gian đặt cọc nêu trên.</li>
+            <li>Cung cấp đầy đủ và minh bạch thông tin liên quan đến bất động sản.</li>
+            <li>Thông báo và mời Bên B ký hợp đồng mua bán / thuê chính thức trong thời hạn giữ chỗ.</li>
+            <li>Hoàn lại toàn bộ tiền cọc nếu không thể thực hiện giao dịch do lỗi của Bên A.</li>
+          </ul>
 
-<p><strong>3.2. Cam kết của Bên B:</strong></p>
-<ul>
-  <li>Thanh toán đầy đủ và đúng hạn số tiền đặt cọc đã thỏa thuận.</li>
-  <li>Tiến hành ký hợp đồng mua bán / thuê chính thức đúng thời hạn nếu còn nhu cầu.</li>
-  <li>Chấp nhận mất toàn bộ tiền cọc nếu tự ý từ chối giao dịch mà không có lý do chính đáng.</li>
-</ul>
+          <p><strong>Nghĩa vụ của Bên A:</strong></p>
+          <ul>
+            <li>Hỗ trợ Bên B hoàn tất các thủ tục pháp lý liên quan đến giao dịch.</li>
+            <li>Chịu trách nhiệm về tính pháp lý của bất động sản trong giao dịch.</li>
+            <li>Bàn giao tài sản đúng thời hạn và tình trạng như đã cam kết.</li>
+          </ul>
 
-<p><strong>Nghĩa vụ của Bên B:</strong></p>
-<ul>
-  <li>Cung cấp đầy đủ thông tin cá nhân, giấy tờ cần thiết phục vụ giao dịch.</li>
-  <li>Thực hiện đầy đủ các cam kết tài chính theo hợp đồng đặt cọc.</li>
-  <li>Phối hợp với Bên A để hoàn tất thủ tục ký hợp đồng mua bán / thuê chính thức.</li>
-</ul>
+          <p><strong>3.2. Cam kết của Bên B:</strong></p>
+          <ul>
+            <li>Thanh toán đầy đủ và đúng hạn số tiền đặt cọc đã thỏa thuận.</li>
+            <li>Tiến hành ký hợp đồng mua bán / thuê chính thức đúng thời hạn nếu còn nhu cầu.</li>
+            <li>Chấp nhận mất toàn bộ tiền cọc nếu tự ý từ chối giao dịch mà không có lý do chính đáng.</li>
+          </ul>
 
-          
+          <p><strong>Nghĩa vụ của Bên B:</strong></p>
+          <ul>
+            <li>Cung cấp đầy đủ thông tin cá nhân, giấy tờ cần thiết phục vụ giao dịch.</li>
+            <li>Thực hiện đầy đủ các cam kết tài chính theo hợp đồng đặt cọc.</li>
+            <li>Phối hợp với Bên A để hoàn tất thủ tục ký hợp đồng mua bán / thuê chính thức.</li>
+          </ul>
+
+
           <p>
             <strong>4. Điều khoản chung:</strong>
           </p>
@@ -321,11 +323,19 @@ const ContractForm = ({
               style={{ width: "60%" }}
             ></div>
           </div>
-          <div className="col">
+          <div className="col text-center">
             <strong>BÊN B</strong>
             <div>(Ký và ghi rõ họ tên)</div>
+            {typeof signaturePartyBUrl === 'string' && signaturePartyBUrl.trim() !== '' && (
+              <img
+                src={signaturePartyBUrl}
+                alt="Chữ ký Bên B"
+                style={{ width: "100px", height: "auto" }}
+              />
+            )}
+
             <div
-              className="border-bottom mt-5 mx-auto"
+              className="border-bottom mt-3 mx-auto"
               style={{ width: "60%" }}
             ></div>
           </div>
