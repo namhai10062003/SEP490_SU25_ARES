@@ -102,29 +102,44 @@ const MyContractRequests = () => {
   
 
   const filteredRequests = requests.filter((c) => {
+    const now = new Date();
+    const isExpired = new Date(c.endDate) < now;
+  
+    // Loại bỏ yêu cầu "pending" đã hết hạn khỏi danh sách thông thường
+    const isExpiredPending = c.status === "pending" && isExpired;
+    if (filterStatus !== "expired" && isExpiredPending) return false;
+  
+    // ✅ Lọc theo filterStatus
     const matchStatus =
-      filterStatus === "all" ? c.status !== "cancelled" : c.status === filterStatus;
-
+      filterStatus === "all"
+        ? c.status !== "cancelled"
+        : filterStatus === "expired"
+        ? isExpired && c.status === "pending"
+        : c.status === filterStatus;
+  
+    // ✅ Lọc theo searchTerm (nếu có)
     const keyword = searchTerm.toLowerCase();
     const matchSearch =
       c.fullNameB?.toLowerCase().includes(keyword) ||
       c.addressB?.toLowerCase().includes(keyword) ||
       c.phoneB?.toLowerCase().includes(keyword) ||
       c.depositAmount?.toString().includes(keyword);
-
-    const contractDate = new Date(c.createdAt); // hoặc c.startDate tuỳ bạn
+  
+    // ✅ Lọc theo ngày tạo
+    const contractDate = new Date(c.createdAt);
     const from = dateFrom ? new Date(dateFrom) : null;
     const to = dateTo ? new Date(dateTo) : null;
-    if (to) to.setHours(23, 59, 59, 999); // để bao gồm cả ngày cuối cùng
-
+    if (to) to.setHours(23, 59, 59, 999);
+  
     const matchDate =
       (!from || contractDate >= from) &&
       (!to || contractDate <= to);
-
+  
     return matchStatus && (!searchTerm || matchSearch) && matchDate;
   });
-
-
+  
+  
+  
 
   if (loading) return <p>🔄 Đang tải...</p>;
 
@@ -138,9 +153,10 @@ const MyContractRequests = () => {
           window.location.href = "/login";
         }}
       />
+  
       <div className="container py-4">
         <h2 className="fw-bold mb-4 text-primary">📥 Yêu Cầu Hợp Đồng Của Tôi</h2>
-
+  
         <div className="mb-4 d-flex align-items-center gap-2">
           <label className="fw-semibold">Lọc trạng thái:</label>
           <select
@@ -155,7 +171,7 @@ const MyContractRequests = () => {
             <option value="expired">Đã hết hạn</option>
             <option value="cancelled">Đã huỷ</option>
           </select>
-
+  
           <input
             type="text"
             className="form-control w-auto"
@@ -181,101 +197,196 @@ const MyContractRequests = () => {
               }
               setDateTo(e.target.value);
             }}
-            min={dateFrom} // ngăn chọn nhỏ hơn từ ngày
+            min={dateFrom}
             style={{ maxWidth: 200 }}
           />
-
         </div>
-
+  
         {filteredRequests.length === 0 ? (
           <div className="alert alert-info">📭 Không có hợp đồng phù hợp.</div>
         ) : (
           <div className="row g-4">
-            {filteredRequests.map((contract, index) => (
-              <div className="col-12" key={contract._id}>
-                <div className="card shadow-sm rounded-4 border-0">
-                  <div className="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                    <div className="d-flex align-items-start gap-3 flex-grow-1">
-                      <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: 44, height: 44, fontSize: 20 }}>
-                        {index + 1}
-                      </div>
-                      <div>
-                        <h5 className="fw-bold mb-1">👤 Người đặt cọc: {contract.fullNameB}</h5>
-                        <div className="mb-1"><span className="fw-semibold">📍 Địa chỉ:</span> {contract.addressB}</div>
-                        <div className="mb-1"><span className="fw-semibold">📞 SĐT:</span> {contract.phoneB}</div>
-                        <div className="mb-1"><span className="fw-semibold">📅</span> {contract.startDate?.slice(0, 10)} - {contract.endDate?.slice(0, 10)}</div>
-                        <div className="mb-1"><span className="fw-semibold">💰 Cọc:</span> {contract.depositAmount?.toLocaleString("vi-VN")} VNĐ</div>
+            {filteredRequests.map((contract, index) => {
+              const isExpired = new Date(contract.endDate) < new Date();
+  
+              return (
+                <div className="col-12" key={contract._id}>
+                  <div className="card shadow-sm rounded-4 border-0">
+                    <div className="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                      <div className="d-flex align-items-start gap-3 flex-grow-1">
+                        <div
+                          className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                          style={{ width: 44, height: 44, fontSize: 20 }}
+                        >
+                          {index + 1}
+                        </div>
                         <div>
-                          <span className="fw-semibold">Trạng thái: </span>
-                          {contract.status === "approved" ? (
-                            <span className="badge bg-success">Đã duyệt</span>
-                          ) : contract.status === "rejected" ? (
-                            <span className="badge bg-danger">Đã từ chối</span>
-                          ) : contract.status === "expired" ? (
-                            <span className="badge bg-secondary">Đã hết hạn</span>
-                          ) : contract.status === "cancelled" ? (
-                            <span className="badge bg-dark">Đã huỷ</span>
-                          ) : (
-                            <span className="badge bg-warning text-dark">Chờ duyệt</span>
+                          <h5 className="fw-bold mb-1">
+                            👤 Người đặt cọc: {contract.fullNameB}
+                          </h5>
+                          <div className="mb-1">
+                            <span className="fw-semibold">📍 Địa chỉ:</span>{" "}
+                            {contract.addressB}
+                          </div>
+                          <div className="mb-1">
+                            <span className="fw-semibold">📞 SĐT:</span>{" "}
+                            {contract.phoneB}
+                          </div>
+                          <div className="mb-1">
+                            <span className="fw-semibold">📅</span>{" "}
+                            {contract.startDate?.slice(0, 10)} -{" "}
+                            {contract.endDate?.slice(0, 10)}
+                          </div>
+                          <div className="mb-1">
+                            <span className="fw-semibold">💰 Cọc:</span>{" "}
+                            {contract.depositAmount?.toLocaleString("vi-VN")} VNĐ
+                          </div>
+                          <div>
+                            <span className="fw-semibold">Trạng thái: </span>
+                            {isExpired && contract.status === "pending" ? (
+                              <span className="badge bg-secondary">
+                                Đã hết hạn
+                              </span>
+                            ) : contract.status === "approved" ? (
+                              <span className="badge bg-success">Đã duyệt</span>
+                            ) : contract.status === "rejected" ? (
+                              <span className="badge bg-danger">Đã từ chối</span>
+                            ) : contract.status === "expired" ? (
+                              <span className="badge bg-secondary">
+                                Đã hết hạn
+                              </span>
+                            ) : contract.status === "cancelled" ? (
+                              <span className="badge bg-dark">Đã huỷ</span>
+                            ) : (
+                              <span className="badge bg-warning text-dark">
+                                Chờ duyệt
+                              </span>
+                            )}
+                          </div>
+  
+                          {contract.rejectReason && (
+                            <div className="text-danger fst-italic mt-2">
+                              📝 Lý do từ chối: {contract.rejectReason}
+                            </div>
                           )}
                         </div>
-                        {contract.rejectReason && (
-                          <div className="text-danger fst-italic mt-2">
-                            📝 Lý do từ chối: {contract.rejectReason}
-                          </div>
+                      </div>
+  
+                      <div className="d-flex flex-column gap-2 mt-3 mt-md-0">
+                        <button
+                          className="btn btn-info fw-bold"
+                          onClick={() =>
+                            navigate(`/contracts/${contract._id}`)
+                          }
+                        >
+                          XEM CHI TIẾT
+                        </button>
+  
+                        {contract.status === "pending" && (
+                          <>
+                            {isExpired ? (
+                              <span className="text-danger fst-italic">
+                                ⛔ Hết hạn - Không thể duyệt
+                              </span>
+                            ) : (
+                              <>
+                                <button
+                                  className="btn btn-success fw-bold"
+                                  onClick={() => handleApprove(contract._id)}
+                                >
+                                  DUYỆT
+                                </button>
+                                <button
+                                  className="btn btn-danger fw-bold"
+                                  onClick={() =>
+                                    handleRejectClick(contract._id)
+                                  }
+                                >
+                                  TỪ CHỐI
+                                </button>
+                              </>
+                            )}
+                          </>
                         )}
+  
+                        <button
+                          className="btn btn-outline-danger fw-bold"
+                          onClick={() => handleDelete(contract._id)}
+                        >
+                          XÓA
+                        </button>
                       </div>
                     </div>
-                    <div className="d-flex flex-column gap-2 mt-3 mt-md-0">
-                      <button
-                        className="btn btn-info fw-bold"
-                        onClick={() => navigate(`/contracts/${contract._id}`)}
+                  </div>
+  
+                  {/* Popup từ chối */}
+                  {rejectPopup.show &&
+                    rejectPopup.contractId === contract._id && (
+                      <div
+                        className="modal fade show d-block"
+                        tabIndex="-1"
+                        style={{ background: "rgba(0,0,0,0.4)" }}
                       >
-                        XEM CHI TIẾT
-                      </button>
-                      {contract.status === "pending" && (
-                        <>
-                          <button className="btn btn-success fw-bold" onClick={() => handleApprove(contract._id)}>DUYỆT</button>
-                          <button className="btn btn-danger fw-bold" onClick={() => handleRejectClick(contract._id)}>TỪ CHỐI</button>
-                        </>
-                      )}
-                      <button className="btn btn-outline-danger fw-bold" onClick={() => handleDelete(contract._id)}>XÓA</button>
-                    </div>
-                  </div>
-                </div>
-                {/* Popup từ chối */}
-                {rejectPopup.show && rejectPopup.contractId === contract._id && (
-                  <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.4)" }}>
-                    <div className="modal-dialog modal-dialog-centered">
-                      <div className="modal-content">
-                        <div className="modal-header">
-                          <h5 className="modal-title">📝 Nhập lý do từ chối</h5>
-                          <button type="button" className="btn-close" onClick={() => setRejectPopup({ show: false, contractId: null })}></button>
-                        </div>
-                        <div className="modal-body">
-                          <textarea
-                            value={rejectReason}
-                            onChange={(e) => setRejectReason(e.target.value)}
-                            placeholder="Nhập lý do từ chối hợp đồng..."
-                            rows={4}
-                            className="form-control"
-                          />
-                        </div>
-                        <div className="modal-footer">
-                          <button className="btn btn-secondary" onClick={() => setRejectPopup({ show: false, contractId: null })}>Hủy</button>
-                          <button className="btn btn-danger" onClick={handleConfirmReject}>Gửi</button>
+                        <div className="modal-dialog modal-dialog-centered">
+                          <div className="modal-content">
+                            <div className="modal-header">
+                              <h5 className="modal-title">
+                                📝 Nhập lý do từ chối
+                              </h5>
+                              <button
+                                type="button"
+                                className="btn-close"
+                                onClick={() =>
+                                  setRejectPopup({
+                                    show: false,
+                                    contractId: null,
+                                  })
+                                }
+                              ></button>
+                            </div>
+                            <div className="modal-body">
+                              <textarea
+                                value={rejectReason}
+                                onChange={(e) =>
+                                  setRejectReason(e.target.value)
+                                }
+                                placeholder="Nhập lý do từ chối hợp đồng..."
+                                rows={4}
+                                className="form-control"
+                              />
+                            </div>
+                            <div className="modal-footer">
+                              <button
+                                className="btn btn-secondary"
+                                onClick={() =>
+                                  setRejectPopup({
+                                    show: false,
+                                    contractId: null,
+                                  })
+                                }
+                              >
+                                Hủy
+                              </button>
+                              <button
+                                className="btn btn-danger"
+                                onClick={handleConfirmReject}
+                              >
+                                Gửi
+                              </button>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                    )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
     </div>
   );
+  
 };
 
 export default MyContractRequests;

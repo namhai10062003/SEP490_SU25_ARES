@@ -251,7 +251,7 @@ const verifyUser = async (req, res) => {
       await user.save();
 
       const token = jwt.sign(
-        { _id: user._id, role: user.role, email: user.email, name: user.name, phone: user.phone },
+        { _id: user._id, role: user.role, email: user.email, name: user.name, phone: user.phone, identityNumber: safeDecrypt(user.identityNumber), },
         process.env.JWT_SECRET,
         { expiresIn: "10d" }
       );
@@ -265,7 +265,8 @@ const verifyUser = async (req, res) => {
           name: user.name,
           role: user.role,
           email: user.email,
-          phone: user.phone
+          phone: user.phone,
+          identityNumber: safeDecrypt(user.identityNumber),
         },
       });
     }

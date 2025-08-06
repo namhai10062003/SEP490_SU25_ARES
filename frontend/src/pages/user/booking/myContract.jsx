@@ -171,35 +171,57 @@ const MyContracts = () => {
   if (loading) return <p>🔄 Đang tải...</p>;
 
   const filteredContracts = contracts.filter((c) => {
-    // 1. Kiểm tra người dùng
     const isMyContract =
       c.userId === user._id || c.userId === user._id?.toString();
     if (!isMyContract || c.status === "cancelled") return false;
-
-    // 2. Lọc theo trạng thái thanh toán
-    const matchesStatus = filter === "all" || c.paymentStatus === filter;
-
-    // 3. Lọc theo từ khóa (1 ô input duy nhất: tên, địa chỉ, SĐT, tiền đặt cọc)
+  
+    const now = new Date();
+    const isExpired = new Date(c.endDate) < now;
+  
+    const matchesStatus = (() => {
+      switch (filter) {
+        case "all":
+          return true;
+        case "pending":
+          // pending nhưng chưa hết hạn
+          return c.status === "pending" && !isExpired;
+        case "unpaid":
+          return c.paymentStatus === "unpaid" && c.status === "approved" && !isExpired;
+        case "paid":
+          return c.paymentStatus === "paid";
+        case "failed":
+          return c.paymentStatus === "failed";
+        case "rejected":
+          return c.status === "rejected";
+        case "expired":
+          // pending nhưng hết hạn
+          return c.status === "pending" && isExpired;
+        default:
+          return false;
+      }
+    })();
+  
     const keyword = searchText.toLowerCase().trim();
     const combined = `${c.fullNameA} ${c.addressA} ${c.phoneA}`.toLowerCase();
     const matchesText = combined.includes(keyword);
-
+  
     const inputAsNumber = parseFloat(searchText.replace(/[^\d]/g, ""));
-    const matchesDeposit =
-      isNaN(inputAsNumber) || c.depositAmount >= inputAsNumber;
-
+    const matchesDeposit = isNaN(inputAsNumber) || c.depositAmount >= inputAsNumber;
+  
     const matchesKeyword = matchesText || matchesDeposit;
-
-    // 4. Lọc theo ngày
+  
     const from = dateFrom ? new Date(dateFrom) : null;
     const to = dateTo ? new Date(dateTo) : null;
     if (to) to.setHours(23, 59, 59, 999);
     const contractDate = new Date(c.startDate);
     const matchesDate =
       (!from || contractDate >= from) && (!to || contractDate <= to);
-
+  
     return matchesStatus && matchesKeyword && matchesDate;
   });
+  
+  
+  
 
 
 
@@ -213,24 +235,27 @@ const MyContracts = () => {
           window.location.href = "/login";
         }}
       />
-
+  
       <div className="container py-4">
         <h2 className="fw-bold mb-4 text-primary">📄 Hợp đồng của tôi</h2>
-
-        <div className="mb-4 d-flex align-items-center gap-2">
+  
+        {/* Bộ lọc */}
+        <div className="mb-4 d-flex align-items-center gap-2 flex-wrap">
           <label className="fw-semibold">Lọc trạng thái:</label>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="form-select w-auto"
           >
-            <option value="all">Tất cả</option>
-            <option value="paid">Đã thanh toán</option>
-            <option value="unpaid">Chưa thanh toán</option>
-            <option value="failed">Chờ duyệt</option>
+              <option value="all">Tất cả</option>
+  <option value="pending">Chờ duyệt</option>
+  <option value="unpaid">Chưa thanh toán</option>
+  <option value="expired">Đã hết hạn</option>
+  <option value="paid">Đã thanh toán</option>
+  {/* <option value="failed">Thanh toán thất bại</option> */}
+  <option value="rejected">Bị từ chối</option>
           </select>
-
-
+  
           <input
             type="text"
             className="form-control w-auto"
@@ -238,7 +263,7 @@ const MyContracts = () => {
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
           />
-
+  
           <input
             type="date"
             className="form-control w-auto"
@@ -252,145 +277,174 @@ const MyContracts = () => {
             min={dateFrom}
             onChange={(e) => setDateTo(e.target.value)}
           />
-
         </div>
-
-
+  
+        {/* Danh sách hợp đồng */}
         {filteredContracts.length === 0 ? (
           <div className="alert alert-info">📭 Không có hợp đồng phù hợp.</div>
         ) : (
           <div className="row g-4">
-            {filteredContracts.map((contract, index) => (
-              <div className="col-12" key={contract._id}>
-                <div className="card shadow-sm rounded-4 border-0">
-                  <div className="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center">
-                    <div className="d-flex align-items-start gap-3 flex-grow-1">
-                      <div className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: 44, height: 44, fontSize: 20 }}>
-                        {index + 1}
-                      </div>
-                      <div>
-                        <h5 className="fw-bold mb-1">🏠 {contract.fullNameA}</h5>
-                        <div className="mb-1"><span className="fw-semibold">📍 Địa chỉ:</span> {contract.addressA}</div>
-                        <div className="mb-1"><span className="fw-semibold">📅 Từ:</span> {contract.startDate?.slice(0, 10)} - {contract.endDate?.slice(0, 10)}</div>
-                        <div className="mb-1"><span className="fw-semibold">💰 Đặt cọc:</span> {contract.depositAmount?.toLocaleString("vi-VN")} VNĐ</div>
-                        <div className="mb-1"><span className="fw-semibold">📞 Liên hệ:</span> {contract.phoneA}</div>
+            {filteredContracts.map((contract, index) => {
+              const isExpired = new Date(contract.endDate) < new Date(); // ✅ Tính riêng từng contract
+  
+              return (
+                <div className="col-12" key={contract._id}>
+                  <div className="card shadow-sm rounded-4 border-0">
+                    <div className="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                      <div className="d-flex align-items-start gap-3 flex-grow-1">
+                        <div
+                          className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                          style={{ width: 44, height: 44, fontSize: 20 }}
+                        >
+                          {index + 1}
+                        </div>
                         <div>
-                          <span className="fw-semibold">Trạng thái: </span>
-                          {contract.status === "pending" ? (
-                            <span className="badge bg-warning text-dark">⏳ Chờ duyệt</span>
-                          ) : contract.status === "rejected" ? (
-                            <span className="badge bg-danger">❌ Đã từ chối</span>
-                          ) : contract.status === "expired" ? (
-                            <span className="badge bg-secondary">📅 Đã hết hạn</span>
-                          ) : contract.paymentStatus === "paid" ? (
-                            <span className="badge bg-success">✅ Đã thanh toán</span>
-                          ) : contract.paymentStatus === "failed" ? (
-                            <span className="badge bg-danger">❌ Thanh toán thất bại</span>
-                          ) : (
-                            <span className="badge bg-info text-dark">💵 Chưa thanh toán</span>
+                          <h5 className="fw-bold mb-1">🏠 {contract.fullNameA}</h5>
+                          <div className="mb-1"><span className="fw-semibold">📍 Địa chỉ:</span> {contract.addressA}</div>
+                          <div className="mb-1"><span className="fw-semibold">📅 Từ:</span> {contract.startDate?.slice(0, 10)} - {contract.endDate?.slice(0, 10)}</div>
+                          <div className="mb-1"><span className="fw-semibold">💰 Đặt cọc:</span> {contract.depositAmount?.toLocaleString("vi-VN")} VNĐ</div>
+                          <div className="mb-1"><span className="fw-semibold">📞 Liên hệ:</span> {contract.phoneA}</div>
+  
+                          {/* Trạng thái */}
+                          <div>
+  <span className="fw-semibold">Trạng thái: </span>
+  {contract.status === "rejected" ? (
+    <span className="badge bg-danger">❌ Bị từ chối</span>
+  ) : contract.paymentStatus === "failed" ? (
+    <span className="badge bg-danger">❌ Thanh toán thất bại</span>
+  ) : contract.status === "pending" && isExpired ? (
+    <span className="badge bg-secondary">📅 Đã hết hạn</span>
+  ) : contract.status === "pending" ? (
+    <span className="badge bg-warning text-dark">⏳ Chờ duyệt</span>
+  ) : contract.paymentStatus === "paid" ? (
+    <span className="badge bg-success">✅ Đã thanh toán</span>
+  ) : (
+    <span className="badge bg-info text-dark">💵 Chưa thanh toán</span>
+  )}
+</div>
+
+
+
+
+
+
+  
+                          {/* Nếu bị từ chối & chưa hết hạn => Gửi lại */}
+                          {contract.status === "rejected" && !isExpired && (
+                            <>
+                              <div className="text-danger fst-italic mt-2">
+                                📝 Lý do: {contract.rejectionReason || "Không có lý do cụ thể"}
+                              </div>
+                              <button
+                                className="btn btn-outline-primary btn-sm mt-2"
+                                onClick={() => openEditPopup(contract)}
+                              >
+                                CHỈNH SỬA & GỬI LẠI
+                              </button>
+                            </>
                           )}
                         </div>
-                        {contract.status === "rejected" && (
-                          <>
-                            <div className="text-danger fst-italic mt-2">
-                              📝 Lý do: {contract.rejectionReason || "Không có lý do cụ thể"}
-                            </div>
-                            <button className="btn btn-outline-primary btn-sm mt-2" onClick={() => openEditPopup(contract)}>
-                              CHỈNH SỬA & GỬI LẠI
-                            </button>
-                          </>
+                      </div>
+  
+                      {/* Nút hành động */}
+                      <div className="d-flex flex-column gap-2 mt-3 mt-md-0">
+                        <button
+                          className="btn btn-info fw-bold"
+                          onClick={() => navigate(`/contracts/${contract._id}`)}
+                        >
+                          XEM CHI TIẾT
+                        </button>
+  
+                        {/* HUỶ nếu pending và chưa hết hạn */}
+                        {contract.status === "pending" && !isExpired && (
+                          <button
+                            className="btn btn-outline-danger fw-bold"
+                            onClick={() => handleCancelContract(contract._id)}
+                          >
+                            HUỶ HỢP ĐỒNG
+                          </button>
+                        )}
+  
+                        {/* THANH TOÁN nếu đã được duyệt và chưa thanh toán */}
+                        {contract.status === "approved" && contract.paymentStatus === "unpaid" && (
+                          <button
+                            className="btn btn-primary fw-bold"
+                            onClick={() => handlePayment(contract._id)}
+                          >
+                            THANH TOÁN
+                          </button>
                         )}
                       </div>
                     </div>
-                    <div className="d-flex flex-column gap-2 mt-3 mt-md-0">
-                      <button
-                        className="btn btn-info fw-bold"
-                        onClick={() => navigate(`/contracts/${contract._id}`)}
-                      >
-                        XEM CHI TIẾT
-                      </button>
-                      {contract.status === "pending" && (
-                        <button
-                          className="btn btn-outline-danger fw-bold"
-                          onClick={() => handleCancelContract(contract._id)}
-                        >
-                          HUỶ HỢP ĐỒNG
-                        </button>
-                      )}
-                      {contract.status === "approved" && contract.paymentStatus === "unpaid" && (
-                        <button className="btn btn-primary fw-bold" onClick={() => handlePayment(contract._id)}>
-                          THANH TOÁN
-                        </button>
-                      )}
-                    </div>
                   </div>
-                </div>
-                {/* Popup chỉnh sửa */}
-                {editingContract && editingContract._id === contract._id && (
-                  <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.4)" }}>
-                    <div className="modal-dialog modal-dialog-centered">
-                      <div className="modal-content">
-                        <div className="modal-header">
-                          <h5 className="modal-title">✏️ Chỉnh sửa hợp đồng</h5>
-                          <button type="button" className="btn-close" onClick={() => setEditingContract(null)}></button>
-                        </div>
-                        <div className="modal-body">
-                          <div className="mb-2"><strong>👤 Người thuê:</strong> {editingContract.fullNameB} - {editingContract.phoneB}</div>
-                          <div className="mb-2"><strong>👤 Chủ nhà:</strong> {editingContract.fullNameA} - {editingContract.phoneA}</div>
-                          <div className="mb-3">
-                            <label className="form-label">📅 Ngày bắt đầu</label>
-                            <input
-                              type="date"
-                              className="form-control"
-                              value={editForm.startDate}
-                              min={getToday()}
-                              onChange={(e) =>
-                                setEditForm({ ...editForm, startDate: e.target.value })
-                              }
-                            />
+  
+                  {/* Popup chỉnh sửa hợp đồng */}
+                  {editingContract && editingContract._id === contract._id && (
+                    <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.4)" }}>
+                      <div className="modal-dialog modal-dialog-centered">
+                        <div className="modal-content">
+                          <div className="modal-header">
+                            <h5 className="modal-title">✏️ Chỉnh sửa hợp đồng</h5>
+                            <button type="button" className="btn-close" onClick={() => setEditingContract(null)}></button>
                           </div>
-                          <div className="mb-3">
-                            <label className="form-label">📅 Ngày kết thúc</label>
-                            <input
-                              type="date"
-                              className="form-control"
-                              value={editForm.endDate}
-                              min={(() => {
-                                const nextDay = new Date(editForm.startDate);
-                                nextDay.setDate(nextDay.getDate() + 1);
-                                return nextDay.toISOString().split("T")[0];
-                              })()}
-                              onChange={(e) =>
-                                setEditForm({ ...editForm, endDate: e.target.value })
-                              }
-                            />
+                          <div className="modal-body">
+                            <div className="mb-2"><strong>👤 Người thuê:</strong> {editingContract.fullNameB} - {editingContract.phoneB}</div>
+                            <div className="mb-2"><strong>👤 Chủ nhà:</strong> {editingContract.fullNameA} - {editingContract.phoneA}</div>
+                            <div className="mb-3">
+                              <label className="form-label">📅 Ngày bắt đầu</label>
+                              <input
+                                type="date"
+                                className="form-control"
+                                value={editForm.startDate}
+                                min={getToday()}
+                                onChange={(e) =>
+                                  setEditForm({ ...editForm, startDate: e.target.value })
+                                }
+                              />
+                            </div>
+                            <div className="mb-3">
+                              <label className="form-label">📅 Ngày kết thúc</label>
+                              <input
+                                type="date"
+                                className="form-control"
+                                value={editForm.endDate}
+                                min={(() => {
+                                  const nextDay = new Date(editForm.startDate);
+                                  nextDay.setDate(nextDay.getDate() + 1);
+                                  return nextDay.toISOString().split("T")[0];
+                                })()}
+                                onChange={(e) =>
+                                  setEditForm({ ...editForm, endDate: e.target.value })
+                                }
+                              />
+                            </div>
+                            <div className="mb-3">
+                              <label className="form-label">📜 Ghi chú thêm vào hợp đồng</label>
+                              <textarea
+                                rows={4}
+                                className="form-control"
+                                value={editForm.contractTerms}
+                                onChange={(e) => setEditForm({ ...editForm, contractTerms: e.target.value })}
+                              />
+                            </div>
                           </div>
-
-                          <div className="mb-3">
-                            <label className="form-label">📜 Ghi chú thêm vào hợp đồng</label>
-                            <textarea
-                              rows={4}
-                              className="form-control"
-                              value={editForm.contractTerms}
-                              onChange={(e) => setEditForm({ ...editForm, contractTerms: e.target.value })}
-                            />
+                          <div className="modal-footer">
+                            <button className="btn btn-secondary" onClick={() => setEditingContract(null)}>Hủy</button>
+                            <button className="btn btn-success" onClick={handleResubmit}>Gửi lại</button>
                           </div>
-                        </div>
-                        <div className="modal-footer">
-                          <button className="btn btn-secondary" onClick={() => setEditingContract(null)}>Hủy</button>
-                          <button className="btn btn-success" onClick={handleResubmit}>Gửi lại</button>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
     </div>
   );
+  
 };
 
 export default MyContracts;
