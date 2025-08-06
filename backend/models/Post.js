@@ -66,7 +66,8 @@ const PostSchema = new Schema({
   },
   deletedAt: { type: Date, default: null },
   expiredDate: { type: Date },
-
+  isEditing: { type: Boolean, default: false },
+editingAt: { type: Date },
 }, {
   timestamps: true // Tự động thêm createdAt và updatedAt
 });

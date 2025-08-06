@@ -27,6 +27,9 @@ export const createContract = async (req, res) => {
       contractTerms,
       depositAmount,
       apartmentCode,
+      side,
+      // signaturePartyAUrl,
+      signaturePartyBUrl
     } = req.body;
 
     // 📌 Lấy bài đăng để lấy dữ liệu snapshot
@@ -34,7 +37,13 @@ export const createContract = async (req, res) => {
     if (!post) {
       return res.status(404).json({ success: false, message: "Không tìm thấy bài đăng." });
     }
-
+// Upload xong thì lưu đường dẫn vào trường tương ứng
+// if (side === "A") {
+//   contract.signaturePartyAUrl = req.file.path;
+// } else
+ if (side === "B") {
+  contract.signaturePartyBUrl= req.file.path;
+}
     // 💵 Tính tiền cọc nếu chưa có
     let finalDeposit = depositAmount || Math.floor(post.price * 0.1);
 
@@ -74,6 +83,8 @@ export const createContract = async (req, res) => {
       depositAmount: finalDeposit,
       withdrawableAmount: Math.round(finalDeposit * 0.9),
       postSnapshot, // ✅ dùng snapshot đầy đủ
+      // signaturePartyAUrl,
+      signaturePartyBUrl
     });
 
     await contract.save();
@@ -337,3 +348,48 @@ export const updateWithdrawableForAll = async (req, res) => {
     res.status(500).json({ message: "❌ Server error" });
   }
 };
+
+export const handleSignatureUpload = async (req, res) => {
+  try {
+    const contractId = req.body.contractId || req.query.contractId;
+
+    if (!contractId) {
+      return res.status(400).json({ message: "Thiếu contractId" });
+    }
+
+    const files = req.files;
+    console.log("FILES:", files); // ✅ LOG RA ĐỂ DEBUG TRONG POSTMAN
+
+    if (!files || (!files.signaturePartyAUrl && !files.signaturePartyBUrl)) {
+      return res.status(400).json({ message: "Không có file được upload" });
+    }
+
+    const updateFields = {};
+    if (files.signaturePartyAUrl) {
+      updateFields.signaturePartyAUrl = files.signaturePartyAUrl[0].path;
+    }
+    if (files.signaturePartyBUrl) {
+      updateFields.signaturePartyBUrl = files.signaturePartyBUrl[0].path;
+    }
+
+    const updatedContract = await Contract.findByIdAndUpdate(
+      contractId,
+      updateFields,
+      { new: true }
+    );
+
+    if (!updatedContract) {
+      return res.status(404).json({ message: "Không tìm thấy hợp đồng" });
+    }
+
+    res.status(200).json({
+      message: "Upload chữ ký thành công",
+      contract: updatedContract,
+    });
+  } catch (err) {
+    console.error("Lỗi khi upload chữ ký:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+

@@ -63,6 +63,8 @@ const contractSchema = new mongoose.Schema({
     default: 0, // mặc định là 0 cho hợp đồng mới
   },
   deletedAt: { type: Date, default: null }, // Soft delete
+  signaturePartyAUrl: { type: String, default: "" },
+  signaturePartyBUrl: { type: String, default: "" },
 }, { timestamps: true });
 
 export default mongoose.model("Contract", contractSchema);
