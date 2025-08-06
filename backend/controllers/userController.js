@@ -6,7 +6,14 @@ import getUserDependencies from "../helpers/userDependencyChecker.js";
 import Notification from '../models/Notification.js';
 import ProfileUpdateRequest from "../models/ProfileUpdateRequest.js";
 import User from '../models/User.js';
+
 // GET /api/users?page=1&limit=10&role=staff&status=1
+// controllers/userController.js (thay thế hàm getUsers hiện tại)
+function escapeRegex(str) {
+  // escape characters that have special meaning in regex
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export const getUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -14,8 +21,18 @@ export const getUsers = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const filter = { deletedAt: null };
+
     if (req.query.role) filter.role = req.query.role;
-    if (req.query.status !== undefined && req.query.status !== "") filter.status = Number(req.query.status);
+    if (req.query.status !== undefined && req.query.status !== "") {
+      filter.status = Number(req.query.status);
+    }
+
+    // NEW: email search (partial, case-insensitive)
+    if (req.query.email && String(req.query.email).trim() !== "") {
+      const raw = String(req.query.email).trim();
+      const safe = escapeRegex(raw); // prevents accidental regex injection
+      filter.email = { $regex: safe, $options: "i" };
+    }
 
     const [users, total] = await Promise.all([
       User.find(filter)
@@ -28,13 +45,15 @@ export const getUsers = async (req, res) => {
 
     res.json({
       users,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.max(1, Math.ceil(total / limit)),
       total,
     });
   } catch (err) {
+    console.error("getUsers error:", err);
     res.status(500).json({ error: "Server error", message: err.message });
   }
 };
+
 
 export const getUsersDepartment = async (req, res) => {
   try {

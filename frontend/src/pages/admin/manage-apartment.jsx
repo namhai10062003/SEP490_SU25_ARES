@@ -407,38 +407,94 @@ const ManageApartment = () => {
           />
         )
       }
+
       {showDetailModal && selectedApartment && (
-        <div className="modal show fade d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          role="dialog"
+          aria-modal="true"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
           <div className="modal-dialog modal-lg" role="document">
-            <div className="modal-content">
+            <div className="modal-content position-relative">
+              {/* Floating close button: nằm ngoài header, góc phải trên */}
+              <button
+                type="button"
+                className="btn btn-sm btn-light position-absolute"
+                aria-label="Đóng"
+                onClick={() => setShowDetailModal(false)}
+                style={{
+                  top: "0.6rem",
+                  right: "0.6rem",
+                  zIndex: 1051, // trên header
+                  borderRadius: "0.35rem",
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.15)"
+                }}
+              >
+                <i className="bi bi-x-lg" />
+              </button>
+
               <div className="modal-header bg-primary text-white">
-                <h5 className="modal-title">
-                  <i className="bi bi-building me-2"></i>
-                  Chi tiết Căn hộ: {selectedApartment.apartmentCode}
+                <h5 className="modal-title d-flex align-items-center gap-2">
+                  <i className="bi bi-building me-2" aria-hidden="true"></i>
+                  Chi tiết Căn hộ:
+                  <small className="ms-2 text-light opacity-75">{selectedApartment.apartmentCode}</small>
                 </h5>
-                <button type="button" className="btn-close btn-close-white" onClick={() => setShowDetailModal(false)}></button>
+                {/* giữ header sạch, không chứa nút đóng */}
               </div>
+
               <div className="modal-body">
                 <div className="row">
                   {/* Cột 1 */}
-                  <div className="col-md-6">
+                  <div className="col-md-6 mb-3">
                     <ul className="list-group list-group-flush">
-                      <li className="list-group-item"><i className="bi bi-bar-chart me-2"></i><strong>Tầng:</strong> {selectedApartment.floor}</li>
-                      <li className="list-group-item"><i className="bi bi-aspect-ratio me-2"></i><strong>Diện tích:</strong> {selectedApartment.area} m²</li>
-                      <li className="list-group-item"><i className="bi bi-door-closed me-2"></i><strong>Phòng ngủ:</strong> {selectedApartment.bedrooms}</li>
-                      <li className="list-group-item"><i className="bi bi-lamp me-2"></i><strong>Nội thất:</strong> {selectedApartment.furniture}</li>
-                      <li className="list-group-item"><i className="bi bi-compass me-2"></i><strong>Hướng:</strong> {selectedApartment.direction}</li>
-                      <li className="list-group-item"><i className="bi bi-buildings me-2"></i><strong>Toà:</strong> {selectedApartment.building}</li>
+                      <li className="list-group-item">
+                        <i className="bi bi-bar-chart me-2"></i>
+                        <strong>Tầng:</strong> {selectedApartment.floor ?? "—"}
+                      </li>
+                      <li className="list-group-item">
+                        <i className="bi bi-aspect-ratio me-2"></i>
+                        <strong>Diện tích:</strong> {selectedApartment.area ? `${selectedApartment.area} m²` : "—"}
+                      </li>
+                      <li className="list-group-item">
+                        <i className="bi bi-door-closed me-2"></i>
+                        <strong>Phòng ngủ:</strong> {selectedApartment.bedrooms ?? "—"}
+                      </li>
+                      <li className="list-group-item">
+                        <i className="bi bi-lamp me-2"></i>
+                        <strong>Nội thất:</strong> {selectedApartment.furniture || "—"}
+                      </li>
+                      <li className="list-group-item">
+                        <i className="bi bi-compass me-2"></i>
+                        <strong>Hướng:</strong> {selectedApartment.direction || "—"}
+                      </li>
+                      <li className="list-group-item">
+                        <i className="bi bi-buildings me-2"></i>
+                        <strong>Toà:</strong> {selectedApartment.building || "—"}
+                      </li>
                     </ul>
                   </div>
 
                   {/* Cột 2 */}
-                  <div className="col-md-6">
+                  <div className="col-md-6 mb-3">
                     <ul className="list-group list-group-flush">
-                      <li className="list-group-item"><i className="bi bi-info-circle me-2"></i><strong>Trạng thái:</strong> {selectedApartment.status}</li>
-                      <li className="list-group-item"><i className="bi bi-file-earmark-text me-2"></i><strong>Giấy tờ pháp lý:</strong> {selectedApartment.legalDocuments}</li>
-                      <li className="list-group-item"><i className="bi bi-person-vcard me-2"></i><strong>Chủ sở hữu:</strong> {selectedApartment.ownerName || "Chưa có"}</li>
-                      <li className="list-group-item"><i className="bi bi-telephone me-2"></i><strong>SĐT chủ:</strong> {selectedApartment.ownerPhone || "-"}</li>
+                      <li className="list-group-item">
+                        <i className="bi bi-info-circle me-2"></i>
+                        <strong>Trạng thái:</strong> {selectedApartment.status || "Chưa xác định"}
+                      </li>
+                      <li className="list-group-item">
+                        <i className="bi bi-file-earmark-text me-2"></i>
+                        <strong>Giấy tờ pháp lý:</strong> {selectedApartment.legalDocuments || "—"}
+                      </li>
+                      <li className="list-group-item">
+                        <i className="bi bi-person-vcard me-2"></i>
+                        <strong>Chủ sở hữu:</strong> {selectedApartment.ownerName || "Chưa có"}
+                      </li>
+                      <li className="list-group-item">
+                        <i className="bi bi-telephone me-2"></i>
+                        <strong>SĐT chủ:</strong> {selectedApartment.ownerPhone || "—"}
+                      </li>
                       <li className="list-group-item">
                         <i className="bi bi-person-fill-check me-2"></i>
                         <strong>Người thuê:</strong>{" "}
@@ -447,47 +503,52 @@ const ManageApartment = () => {
                       <li className="list-group-item">
                         <i className="bi bi-telephone-inbound me-2"></i>
                         <strong>SĐT người thuê:</strong>{" "}
-                        {selectedApartment.isOwner?.phone || selectedApartment.isRenter?.phone || "-"}
+                        {selectedApartment.isOwner?.phone || selectedApartment.isRenter?.phone || "—"}
                       </li>
-
                     </ul>
                   </div>
                 </div>
-              </div>
-              <hr className="my-4" />
-              <h5><i className="bi bi-clock-history me-2"></i>Lịch sử sử dụng căn hộ</h5>
-              {apartmentHistory.length === 0 ? (
-                <p className="text-muted">Không có lịch sử sử dụng căn hộ.</p>
-              ) : (
-                <div className="table-responsive">
-                  <table className="table table-bordered table-hover mt-2">
-                    <thead className="table-light">
-                      <tr>
-                        <th>STT</th>
-                        <th>Người sử dụng</th>
-                        <th>SĐT</th>
-                        <th>Loại giấy tờ</th>
-                        <th>Thời gian</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {apartmentHistory.map((record, index) => (
-                        <tr key={record._id}>
-                          <td>{index + 1}</td>
-                          <td>{record.fullName}</td>
-                          <td>{record.phone || "-"}</td>
-                          <td>{record.documentType}</td>
-                          <td>
-                            {record.contractStart
-                              ? `${new Date(record.contractStart).toLocaleDateString()} - ${record.contractEnd ? new Date(record.contractEnd).toLocaleDateString() : "N/A"}`
-                              : "Không rõ"}
-                          </td>
+
+                <hr className="my-4" />
+
+                <h5>
+                  <i className="bi bi-clock-history me-2"></i>
+                  Lịch sử sử dụng căn hộ
+                </h5>
+
+                {Array.isArray(apartmentHistory) && apartmentHistory.length > 0 ? (
+                  <div className="table-responsive">
+                    <table className="table table-bordered table-hover mt-2">
+                      <thead className="table-light">
+                        <tr>
+                          <th>STT</th>
+                          <th>Người sử dụng</th>
+                          <th>SĐT</th>
+                          <th>Loại giấy tờ</th>
+                          <th>Thời gian</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                      </thead>
+                      <tbody>
+                        {apartmentHistory.map((record, index) => (
+                          <tr key={record._id || index}>
+                            <td>{index + 1}</td>
+                            <td>{record.fullName || "—"}</td>
+                            <td>{record.phone || "—"}</td>
+                            <td>{record.documentType || "—"}</td>
+                            <td>
+                              {record.contractStart
+                                ? `${new Date(record.contractStart).toLocaleDateString()}${record.contractEnd ? ` - ${new Date(record.contractEnd).toLocaleDateString()}` : ""}`
+                                : "Không rõ"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-muted">Không có lịch sử sử dụng căn hộ.</p>
+                )}
+              </div>
 
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowDetailModal(false)}>
@@ -498,6 +559,7 @@ const ManageApartment = () => {
           </div>
         </div>
       )}
+
 
     </AdminDashboard>
   );

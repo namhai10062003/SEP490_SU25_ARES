@@ -208,7 +208,7 @@ export default function ManageUserDetail() {
                     dependencies && (dependencies.owns > 0 || dependencies.rents > 0 ||
                         dependencies.contractsAsTenant > 0 || dependencies.contractsAsLandlord > 0) ? (
                         <div>
-                            <strong>Không thể xoá!</strong> Người dùng {user.name} đang:
+                            <strong>Không thể xoá!</strong> Người dùng <strong>{user.name}</strong> đang:
                             <ul>
                                 {dependencies.owns > 0 && <li>Sở hữu {dependencies.owns} căn hộ</li>}
                                 {dependencies.rents > 0 && <li>Thuê {dependencies.rents} căn hộ</li>}

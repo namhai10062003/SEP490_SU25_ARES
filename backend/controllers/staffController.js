@@ -1,24 +1,45 @@
 import bcrypt from 'bcrypt';
 import User from '../models/User.js';
 // Lấy tất cả staff
+// controllers/staffController.js (or wherever)
+function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 const getAllStaff = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
+        const filter = { role: "staff", deletedAt: null };
+
+        if (req.query.status !== undefined && req.query.status !== "") {
+            filter.status = Number(req.query.status);
+        }
+
+        if (req.query.email && String(req.query.email).trim() !== "") {
+            const safe = escapeRegex(String(req.query.email).trim());
+            filter.email = { $regex: safe, $options: "i" };
+        }
+
         const [staff, total] = await Promise.all([
-            User.find({ role: "staff" }).skip(skip).limit(limit),
-            User.countDocuments({ role: "staff" })
+            User.find(filter)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .select("-password -otp -otpExpires"),
+            User.countDocuments(filter),
         ]);
 
         res.json({
             data: staff,
             page,
-            totalPages: Math.ceil(total / limit),
-            totalItems: total
+            totalPages: Math.max(1, Math.ceil(total / limit)),
+            totalItems: total,
         });
     } catch (err) {
+        console.error("getAllStaff error:", err);
         res.status(500).json({ error: "Server error" });
     }
 };
