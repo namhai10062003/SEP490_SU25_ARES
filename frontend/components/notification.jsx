@@ -1,6 +1,6 @@
+import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { FiBell } from "react-icons/fi";
-import axios from "axios";
 import { toast } from "react-toastify";
 const NotificationBell = ({ user }) => {
     const [notifications, setNotifications] = useState([]);
@@ -8,6 +8,27 @@ const NotificationBell = ({ user }) => {
     const [showDropdown, setShowDropdown] = useState(false);
     const dropdownRef = useRef();
 
+    const extractDeclarationId = (msg) => {
+        const match = msg.match(/hồ sơ ([a-f0-9]{24})/i); // match ObjectId
+        return match ? match[1] : null;
+    };
+
+    const getNotificationActionButton = () => {
+        const declarationId = selectedNotification?.data?.declarationId;
+        if (declarationId) {
+          return (
+            <a
+              href={`/residence-declaration/detail/${declarationId}`}
+              className="btn btn-primary"
+            >
+              Xem chi tiết
+            </a>
+          );
+        }
+        return null;
+      };
+      
+    
     const fetchNotifications = async () => {
         if (user?._id) {
             try {
@@ -196,28 +217,39 @@ const NotificationBell = ({ user }) => {
                                 </div>
 
                                 <div
-                                    className="modal-footer bg-light"
-                                    style={{
-                                        display: "flex",
-                                        justifyContent: "flex-end",
-                                        gap: "10px",
-                                        flexWrap: "nowrap",
-                                    }}
-                                >
-                                    {extractPostId(selectedNotification.message) ? (
-                                        <a
-                                            href={`/postdetail/${extractPostId(selectedNotification.message)}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="btn btn-primary"
-                                        >
-                                            Xem chi tiết
-                                        </a>
-                                    ) : null}
-                                    <button className="btn btn-outline-secondary" onClick={closeModal}>
-                                        Đóng
-                                    </button>
-                                </div>
+  className="modal-footer bg-light"
+  style={{
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: "10px",
+    flexWrap: "nowrap",
+  }}
+>
+  {extractPostId(selectedNotification.message) && (
+    <a
+      href={`/postdetail/${extractPostId(selectedNotification.message)}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="btn btn-primary"
+    >
+      Xem chi tiết
+    </a>
+  )}
+
+  {selectedNotification?.data?.declarationId && (
+    <a
+      href={`/residence-declaration/detail/${selectedNotification.data.declarationId}`}
+      className="btn btn-primary"
+    >
+      Xem chi tiết
+    </a>
+  )}
+
+  <button className="btn btn-outline-secondary" onClick={closeModal}>
+    Đóng
+  </button>
+</div>
+
                             </div>
                         </div>
                     </div>

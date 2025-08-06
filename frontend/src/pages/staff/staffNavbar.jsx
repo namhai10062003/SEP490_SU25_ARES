@@ -241,6 +241,23 @@ const StaffNavbar = () => {
               Quản Lý Nhân Khẩu
             </Link>
           </li>
+          <li className="nav-item">
+            <Link
+              to="/staff-residence-decration"
+              className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-residence-decration"
+                  ? "active bg-white text-primary fw-bold shadow-sm"
+                  : "text-white"
+                }`}
+              style={{
+                background:
+                  location.pathname === "/staff-residence-decration"
+                    ? "white"
+                    : "transparent",
+              }}
+            >
+              Quản Lý Tạm Trú Tạm Vắng
+            </Link>
+          </li>
           {/* <li className="nav-item">
             <Link
               to="/staff-citizenlist"

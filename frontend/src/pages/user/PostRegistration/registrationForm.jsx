@@ -116,7 +116,7 @@ const handleInputChange = (e) => {
   }
 
   // Giới hạn số ký tự cho tiêu đề và mô tả
-  if (name === "tieuDe" && value.length > 200) {
+  if (name === "tieuDe" && value.length > 50) {
     return; // không cho nhập thêm
   }
   if (name === "moTaChiTiet" && value.length > 200) {
