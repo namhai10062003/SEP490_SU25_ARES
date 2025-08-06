@@ -22,6 +22,7 @@ import plazaRoutes from "./router/plazaRoutes.js";
 import postPackage from "./router/postPackage.js";
 import postRouter from "./router/postRouter.js";
 import profileUpdateRoutes from "./router/profileUpdateRoutes.js";
+import ResidenceDeclaration from "./router/residenceDeclarationRoutes.js";
 import residentRouter from "./router/residentRoutes.js";
 import residentVerificationRouter from "./router/residentVerificationRoutes.js";
 import revenueRoutes from "./router/revenueRoutes.js";
@@ -106,6 +107,8 @@ app.use("/api/contact", contactRoutes);
 app.use("/api/revenue", revenueRoutes);
 app.use('/api/staff-dashboard', staffDashboardRoute);
 app.use("/api/profile-update", profileUpdateRoutes);
+app.use("/api/residence-declaration", ResidenceDeclaration);
+
 
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {

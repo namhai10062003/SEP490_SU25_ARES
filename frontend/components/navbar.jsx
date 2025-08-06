@@ -77,6 +77,11 @@ const Navbar = () => {
             </ProtectedLink>
           </li>
           <li>
+            <ProtectedLink className="dropdown-item" to="/residence-declaration/list">
+              Tạm trú tạm vắng
+            </ProtectedLink>
+          </li>
+          <li>
             <ProtectedLink className="dropdown-item" to="/canho/liked-posts">
               Yêu thích
             </ProtectedLink>
