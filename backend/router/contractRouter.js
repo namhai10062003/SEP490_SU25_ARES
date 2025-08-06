@@ -1,11 +1,12 @@
 import express from "express";
-import { approveContract, createContract, deleteContract, getAllPaidContracts, getContractById, getMyContracts, rejectContract, resubmitContract, updateWithdrawableForAll } from "../controllers/contractController.js";
+import { handleSignatureUpload, approveContract, createContract, deleteContract, getAllPaidContracts, getContractById, getMyContracts, rejectContract, resubmitContract, updateWithdrawableForAll } from "../controllers/contractController.js";
 import {
   createContractPayment,
   handleContractPaymentWebhook
 } from "../controllers/contractPaymentController.js";
 import verifysUser from "../middleware/authMiddleware.js";
 import Contract from "../models/Contract.js";
+import { uploadSignature } from "../middleware/uploadSignature.js";
 const router = express.Router();
 
 
@@ -90,4 +91,6 @@ router.get('/user/:userId', async (req, res) => {
 
 
 router.put("/update-withdrawable",verifysUser,updateWithdrawableForAll);
+
+router.post("/upload-signature", uploadSignature, handleSignatureUpload);
 export default router;

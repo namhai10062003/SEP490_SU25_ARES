@@ -7,6 +7,7 @@ import ContractForm from "../../../../components/contractForm";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
 import { getPostById } from "../../../service/postService";
+import SignaturePopup from "../../../../components/SignaturePopup";
 
 const BookingForm = () => {
   const { postId } = useParams();
@@ -14,6 +15,9 @@ const BookingForm = () => {
   const [name, setName] = useState("");
   const navigate = useNavigate();
   const hasWarned = useRef(false);
+  const [showSignature, setShowSignature] = useState(false); // mở popup
+  const [signaturePartyBUrl, setsignaturePartyBUrl] = useState(true); // lưu chữ ký base64
+  // const [contract, setContract] = useState(null); // hoặc từ props, hoặc từ fetch
   const [post, setPost] = useState(null);
   const [form, setForm] = useState({
     startDate: "",
@@ -55,19 +59,39 @@ const BookingForm = () => {
     }
   }, [user]);
 
+  // useEffect(() => {
+  //   if (contract && contract._id) {
+  //     setShowSignature(true); // chỉ mở popup khi contract đã sẵn sàng
+  //   }
+  // }, [contract]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!form.startDate || !form.endDate) {
       return toast.error("Vui lòng chọn đầy đủ ngày thuê");
     }
-    if (!form.agreed) {
-      return toast.error("Bạn cần đồng ý với điều khoản");
-    }
+    // if (!form.agreed) {
+    //   return toast.error("Bạn cần đồng ý với điều khoản");
+    // }
 
     // open modal to preview
     setShowPreview(true);
   };
+
+  // const createContract = async () => {
+  //   try {
+  //     const res = await axios.post("/api/contracts/create", { /* dữ liệu */ });
+  //     const newContract = res.data.data;
+
+  //     setContract(newContract); // Gán hợp đồng mới vào state
+
+  //     // ✅ Sau khi có contract._id thì mới mở popup
+  //     setShowSignature(true);
+  //   } catch (err) {
+  //     console.error("Lỗi tạo hợp đồng:", err);
+  //   }
+  // };
 
   const confirmBooking = async () => {
     const payload = {
@@ -92,16 +116,61 @@ const BookingForm = () => {
     };
 
     try {
-      await axios.post(
+      // 1. Gửi API tạo hợp đồng
+
+      const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/contracts`,
         payload,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
+
+      const contractId = res.data?.data?._id;
+      console.log(contractId);
+      if (!contractId) {
+        throw new Error("Không nhận được ID hợp đồng từ server");
+      }
+
+      // 2. Nếu đã ký, thì upload chữ ký
+      if (signaturePartyBUrl && signaturePartyBUrl.startsWith("data:image")) {
+        const blob = await (await fetch(signaturePartyBUrl)).blob();
+        const file = new File([blob], "signaturePartyBUrl.png", { type: "image/png" });
+
+        const formData = new FormData();
+        formData.append("signaturePartyBUrl", file); // ✅ đúng tên key backend mong muốn
+        formData.append("contractId", contractId);
+
+        console.log("⬇️ FormData đang gửi:");
+for (let pair of formData.entries()) {
+  if (pair[1] instanceof File) {
+    console.log(`${pair[0]}:`, pair[1].name, pair[1].type, pair[1].size + " bytes");
+  } else {
+    console.log(`${pair[0]}:`, pair[1]);
+  }
+}
+
+        console.log("📤 Đang upload chữ ký với các thông tin:");
+        console.log("contractId:", contractId);
+        console.log("side:", "B");
+        console.log("file:", file);
+
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/contracts/upload-signature`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+      }
+
       toast.success("✅ Đã gửi yêu cầu đặt cọc!");
       navigate("/my-contracts");
-    } catch {
+    } catch (error) {
+      console.error(error);
       toast.error("❌ Lỗi khi gửi yêu cầu");
     }
   };
@@ -140,6 +209,7 @@ const BookingForm = () => {
   return (
     <div className="bg-light min-vh-100">
       <Header user={user} />
+
       <div className="container py-5 my-4">
         <button
           type="button"
@@ -149,6 +219,7 @@ const BookingForm = () => {
           ← Quay lại
         </button>
         <h2 className="text-center mb-4">Đặt cọc giữ chỗ</h2>
+
         <div className="card shadow-sm p-4">
           <h4 className="fw-bold text-primary mb-3">
             Mã căn hộ: {post.apartmentCode} <br />
@@ -206,7 +277,7 @@ const BookingForm = () => {
               <strong>{Math.floor(post.price * 0.1).toLocaleString("vi-VN")} VNĐ</strong>
             </div>
 
-            <div className="form-check mb-3">
+            {/* <div className="form-check mb-3">
               <input
                 className="form-check-input"
                 type="checkbox"
@@ -216,7 +287,7 @@ const BookingForm = () => {
               <label className="form-check-label">
                 Tôi đồng ý với các điều khoản hợp đồng
               </label>
-            </div>
+            </div> */}
 
             <div className="text-center">
               <button type="submit" className="btn btn-success px-4">
@@ -227,13 +298,8 @@ const BookingForm = () => {
         </div>
       </div>
 
-      {/* Preview Modal */}
-      <Modal
-        show={showPreview}
-        onHide={() => setShowPreview(false)}
-        size="lg"
-        centered
-      >
+      {/* Modal xem trước hợp đồng */}
+      <Modal show={showPreview} onHide={() => setShowPreview(false)} size="lg" centered>
         <Modal.Header closeButton>
           <Modal.Title>Xem trước hợp đồng</Modal.Title>
         </Modal.Header>
@@ -244,13 +310,18 @@ const BookingForm = () => {
               endDate: form.endDate,
               depositAmount: Math.floor(post.price * 0.1),
               terms: "Các điều khoản đã đính kèm trong hợp đồng.",
+              signaturePartyBUrl: signaturePartyBUrl, // chữ ký
             }}
             post={post}
             user={user}
             landlord={post.contactInfo}
+            signaturePartyBUrl={signaturePartyBUrl}
           />
         </Modal.Body>
         <Modal.Footer>
+          <Button variant="outline-primary" onClick={() => setShowSignature(true)}>
+            Ký hợp đồng
+          </Button>
           <Button variant="secondary" onClick={() => setShowPreview(false)}>
             Hủy
           </Button>
@@ -259,6 +330,19 @@ const BookingForm = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Popup ký chữ ký */}
+      {(
+        <SignaturePopup
+          show={showSignature}
+          onClose={() => setShowSignature(false)}
+          onSave={(base64Signature) => {
+            setsignaturePartyBUrl(base64Signature); // lưu base64 local
+            setShowSignature(false);
+          }}
+          side="B"
+        />
+      )}
     </div>
   );
 };
