@@ -102,18 +102,23 @@ export const getMyContracts = async (req, res) => {
 
     const updatedContracts = await Promise.all(
       contracts.map(async (contract) => {
-        if (
-          contract.status === "approved" &&
-          new Date(contract.endDate) < now
-        ) {
+        const isExpired = new Date(contract.endDate) < now;
+    
+        // Nếu đang approved mà đã hết hạn thì update status → expired
+        if (contract.status === "approved" && isExpired) {
           contract.status = "expired";
           await contract.save();
         }
-        return contract;
+    
+        // Trả thêm isExpired cho frontend xử lý lọc
+        const contractObject = contract.toObject();
+        contractObject.isExpired = isExpired;
+        return contractObject;
       })
     );
-
+    
     res.status(200).json({ success: true, data: updatedContracts });
+    
   } catch (error) {
     console.error("❌ Lỗi getMyContracts:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -125,9 +130,18 @@ export const getMyContracts = async (req, res) => {
 export const approveContract = async (req, res) => {
   const contract = await Contract.findById(req.params.id);
   if (!contract) return res.status(404).json({ message: "Không tìm thấy hợp đồng" });
+
+  const now = new Date();
+  if (new Date(contract.endDate) < now) {
+    contract.status = "expired";
+    await contract.save();
+    return res.status(400).json({ message: "Hợp đồng đã hết hạn và không thể duyệt" });
+  }
+
   if (contract.status !== "pending") {
     return res.status(400).json({ message: "Hợp đồng không ở trạng thái chờ duyệt" });
   }
+
   contract.status = "approved";
   await contract.save();
   const newNotification = await Notification.create({
