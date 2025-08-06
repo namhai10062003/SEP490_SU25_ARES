@@ -3,6 +3,15 @@ import axios from "axios";
 const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
 const token = localStorage.getItem("token");
+export const getPostHistoryByPostId = async (postId) => {
+    const response = await axios.get(`${API_BASE}/posts/posts/${postId}/history`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  };
+
 // 🟢 GET posts of current user
 export const getPostsByUser = () => {
     const token = localStorage.getItem("token");
@@ -11,6 +20,7 @@ export const getPostsByUser = () => {
         headers: { Authorization: `Bearer ${token}` },
     });
 };
+
 // get Plaza để sửa 
 export const getPlazaList = async (token) => {
     return axios.get(`${API_BASE}/plaza`, {

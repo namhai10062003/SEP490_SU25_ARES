@@ -1,7 +1,9 @@
 import mongoose from "mongoose";
 import Post from '../models/Post.js';
+import PostHistory from "../models/PostHistory.js"; // nhớ thêm `.js` nếu dùng ESM
 import PostPackage from '../models/Postpackage.js';
 import User from '../models/User.js';
+
 export const createPost = async (req, res) => {
     try {
         const postData = req.body;
@@ -301,50 +303,143 @@ export const getPostDetail = async (req, res) => {
         });
     }
 };
-
-export const updatePost = async (req, res) => {
+// get post admin histories
+export const getPostHistories = async (req, res) => {
     try {
-        const postId = req.params.id;
-        const updateData = req.body;
-        const images = req.file?.path;
-
-        // Kiểm tra xem bài đăng có tồn tại không
-        const existingPost = await Post.findById(postId);
-        if (!existingPost) {
-            return res.status(404).json({
-                message: "Post not found",
-                success: false,
-                error: true
-            });
-        }
-        // Cập nhật từng trường riêng biệt
-        existingPost.title = updateData.title;
-        existingPost.description = updateData.description;
-        existingPost.location = updateData.location;
-        existingPost.property = updateData.property;
-        existingPost.area = updateData.area;
-        existingPost.price = updateData.price;
-        existingPost.legalDocument = updateData.legalDocument;
-        existingPost.interiorStatus = updateData.interiorStatus;
-        existingPost.amenities = updateData.amenities;
-        existingPost.postPackage = updateData.postPackagename;
-        existingPost.images = images || existingPost.images;
-        // Lưu các thay đổi
-        await existingPost.save();
-        return res.status(200).json({
-            message: "Post updated successfully",
-            success: true,
-            error: false,
-            data: existingPost
-        });
+      const postId = req.params.id;
+  
+      // Lấy tất cả lịch sử chỉnh sửa của bài đăng, sắp xếp mới nhất trước
+      const histories = await PostHistory.find({ postId })
+        .populate("editedBy", "name email") // hiển thị người sửa
+        .sort({ editedAt: -1 });
+  
+      return res.status(200).json({
+        message: "Lấy lịch sử chỉnh sửa thành công",
+        success: true,
+        error: false,
+        data: histories,
+      });
     } catch (error) {
-        return res.status(500).json({
-            message: error.message,
-            success: false,
-            error: true
-        });
+      return res.status(500).json({
+        message: error.message,
+        success: false,
+        error: true,
+      });
     }
-};
+  };
+  
+export const startEditingPost = async (req, res) => {
+    try {
+      const postId = req.params.id;
+      const post = await Post.findById(postId);
+  
+      if (!post) {
+        return res.status(404).json({ message: "Không tìm thấy bài đăng" });
+      }
+  
+      // Đánh dấu đang chỉnh sửa
+      post.isEditing = true;
+      post.editingAt = new Date();
+  
+      await post.save();
+  
+      return res.status(200).json({
+        message: "Đã đánh dấu đang chỉnh sửa",
+        success: true,
+        error: false,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: error.message,
+        success: false,
+        error: true,
+      });
+    }
+  };
+  export const updatePost = async (req, res) => {
+    try {
+      const postId = req.params.id;
+      const updateData = req.body;
+      const image = req.file?.path;
+      const userId = req.user?._id; // 👈 Đảm bảo middleware auth gán user
+  
+      // Kiểm tra nếu không có userId
+      if (!userId) {
+        return res.status(401).json({
+          message: "Không xác định được người chỉnh sửa (userId)",
+          success: false,
+          error: true,
+        });
+      }
+  
+      const existingPost = await Post.findById(postId);
+      if (!existingPost) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+  
+      if (existingPost.status === "approved") {
+        return res.status(400).json({
+          message: "Bài đăng đã được duyệt. Không thể chỉnh sửa.",
+          success: false,
+          error: true,
+        });
+      }
+  
+      // 🔍 So sánh dữ liệu cũ và mới
+      const editedData = {};
+      for (const key in updateData) {
+        if (
+          Object.prototype.hasOwnProperty.call(existingPost.toObject(), key) &&
+          existingPost[key] !== updateData[key]
+        ) {
+          editedData[key] = {
+            old: existingPost[key],
+            new: updateData[key],
+          };
+        }
+      }
+  
+      if (image && existingPost.images !== image) {
+        editedData.images = {
+          old: existingPost.images,
+          new: image,
+        };
+      }
+  
+      // Nếu có chỉnh sửa, lưu lịch sử
+      if (Object.keys(editedData).length > 0) {
+        await PostHistory.create({
+          postId,
+          editedData,
+          editedBy: userId, // 👈 chắc chắn có userId
+        });
+      }
+  
+      // Cập nhật dữ liệu
+      Object.assign(existingPost, updateData);
+      if (image) existingPost.images = image;
+  
+      // Reset trạng thái chỉnh sửa
+      existingPost.isEditing = false;
+      existingPost.editingAt = null;
+  
+      await existingPost.save();
+  
+      return res.status(200).json({
+        message: "Cập nhật bài đăng thành công",
+        success: true,
+        error: false,
+        data: existingPost,
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: error.message,
+        success: false,
+        error: true,
+      });
+    }
+  };
+  
 
 export const updatePostStatusByAdmin = async (req, res) => {
     try {
@@ -384,43 +479,62 @@ export const updatePostStatusByAdmin = async (req, res) => {
 };
 export const verifyPostByAdmin = async (req, res) => {
     try {
-        const postId = req.params.id;
-        // Kiểm tra xem bài đăng có tồn tại không                   
-        const existingPost = await Post.findById(postId);
-        if (!existingPost) {
-            return res.status(404).json({
-                message: "Post not found",
-                success: false,
-                error: true
-            });
-        }
-        // Kiểm tra trạng thái bài đăng
-        if (existingPost.status !== "pending") {
-            return res.status(400).json({
-                message: "Bài đăng không ở trạng thái chờ duyệt.",
-                success: false,
-                error: true
-            });
-        }
-        // Cập nhật trạng thái bài đăng thành "active"
-        existingPost.status = "approved";
-        existingPost.isActive = true; // Đảm bảo isActive được đặt thành true   
-        // Lưu các thay đổi
-        await existingPost.save();
-        return res.status(200).json({
-            message: "Post verified and activated successfully",
-            success: true,
-            error: false,
-            data: existingPost
+      const postId = req.params.id;
+  
+      // Tìm bài đăng
+      const existingPost = await Post.findById(postId);
+      if (!existingPost) {
+        return res.status(404).json({
+          message: "Post not found",
+          success: false,
+          error: true,
         });
+      }
+  
+      // ⚠️ Kiểm tra nếu đang chỉnh sửa và chưa quá 10 phút thì không duyệt
+      const MAX_EDIT_DURATION = 10 * 60 * 1000; // 10 phút
+      const isEditingNow =
+        existingPost.isEditing &&
+        existingPost.editingAt &&
+        new Date() - new Date(existingPost.editingAt) < MAX_EDIT_DURATION;
+  
+      if (isEditingNow) {
+        return res.status(400).json({
+          message: "Bài đăng đang được người dùng chỉnh sửa. Không thể duyệt lúc này.",
+          success: false,
+          error: true,
+        });
+      }
+  
+      // Kiểm tra trạng thái bài đăng
+      if (existingPost.status !== "pending") {
+        return res.status(400).json({
+          message: "Bài đăng không ở trạng thái chờ duyệt.",
+          success: false,
+          error: true,
+        });
+      }
+  
+      // ✅ Duyệt bài
+      existingPost.status = "approved";
+      existingPost.isActive = true;
+      await existingPost.save();
+  
+      return res.status(200).json({
+        message: "Post verified and activated successfully",
+        success: true,
+        error: false,
+        data: existingPost,
+      });
     } catch (error) {
-        return res.status(500).json({
-            message: error.message,
-            success: false,
-            error: true
-        });
+      return res.status(500).json({
+        message: error.message,
+        success: false,
+        error: true,
+      });
     }
-};
+  };
+  
 export const rejectPostByAdmin = async (req, res) => {
     try {
         const postId = req.params.id;
