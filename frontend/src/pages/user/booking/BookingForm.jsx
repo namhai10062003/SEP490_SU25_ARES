@@ -3,11 +3,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import SignaturePopup from "../../../../components/SignaturePopup";
 import ContractForm from "../../../../components/contractForm";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
 import { getPostById } from "../../../service/postService";
-import SignaturePopup from "../../../../components/SignaturePopup";
 
 const BookingForm = () => {
   const { postId } = useParams();
@@ -32,12 +32,26 @@ const BookingForm = () => {
   };
 
   useEffect(() => {
+    console.log("🌀 useEffect chạy với postId:", postId); // Kiểm tra postId có tồn tại không
+  
     const fetchPost = async () => {
-      const res = await getPostById(postId);
-      setPost(res.data.data);
+      try {
+        const res = await getPostById(postId);
+        console.log("✅ Dữ liệu trả về từ API:", res.data);
+        setPost(res.data.data);
+        
+      } catch (err) {
+        console.error("❌ Lỗi khi gọi API:", err);
+      }
     };
-    fetchPost();
+  
+    if (postId) {
+      fetchPost();
+    } else {
+      console.warn("⚠️ postId chưa có giá trị!");
+    }
   }, [postId]);
+  
   //set ten
   useEffect(() => {
     if (user?.name) {
@@ -94,6 +108,14 @@ const BookingForm = () => {
   // };
 
   const confirmBooking = async () => {
+    if (
+      !signaturePartyBUrl ||
+      typeof signaturePartyBUrl !== "string" ||
+      !signaturePartyBUrl.startsWith("data:image")
+    ) {
+      toast.warning("⚠️ Vui lòng ký tên trước khi xác nhận đặt cọc!");
+      return;
+    }
     const payload = {
       ...form,
       postId,

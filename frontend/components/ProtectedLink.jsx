@@ -20,6 +20,7 @@ const ProtectedLink = ({ to, children, className, allowWithoutProfile = false })
     dob: user?.dob,
     phone: user?.phone,
     address: user?.address,
+    identityNumber: user?.identityNumber
   });
   
 
