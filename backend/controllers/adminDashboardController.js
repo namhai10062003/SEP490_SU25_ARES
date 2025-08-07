@@ -1,20 +1,17 @@
-import User from "../models/User.js";
 import Apartment from "../models/Apartment.js";
-import Post from "../models/Post.js";
-import ResidentVerification from "../models/ResidentVerification.js";
-import WithdrawRequest from "../models/WithdrawRequest.js";
-import Report from "../models/Report.js";
 import Contact from "../models/Contact.js";
-import PostPackage from "../models/PostPackage.js";
 import Contract from "../models/Contract.js";
 import Fee from "../models/Fee.js";
+import Post from "../models/Post.js";
+import Postpackage from "../models/Postpackage.js";
 import ProfileUpdateRequest from "../models/ProfileUpdateRequest.js";
+import Report from "../models/Report.js";
+import ResidentVerification from "../models/ResidentVerification.js";
+import User from "../models/User.js";
+import WithdrawRequest from "../models/WithdrawRequest.js";
 
 import {
-  countTodayAndYesterday,
-  calculatePostRevenue,
-  calculateApartmentRevenue,
-  calculateContractRevenue,
+  countTodayAndYesterday
 } from "../helpers/countByDateHelper.js";
 
 
@@ -174,7 +171,7 @@ export const countProfiles = async (req, res) => {
 // Tính tổng doanh thu
 export const calculateRevenue = async (req, res) => {
   try {
-    const postRevenue = await PostPackage.aggregate([
+    const postRevenue = await Postpackage.aggregate([
       { $group: { _id: null, total: { $sum: "$price" } } },
     ]);
     console.log("💰 postRevenue:", postRevenue);
@@ -435,13 +432,13 @@ export const countByDataTypeTodayAndYesterday = async (req, res) => {
 
 export const getRevenueSummary = async (req, res) => {
   try {
-    const posts = await Post.find({ paymentStatus: "paid" }).populate("postPackage");
+    const posts = await Post.find({ paymentStatus: "paid" }).populate("Postpackage");
     const PACKAGE_PRICES = { VIP1: 10000, VIP2: 20000, VIP3: 30000 };
 
     console.log("📊 Bắt đầu tính toán doanh thu bài đăng:");
 
-    const vip2Posts = posts.filter((p) => p.postPackage?.type === "VIP2");
-    const vip3Posts = posts.filter((p) => p.postPackage?.type === "VIP3");
+    const vip2Posts = posts.filter((p) => p.Postpackage?.type === "VIP2");
+    const vip3Posts = posts.filter((p) => p.Postpackage?.type === "VIP3");
 
     vip2Posts.forEach((p) => {
       console.log(`✅ VIP2 | Post: ${p._id} | +${PACKAGE_PRICES.VIP2} | Ngày: ${new Date(p.paymentDate).toLocaleDateString()}`);
@@ -452,7 +449,7 @@ export const getRevenueSummary = async (req, res) => {
     });
 
     const sumByType = (type) =>
-      posts.filter((p) => p.postPackage?.type === type).reduce((sum, p) => sum + (PACKAGE_PRICES[type] || 0), 0);
+      posts.filter((p) => p.Postpackage?.type === type).reduce((sum, p) => sum + (PACKAGE_PRICES[type] || 0), 0);
 
     console.log(`💰 Tổng tiền Quản lý căn hộ (VIP2): ${sumByType("VIP2").toLocaleString()}`);
     console.log(`💰 Tổng tiền Hợp đồng (VIP3): ${sumByType("VIP3").toLocaleString()}`);
