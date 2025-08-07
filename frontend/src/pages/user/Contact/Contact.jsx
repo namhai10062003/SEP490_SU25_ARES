@@ -1,8 +1,10 @@
-import React, {useState} from "react";
-import Header from "../../../../components/header";
-import { useAuth} from "../../../../context/authContext";
-import Footer from "../../../../components/footer";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Footer from "../../../../components/footer";
+import Header from "../../../../components/header";
+import { useAuth } from "../../../../context/authContext";
 
 const Contact = () => {
     const { user, logout } = useAuth();
@@ -13,7 +15,14 @@ const Contact = () => {
     });
   
     const [submitted, setSubmitted] = useState(false);
-  
+    useEffect(() => {
+      if (submitted) {
+        toast.success("✅ Gửi thành công!", {
+          
+        });
+      }
+    }, [submitted]);
+    
     const handleChange = (e) => {
       setFormData((prev) => ({
         ...prev,
@@ -66,7 +75,7 @@ const Contact = () => {
       <section className="container py-5">
         <div className="bg-white p-4 shadow rounded-4">
           <h3 className="text-warning fw-bold mb-4">📬 Gửi tin nhắn đến Admin</h3>
-          {submitted && <div className="alert alert-success">✅ Gửi thành công!</div>}
+          
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
               <label className="form-label fw-semibold">Họ và tên</label>

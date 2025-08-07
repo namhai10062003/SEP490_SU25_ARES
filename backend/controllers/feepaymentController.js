@@ -90,7 +90,7 @@ export const handleFeePaymentWebhook = async (req, res) => {
       return res.status(404).send("Không tìm thấy phí");
     }
 
-    if (webhookData.code === "00") {
+   if (webhookData.code == "00" || webhookData.code == 0) {
       // Thành công
       const paymentDate = new Date(webhookData.data.transactionDateTime || Date.now());
 
