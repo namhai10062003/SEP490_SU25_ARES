@@ -49,7 +49,7 @@ export default function AdminDashboard({ children }) {
     { to: "/admin-dashboard/manage-staff", label: "Quản Lý Staff" },
     { to: "/admin-dashboard/manage-apartment", label: "Quản Lý Căn hộ" },
     { to: "/admin-dashboard/manage-resident-verification", label: "Quản Lý Xác Nhận Cư Dân" },
-    { to: "/admin-dashboard/user-revenue", label: "Quản Lý Doanh Thu Của User" },
+    { to: "/admin-dashboard/user-revenue", label: "Quản Lý Yêu Cầu Rút Tiền Của User" },
   ];
 
   // helper to render Link class names

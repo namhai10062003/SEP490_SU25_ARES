@@ -35,38 +35,44 @@ const EditHistoryModal = ({ history }) => {
         </Modal.Header>
         <Modal.Body>
           {Array.isArray(history) && history.length > 0 ? (
-            history.map((item, idx) => (
-              <div key={idx} className="mb-4">
-                <h6 className="fw-bold">
-                  🕒 Chỉnh sửa lúc:{" "}
-                  {item?.editedAt
-                    ? new Date(item.editedAt).toLocaleString("vi-VN")
-                    : "Không rõ thời gian"}
-                </h6>
-                {item.editedData && Object.keys(item.editedData).length > 0 ? (
-                  <Table striped bordered hover responsive className="mt-2">
-                    <thead className="table-light">
-                      <tr>
-                        <th>Trường</th>
-                        <th>Trước</th>
-                        <th>Sau</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(item.editedData).map(([key, value]) => (
-                        <tr key={key}>
-                          <td className="fw-semibold">{fieldLabels[key] || key}</td>
-                          <td className="text-danger">{value?.old ?? "Không rõ"}</td>
-                          <td className="text-success">{value?.new ?? "Không rõ"}</td>
+            history.map((item, idx) => {
+              const filteredChanges = Object.entries(item.editedData || {}).filter(
+                ([_, value]) => value?.old !== value?.new
+              );
+
+              return (
+                <div key={idx} className="mb-4">
+                  <h6 className="fw-bold">
+                    🕒 Chỉnh sửa lúc:{" "}
+                    {item?.editedAt
+                      ? new Date(item.editedAt).toLocaleString("vi-VN")
+                      : "Không rõ thời gian"}
+                  </h6>
+                  {filteredChanges.length > 0 ? (
+                    <Table striped bordered hover responsive className="mt-2">
+                      <thead className="table-light">
+                        <tr>
+                          <th>Trường</th>
+                          <th>Trước</th>
+                          <th>Sau</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </Table>
-                ) : (
-                  <p className="text-muted">Không có thay đổi</p>
-                )}
-              </div>
-            ))
+                      </thead>
+                      <tbody>
+                        {filteredChanges.map(([key, value]) => (
+                          <tr key={key}>
+                            <td className="fw-semibold">{fieldLabels[key] || key}</td>
+                            <td className="text-danger">{value?.old ?? "Không rõ"}</td>
+                            <td className="text-success">{value?.new ?? "Không rõ"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  ) : (
+                    <p className="text-muted">Không có thay đổi</p>
+                  )}
+                </div>
+              );
+            })
           ) : (
             <p>Không có lịch sử chỉnh sửa.</p>
           )}

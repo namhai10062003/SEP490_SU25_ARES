@@ -25,7 +25,9 @@ const LikedPosts = () => {
       });
       const now = new Date();
       const filteredPosts = (res.data.data || []).filter(post => {
-        return !post.expiredDate || new Date(post.expiredDate) > now;
+        const notExpired = !post.expiredDate || new Date(post.expiredDate) > now;
+        const notDeleted = post.status !== "deleted";
+        return notExpired && notDeleted;
       });
       setPosts(filteredPosts);
     } catch (err) {

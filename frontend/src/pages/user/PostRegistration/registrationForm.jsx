@@ -319,8 +319,10 @@ const RegistrationForm = () => {
 
   // hàm xử lí lọc plaza vs căn hộ
   const selectedPlaza = plazaOptions.find(
-    (plaza) => plaza._id === formData.toaPlaza
+    (plaza) => String(plaza._id) === String(formData.toaPlaza)
   );
+  
+  
   const selectedPlazaName = selectedPlaza?.name || "";
 
   console.log("🧱 Tòa plaza đã chọn (_id):", formData.toaPlaza);
@@ -474,9 +476,11 @@ const RegistrationForm = () => {
         className="btn btn-outline-secondary py-0 px-1" // ❌ không dùng btn-sm
         onClick={() => {
           setUseCustomPlaza(true);
+          setUseCustomApartment(true);
           setFormData((prev) => ({
             ...prev,
             toaPlaza: "",
+            soCanHo: "",
           }));
         }}
       >
@@ -503,9 +507,11 @@ const RegistrationForm = () => {
         className="btn btn-outline-secondary py-0 px-1"
         onClick={() => {
           setUseCustomPlaza(false);
+          setUseCustomApartment(false);
           setFormData((prev) => ({
             ...prev,
             toaPlaza: "",
+            soCanHo: "",
           }));
         }}
       >
