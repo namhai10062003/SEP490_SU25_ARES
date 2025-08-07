@@ -1,3 +1,4 @@
+import _ from "lodash";
 import mongoose from "mongoose";
 import { decrypt } from "../db/encryption.js";
 import Post from '../models/Post.js';
@@ -406,19 +407,19 @@ export const startEditingPost = async (req, res) => {
       }
   
       // 🔍 So sánh dữ liệu cũ và mới
-      const editedData = {};
-      for (const key in updateData) {
-        if (
-          Object.prototype.hasOwnProperty.call(existingPost.toObject(), key) &&
-          existingPost[key] !== updateData[key]
-        ) {
-          editedData[key] = {
-            old: existingPost[key],
-            new: updateData[key],
-          };
-        }
-      }
-  
+// 🔍 So sánh dữ liệu cũ và mới (đã sửa)
+const editedData = {};
+for (const key in updateData) {
+  if (
+    Object.prototype.hasOwnProperty.call(existingPost.toObject(), key) &&
+    !_.isEqual(existingPost[key], updateData[key]) // ✅ dùng so sánh sâu
+  ) {
+    editedData[key] = {
+      old: existingPost[key],
+      new: updateData[key],
+    };
+  }
+}
       if (image && existingPost.images !== image) {
         editedData.images = {
           old: existingPost.images,
