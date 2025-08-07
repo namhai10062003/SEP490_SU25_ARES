@@ -1,29 +1,43 @@
+
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
+
 import LoadingModal from "../../../components/loadingModal.jsx";
 import AdminDashboard from "./adminDashboard.jsx";
 import ReusableModal from "../../../components/ReusableModal.jsx";
 import Pagination from "../../../components/Pagination.jsx";
-import { Link, useNavigate } from "react-router-dom";
+import SearchEmailInput from "../../../components/admin/searchEmail.jsx";
+import StatusFilter from "../../../components/admin/statusFilter.jsx";
 
 const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
 const ManageUsers = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
+    // UI / data state
     const [userList, setUserList] = useState([]);
+    const [loadingFetch, setLoadingFetch] = useState(false);
+    const [loadingAction, setLoadingAction] = useState(false);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+
+    // block modal state
     const [showBlockModal, setShowBlockModal] = useState(false);
     const [userToBlock, setUserToBlock] = useState(null);
     const [confirmBlockReason, setConfirmBlockReason] = useState("");
-    const [searchText, setSearchText] = useState("");
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
-    const [filterStatus, setFilterStatus] = useState("");
-    const [loadingFetch, setLoadingFetch] = useState(false);
-    const [loadingAction, setLoadingAction] = useState(false);
-    const [pageSize, setPageSize] = useState(10);
 
+    // local controlled input for SearchEmailInput
+    const [searchInput, setSearchInput] = useState(searchParams.get("email") || "");
+
+    // derive values from URL (defaults)
+    const page = Number(searchParams.get("page")) || 1;
+    const limit = Number(searchParams.get("pageSize")) || 10;
+    const filterStatus = searchParams.get("status") || "";
+
+    // axios with token
     const getAxios = () => {
         const token = localStorage.getItem("token");
         return axios.create({
@@ -31,30 +45,50 @@ const ManageUsers = () => {
         });
     };
 
+    // helper to update query params (merge)
+    const updateQuery = (next = {}) => {
+        const params = new URLSearchParams(Object.fromEntries(searchParams.entries()));
+        const keys = ["email", "status", "page", "limit"];
+        keys.forEach((k) => {
+            if (Object.prototype.hasOwnProperty.call(next, k)) {
+                const v = next[k];
+                if (v === "" || v === null || v === undefined) params.delete(k);
+                else params.set(k, String(v));
+            }
+        });
+        setSearchParams(params, { replace: true });
+    };
+
+    // fetch users from backend using URL-derived params
     const fetchUsers = useCallback(async () => {
         try {
             setLoadingFetch(true);
-            const params = { page, limit: pageSize, role: "customer" };
+            const params = { page, limit, role: "customer" };
             if (filterStatus !== "") params.status = filterStatus;
+            const emailParam = searchParams.get("email");
+            if (emailParam) params.email = emailParam;
+
             const res = await getAxios().get(`${API_BASE}/users`, { params });
             const data = res.data || {};
             setUserList(Array.isArray(data.users) ? data.users : []);
-            setTotalPages(data.totalPages ?? Math.max(1, Math.ceil((data.total || 0) / pageSize)));
+            setTotalPages(data.totalPages ?? Math.max(1, Math.ceil((data.total || 0) / limit)));
+            setTotalItems(data.total ?? 0);
         } catch (err) {
             console.error("fetchUsers error:", err);
             toast.error("Không thể tải danh sách user!");
+            setUserList([]);
+            setTotalPages(1);
+            setTotalItems(0);
         } finally {
             setLoadingFetch(false);
         }
-    }, [page, pageSize, filterStatus]);
+    }, [searchParams, page, limit, filterStatus]);
 
+    // sync local input when URL changes and fetch data
     useEffect(() => {
+        setSearchInput(searchParams.get("email") || "");
         fetchUsers();
-    }, [fetchUsers]);
-
-    useEffect(() => {
-        setPage(1);
-    }, [filterStatus, pageSize]);
+    }, [searchParams, fetchUsers]);
 
     // Block / unblock account (full lock: cannot login)
     const handleToggleBlockAccount = async (user, reason = "") => {
@@ -66,13 +100,13 @@ const ManageUsers = () => {
                 ? `${API_BASE}/users/unblockAccount/${user._id}`
                 : `${API_BASE}/users/blockAccount/${user._id}`;
 
-            // server expects PATCH (no body needed, but you can send reason if you want)
             await getAxios().patch(endpoint, isLocked ? null : { reason });
 
             toast.success(isLocked ? "Đã mở khoá tài khoản" : "Đã khoá hoàn toàn tài khoản");
             setShowBlockModal(false);
             setUserToBlock(null);
             setConfirmBlockReason("");
+            // reload list with current params
             fetchUsers();
         } catch (err) {
             console.error("handleToggleBlockAccount error:", err);
@@ -83,50 +117,33 @@ const ManageUsers = () => {
         }
     };
 
-    // Client-side search filtering
-    const filteredUsers = userList.filter((u) => {
-        if (!searchText) return true;
-        const lower = searchText.toLowerCase();
-        return (
-            (u.name && u.name.toLowerCase().includes(lower)) ||
-            (u.email && u.email.toLowerCase().includes(lower)) ||
-            (u.phone && u.phone.toLowerCase().includes(lower))
-        );
-    });
+    // search handlers passed to SearchEmailInput
+    const triggerSearch = () => updateQuery({ email: (searchInput || "").trim(), page: 1 });
+    const clearSearch = () => {
+        setSearchInput("");
+        updateQuery({ email: "", page: 1 });
+    };
 
     return (
         <AdminDashboard>
             <div className="w-100 position-relative">
                 {(loadingFetch || loadingAction) && <LoadingModal />}
 
-                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <div className="d-flex justify-content-between align-items-center mb-4 gap-3">
                     <h2 className="font-weight-bold mb-0">Quản lý User</h2>
-                    <div className="d-flex gap-3 flex-nowrap align-items-center">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Tìm kiếm..."
-                            style={{ maxWidth: 200 }}
-                            value={searchText}
-                            onChange={(e) => {
-                                setPage(1);
-                                setSearchText(e.target.value);
-                            }}
-                        />
-                        <select
-                            className="form-select w-auto"
-                            style={{ maxWidth: 220 }}
-                            value={filterStatus}
-                            onChange={(e) => {
-                                setFilterStatus(e.target.value);
-                            }}
-                        >
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="1">Active</option>
-                            <option value="0">Blocked (chặn đăng bài)</option>
-                            <option value="2">Locked (khóa hoàn toàn)</option>
-                        </select>
 
+                    <div className="d-flex gap-3 align-items-center">
+                        <SearchEmailInput
+                            value={searchInput}
+                            onChange={setSearchInput}
+                            onSearch={triggerSearch}
+                            onClear={clearSearch}
+                        />
+
+                        <StatusFilter
+                            value={filterStatus}
+                            onChange={(val) => updateQuery({ status: val, page: 1 })}
+                        />
                     </div>
                 </div>
 
@@ -145,18 +162,17 @@ const ManageUsers = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredUsers.length === 0 ? (
+                                {userList.length === 0 ? (
                                     <tr>
                                         <td colSpan="7" className="text-center text-muted py-4">
                                             Không có user nào.
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredUsers.map((user, idx) => (
+                                    userList.map((user, idx) => (
                                         <tr key={user._id}>
-                                            <td>{(page - 1) * pageSize + idx + 1}</td>
+                                            <td>{(page - 1) * limit + idx + 1}</td>
 
-                                            {/* NAME -> link to detail */}
                                             <td>
                                                 <Link to={`/admin-dashboard/manage-user/${user._id}`} className="text-primary">
                                                     {user.name}
@@ -183,7 +199,6 @@ const ManageUsers = () => {
 
                                             <td>
                                                 <div className="d-flex align-items-center">
-                                                    {/* Block account (cannot login) */}
                                                     <button
                                                         className={`btn btn-sm ${user.status === 2 ? "btn-outline-success" : "btn-outline-danger"
                                                             }`}
@@ -197,7 +212,6 @@ const ManageUsers = () => {
                                                         {user.status === 2 ? "Unblock" : "Block account"}
                                                     </button>
 
-                                                    {/* View details */}
                                                     <button
                                                         className="btn btn-sm btn-outline-primary"
                                                         style={{ whiteSpace: "nowrap", minWidth: 80 }}
@@ -218,9 +232,9 @@ const ManageUsers = () => {
                 <Pagination
                     page={page}
                     totalPages={totalPages}
-                    onPageChange={(p) => setPage(p)}
-                    pageSize={pageSize}
-                    onPageSizeChange={(s) => setPageSize(s)}
+                    onPageChange={(p) => updateQuery({ page: p })}
+                    pageSize={limit}
+                    onPageSizeChange={(s) => updateQuery({ limit: s, page: 1 })}
                 />
 
                 {/* Block account modal */}

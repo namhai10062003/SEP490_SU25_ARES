@@ -53,7 +53,7 @@ const ManageNotifications = () => {
             setLoading(true);
             const query = new URLSearchParams({
                 page,
-                limit: pageSize,
+                pageSize,
                 ...filters,
             }).toString();
 

@@ -1,38 +1,99 @@
 import { faEye, faEyeSlash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import axios from "axios";
 import { toast } from "react-toastify";
+import { useSearchParams } from "react-router-dom";
+
 import AdminDashboard from "./adminDashboard.jsx";
 import Pagination from "../../../components/Pagination.jsx";
 import ReusableModal from "../../../components/ReusableModal.jsx";
+import SearchEmailInput from "../../../components/admin/searchEmail.jsx";
+import StatusFilter from "../../../components/admin/statusFilter.jsx";
+import LoadingModal from "../../../components/loadingModal.jsx";
+
+const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
+
 const ManageStaff = () => {
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    // data + UI state
     const [staffList, setStaffList] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [isUpdate, setIsUpdate] = useState(false);
     const [selectedStaff, setSelectedStaff] = useState(null);
     const [form, setForm] = useState({ username: "", password: "", email: "" });
     const [showPassword, setShowPassword] = useState(false);
-    const [searchText, setSearchText] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
-    useEffect(() => {
-        fetchStaff();
-    }, [page, pageSize]);
 
-    const fetchStaff = async () => {
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/staff?page=${page}&limit=${pageSize}`);
-            const result = await res.json();
-            setStaffList(Array.isArray(result.data) ? result.data : []);
-            setPage(1); // Reset page về 1 khi load lại
-        } catch (err) {
-            toast.error("Không thể tải danh sách staff!");
-            setStaffList([]); // fallback tránh lỗi .filter
-        }
+    // local controlled input for SearchEmailInput
+    const [searchInput, setSearchInput] = useState(searchParams.get("email") || "");
+
+    const [loading, setLoading] = useState(false);
+    const [loadingFetch, setLoadingFetch] = useState(false);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+
+    // derive pagination & filter from URL (defaults)
+    const page = Number(searchParams.get("page")) || 1;
+    const limit = Number(searchParams.get("pageSize")) || 10;
+    const filterStatus = searchParams.get("status") || "";
+
+    // axios instance with token
+    const getAxios = () => {
+        const token = localStorage.getItem("token");
+        return axios.create({
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
     };
 
+    // update URL query params helper (merge)
+    const updateQuery = (next = {}) => {
+        const params = new URLSearchParams(Object.fromEntries(searchParams.entries()));
+        const keys = ["email", "status", "page", "limit"];
+        keys.forEach((k) => {
+            if (Object.prototype.hasOwnProperty.call(next, k)) {
+                const v = next[k];
+                if (v === "" || v === null || v === undefined) params.delete(k);
+                else params.set(k, String(v));
+            }
+        });
+        setSearchParams(params, { replace: true });
+    };
 
+    // fetch staff using URL params
+    const fetchStaff = useCallback(async () => {
+        try {
+            setLoadingFetch(true);
+            const params = { page, limit, role: "staff" };
+            if (filterStatus !== "") params.status = filterStatus;
+            const emailParam = searchParams.get("email");
+            if (emailParam) params.email = emailParam;
+
+            const res = await getAxios().get(`${API_BASE}/users`, { params });
+            const data = res.data || {};
+            setStaffList(Array.isArray(data.users) ? data.users : []);
+            setTotalPages(data.totalPages ?? Math.max(1, Math.ceil((data.total || 0) / limit)));
+            setTotalItems(data.total ?? 0);
+        } catch (err) {
+            console.error("fetchStaff error:", err);
+            toast.error("Không thể tải danh sách staff!");
+            setStaffList([]);
+            setTotalPages(1);
+            setTotalItems(0);
+        } finally {
+            setLoadingFetch(false);
+        }
+    }, [searchParams, page, limit, filterStatus]);
+
+    // sync local search input with URL and fetch data
+    useEffect(() => {
+        setSearchInput(searchParams.get("email") || "");
+        fetchStaff();
+    }, [searchParams, fetchStaff]);
+
+    // reset page when pageSize/status/search change is handled by updateQuery when invoked
+
+    // open add modal
     const openAdd = () => {
         setIsUpdate(false);
         setForm({ username: "", password: "", email: "" });
@@ -41,9 +102,10 @@ const ManageStaff = () => {
         setShowPassword(false);
     };
 
+    // open update modal
     const openUpdate = (staff) => {
         setIsUpdate(true);
-        setForm({ username: staff.name, password: staff.password, email: staff.email });
+        setForm({ username: staff.name || "", password: "", email: staff.email || "" });
         setSelectedStaff(staff);
         setShowModal(true);
         setShowPassword(false);
@@ -58,88 +120,59 @@ const ManageStaff = () => {
         setLoading(true);
         try {
             if (isUpdate && selectedStaff) {
-                // Update staff
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/staff/${selectedStaff._id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        name: form.username,
-                        password: form.password,
-                        email: form.email,
-                    }),
+                await getAxios().put(`${API_BASE}/users/${selectedStaff._id}`, {
+                    name: form.username,
+                    password: form.password || undefined,
+                    email: form.email,
                 });
-                if (res.ok) {
-                    toast.success("Cập nhật thành công!");
-                    fetchStaff();
-                } else {
-                    const data = await res.json();
-                    toast.error(data.error || "Cập nhật thất bại!");
-                }
+                toast.success("Cập nhật thành công!");
+                fetchStaff();
             } else {
-                // Add staff
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/api/staff`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        name: form.username,
-                        password: form.password,
-                        email: form.email,
-                        verified: true
-                    }),
+                await getAxios().post(`${API_BASE}/users`, {
+                    name: form.username,
+                    password: form.password,
+                    email: form.email,
+                    role: "staff",
+                    verified: true,
                 });
-                if (res.ok) {
-                    toast.success("Tạo staff thành công!");
-                    fetchStaff();
-                } else {
-                    const data = await res.json();
-                    toast.error(data.error || "Tạo staff thất bại!");
-                }
+                toast.success("Tạo staff thành công!");
+                // after creating, go to first page
+                updateQuery({ page: 1 });
+                fetchStaff();
             }
             setShowModal(false);
         } catch (err) {
-            toast.error("Có lỗi xảy ra!");
+            console.error("handleSubmit error:", err);
+            const msg = err?.response?.data?.error || "Thao tác thất bại!";
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
     };
 
+    // toggle active/block status
     const handleToggleStatus = async (staff) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/staff/${staff._id}/status`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: staff.status ? 0 : 1 }),
-            });
-            if (res.ok) {
-                toast.success("Đã đổi trạng thái!");
-                fetchStaff();
-            } else {
-                toast.error("Đổi trạng thái thất bại!");
-            }
-        } catch {
-            toast.error("Lỗi server!");
+            const newStatus = staff.status ? 0 : 1;
+            await getAxios().patch(`${API_BASE}/users/${staff._id}/status`, { status: newStatus });
+            toast.success("Đã đổi trạng thái!");
+            fetchStaff();
+        } catch (err) {
+            console.error("handleToggleStatus error:", err);
+            toast.error("Đổi trạng thái thất bại!");
         }
     };
 
-    // Filter and pagination logic
-    const [filterStatus, setFilterStatus] = useState("");
+    // search handlers
+    const triggerSearch = () => {
+        updateQuery({ email: (searchInput || "").trim(), page: 1 });
+    };
 
-    const filteredStaff = staffList.filter(staff => {
-        const matchesStatus =
-            filterStatus === "" ? true : String(staff.status) === filterStatus;
+    const clearSearch = () => {
+        setSearchInput("");
+        updateQuery({ email: "", page: 1 });
+    };
 
-        const lowerSearch = searchText.toLowerCase();
-
-        const matchesSearch =
-            staff.name?.toLowerCase().includes(lowerSearch) ||
-            staff.email?.toLowerCase().includes(lowerSearch) ||
-            staff.phone?.toLowerCase().includes(lowerSearch); // nếu staff có phone
-
-        return matchesStatus && (searchText === "" || matchesSearch);
-    });
-
-    const pagedStaff = filteredStaff.slice((page - 1) * pageSize, page * pageSize);
-    const totalPages = Math.ceil(filteredStaff.length / pageSize) || 1;
     const renderModalBody = () => (
         <>
             <div className="form-group mb-3">
@@ -153,7 +186,8 @@ const ManageStaff = () => {
                     required
                 />
             </div>
-            <div className="form-group mb-3">
+
+            <div className="form-group mb-2">
                 <label>Email</label>
                 <input
                     type="email"
@@ -164,6 +198,7 @@ const ManageStaff = () => {
                     required
                 />
             </div>
+
             <div className="form-group mb-0">
                 <label>Mật khẩu</label>
                 <div className="input-group">
@@ -173,7 +208,7 @@ const ManageStaff = () => {
                         name="password"
                         value={form.password}
                         onChange={handleChange}
-                        required
+                        required={!isUpdate}
                     />
                     <button
                         type="button"
@@ -201,45 +236,35 @@ const ManageStaff = () => {
             disabled: loading,
         },
     ];
+
     return (
         <AdminDashboard>
-            <div className="w-100">
-                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-                    {/* Bên trái */}
+            <div className="w-100 position-relative">
+                {(loadingFetch || loading) && <LoadingModal />}
+
+                <div className="d-flex justify-content-between align-items-center mb-4 gap-3">
                     <h2 className="fw-bold mb-0">Quản lý Staff</h2>
 
-                    {/* Bên phải: input, select, button */}
-                    <div className="d-flex gap-3 flex-wrap">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Tìm kiếm..."
-                            style={{ maxWidth: 150 }}
-                            value={searchText}
-                            onChange={(e) => {
-                                setPage(1);
-                                setSearchText(e.target.value);
-                            }}
+                    <div className="d-flex gap-3 align-items-center">
+                        <SearchEmailInput
+                            value={searchInput}
+                            onChange={setSearchInput}
+                            onSearch={triggerSearch}
+                            onClear={clearSearch}
                         />
-                        <select
-                            className="form-select"
-                            style={{ maxWidth: 100 }}
+
+                        <StatusFilter
                             value={filterStatus}
-                            onChange={(e) => {
-                                setPage(1);
-                                setFilterStatus(e.target.value);
-                            }}
-                        >
-                            <option value="">Tất cả</option>
-                            <option value="1">Active</option>
-                            <option value="0">Blocked</option>
-                        </select>
+                            onChange={(val) => updateQuery({ status: val, page: 1 })}
+                            type="staff"
+                        />
+
                         <button
                             className="btn btn-primary fw-bold rounded-pill px-4 py-2 d-flex align-items-center gap-2 shadow-sm"
                             onClick={openAdd}
                         >
                             <FontAwesomeIcon icon={faPlus} />
-                            Thêm Staff
+                            Staff
                         </button>
                     </div>
                 </div>
@@ -252,85 +277,62 @@ const ManageStaff = () => {
                                     <th>STT</th>
                                     <th>Tên Tài khoản</th>
                                     <th>Email</th>
-                                    {/* <th>Mật khẩu</th> */}
                                     <th>Trạng thái</th>
                                     <th>Hành Động</th>
                                 </tr>
                             </thead>
                             <tbody>
-
-                                {pagedStaff.map((staff, idx) => (
-                                    <tr key={staff._id}>
-                                        <td>{(page - 1) * pageSize + idx + 1}</td>
-                                        <td>{staff.name}</td>
-                                        <td>{staff.email}</td>
-                                        {/* <td>
-                                            <span style={{ userSelect: "none" }}>
-                                                {showPassword && selectedStaff?._id === staff._id
-                                                    ? staff.password
-                                                    : "●●●●●●"}
-                                            </span>
-                                            <button
-                                                className="btn btn-link btn-sm ml-2"
-                                                onClick={() => {
-                                                    setShowPassword(
-                                                        showPassword && selectedStaff?._id === staff._id
-                                                            ? false
-                                                            : true
-                                                    );
-                                                    setSelectedStaff(staff);
-                                                }}
-                                                tabIndex={-1}
-                                                type="button"
-                                            >
-                                                <FontAwesomeIcon icon={showPassword && selectedStaff?._id === staff._id ? faEyeSlash : faEye} />
-                                            </button>
-                                        </td> */}
-                                        <td>
-                                            <span className={`badge ${staff.status ? "bg-success" : "bg-secondary"}`}>
-                                                {staff.status ? "Active" : "Blocked"}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <button
-                                                className="btn btn-sm btn-outline-primary me-2"
-                                                style={{ whiteSpace: "nowrap", minWidth: 70 }}
-                                                onClick={() => openUpdate(staff)}
-                                            >
-                                                Cập nhật
-                                            </button>
-                                            <button
-                                                className={`btn btn-sm ${staff.status ? "btn-outline-danger" : "btn-outline-success"}`}
-                                                style={{ whiteSpace: "nowrap", minWidth: 70 }}
-                                                onClick={() => handleToggleStatus(staff)}
-                                            >
-                                                {staff.status ? "Block" : "Active"}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {pagedStaff.length === 0 && (
+                                {staffList.length === 0 ? (
                                     <tr>
-                                        <td colSpan="6" className="text-center text-muted py-4">
+                                        <td colSpan="5" className="text-center text-muted py-4">
                                             Không có staff nào.
                                         </td>
                                     </tr>
+                                ) : (
+                                    staffList.map((staff, idx) => (
+                                        <tr key={staff._id}>
+                                            <td>{(page - 1) * limit + idx + 1}</td>
+                                            <td>{staff.name}</td>
+                                            <td>{staff.email}</td>
+                                            <td>
+                                                <span className={`badge ${staff.status ? "bg-success" : "bg-secondary"}`}>
+                                                    {staff.status ? "Active" : "Blocked"}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button
+                                                    className="btn btn-sm btn-outline-primary me-2"
+                                                    style={{ whiteSpace: "nowrap", minWidth: 70 }}
+                                                    onClick={() => openUpdate(staff)}
+                                                >
+                                                    Cập nhật
+                                                </button>
+                                                <button
+                                                    className={`btn btn-sm ${staff.status ? "btn-outline-danger" : "btn-outline-success"}`}
+                                                    style={{ whiteSpace: "nowrap", minWidth: 70 }}
+                                                    onClick={() => handleToggleStatus(staff)}
+                                                >
+                                                    {staff.status ? "Block" : "Active"}
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
                                 )}
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                {/* Pagination */}
+
                 <Pagination
                     page={page}
                     totalPages={totalPages}
-                    onPageChange={setPage}
-                    pageSize={pageSize}
-                    onPageSizeChange={setPageSize}
+                    onPageChange={(p) => updateQuery({ page: p })}
+                    pageSize={limit}
+                    onPageSizeChange={(s) => updateQuery({ limit: s, page: 1 })}
                 />
 
-                {/* Modal */}
+
                 {showModal && (
                     <ReusableModal
                         show={showModal}
