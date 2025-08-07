@@ -1,7 +1,7 @@
 // controllers/revenueController.js
-import Fee from "../models/Fee.js";
-import PostPackage from "../models/PostPackage.js";
 import Contract from "../models/Contract.js";
+import Fee from "../models/Fee.js";
+import Postpackage from "../models/Postpackage.js";
 
 export const getAllRevenueSummary = async (req, res) => {
   try {
@@ -15,8 +15,8 @@ export const getAllRevenueSummary = async (req, res) => {
       return { [field]: filter };
     };
 
-    // 1️⃣ Doanh thu Bài Post (giả sử PostPackage có field paymentDate)
-    const postRevenue = await PostPackage.aggregate([
+    // 1️⃣ Doanh thu Bài Post (giả sử Postpackage có field paymentDate)
+    const postRevenue = await Postpackage.aggregate([
       { $match: buildDateFilter("createdAt") },
       { $group: { _id: null, total: { $sum: "$price" } } },
     ]);
