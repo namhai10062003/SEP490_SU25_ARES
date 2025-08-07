@@ -1,6 +1,6 @@
+import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import twilio from "twilio";
-import dotenv from "dotenv";
 dotenv.config();
 function formatVietnamPhoneNumber(number) {
     if (!number) return number;
