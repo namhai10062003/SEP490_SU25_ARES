@@ -1,6 +1,22 @@
 import React, { useState } from "react";
 import { Button, Modal, Table } from "react-bootstrap";
 
+// Ánh xạ field → Tiếng Việt
+const fieldLabels = {
+  legalDocument: "Giấy tờ pháp lý",
+  amenities: "Tiện ích",
+  isEditing: "Trạng thái chỉnh sửa",
+  title: "Tiêu đề",
+  description: "Mô tả",
+  location: "Địa chỉ",
+  area: "Diện tích",
+  price: "Giá",
+  type: "Loại bài đăng",
+  postPackagename: "Gói đăng tin",
+  property: "Loại hình",
+  interiorStatus: "Nội thất",
+};
+
 const EditHistoryModal = ({ history }) => {
   const [show, setShow] = useState(false);
 
@@ -27,7 +43,7 @@ const EditHistoryModal = ({ history }) => {
                     ? new Date(item.editedAt).toLocaleString("vi-VN")
                     : "Không rõ thời gian"}
                 </h6>
-                {item.editedData ? (
+                {item.editedData && Object.keys(item.editedData).length > 0 ? (
                   <Table striped bordered hover responsive className="mt-2">
                     <thead className="table-light">
                       <tr>
@@ -39,7 +55,7 @@ const EditHistoryModal = ({ history }) => {
                     <tbody>
                       {Object.entries(item.editedData).map(([key, value]) => (
                         <tr key={key}>
-                          <td className="fw-semibold">{key}</td>
+                          <td className="fw-semibold">{fieldLabels[key] || key}</td>
                           <td className="text-danger">{value?.old ?? "Không rõ"}</td>
                           <td className="text-success">{value?.new ?? "Không rõ"}</td>
                         </tr>

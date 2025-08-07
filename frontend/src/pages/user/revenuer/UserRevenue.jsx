@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../../components/header";
@@ -44,24 +44,51 @@ const UserRevenue = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [name, setName] = useState(null);
+  const [availableToWithdraw, setAvailableToWithdraw] = useState(0);
+  const [totalDeposits, setTotalDeposits] = useState(0);
+  const [withdrawnAmount, setWithdrawnAmount] = useState(0);
+  
   // kiểm tra người thuê
-  const hasNotified = useRef(false);
+  // const hasNotified = useRef(false);
 
-  useEffect(() => {
-    if (user && contracts.length > 0 && !hasNotified.current) {
-      const firstContract = contracts[0];
+  // useEffect(() => {
+  //   if (user && contracts.length > 0 && !hasNotified.current) {
+  //     const firstContract = contracts[0];
 
-      if (firstContract.userId?.toString() === user._id?.toString()) {
-        console.warn("🚫 Người thuê đang cố truy cập trang Doanh thu");
-        toast.error("❌ Bạn không có quyền truy cập trang này (chỉ dành cho bên cho thuê)", {
-          autoClose: 3000,
-        });
-        hasNotified.current = true; // đánh dấu đã thông báo
-        setTimeout(() => navigate("/"), 3100);
-      }
-    }
-  }, [user, contracts]);
+  //     if (firstContract.userId?.toString() === user._id?.toString()) {
+  //       console.warn("🚫 Người thuê đang cố truy cập trang Doanh thu");
+  //       toast.error("❌ Bạn không có quyền truy cập trang này (chỉ dành cho bên cho thuê)", {
+  //         autoClose: 3000,
+  //       });
+  //       hasNotified.current = true; // đánh dấu đã thông báo
+  //       setTimeout(() => navigate("/"), 3100);
+  //     }
+  //   }
+  // }, [user, contracts]);
   // setname
+  useEffect(() => {
+    const fetchAvailableWithdrawInfo = async () => {
+      try {
+        const res = await axios.get(`${API_WITHDRAWAL}/available`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+  
+        const { availableToWithdraw, totalDeposits, withdrawnAmount } = res.data;
+  
+        setAvailableToWithdraw(availableToWithdraw);
+        setTotalDeposits(totalDeposits);
+        setWithdrawnAmount(withdrawnAmount);
+      } catch (error) {
+        console.error("❌ Lỗi khi lấy thông tin rút tiền:", error);
+      }
+    };
+  
+    fetchAvailableWithdrawInfo(); // Không cần truyền user._id nữa
+  }, []);
+  
+
   useEffect(() => {
     if (user && user.name) {
       setName(user.name); // ✅ cập nhật tên từ user
@@ -102,20 +129,23 @@ const UserRevenue = () => {
   // ✅ Lọc và phân trang hợp đồng
   const filteredContracts = contracts.filter((c) => {
     const keyword = contractSearchText.toLowerCase();
-
+  
     const matchesSearch =
       c.apartmentCode?.toLowerCase().includes(keyword) ||
       c.fullNameB?.toLowerCase().includes(keyword) ||
       c.orderCode?.toLowerCase().includes(keyword) ||
       c.depositAmount?.toString().includes(keyword) ||
       c.withdrawableAmount?.toString().includes(keyword);
-
+  
     const matchesDate = contractFilterDate
       ? new Date(c.paymentDate).toLocaleDateString("vi-VN") ===
-      new Date(contractFilterDate).toLocaleDateString("vi-VN")
+        new Date(contractFilterDate).toLocaleDateString("vi-VN")
       : true;
-
+  
+    const isOwnContract = c.landlordId === user._id; // 🔥 BỔ SUNG DÒNG NÀY
+  
     return (
+      isOwnContract && // 🔥 THÊM Ở ĐÂY
       c.paymentStatus === "paid" &&
       c.depositAmount &&
       matchesSearch &&
@@ -138,7 +168,7 @@ const UserRevenue = () => {
   const totalWithdrawable = filteredContracts.reduce(
     (sum, c) =>
       sum +
-      (typeof c.withdrawableAmount === "number" ? c.withdrawableAmount : 0),
+      (typeof c.depositAmount === "number" ? c.depositAmount : 0),
     0
   );
 
@@ -148,37 +178,41 @@ const UserRevenue = () => {
 
   const handleWithdrawSubmit = async (e) => {
     e.preventDefault();
-    setWithdrawMessage("");
-
+    setWithdrawMessage(""); // có thể bỏ nếu chỉ dùng toast
+  
     const amount = parseFloat(withdrawForm.amount);
     const EPSILON = 0.01;
-
+  
     if (isNaN(amount) || amount <= 0 || amount - totalWithdrawable > EPSILON) {
-      setWithdrawMessage("❌ Số tiền rút không hợp lệ.");
+      toast.error("❌ Số tiền rút không hợp lệ hoặc vượt quá giới hạn.");
       return;
     }
-
+  
     try {
       const token = localStorage.getItem("token");
       await axios.post(API_WITHDRAWAL, withdrawForm, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      setWithdrawMessage("✅ Gửi yêu cầu rút tiền thành công!");
+  
+      toast.success("✅ Gửi yêu cầu rút tiền thành công!");
       setWithdrawForm({
         accountHolder: "",
         bankNumber: "",
         bankName: "",
         amount: "",
       });
-
+  
       await Promise.all([
         fetchContracts(token),
         fetchWithdrawHistory(token),
       ]);
     } catch (err) {
       console.error("❌ Gửi yêu cầu thất bại:", err);
-      setWithdrawMessage("❌ Có lỗi xảy ra. Vui lòng thử lại.");
+  
+      // 👉 nếu API có trả message chi tiết thì hiển thị lên
+      const errorMessage =
+        err?.response?.data?.message || "❌ Có lỗi xảy ra. Vui lòng thử lại.";
+      toast.error(errorMessage);
     }
   };
 
@@ -253,14 +287,12 @@ const UserRevenue = () => {
                   </button>
                 )}
               </div>
-              <div className="col-md-4 ms-auto text-end">
-                <h5 className="mb-2">
-                  Tổng tiền có thể rút:{" "}
-                  <span className="text-success fw-bold">
-                    {formatPrice(totalWithdrawable)}
-                  </span>
-                </h5>
-              </div>
+              <div className="d-flex justify-content-end">
+              <p className="fw-bold text-end">
+  Tổng tiền: {formatPrice(totalDeposits)} đ — Đã rút: {formatPrice(withdrawnAmount)} đ — Có thể rút: <span className="text-success">{formatPrice(availableToWithdraw)} đ</span>
+</p>
+</div>
+
             </div>
 
             {/* Danh sách hợp đồng */}
@@ -273,7 +305,7 @@ const UserRevenue = () => {
                     <th>Khách thuê</th>
                     <th>Ngày thanh toán</th>
                     <th>Tiền cọc</th>
-                    <th>Tiền nhận được</th>
+                    {/* <th>Tiền nhận được</th> */}
                     <th>Mã giao dịch</th>
                   </tr>
                 </thead>
@@ -286,13 +318,13 @@ const UserRevenue = () => {
                         <td>{c.fullNameB || "Chưa cập nhật"}</td>
                         <td>{formatDate(c.paymentDate)}</td>
                         <td>{formatPrice(c.depositAmount)}</td>
-                        <td className="text-success fw-bold">
+                        {/* <td className="text-success fw-bold">
                           {formatPrice(
                             typeof c.withdrawableAmount === "number"
                               ? c.withdrawableAmount
                               : Math.round(c.depositAmount * 0.9)
                           )}
-                        </td>
+                        </td> */}
                         <td>{c.orderCode || "N/A"}</td>
                       </tr>
                     ))
@@ -368,26 +400,27 @@ const UserRevenue = () => {
                           min={1000}
                           step="any"
                         />
-                        <small className="text-muted">
-                          Tối đa: {formatPrice(totalWithdrawable)}
-                        </small>
+                     <small className="text-muted">
+  Tối đa: {formatPrice(availableToWithdraw || 0)}
+</small>
+
                       </div>
                       <button type="submit" className="btn btn-primary w-100">
                         Rút tiền
                       </button>
                       <button
-                        type="button"
-                        className="btn btn-outline-secondary mt-2"
-                        onClick={() =>
-                          setWithdrawForm({
-                            ...withdrawForm,
-                            amount: totalWithdrawable.toFixed(2),
-                          })
-                        }
-                      >
-                        Rút toàn bộ 
-                        {/* ({formatPrice(totalWithdrawable)}) */}
-                      </button>
+  type="button"
+  className="btn btn-outline-secondary mt-2"
+  onClick={() =>
+    setWithdrawForm({
+      ...withdrawForm,
+      amount: availableToWithdraw.toFixed(2),
+    })
+  }
+>
+  Rút toàn bộ {/* ({formatPrice(availableToWithdraw)}) */}
+</button>
+
                       {withdrawMessage && (
                         <div className="alert alert-info mt-3 text-center">
                           {withdrawMessage}
@@ -453,49 +486,50 @@ const UserRevenue = () => {
     📝 Lịch sử các yêu cầu rút tiền
   </h5>
   {withdrawHistory.length === 0 ? (
-    <p className="text-muted">Chưa có yêu cầu nào.</p>
-  ) : (
-    <div className="table-responsive">
-      <table className="table table-bordered table-striped align-middle">
-        <thead className="table-light">
-          <tr>
-            <th>Ngày gửi</th>
-            <th>Số tiền</th>
-            <th>Ngân hàng</th>
-            <th>Số tài khoản</th>
-            <th>Chủ tài khoản</th> {/* Thêm cột mới */}
-            <th>Trạng thái</th>
-            <th>Lý do từ chối</th>
+  <p className="text-muted">Chưa có yêu cầu nào.</p>
+) : (
+  <div className="table-responsive">
+    <table className="table table-bordered table-striped align-middle">
+      <thead className="table-light">
+        <tr>
+          <th>Ngày gửi</th>
+          <th>Số tiền</th>
+          <th>Ngân hàng</th>
+          <th>Số tài khoản</th>
+          <th>Chủ tài khoản</th>
+          <th>Trạng thái</th>
+          <th>Lý do từ chối</th>
+        </tr>
+      </thead>
+      <tbody>
+        {withdrawHistory.map((w) => (
+          <tr key={w._id}>
+            <td>{formatDate(w.createdAt)}</td>
+            <td>{formatPrice(w.amount)}</td>
+            <td>{w.bankName}</td>
+            <td>{w.bankNumber}</td>
+            <td>{w.accountHolder || "--"}</td>
+            <td>
+              <span
+                className={`badge text-capitalize ${
+                  w.status === "approved"
+                    ? "bg-success"
+                    : w.status === "rejected"
+                    ? "bg-danger"
+                    : "bg-warning text-dark"
+                }`}
+              >
+                {w.status}
+              </span>
+            </td>
+            <td>{w.rejectedReason || "--"}</td>
           </tr>
-        </thead>
-        <tbody>
-          {withdrawHistory.map((w) => (
-            <tr key={w._id}>
-              <td>{formatDate(w.createdAt)}</td>
-              <td>{formatPrice(w.amount)}</td>
-              <td>{w.bankName}</td>
-              <td>{w.bankNumber}</td>
-              <td>{w.accountHolder || "--"}</td> {/* Hiển thị tên chủ tài khoản */}
-              <td>
-                <span
-                  className={`badge text-capitalize ${
-                    w.status === "approved"
-                      ? "bg-success"
-                      : w.status === "rejected"
-                      ? "bg-danger"
-                      : "bg-warning text-dark"
-                  }`}
-                >
-                  {w.status}
-                </span>
-              </td>
-              <td>{w.rejectedReason || "--"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )}
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+
   </div>
          </>
         )}

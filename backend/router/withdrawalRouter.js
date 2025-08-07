@@ -1,5 +1,5 @@
 import express from "express";
-import { approveWithdrawRequest, createWithdrawRequest, getAllWithdrawRequests, rejectWithdrawRequest } from "../controllers/withdrawalController.js";
+import { approveWithdrawRequest, createWithdrawRequest, getAllWithdrawRequests, getAvailableWithdrawInfo, rejectWithdrawRequest } from "../controllers/withdrawalController.js";
 import verifysUser from "../middleware/authMiddleware.js";
 import isAdmin from "../middleware/isAdmin.js";
 import WithdrawRequest from "../models/WithdrawRequest.js";
@@ -20,4 +20,6 @@ router.get("/me",verifysUser, async (req, res) => {
 router.get("/admin", isAdmin, getAllWithdrawRequests);
 router.put("/:id/approve", isAdmin, approveWithdrawRequest);
 router.put("/:id/reject",  isAdmin, rejectWithdrawRequest);
+router.get("/available", verifysUser, getAvailableWithdrawInfo);
+
 export default router;

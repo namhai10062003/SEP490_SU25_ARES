@@ -322,6 +322,17 @@ const CustomerPostManagement = () => {
       </div>
     );
   }
+  const handleCancelEdit = async () => {
+    if (editingPost) {
+      try {
+        await updatePost(editingPost._id, { isEditing: false });
+      } catch (err) {
+        console.error("❌ Lỗi khi huỷ chỉnh sửa:", err);
+      }
+    }
+    setShowEditModal(false);
+    setEditingPost(null);
+  };
 
   return (
     <div className="bg-light min-vh-100">
@@ -721,12 +732,9 @@ const CustomerPostManagement = () => {
                   </div>
                 </div>
                 <div className="modal-footer d-flex justify-content-end gap-2">
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => setShowEditModal(false)}
-                  >
-                    Hủy
-                  </button>
+                <button className="btn btn-secondary" onClick={handleCancelEdit}>
+  Hủy
+</button>
                   <button className="btn btn-primary" onClick={handleSaveEdit}>
                     Lưu thay đổi
                   </button>
