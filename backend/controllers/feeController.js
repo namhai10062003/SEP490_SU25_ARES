@@ -21,6 +21,11 @@ const calculateAndSaveFees = async (req, res) => {
     const feeDocs = [];
 
     for (const apt of apartments) {
+       // ✅ Bỏ qua căn hộ nếu chưa có chủ hộ
+  if (!apt.ownerName || apt.ownerName.trim() === "") {
+    console.log(`⏭️ Bỏ qua căn hộ ${apt.apartmentCode} vì chưa có chủ hộ`);
+    continue;
+  }
       const aptId = String(apt._id);
       const aptCode = apt.apartmentCode;
       const ownerName = apt.ownerName || "Chưa rõ";
@@ -217,8 +222,6 @@ const updateParkingFee = async (req, res) => {
 
 export {
   calculateAndSaveFees,
-  getAllFees,
-  getMonthlyFeeByApartment,
-  getFeeByApartmentAndMonth,
-  updateParkingFee
+  getAllFees, getFeeByApartmentAndMonth, getMonthlyFeeByApartment, updateParkingFee
 };
+
