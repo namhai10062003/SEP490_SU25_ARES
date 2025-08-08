@@ -1,9 +1,12 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { Button, Modal } from "react-bootstrap";
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import SignaturePopup from "../../../../components/SignaturePopup";
+import ContractForm from "../../../../components/contractForm";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
 const MyContractRequests = () => {
@@ -15,6 +18,12 @@ const MyContractRequests = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [contractToApprove, setContractToApprove] = useState(null);
+const [showConfirmForm, setShowConfirmForm] = useState(false);
+const [showSignatureA, setShowSignatureA] = useState(false);
+const [signaturePartyAUrl, setSignaturePartyAUrl] = useState(contractToApprove?.signaturePartyAUrl || "");
+
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,24 +33,30 @@ const MyContractRequests = () => {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contracts/landlord`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setRequests(
-          res.data.data
-            .slice() // sao chép mảng để không đột biến
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        );
+  
+        const sortedData = res.data.data
+          .slice()
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  
+        setRequests(sortedData);
+        setContractToApprove(sortedData[0]); // ✅ lấy hợp đồng đầu tiên (mới nhất)
+  
+        console.log("✅ Hợp đồng để duyệt:", sortedData[0]);
       } catch (err) {
         toast.error("❌ Lỗi khi tải yêu cầu hợp đồng");
       }
     };
+  
     if (user) fetchRequests();
   }, [user]);
+  
 
   const handleApprove = async (id) => {
     try {
       await axios.put(`${import.meta.env.VITE_API_URL}/api/contracts/${id}/approve`, {}, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-      toast.success("✅ Đã duyệt hợp đồng");
+      // toast.success("✅ Đã duyệt hợp đồng");
       setRequests(prev => prev.map(c => c._id === id ? { ...c, status: "approved" } : c));
     } catch {
       toast.error("❌ Lỗi khi duyệt");
@@ -138,7 +153,16 @@ const MyContractRequests = () => {
     return matchStatus && (!searchTerm || matchSearch) && matchDate;
   });
   
+  // Ở đầu component, sau các useState
+  useEffect(() => {
+    console.log("✅ signaturePartyAUrl trong ContractForm:", signaturePartyAUrl);
+  }, [signaturePartyAUrl]);
   
+  useEffect(() => {
+    if (contractToApprove) {
+      console.log("✅ Đã cập nhật contractToApprove:", contractToApprove);
+    }
+  }, [contractToApprove]);
   
 
   if (loading) return <p>🔄 Đang tải...</p>;
@@ -290,12 +314,17 @@ const MyContractRequests = () => {
                               </span>
                             ) : (
                               <>
-                                <button
-                                  className="btn btn-success fw-bold"
-                                  onClick={() => handleApprove(contract._id)}
-                                >
-                                  DUYỆT
-                                </button>
+                              <button
+  className="btn btn-success fw-bold"
+  onClick={() => {
+    setContractToApprove(contract); // lưu lại hợp đồng
+    setShowConfirmForm(true);      // mở form xem trước
+  }}
+>
+  DUYỆT
+</button>
+
+
                                 <button
                                   className="btn btn-danger fw-bold"
                                   onClick={() =>
@@ -384,6 +413,117 @@ const MyContractRequests = () => {
           </div>
         )}
       </div>
+      {showConfirmForm && contractToApprove && (
+  <div className="modal show d-block" tabIndex="-1">
+    <Modal
+  show={showConfirmForm}
+  onHide={() => setShowConfirmForm(false)}
+  size="lg"
+  centered
+  backdrop="static"
+>
+  <Modal.Header closeButton>
+    <Modal.Title>Xác nhận duyệt hợp đồng</Modal.Title>
+  </Modal.Header>
+  <Modal.Body>
+  {contractToApprove && (
+  <ContractForm
+    contractData={contractToApprove}
+    post={contractToApprove?.postId}         // ✅ fix ở đây
+    user={contractToApprove?.userId}         // ✅ nếu bạn populate("userId")
+    landlord={contractToApprove?.landlordId} // ✅ nếu bạn có dùng landlordId (optional)
+    readOnly={true}
+    headerDate={new Date()}
+    signaturePartyBUrl={contractToApprove?.signaturePartyBUrl}
+    signaturePartyAUrl={signaturePartyAUrl} 
+  />
+)}
+
+  </Modal.Body>
+
+  <Modal.Footer>
+  <Button variant="outline-primary" onClick={() => setShowSignatureA(true)}>
+  Ký hợp đồng (Bên A)
+</Button>
+
+    <Button variant="secondary" onClick={() => setShowConfirmForm(false)}>
+      Huỷ
+    </Button>
+    <Button
+  variant="success"
+  onClick={async () => {
+    if (
+      !signaturePartyAUrl ||
+      typeof signaturePartyAUrl !== "string" ||
+      !signaturePartyAUrl.startsWith("data:image")
+    ) {
+      toast.warning("⚠️ Vui lòng ký tên trước khi duyệt!");
+      return;
+    }
+
+    if (!contractToApprove || !contractToApprove._id) {
+      toast.error("❌ Không tìm thấy hợp đồng cần duyệt.");
+      return;
+    }
+
+    try {
+      console.log("⛳ Props signaturePartyAUrl:", contractToApprove?.signaturePartyAUrl);
+
+      console.log("⛳ CHỮ KÝ A:", signaturePartyAUrl?.slice(0, 50)); // ✅ Log ngay trước khi dùng
+      // console.log("📤 Truyền vào ContractForm:", contractToApprove?.signaturePartyAUrl);
+
+      const blob = await (await fetch(signaturePartyAUrl)).blob();
+      const file = new File([blob], "signaturePartyAUrl.png", { type: "image/png" });
+
+      const formData = new FormData();
+      formData.append("signaturePartyAUrl", file);
+      formData.append("contractId", contractToApprove._id);
+
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/contracts/upload-signature`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      await handleApprove(contractToApprove._id);
+
+      toast.success("✅ Đã duyệt hợp đồng và ký tên!");
+      setShowConfirmForm(false);
+      setContractToApprove(null);
+    } catch (error) {
+      toast.error("❌ Lỗi khi duyệt hợp đồng hoặc upload chữ ký");
+      console.error(error);
+    }
+  }}
+>
+  Xác nhận duyệt
+</Button>
+
+
+  </Modal.Footer>
+</Modal>
+
+<SignaturePopup
+  show={showSignatureA}
+  onClose={() => setShowSignatureA(false)}
+  onSave={(base64Signature) => {
+    console.log("⛳ CHỮ KÝ A:", base64Signature?.slice(0, 50));
+    setSignaturePartyAUrl(base64Signature); // 👈 Gán đúng state
+    setShowSignatureA(false);
+  }}
+  party="A"
+/>
+
+
+
+  </div>
+)}
+
     </div>
   );
   

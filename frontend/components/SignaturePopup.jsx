@@ -1,20 +1,18 @@
 import React, { useState } from "react";
+import { Button, Modal } from "react-bootstrap";
 import SignatureCanvas from "react-signature-canvas";
-import { Modal, Button } from "react-bootstrap";
 
-const SignaturePopup = ({ show, onClose, onSave }) => {
+const SignaturePopup = ({ show, onClose, onSave, party }) => {
   const [sign, setSign] = useState(null);
 
   const handleClear = () => {
     sign.clear();
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     if (!sign || sign.isEmpty()) return alert("Bạn chưa ký!");
 
     const dataUrl = sign.getCanvas().toDataURL("image/png");
-
-    // Gửi base64 ra ngoài cho component cha xử lý (lưu vào state tạm thời)
     onSave(dataUrl);
     onClose();
   };
@@ -22,7 +20,7 @@ const SignaturePopup = ({ show, onClose, onSave }) => {
   return (
     <Modal show={show} onHide={onClose} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Ký hợp đồng (Bên B)</Modal.Title>
+        <Modal.Title>Ký hợp đồng ({party === "A" ? "Bên A" : "Bên B"})</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <div style={{ border: "2px solid black", width: "100%", height: 200 }}>
@@ -43,5 +41,6 @@ const SignaturePopup = ({ show, onClose, onSave }) => {
     </Modal>
   );
 };
+
 
 export default SignaturePopup;

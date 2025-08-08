@@ -1,5 +1,4 @@
-import React from "react";
-
+import React, { useEffect } from "react";
 
 const ContractForm = ({
   contractData,
@@ -9,7 +8,18 @@ const ContractForm = ({
   readOnly = false,
   headerDate,
   signaturePartyBUrl,
+  signaturePartyAUrl,
 }) => {
+  console.log("formProps signaturePartyAUrl:", signaturePartyAUrl); //
+
+  useEffect(() => {
+    console.log("🧾 All props in ContractForm:", {
+      signaturePartyAUrl,
+      signaturePartyBUrl,
+      contractData,
+    });
+  }, []);
+
   const getAutoEndDateVN = (startDate, plusDays = 7) => {
     if (!startDate) return "....../....../......";
     const d = new Date(startDate);
@@ -45,7 +55,7 @@ const ContractForm = ({
       "0"
     )} năm ${d.getFullYear()}`;
   };
-
+  
   const startDate = contractData?.startDate || "";
   const depositAmount =
     contractData?.depositAmount || Math.floor((post?.price || 0) * 0.1);
@@ -149,7 +159,7 @@ const ContractForm = ({
         {/* Thông tin bất động sản */}
         <div className="card my-3 shadow-sm">
           <div className="card-header bg-light fw-bold">
-            📌 THÔNG TIN BẤT ĐỘNG SẢN
+            THÔNG TIN BẤT ĐỘNG SẢN
           </div>
           <div className="card-body small row g-3">
             <div className="col-md-6">
@@ -212,7 +222,7 @@ const ContractForm = ({
         </div>
 
         {/* Điều khoản */}
-        <h3 className="contract-subtitle mt-4">📌 ĐIỀU KHOẢN HỢP ĐỒNG</h3>
+        <h3 className="contract-subtitle mt-4">ĐIỀU KHOẢN HỢP ĐỒNG</h3>
         <div className="contract-terms">
           <p>
             <strong>1. Đối tượng hợp đồng:</strong>
@@ -315,30 +325,55 @@ const ContractForm = ({
 
         {/* Ký tên */}
         <div className="row text-center mt-5 mb-5">
-          <div className="col">
-            <strong>BÊN A</strong>
-            <div>(Ký và ghi rõ họ tên)</div>
-            <div
-              className="border-bottom mt-5 mx-auto"
-              style={{ width: "60%" }}
-            ></div>
-          </div>
-          <div className="col text-center">
-            <strong>BÊN B</strong>
-            <div>(Ký và ghi rõ họ tên)</div>
-            {typeof signaturePartyBUrl === 'string' && signaturePartyBUrl.trim() !== '' && (
-              <img
-                src={signaturePartyBUrl}
-                alt="Chữ ký Bên B"
-                style={{ width: "100px", height: "auto" }}
-              />
-            )}
+        <div className="row text-center mt-5 mb-5">
+  {/* Bên A */}
+  <div className="col d-flex flex-column align-items-center">
+    <strong>BÊN A</strong>
+    <div>(Ký và ghi rõ họ tên)</div>
 
-            <div
-              className="border-bottom mt-3 mx-auto"
-              style={{ width: "60%" }}
-            ></div>
-          </div>
+    {typeof signaturePartyAUrl === 'string' && signaturePartyAUrl.trim() !== '' && (
+      <img
+        src={signaturePartyAUrl}
+        alt="Chữ ký Bên A"
+        style={{
+          width: "120px",
+          height: "auto",
+          marginTop: "10px",
+          borderBottom: "1px dotted #ccc",
+        }}
+      />
+    )}
+
+    <div
+      className="border-bottom mt-3"
+      style={{ width: "60%", height: "1px", backgroundColor: "#ccc" }}
+    ></div>
+  </div>
+
+  {/* Bên B */}
+  <div className="col d-flex flex-column align-items-center">
+    <strong>BÊN B</strong>
+    <div>(Ký và ghi rõ họ tên)</div>
+
+    {typeof signaturePartyBUrl === 'string' && signaturePartyBUrl.trim() !== '' && (
+      <img
+        src={signaturePartyBUrl}
+        alt="Chữ ký Bên B"
+        style={{
+          width: "120px",
+          height: "auto",
+          marginTop: "10px",
+          borderBottom: "1px dotted #ccc",
+        }}
+      />
+    )}
+
+    <div
+      className="border-bottom mt-3"
+      style={{ width: "60%", height: "1px", backgroundColor: "#ccc" }}
+    ></div>
+  </div>
+</div>
         </div>
       </div>
     </div>

@@ -1,12 +1,12 @@
 import express from "express";
-import { handleSignatureUpload, approveContract, createContract, deleteContract, getAllPaidContracts, getContractById, getMyContracts, rejectContract, resubmitContract, updateWithdrawableForAll } from "../controllers/contractController.js";
+import { approveContract, createContract, deleteContract, getAllPaidContracts, getContractById, getMyContracts, handleSignatureUpload, rejectContract, resubmitContract, updateWithdrawableForAll } from "../controllers/contractController.js";
 import {
   createContractPayment,
   handleContractPaymentWebhook
 } from "../controllers/contractPaymentController.js";
 import verifysUser from "../middleware/authMiddleware.js";
-import Contract from "../models/Contract.js";
 import { uploadSignature } from "../middleware/uploadSignature.js";
+import Contract from "../models/Contract.js";
 const router = express.Router();
 
 
@@ -24,7 +24,12 @@ router.get("/me", verifysUser, getMyContracts);
 router.get("/paid", getAllPaidContracts);
 router.get("/landlord", verifysUser, async (req, res) => {
   try {
-    const contracts = await Contract.find({ landlordId: req.user._id });
+    const contracts = await Contract.find({ landlordId: req.user._id })
+      .populate("postId")     // ✅ đúng tên field
+      .populate("userId")     // ✅ đúng tên field
+      .sort({ createdAt: -1 });
+
+    console.log("✅ Hợp đồng tìm được:", contracts.length);
 
     const now = new Date();
     const updatedContracts = await Promise.all(
@@ -42,9 +47,12 @@ router.get("/landlord", verifysUser, async (req, res) => {
 
     res.json({ data: updatedContracts });
   } catch (err) {
+    console.error("❌ Lỗi backend:", err);
     res.status(500).json({ message: "Lỗi khi lấy hợp đồng của chủ nhà" });
   }
 });
+
+
 
 router.put("/:id/approve", verifysUser, approveContract);
 router.put("/:id/reject", verifysUser, rejectContract);
