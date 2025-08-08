@@ -81,24 +81,24 @@ console.log(userData);
   <p><strong>Giới thiệu:</strong> {userData?.bio || "Chưa có giới thiệu"}</p>
 
   {/* Ảnh CCCD mặt trước */}
-  <div className="mt-3">
+  {/* <div className="mt-3">
     <p><strong>Ảnh CCCD mặt trước:</strong></p>
     {userData?.cccdFrontImage ? (
       <img src={userData.cccdFrontImage} alt="CCCD mặt trước" style={{ maxWidth: "300px", borderRadius: "8px" }} />
     ) : (
       <p>Chưa cập nhật</p>
     )}
-  </div>
+  </div> */}
 
   {/* Ảnh CCCD mặt sau */}
-  <div className="mt-3">
+  {/* <div className="mt-3">
     <p><strong>Ảnh CCCD mặt sau:</strong></p>
     {userData?.cccdBackImage ? (
       <img src={userData.cccdBackImage} alt="CCCD mặt sau" style={{ maxWidth: "300px", borderRadius: "8px" }} />
     ) : (
       <p>Chưa cập nhật</p>
     )}
-  </div>
+  </div> */}
 </div>
 
 

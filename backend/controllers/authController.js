@@ -371,116 +371,199 @@ const register = async (req, res) => {
 };
 
 // login with gooogle
+// Hàm so sánh thông tin người dùng
+const isUserDataMatching = (dbUser, googleData) => {
+  const fieldsToCheck = [
+    "name",
+    "role",
+    "picture",
+    "gender",
+    "dob",
+    "address",
+    "identityNumber",
+    "bio",
+    "jobTitle",
+    "cccdFrontImage",
+    "cccdBackImage"
+  ];
+
+  return fieldsToCheck.every((field) => {
+    const dbValue = dbUser[field] ? String(dbUser[field]) : "";
+    const googleValue = googleData[field] ? String(googleData[field]) : "";
+
+    // Nếu Google không có giá trị cho field này → bỏ qua
+    if (!googleValue) return true;
+
+    // Role bắt buộc phải là customer
+    if (field === "role") return dbValue === "customer";
+
+    // So sánh ngày sinh theo ISO để tránh lệch timezone
+    if (field === "dob" && dbUser[field] && googleData[field]) {
+      return (
+        new Date(dbUser[field]).toISOString() ===
+        new Date(googleData[field]).toISOString()
+      );
+    }
+
+    return dbValue === googleValue;
+  });
+};
+
 const googleAuth = async (req, res) => {
   try {
-    const { token } = req.body
-
+    const { token } = req.body;
     if (!token) {
       return res.status(400).json({
         success: false,
         error: "Google token is required",
-      })
+      });
     }
 
-    // Verify the Google token
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
-    })
+    });
 
-    const payload = ticket.getPayload()
-    const { sub: googleId, email, name, picture } = payload
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name, picture } = payload;
 
-    // Check if user already exists with this Google ID
     let user = await User.findOne({ googleId, deletedAt: null });
 
+    // 1. Nếu có googleId trùng → đăng nhập luôn
     if (user) {
-      // User exists with Google ID, just log them in
-      user.isOnline = true
-      await user.save()
+      user.isOnline = true;
+      await user.save();
     } else {
-      // Check if user exists with this email (from regular registration)
-      user = await User.findOne({ email, deletedAt: null });
+      // 2. Nếu chưa có googleId nhưng có email trùng
+      const existingUser = await User.findOne({ email, deletedAt: null });
 
-      if (user) {
-        // User exists with email, link Google account
-        user.googleId = googleId
-        user.picture = picture
-        user.isOnline = true
-        await user.save()
+      if (existingUser) {
+        existingUser.googleId = googleId;
+        existingUser.picture = picture;
+        existingUser.isOnline = true;
+        await existingUser.save();
+        user = existingUser;
       } else {
-        // Create new user with Google account
-        // Generate a random password since it's required in your schema
-        const randomPassword = Math.random().toString(36).slice(-8)
-        const hashedPassword = await bcrypt.hash(randomPassword, 10)
+        // 3. Nếu email không trùng → tạo mới
+        const randomPassword = Math.random().toString(36).slice(-8);
+        const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
         user = new User({
           name,
           email,
-          password: hashedPassword, // Required field, but won't be used for Google users
+          password: hashedPassword,
           googleId,
           picture,
           role: "customer",
           isOnline: true,
-        })
-
-        await user.save()
+        });
+        await user.save();
       }
     }
 
-    // Generate JWT token (same format as your login function)
-    const jwtToken = jwt.sign({ _id: user._id, role: user.role, name: user.name }, process.env.JWT_SECRET, {
-      expiresIn: "10d",
-    })
+    // Tạo JWT
+    const jwtToken = jwt.sign(
+      {
+        _id: user._id,
+        role: user.role,
+        name: user.name,
+        email: user.email,
+        identityNumber: safeDecrypt(user.identityNumber),
+        address: user.address,
+        phone: user.phone,
+        dob: user.dob,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "10d" }
+    );
 
-    // Send response in same format as your login function
     return res.status(200).json({
       success: true,
       token: jwtToken,
-      user: { _id: user._id, name: user.name, role: user.role },
+      user: {
+        _id: user._id,
+        role: user.role,
+        name: user.name,
+        email: user.email,
+        identityNumber: safeDecrypt(user.identityNumber),
+        address: user.address,
+        phone: user.phone,
+        dob: user.dob,
+      },
       isOnline: user.isOnline,
-    })
+    });
   } catch (error) {
-    console.error("Google Auth Error:", error.message)
-    return res.status(500).json({ success: false, error: error.message })
+    console.error("Google Auth Error:", error.message);
+    return res.status(500).json({ success: false, error: error.message });
   }
-}
+};
 
 
 const googleCallback = async (req, res) => {
   try {
-    const { code } = req.body
+    const { code } = req.body;
 
-    // Exchange authorization code for tokens
-    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: process.env.GOOGLE_CLIENT_ID,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        code,
-        grant_type: 'authorization_code',
-        redirect_uri: `${process.env.CLIENT_URL}/auth/google/callback`,
-      }),
-    })
+    const tokenResponse = await fetch(
+      "https://oauth2.googleapis.com/token",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          client_secret: process.env.GOOGLE_CLIENT_SECRET,
+          code,
+          grant_type: "authorization_code",
+          redirect_uri: `${process.env.CLIENT_URL}/auth/google/callback`,
+        }),
+      }
+    );
 
-    const tokens = await tokenResponse.json()
+    const tokens = await tokenResponse.json();
 
-    // Get user info from Google
-    const userResponse = await fetch(`https://www.googleapis.com/oauth2/v2/userinfo?access_token=${tokens.access_token}`)
-    const googleUser = await userResponse.json()
+    const userResponse = await fetch(
+      `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${tokens.access_token}`
+    );
+    const googleUser = await userResponse.json();
 
-    // Use your existing logic to create/find user
     let user = await User.findOne({ googleId: googleUser.id, deletedAt: null });
 
     if (!user) {
-      user = await User.findOne({ email: googleUser.email, deletedAt: null });
-      if (user) {
-        user.googleId = googleUser.id
-        await user.save()
+      const existingUser = await User.findOne({
+        email: googleUser.email,
+        deletedAt: null,
+      });
+
+      if (existingUser) {
+        // Kiểm tra thông tin có khớp không
+        if (
+          !isUserDataMatching(existingUser, {
+            name: googleUser.name,
+            role: existingUser.role,
+            picture: googleUser.picture,
+            gender: existingUser.gender,
+            dob: existingUser.dob,
+            address: existingUser.address,
+            identityNumber: existingUser.identityNumber,
+            bio: existingUser.bio,
+            jobTitle: existingUser.jobTitle,
+            cccdFrontImage: existingUser.cccdFrontImage,
+            cccdBackImage: existingUser.cccdBackImage
+          })
+        ) {
+          return res.status(400).json({
+            success: false,
+            error:
+              "Thông tin tài khoản không khớp với tài khoản Google. Vui lòng đăng nhập theo cách bạn đã đăng ký.",
+          });
+        }
+
+        existingUser.googleId = googleUser.id;
+        existingUser.isOnline = true;
+        await existingUser.save();
+        user = existingUser;
       } else {
-        const randomPassword = Math.random().toString(36).slice(-8)
-        const hashedPassword = await bcrypt.hash(randomPassword, 10)
+        const randomPassword = Math.random().toString(36).slice(-8);
+        const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
         user = new User({
           name: googleUser.name,
@@ -489,26 +572,41 @@ const googleCallback = async (req, res) => {
           googleId: googleUser.id,
           role: "customer",
           isOnline: true,
-        })
-        await user.save()
+        });
+        await user.save();
       }
     }
 
-    const jwtToken = jwt.sign({ _id: user._id, role: user.role, name: user.name }, process.env.JWT_SECRET, {
-      expiresIn: "10d",
-    })
+    const jwtToken = jwt.sign(
+      { _id: user._id, role: user.role, name: user.name, 
+        
+        email: user.email,
+        identityNumber: safeDecrypt(user.identityNumber), // ✅ giải mã trước khi trả
+        address: user.address,
+        phone: user.phone,
+        dob: user.dob },
+      process.env.JWT_SECRET,
+      { expiresIn: "10d" }
+    );
 
     return res.status(200).json({
       success: true,
       token: jwtToken,
-      user: { _id: user._id, name: user.name, role: user.role },
+      user: { _id: user._id, role: user.role, name: user.name, 
+        
+        email: user.email,
+        identityNumber: safeDecrypt(user.identityNumber), // ✅ giải mã trước khi trả
+        address: user.address,
+        phone: user.phone,
+        dob: user.dob  },
       isOnline: user.isOnline,
-    })
+    });
   } catch (error) {
-    console.error("Google callback error:", error)
-    return res.status(500).json({ success: false, error: error.message })
+    console.error("Google callback error:", error);
+    return res.status(500).json({ success: false, error: error.message });
   }
-}
+};
+
 
 export { forgotPassword, googleAuth, googleCallback, login, register, resetPassword, verifyUser };
 
