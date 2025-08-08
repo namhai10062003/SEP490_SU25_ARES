@@ -1,23 +1,49 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { confirmAlert } from 'react-confirm-alert';
-import 'react-confirm-alert/src/react-confirm-alert.css';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import AdminDashboard from "./adminDashboard.jsx";
-
-const PAGE_SIZE = 10;
+import Pagination from "../../../components/Pagination.jsx";
+import StatusFilter from "../../../components/admin/statusFilter.jsx";
+import LoadingModal from "../../../components/loadingModal.jsx";
+import ReusableModal from "../../../components/ReusableModal.jsx";
+import { formatDate, formatPhoneNumber, formatPrice } from "../../../utils/format.jsx";
 
 const ManageApplicationForm = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialPage = Number(searchParams.get("page")) || 1;
+  const initialPageSize = Number(searchParams.get("pageSize")) || 10;
+
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("Chờ duyệt");
+  const [filterStatus, setFilterStatus] = useState("");
   const [selectedApp, setSelectedApp] = useState(null);
   const [sortOrder, setSortOrder] = useState("newest");
   const [showModal, setShowModal] = useState(false);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialPage);
+  const [pageSize, setPageSize] = useState(initialPageSize);
   const [showEditModal, setShowEditModal] = useState(false);
+
+  // Confirmation modals
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showApproveModal, setShowApproveModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
+
+  const updateQuery = (newParams = {}) => {
+    const updated = {
+      ...Object.fromEntries(searchParams.entries()),
+      ...newParams,
+    };
+    Object.keys(updated).forEach(
+      (key) => (updated[key] === "" || updated[key] == null) && delete updated[key]
+    );
+    setSearchParams(updated);
+  };
 
   useEffect(() => {
     if (selectedApp) {
@@ -79,30 +105,21 @@ const ManageApplicationForm = () => {
     }
   };
 
+  const handleCancel = (id) => {
+    setSelectedId(id);
+    setShowCancelModal(true);
+  };
 
-  const handleCancel = async (id) => {
-    confirmAlert({
-      title: "Xác nhận huỷ đơn",
-      message: "Bạn có chắc muốn huỷ đơn đã duyệt này không?",
-      buttons: [
-        {
-          label: "Có",
-          onClick: async () => {
-            try {
-              await axios.patch(`${import.meta.env.VITE_API_URL}/api/resident-verifications/${id}/cancel`);
-              await fetchApplications(); // không nên toast trong đây
-              toast.success("Đã huỷ đơn và gỡ hợp đồng khỏi căn hộ!");
-            } catch (err) {
-              const msg = err?.response?.data?.error || "Huỷ đơn thất bại!";
-              toast.error(msg);
-            }
-          },
-        },
-        {
-          label: "Không",
-        },
-      ],
-    });
+  const confirmCancel = async () => {
+    try {
+      await axios.patch(`${import.meta.env.VITE_API_URL}/api/resident-verifications/${selectedId}/cancel`);
+      await fetchApplications();
+      toast.success("Đã huỷ đơn và gỡ hợp đồng khỏi căn hộ!");
+      setShowCancelModal(false);
+    } catch (err) {
+      const msg = err?.response?.data?.error || "Huỷ đơn thất bại!";
+      toast.error(msg);
+    }
   };
 
   useEffect(() => {
@@ -137,82 +154,48 @@ const ManageApplicationForm = () => {
       console.error(err);
     }
   };
-  const handleApprove = async (id) => {
-    confirmAlert({
-      title: 'Xác nhận duyệt',
-      message: 'Bạn có chắc muốn duyệt đơn này?',
-      buttons: [
-        {
-          label: 'Có',
-          onClick: async () => {
-            try {
-              await axios.patch(`${import.meta.env.VITE_API_URL}/api/resident-verifications/${id}/approve`);
-              fetchApplications();
-              toast.success("✅ Đã duyệt đơn thành công!");
-            } catch (err) {
-              const msg = err?.response?.data?.error || "❌ Duyệt đơn thất bại!";
-              toast.error(msg);
-            }
-          }
-        },
-        {
-          label: 'Không',
-          onClick: () => { /* Không làm gì cả */ }
-        }
-      ]
-    });
+
+  const handleApprove = (id) => {
+    setSelectedId(id);
+    setShowApproveModal(true);
   };
 
-  const handleReject = async (id) => {
-    let reasonInput = "";
+  const confirmApprove = async () => {
+    try {
+      await axios.patch(`${import.meta.env.VITE_API_URL}/api/resident-verifications/${selectedId}/approve`);
+      fetchApplications();
+      toast.success("✅ Đã duyệt đơn thành công!");
+      setShowApproveModal(false);
+    } catch (err) {
+      const msg = err?.response?.data?.error || "❌ Duyệt đơn thất bại!";
+      toast.error(msg);
+    }
+  };
 
-    confirmAlert({
-      customUI: ({ onClose }) => {
-        return (
-          <div className="custom-ui p-3 border rounded" style={{ backgroundColor: "#fff", maxWidth: 450 }}>
-            <h5 className="mb-3">Xác nhận từ chối đơn</h5>
-            <div className="mb-3">
-              <label>Lý do từ chối:</label>
-              <textarea
-                className="form-control"
-                rows={3}
-                onChange={(e) => {
-                  reasonInput = e.target.value;
-                }}
-                placeholder="Vui lòng nhập lý do từ chối..."
-              />
-            </div>
-            <div className="d-flex justify-content-end gap-2">
-              <button className="btn btn-secondary" onClick={onClose}>Hủy</button>
-              <button
-                className="btn btn-danger"
-                onClick={async () => {
-                  try {
-                    await axios.patch(
-                      `${import.meta.env.VITE_API_URL}/api/resident-verifications/${id}/reject`,
-                      { reason: reasonInput },
-                      {
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                      }
-                    );
-                    await fetchApplications();
-                    toast.success("Đã từ chối đơn!");
-                  } catch (err) {
-                    const msg = err?.response?.data?.error || "Từ chối đơn thất bại!";
-                    toast.error(msg);
-                  }
-                  onClose();
-                }}
-              >
-                Xác nhận từ chối
-              </button>
-            </div>
-          </div>
-        );
-      },
-    });
+  const handleReject = (id) => {
+    setSelectedId(id);
+    setRejectReason("");
+    setShowRejectModal(true);
+  };
+
+  const confirmReject = async () => {
+    try {
+      await axios.patch(
+        `${import.meta.env.VITE_API_URL}/api/resident-verifications/${selectedId}/reject`,
+        { reason: rejectReason },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      await fetchApplications();
+      toast.success("Đã từ chối đơn!");
+      setShowRejectModal(false);
+    } catch (err) {
+      const msg = err?.response?.data?.error || "Từ chối đơn thất bại!";
+      toast.error(msg);
+    }
   };
 
   // Filter logic
@@ -236,8 +219,8 @@ const ManageApplicationForm = () => {
 
 
   // Pagination logic
-  const totalPages = Math.ceil(filteredApps.length / PAGE_SIZE) || 1;
-  const pagedApps = filteredApps.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.ceil(filteredApps.length / pageSize) || 1;
+  const pagedApps = filteredApps.slice((page - 1) * pageSize, page * pageSize);
 
   useEffect(() => {
     setPage(1); // Reset page khi filter/search thay đổi
@@ -252,6 +235,8 @@ const ManageApplicationForm = () => {
   return (
     <AdminDashboard>
       <div className="w-100">
+        {loading && <LoadingModal />}
+
         <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
           <h2 className="fw-bold mb-0">Quản lý đơn xác nhận cư dân</h2>
           <div className="d-flex gap-2">
@@ -273,17 +258,11 @@ const ManageApplicationForm = () => {
               <option value="oldest">Cũ nhất</option>
             </select>
 
-            <select
-              className="form-select w-auto"
-              style={{ maxWidth: 180 }}
+            <StatusFilter
               value={filterStatus}
-              onChange={e => setFilterStatus(e.target.value)}
-            >
-              <option value="">Tất cả trạng thái</option>
-              <option value="Chờ duyệt">Chờ duyệt</option>
-              <option value="Đã duyệt">Đã duyệt</option>
-              <option value="Đã từ chối">Đã từ chối</option>
-            </select>
+              onChange={setFilterStatus}
+              type="form"
+            />
           </div>
         </div>
         <div className="card w-100">
@@ -298,30 +277,37 @@ const ManageApplicationForm = () => {
                   <th>Căn hộ</th>
                   <th>Loại giấy tờ</th>
                   <th>Trạng thái</th>
+                  <th>Ngày gửi</th>
                   <th>Hành Động</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="8" className="text-center text-muted py-4">
+                    <td colSpan="9" className="text-center text-muted py-4">
                       Đang tải dữ liệu...
                     </td>
                   </tr>
                 ) : pagedApps.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="text-center text-muted py-4">
+                    <td colSpan="9" className="text-center text-muted py-4">
                       Không có đơn đăng ký nào.
                     </td>
                   </tr>
                 ) : (
                   pagedApps.map((app, idx) => (
                     <tr key={app._id}>
-                      <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
-                      <td>{app.fullName}</td>
+                      <td>{(page - 1) * pageSize + idx + 1}</td>
+                      <td>
+                        {app.user && app.user._id ? (
+                          <Link to={`/admin-dashboard/manage-user/${app.user._id}`}>{app.fullName}</Link>
+                        ) : (
+                          app.fullName
+                        )}
+                      </td>
                       <td>{app.email}</td>
-                      <td>{app.phone}</td>
-                      <td>{app.apartmentCode}</td>
+                      <td>{formatPhoneNumber(app.phone)}</td>
+                      <td>{app.apartmentCode || app.apartment?.code || ""}</td>
                       <td>{app.documentType}</td>
                       <td>
                         <span className={
@@ -334,6 +320,7 @@ const ManageApplicationForm = () => {
                           {app.status}
                         </span>
                       </td>
+                      <td>{formatDate(app.createdAt)}</td>
                       <td>
                         <div className="d-flex gap-2 flex-wrap">
                           <button
@@ -343,35 +330,35 @@ const ManageApplicationForm = () => {
                             Xem
                           </button>
                           <button
-                            className="btn btn-sm btn-success"
-                            onClick={() => handleApprove(app._id)}
-                            disabled={app.status === "Đã duyệt"}
+                            className="btn btn-sm btn-outline-primary"
+                            onClick={() => handleEdit(app)}
                           >
-                            Duyệt
+                            Sửa
                           </button>
-                          {app.status === "Đã duyệt" ? (
+                          {app.status === "Chờ duyệt" && (
+                            <>
+                              <button
+                                className="btn btn-sm btn-success"
+                                onClick={() => handleApprove(app._id)}
+                              >
+                                Duyệt
+                              </button>
+                              <button
+                                className="btn btn-sm btn-danger"
+                                onClick={() => handleReject(app._id)}
+                              >
+                                Từ chối
+                              </button>
+                            </>
+                          )}
+                          {app.status === "Đã duyệt" && (
                             <button
                               className="btn btn-sm btn-warning"
                               onClick={() => handleCancel(app._id)}
                             >
                               Huỷ
                             </button>
-                          ) : (
-                            <button
-                              className="btn btn-sm btn-danger"
-                              onClick={() => handleReject(app._id)}
-                              disabled={app.status === "Đã từ chối"}
-                            >
-                              Từ chối
-                            </button>
                           )}
-                          <button
-                            className="btn btn-sm btn-secondary"
-                            onClick={() => handleEdit(app)}
-                            disabled={app.status === "Đã từ chối"}
-                          >
-                            Sửa
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -382,172 +369,157 @@ const ManageApplicationForm = () => {
           </div>
         </div>
 
-        {/* Pagination */}
-        <div className="d-flex justify-content-center align-items-center mt-4">
-          <button
-            className="btn btn-outline-secondary me-2"
-            onClick={() => setPage(page - 1)}
-            disabled={page <= 1}
-          >
-            &lt; Prev
-          </button>
-          <span style={{ minWidth: 90, textAlign: "center" }}>
-            Trang {page} / {totalPages}
-          </span>
-          <button
-            className="btn btn-outline-secondary ms-2"
-            onClick={() => setPage(page + 1)}
-            disabled={page >= totalPages}
-          >
-            Next &gt;
-          </button>
-        </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={(p) => {
+            setPage(p);
+            updateQuery({ page: p });
+          }}
+          pageSize={pageSize}
+          onPageSizeChange={(s) => {
+            setPageSize(s);
+            setPage(1);
+            updateQuery({ pageSize: s, page: 1 });
+          }}
+        />
 
         {/* Modal xem chi tiết đơn */}
         {showModal && selectedApp && (
-          <div
-            className="modal fade show"
-            style={{ display: "block", background: "rgba(0,0,0,0.3)" }}
-            tabIndex="-1"
-          >
-            <div className="modal-dialog">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Chi tiết đơn đăng ký</h5>
-                  <button
-                    type="button"
-                    className="close"
-                    onClick={() => setShowModal(false)}
-                  >
-                    <span>×</span>
-                  </button>
-                </div>
-                <div className="modal-body">
-                  {/* Thông tin hợp đồng */}
-                  <div className="mb-4">
-                    <h5 className="fw-bold mb-3 text-primary">📄 Thông tin hợp đồng</h5>
-                    <ul className="list-group list-group-flush">
-                      <li className="list-group-item"><strong>Loại giấy tờ:</strong> {selectedApp.documentType}</li>
-                      <li className="list-group-item"><strong>Thời hạn:</strong> {selectedApp.contractStart ? new Date(selectedApp.contractStart).toLocaleDateString() : "-"} - {selectedApp.contractEnd ? new Date(selectedApp.contractEnd).toLocaleDateString() : "-"}</li>
-                      <li className="list-group-item">
-                        <strong>Trạng thái:</strong>{" "}
-                        <span
-                          className={`badge px-2 py-1 rounded-pill ${selectedApp.status === "Chờ duyệt"
-                              ? "bg-warning text-dark"
-                              : selectedApp.status === "Đã từ chối"
-                                ? "bg-danger"
-                                : selectedApp.status === "Đã duyệt"
-                                  ? "bg-success"
-                                  : "bg-secondary"
-                            }`}
-                        >
-                          {selectedApp.status}
-                        </span>
-                      </li>
-                      <li className="list-group-item"><strong>Ngày tạo đơn:</strong> {new Date(selectedApp.createdAt).toLocaleString()}</li>
-                    </ul>
+          <ReusableModal
+            show={showModal}
+            onClose={() => setShowModal(false)}
+            title="Chi tiết đơn đăng ký"
+            body={
+              <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+                {/* Thông tin hợp đồng */}
+                <div className="mb-4">
+                  <h5 className="fw-bold mb-3 text-primary">📄 Thông tin hợp đồng</h5>
+                  <ul className="list-group list-group-flush">
+                    <li className="list-group-item"><strong>Loại giấy tờ:</strong> {selectedApp.documentType}</li>
+                    <li className="list-group-item"><strong>Thời hạn:</strong> {formatDate(selectedApp.contractStart)} - {formatDate(selectedApp.contractEnd)}</li>
+                    <li className="list-group-item"><strong>Ngày gửi:</strong> {formatDate(selectedApp.createdAt)}</li>
+                    <li className="list-group-item">
+                      <strong>Trạng thái:</strong>{" "}
+                      <span
+                        className={`badge px-2 py-1 rounded-pill ${selectedApp.status === "Chờ duyệt"
+                          ? "bg-warning text-dark"
+                          : selectedApp.status === "Đã từ chối"
+                            ? "bg-danger"
+                            : selectedApp.status === "Đã duyệt"
+                              ? "bg-success"
+                              : "bg-secondary"
+                          }`}
+                      >
+                        {selectedApp.status}
+                      </span>
+                    </li>
+                  </ul>
 
-                    {documentImages.length > 0 && (
-                      <div className="mt-3">
-                        <label className="fw-semibold mb-2 d-block">Ảnh hợp đồng:</label>
-                        <div className="d-flex flex-wrap gap-3">
-                          {documentImages.map((img, idx) => (
-                            <img
-                              key={idx}
-                              src={img}
-                              alt={`Hợp đồng ${idx + 1}`}
-                              className="rounded shadow-sm"
-                              style={{ maxHeight: 200, maxWidth: 300, objectFit: "cover" }}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <hr />
-
-                  {/* Người thuê */}
-                  <div className="mb-4">
-                    <h5 className="fw-bold mb-3 text-primary">👤 Người thuê</h5>
-                    <ul className="list-group list-group-flush">
-                      <li className="list-group-item"><strong>Họ tên:</strong> {selectedApp.resident?.name || selectedApp.fullName}</li>
-                      <li className="list-group-item"><strong>Email:</strong> {selectedApp.resident?.email || selectedApp.email}</li>
-                      <li className="list-group-item"><strong>SĐT:</strong> {selectedApp.resident?.phone || selectedApp.phone}</li>
-                    </ul>
-                  </div>
-
-                  <hr />
-
-                  {/* Thông tin căn hộ */}
-                  <div className="mb-4">
-                    <h5 className="fw-bold mb-3 text-primary">🏢 Thông tin căn hộ</h5>
-                    <ul className="list-group list-group-flush">
-                      <li className="list-group-item"><strong>Mã căn hộ:</strong> {selectedApp.apartment?.code || selectedApp.apartmentCode}</li>
-                      <li className="list-group-item"><strong>Tầng:</strong> {selectedApp.apartment?.floor}</li>
-                      <li className="list-group-item"><strong>Diện tích:</strong> {selectedApp.apartment?.area} m²</li>
-                      <li className="list-group-item"><strong>Nội thất:</strong> {selectedApp.apartment?.furniture}</li>
-                      <li className="list-group-item"><strong>Hướng:</strong> {selectedApp.apartment?.direction}</li>
-                      <li className="list-group-item"><strong>Trạng thái:</strong> {selectedApp.apartment?.status}</li>
-                    </ul>
-                  </div>
-
-                  {/* Các tháng chưa thanh toán */}
-                  {selectedApp.unpaidFees && selectedApp.unpaidFees.length > 0 && (
-                    <div className="mb-3">
-                      <h5 className="fw-bold mb-3 text-danger">📅 Các tháng chưa thanh toán</h5>
-                      <div className="table-responsive">
-                        <table className="table table-bordered table-hover table-striped align-middle">
-                          <thead className="table-secondary text-center">
-                            <tr>
-                              <th>Tháng</th>
-                              <th>Phí quản lý</th>
-                              <th>Phí nước</th>
-                              <th>Phí giữ xe</th>
-                              <th>Tổng</th>
-                              <th>Trạng thái</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {selectedApp.unpaidFees.map((fee, index) => (
-                              <tr key={index}>
-                                <td className="text-center">{fee.month}</td>
-                                <td className="text-end">{fee.managementFee.toLocaleString()}đ</td>
-                                <td className="text-end">{fee.waterFee.toLocaleString()}đ</td>
-                                <td className="text-end">{fee.parkingFee.toLocaleString()}đ</td>
-                                <td className="text-end fw-bold">{fee.total.toLocaleString()}đ</td>
-                                <td className="text-center text-danger fw-semibold">{fee.status}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                  {documentImages.length > 0 && (
+                    <div className="mt-3">
+                      <label className="fw-semibold mb-2 d-block">Ảnh hợp đồng:</label>
+                      <div className="d-flex flex-wrap gap-3">
+                        {documentImages.map((img, idx) => (
+                          <img
+                            key={idx}
+                            src={img}
+                            alt={`Hợp đồng ${idx + 1}`}
+                            className="rounded shadow-sm"
+                            style={{ maxHeight: 200, maxWidth: 300, objectFit: "cover" }}
+                          />
+                        ))}
                       </div>
                     </div>
                   )}
                 </div>
 
-                <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowModal(false)}
-                  >
-                    Đóng
-                  </button>
+                <hr />
+
+                {/* Người thuê */}
+                <div className="mb-4">
+                  <h5 className="fw-bold mb-3 text-primary">👤 Người thuê</h5>
+                  <ul className="list-group list-group-flush">
+                    <li className="list-group-item"><strong>Họ tên:</strong> {selectedApp.user && selectedApp.user._id ? (
+                      <Link to={`/admin-dashboard/manage-user/${selectedApp.user._id}`}>{selectedApp.fullName}</Link>
+                    ) : selectedApp.fullName}</li>
+                    <li className="list-group-item"><strong>Email:</strong> {selectedApp.resident?.email || selectedApp.email}</li>
+                    <li className="list-group-item"><strong>SĐT:</strong> {formatPhoneNumber(selectedApp.resident?.phone || selectedApp.phone)}</li>
+                  </ul>
                 </div>
+
+                <hr />
+
+                {/* Thông tin căn hộ */}
+                <div className="mb-4">
+                  <h5 className="fw-bold mb-3 text-primary">🏢 Thông tin căn hộ</h5>
+                  <ul className="list-group list-group-flush">
+                    <li className="list-group-item"><strong>Mã căn hộ:</strong> {selectedApp.apartmentCode || selectedApp.apartment?.code || ""}</li>
+                    <li className="list-group-item"><strong>Tầng:</strong> {selectedApp.apartment?.floor}</li>
+                    <li className="list-group-item"><strong>Diện tích:</strong> {selectedApp.apartment?.area} m²</li>
+                    <li className="list-group-item"><strong>Nội thất:</strong> {selectedApp.apartment?.furniture}</li>
+                    <li className="list-group-item"><strong>Hướng:</strong> {selectedApp.apartment?.direction}</li>
+                    <li className="list-group-item"><strong>Trạng thái:</strong> {selectedApp.apartment?.status}</li>
+                  </ul>
+                </div>
+
+                {/* Các tháng chưa thanh toán */}
+                {selectedApp.unpaidFees && selectedApp.unpaidFees.length > 0 && (
+                  <div className="mb-3">
+                    <h5 className="fw-bold mb-3 text-danger">📅 Các tháng chưa thanh toán</h5>
+                    <div className="table-responsive">
+                      <table className="table table-bordered table-hover table-striped align-middle">
+                        <thead className="table-secondary text-center">
+                          <tr>
+                            <th>Tháng</th>
+                            <th>Phí quản lý</th>
+                            <th>Phí nước</th>
+                            <th>Phí giữ xe</th>
+                            <th>Tổng</th>
+                            <th>Trạng thái</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedApp.unpaidFees.map((fee, index) => (
+                            <tr key={index}>
+                              <td className="text-center">{fee.month}</td>
+                              <td className="text-end">{formatPrice(fee.managementFee)}</td>
+                              <td className="text-end">{formatPrice(fee.waterFee)}</td>
+                              <td className="text-end">{formatPrice(fee.parkingFee)}</td>
+                              <td className="text-end fw-bold">{formatPrice(fee.total)}</td>
+                              <td className="text-center text-danger fw-semibold">{fee.status}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          </div>
+            }
+            footerButtons={[
+              {
+                label: "Đóng",
+                variant: "secondary",
+                onClick: () => setShowModal(false),
+              },
+            ]}
+          />
         )}
+
         {showEditModal && selectedApp && (
           <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,0.3)" }}>
             <div className="modal-dialog modal-lg">
-              <div className="modal-content">
+              <div className="modal-content position-relative">
+                <button
+                  type="button"
+                  className="btn-close position-absolute"
+                  aria-label="Close"
+                  style={{ top: "1rem", right: "1rem" }}
+                  onClick={() => setShowEditModal(false)}
+                ></button>
                 <div className="modal-header">
                   <h5 className="modal-title">Chỉnh sửa đơn xác nhận</h5>
-                  <button type="button" className="close" onClick={() => setShowEditModal(false)}>
-                    <span>×</span>
-                  </button>
                 </div>
                 <div className="modal-body row g-3">
                   {/* Các trường cơ bản */}
@@ -640,6 +612,83 @@ const ManageApplicationForm = () => {
           </div>
         )}
 
+        {/* Confirmation modals */}
+        {showCancelModal && (
+          <ReusableModal
+            show={showCancelModal}
+            onClose={() => setShowCancelModal(false)}
+            title="Xác nhận huỷ đơn"
+            body={
+              <p>Bạn có chắc muốn huỷ đơn đã duyệt này không?</p>
+            }
+            footerButtons={[
+              {
+                label: "Có",
+                variant: "danger",
+                onClick: confirmCancel,
+              },
+              {
+                label: "Không",
+                variant: "secondary",
+                onClick: () => setShowCancelModal(false),
+              },
+            ]}
+          />
+        )}
+
+        {showApproveModal && (
+          <ReusableModal
+            show={showApproveModal}
+            onClose={() => setShowApproveModal(false)}
+            title="Xác nhận duyệt"
+            body={
+              <p>Bạn có chắc muốn duyệt đơn này?</p>
+            }
+            footerButtons={[
+              {
+                label: "Có",
+                variant: "success",
+                onClick: confirmApprove,
+              },
+              {
+                label: "Không",
+                variant: "secondary",
+                onClick: () => setShowApproveModal(false),
+              },
+            ]}
+          />
+        )}
+
+        {showRejectModal && (
+          <ReusableModal
+            show={showRejectModal}
+            onClose={() => setShowRejectModal(false)}
+            title="Xác nhận từ chối đơn"
+            body={
+              <div className="mb-3">
+                <label>Lý do từ chối:</label>
+                <textarea
+                  className="form-control"
+                  rows={3}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="Vui lòng nhập lý do từ chối..."
+                />
+              </div>
+            }
+            footerButtons={[
+              {
+                label: "Hủy",
+                variant: "secondary",
+                onClick: () => setShowRejectModal(false),
+              },
+              {
+                label: "Xác nhận từ chối",
+                variant: "danger",
+                onClick: confirmReject,
+              },
+            ]}
+          />
+        )}
 
       </div>
       {/* <ToastContainer /> */}

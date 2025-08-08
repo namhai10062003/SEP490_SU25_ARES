@@ -1,12 +1,14 @@
-// src/components/admin/SearchEmailInput.jsx
+// src/components/admin/SearchInput.jsx
 import React from "react";
 import { FiSearch } from "react-icons/fi";
 
-const SearchEmailInput = ({
+const SearchInput = ({
     value,
     onChange,
     onSearch, // gọi khi Enter hoặc click search icon
-    onClear
+    onClear,
+    placeholder = "Tìm theo email", // default value
+    width = 300 // default width
 }) => {
     const handleKeyDown = (e) => {
         if (e.key === "Enter") {
@@ -15,12 +17,12 @@ const SearchEmailInput = ({
     };
 
     return (
-        <div className="input-group" style={{ maxWidth: 320 }}>
+        <div className="input-group" style={{ width }}>
             <input
                 type="text"
                 className="form-control"
-                placeholder="Tìm theo email"
-                aria-label="Search by email"
+                placeholder={placeholder}
+                aria-label="Search"
                 aria-describedby="search-addon"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
@@ -47,4 +49,4 @@ const SearchEmailInput = ({
     );
 };
 
-export default SearchEmailInput;
+export default SearchInput;

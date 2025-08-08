@@ -5,12 +5,12 @@ const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 const token = localStorage.getItem("token");
 export const getPostHistoryByPostId = async (postId) => {
     const response = await axios.get(`${API_BASE}/posts/posts/${postId}/history`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
     });
     return response.data;
-  };
+};
 
 // 🟢 GET posts of current user
 export const getPostsByUser = () => {
@@ -57,11 +57,17 @@ export const createPayment = async (postId) => {
     return axios.post(`https://api.ares.io.vn/api/payment/create-payment/${postId}`);
 };
 
-export const getAllPosts = async () => {
+export const getAllPosts = async (page, pageSize, status, search) => {
     const token = localStorage.getItem("token");
-    return axios.get(`${API_BASE}/posts/get-post`, {
+    return axios.get(`${API_BASE}/posts/get-all-posts`, {
         headers: {
             Authorization: `Bearer ${token}`,
+        },
+        params: {
+            page,
+            pageSize,
+            status,
+            search,
         },
     });
 };

@@ -13,6 +13,30 @@ const statusOptions = {
         { value: "1", label: "Active" },
         { value: "0", label: "Blocked" },
     ],
+    form: [
+        { value: "", label: "Tất cả trạng thái" },
+        { value: "Chờ duyệt", label: "Chờ duyệt" },
+        { value: "Đã duyệt", label: "Đã duyệt" },
+        { value: "Đã từ chối", label: "Đã từ chối" },
+    ],
+    withdraw: [
+        { value: "", label: "Tất cả trạng thái" },
+        { value: "pending", label: "Chờ duyệt" },
+        { value: "approved", label: "Đã duyệt" },
+        { value: "rejected", label: "Từ chối" },
+    ],
+    apartment: [
+        { value: "all", label: "Tất cả" },
+        { value: "active", label: "Hoạt động" },
+        { value: "deleted", label: "Đã xóa" },
+    ],
+    post: [
+        { value: "all", label: "Tất cả" },
+        { value: "pending", label: "Chờ duyệt" },
+        { value: "approved", label: "Đã duyệt" },
+        { value: "rejected", label: "Đã từ chối" },
+        { value: "deleted", label: "Đã xóa" },
+    ],
     default: [
         { value: "", label: "Tất cả trạng thái" },
         { value: "active", label: "Active" },
