@@ -317,7 +317,14 @@ export const updateProfile = async (req, res) => {
     }
 
     console.log("=== Thông tin người dùng hiện tại ===", currentUser);
-
+    
+ // 🔹 Validate trùng số điện thoại (nếu có gửi phone)
+  if (phone) {
+    const phoneExists = await User.findOne({ phone, _id: { $ne: userId }, deletedAt: null });
+    if (phoneExists) {
+      return res.status(400).json({ message: "Số điện thoại đã tồn tại!" });
+    }
+  }
     const updateData = {};
     if (name !== undefined) updateData.name = name;
     if (phone !== undefined) updateData.phone = phone;

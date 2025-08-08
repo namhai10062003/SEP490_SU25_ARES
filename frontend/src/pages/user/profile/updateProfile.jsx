@@ -155,7 +155,7 @@ const handleCccdBackChange = (e) => {
     } else if (!/^\d{9}$|^\d{12}$/.test(form.identityNumber)) {
       errors.push("⚠️ CMND/CCCD phải gồm 9 hoặc 12 chữ số!");
     }
-  
+    
     if (!form.bio?.trim()) errors.push("⚠️ Vui lòng nhập phần giới thiệu!");
     if (!form.jobTitle?.trim()) errors.push("⚠️ Vui lòng nhập nghề nghiệp!");
   
@@ -215,16 +215,18 @@ const handleCccdBackChange = (e) => {
             "Content-Type": "multipart/form-data",
           },
         });
-  
+          
         toast.success("✅ Cập nhật thông tin thành công!");
       }
+      
   
       setTimeout(() => {
         navigate("/profile");
       }, 1500);
     } catch (err) {
+      const backendMessage = err.response?.data?.message || "❌ Gửi yêu cầu thất bại, thử lại sau!";
+      toast.error(backendMessage);
       console.error("Lỗi cập nhật hồ sơ:", err);
-      toast.error("❌ Gửi yêu cầu thất bại, thử lại sau!");
     }
   };
   
