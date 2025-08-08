@@ -66,9 +66,9 @@ const Register = () => {
   }
 
   // Kiểm tra số điện thoại (chỉ chứa số và đủ 11 số)
-  const phoneRegex = /^[0-9]{11}$/;
+  const phoneRegex = /^[0-9]{10}$/;
   if (!phoneRegex.test(formData.phone)) {
-    toast.error("Số điện thoại phải gồm đúng 11 chữ số.");
+    toast.error("Số điện thoại phải gồm đúng 10 chữ số.");
     return false;
   }
 
@@ -130,7 +130,7 @@ const Register = () => {
           navigate("/verify-otp");
         }, 1500);
       } else {
-        toast.error(`Error: ${data.error || data.message || "Registration failed"}`);
+        toast.error(`${data.error || data.message || "Registration failed"}`);
       }
     } catch (error) {
       console.error("Error registering:", error);
