@@ -331,7 +331,11 @@ const register = async (req, res) => {
         await User.deleteOne({ _id: existingUser._id });
       }
     }
-
+ // 🔹 Kiểm tra SĐT đã tồn tại chưa và chưa bị xóa
+ const existingPhone = await User.findOne({ phone, deletedAt: null });
+ if (existingPhone) {
+   return res.status(400).json({ success: false, error: "Số điện thoại đã tồn tại!" });
+ }
     // Hash mật khẩu
     const hashedPassword = await bcrypt.hash(password, 10);
 
