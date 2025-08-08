@@ -143,6 +143,7 @@ const ManageUsers = () => {
                         <StatusFilter
                             value={filterStatus}
                             onChange={(val) => updateQuery({ status: val, page: 1 })}
+                            type="user"
                         />
                     </div>
                 </div>

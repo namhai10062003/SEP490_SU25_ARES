@@ -20,10 +20,12 @@ export const createApartment = async (req, res) => {
 // Lấy tất cả căn hộ
 
 // GET /api/apartments?page=1&pageSize=10
+// controller
 export const getAllApartments = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const pageSize = parseInt(req.query.pageSize) || 10;
-  const status = req.query.status; // "active" | "deleted" | undefined
+  const status = req.query.status;
+  const search = req.query.search?.trim() || "";
 
   try {
     let filter = {};
@@ -33,13 +35,19 @@ export const getAllApartments = async (req, res) => {
       filter.deletedAt = { $ne: null };
     }
 
+    // search by ownerName
+    if (search) {
+      const regex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      filter.ownerName = { $regex: regex };
+    }
+
     const total = await Apartment.countDocuments(filter);
     const apartments = await Apartment.find(filter)
       .skip((page - 1) * pageSize)
       .limit(pageSize)
       .sort({ createdAt: -1 })
-      .populate('isOwner', 'name phone')
-      .populate('isRenter', 'name phone');
+      .populate("isOwner", "name phone")
+      .populate("isRenter", "name phone");
 
     res.json({
       data: apartments,
@@ -51,6 +59,7 @@ export const getAllApartments = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 // Lấy 1 căn hộ theo ID
 export const getApartmentById = async (req, res) => {
