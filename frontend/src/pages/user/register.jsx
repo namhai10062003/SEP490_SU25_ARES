@@ -59,6 +59,25 @@ const Register = () => {
   };
 
   const validateForm = () => {
+     // Kiểm tra tên
+  if (!formData.firstName || formData.firstName.trim().length === 0) {
+    toast.error("Vui lòng nhập tên.");
+    return false;
+  }
+
+  // Kiểm tra số điện thoại (chỉ chứa số và đủ 11 số)
+  const phoneRegex = /^[0-9]{11}$/;
+  if (!phoneRegex.test(formData.phone)) {
+    toast.error("Số điện thoại phải gồm đúng 11 chữ số.");
+    return false;
+  }
+
+  // Kiểm tra email
+  if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) {
+    toast.error("Vui lòng nhập email hợp lệ.");
+    return false;
+  }
+
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match!");
       return false;
