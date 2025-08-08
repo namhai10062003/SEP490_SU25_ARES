@@ -8,7 +8,7 @@ import { useSearchParams } from "react-router-dom";
 import AdminDashboard from "./adminDashboard.jsx";
 import Pagination from "../../../components/Pagination.jsx";
 import ReusableModal from "../../../components/ReusableModal.jsx";
-import SearchEmailInput from "../../../components/admin/searchEmail.jsx";
+import SearchInput from "../../../components/admin/searchInput.jsx";
 import StatusFilter from "../../../components/admin/statusFilter.jsx";
 import LoadingModal from "../../../components/loadingModal.jsx";
 
@@ -25,7 +25,7 @@ const ManageStaff = () => {
     const [form, setForm] = useState({ username: "", password: "", email: "" });
     const [showPassword, setShowPassword] = useState(false);
 
-    // local controlled input for SearchEmailInput
+    // local controlled input for SearchInput
     const [searchInput, setSearchInput] = useState(searchParams.get("email") || "");
 
     const [loading, setLoading] = useState(false);
@@ -246,7 +246,7 @@ const ManageStaff = () => {
                     <h2 className="fw-bold mb-0">Quản lý Staff</h2>
 
                     <div className="d-flex gap-3 align-items-center">
-                        <SearchEmailInput
+                        <SearchInput
                             value={searchInput}
                             onChange={setSearchInput}
                             onSearch={triggerSearch}

@@ -1,28 +1,36 @@
 // src/pages/admin/manage/ManageApartment.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
 import AdminDashboard from "./adminDashboard.jsx";
 import ApartmentFormModal from "../../../components/ApartmentFormModal.jsx";
 import Pagination from "../../../components/Pagination.jsx";
 import LoadingModal from "../../../components/loadingModal.jsx";
+import SearchInput from "../../../components/admin/searchInput.jsx";
+import StatusFilter from "../../../components/admin/statusFilter.jsx";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
 const ManageApartment = () => {
+  // URL state management
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // data + ui
   const [apartments, setApartments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingFetch, setLoadingFetch] = useState(false);
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  // URL-based state
+  const page = parseInt(searchParams.get("page")) || 1;
+  const pageSize = parseInt(searchParams.get("pageSize")) || 10;
+  const searchTerm = searchParams.get("search") || "";
+  const statusFilter = searchParams.get("status") || "all";
   const [totalPages, setTotalPages] = useState(1);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("active"); // "all" | "active" | "deleted"
+  // local state for search input
+  const [searchInput, setSearchInput] = useState(searchTerm);
 
   // modal/form
   const [showModal, setShowModal] = useState(false);
@@ -47,7 +55,7 @@ const ManageApartment = () => {
   const [apartmentHistory, setApartmentHistory] = useState([]);
 
   // fetch apartments from backend (uses search + status + pagination)
-  const fetchApartments = async (overrideSearch) => {
+  const fetchApartments = async () => {
     try {
       setLoadingFetch(true);
       const params = {
@@ -55,8 +63,7 @@ const ManageApartment = () => {
         pageSize,
       };
       if (statusFilter && statusFilter !== "all") params.status = statusFilter;
-      const searchValue = overrideSearch !== undefined ? overrideSearch : searchTerm;
-      if (searchValue && searchValue.trim() !== "") params.search = searchValue.trim();
+      if (searchTerm && searchTerm.trim() !== "") params.search = searchTerm.trim();
 
       const res = await axios.get(`${API_BASE}/api/apartments`, { params });
       const data = res.data || {};
@@ -76,22 +83,35 @@ const ManageApartment = () => {
   useEffect(() => {
     fetchApartments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, statusFilter]); // searchTerm triggered by explicit search btn/Enter
+  }, [page, pageSize, statusFilter, searchTerm]); // Added searchTerm to dependencies
+
+  // sync searchInput with searchTerm from URL
+  useEffect(() => {
+    setSearchInput(searchTerm);
+  }, [searchTerm]);
 
   // search trigger (button or Enter)
   const handleSearchTrigger = async () => {
-    setPage(1);
-    // fetch will run because page changed effect dependency triggers; also call directly to be immediate
-    await fetchApartments();
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set("search", searchInput);
+    newSearchParams.set("page", "1");
+    setSearchParams(newSearchParams);
   };
-  const handleSearchKeyDown = (e) => {
-    if (e.key === "Enter") handleSearchTrigger();
+
+  const handleClearSearch = () => {
+    setSearchInput("");
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.delete("search");
+    newSearchParams.set("page", "1");
+    setSearchParams(newSearchParams);
   };
-  const clearSearch = () => {
-    setSearchTerm("");
-    setPage(1);
-    // gọi fetch trực tiếp với search rỗng
-    fetchApartments("");
+
+  // filter handler
+  const handleStatusChange = (status) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set("status", status);
+    newSearchParams.set("page", "1");
+    setSearchParams(newSearchParams);
   };
 
 
@@ -159,7 +179,10 @@ const ManageApartment = () => {
       } else {
         await axios.post(`${API_BASE}/api/apartments`, payload);
         toast.success("Tạo căn hộ thành công");
-        setPage(1);
+        // Reset to page 1 after creating new apartment
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set("page", "1");
+        setSearchParams(newSearchParams);
       }
 
       setShowModal(false);
@@ -227,38 +250,19 @@ const ManageApartment = () => {
           <h2 className="fw-bold mb-0">Quản lý Căn hộ</h2>
 
           <div className="d-flex align-items-center gap-2">
-            <div className="input-group" style={{ minWidth: 250, maxWidth: 520 }}>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Tìm theo tên chủ căn hộ"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={handleSearchKeyDown}
-              />
-              <button className="btn btn-outline-secondary" type="button" onClick={handleSearchTrigger}>
-                Tìm
-              </button>
-              {searchTerm && (
-                <button className="btn btn-outline-secondary" type="button" onClick={clearSearch}>
-                  ✕
-                </button>
-              )}
-            </div>
+            <SearchInput
+              placeholder="Tìm theo tên chủ căn hộ"
+              value={searchInput}
+              onChange={setSearchInput}
+              onSearch={handleSearchTrigger}
+              onClear={handleClearSearch}
+            />
 
-            <select
-              className="form-select"
-              style={{ maxWidth: 140 }}
+            <StatusFilter
               value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-            >
-              <option value="all">Tất cả</option>
-              <option value="active">Hoạt động</option>
-              <option value="deleted">Đã xóa</option>
-            </select>
+              onChange={handleStatusChange}
+              type="apartment"
+            />
 
             <button
               className="btn btn-primary fw-bold d-flex align-items-center gap-2 px-3 shadow-sm"
@@ -364,12 +368,16 @@ const ManageApartment = () => {
           page={page}
           totalPages={totalPages}
           onPageChange={(p) => {
-            setPage(p);
+            const newSearchParams = new URLSearchParams(searchParams);
+            newSearchParams.set("page", p.toString());
+            setSearchParams(newSearchParams);
           }}
           pageSize={pageSize}
           onPageSizeChange={(s) => {
-            setPageSize(s);
-            setPage(1);
+            const newSearchParams = new URLSearchParams(searchParams);
+            newSearchParams.set("pageSize", s.toString());
+            newSearchParams.set("page", "1");
+            setSearchParams(newSearchParams);
           }}
         />
 

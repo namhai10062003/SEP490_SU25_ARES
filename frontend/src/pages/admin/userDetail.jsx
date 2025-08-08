@@ -183,7 +183,7 @@ export default function ManageUserDetail() {
                 <h5>Liên kết khác</h5>
                 <ul>
                     <li>
-                        <Link to={`/admin-dashboard/manage-apartment?id=${id}`} className="text-primary">
+                        <Link to={`/admin-dashboard/manage-apartment?search=${user.name}`} className="text-primary">
                             → Xem căn hộ người này sở hữu
                         </Link>
                     </li>

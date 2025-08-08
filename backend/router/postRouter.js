@@ -1,11 +1,12 @@
 import express from "express";
-import { createPost, deletePost, deletePostByAdmin, getApprovedPosts, getPost, getPostApproved, getPostDetail, getPostDetailForAdmin, getPostForGuest, getPostHistories, getPostStats, getPostbyUser, rejectPostByAdmin, startEditingPost, updatePost, updatePostStatusByAdmin, verifyPostByAdmin } from "../controllers/postController.js";
+import { getAllPosts, createPost, deletePost, deletePostByAdmin, getApprovedPosts, getPost, getPostApproved, getPostDetail, getPostDetailForAdmin, getPostForGuest, getPostHistories, getPostStats, getPostbyUser, rejectPostByAdmin, startEditingPost, updatePost, updatePostStatusByAdmin, verifyPostByAdmin } from "../controllers/postController.js";
 import { upload } from "../db/cloudinary.js";
 import verifyUser from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.post("/create-post", verifyUser, upload.array("images"), createPost);
 router.get("/get-post", verifyUser, getPost);
+router.get("/get-all-posts", verifyUser, getAllPosts);
 router.get("/get-post-active", verifyUser, getPostApproved);
 router.get("/active", verifyUser, getApprovedPosts);
 router.get("/guest/get-post", getPostForGuest); // 👈 KHÔNG verifyUser
@@ -21,7 +22,7 @@ router.get("/posts/:id/history", verifyUser, getPostHistories);
 // get post by user
 router.put("/:id/start-editing", verifyUser, startEditingPost);
 router.get("/get-postbyUser", verifyUser, getPostbyUser);
-router.put("/update-posts/:id", verifyUser ,updatePost);
+router.put("/update-posts/:id", verifyUser, updatePost);
 router.delete("/delete-posts/:id", deletePost);
 router.put("/update-posts-statusbyAdmin/:id", verifyUser, updatePostStatusByAdmin);
 router.get('/stats', getPostStats);

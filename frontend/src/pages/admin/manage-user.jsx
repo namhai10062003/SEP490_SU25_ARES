@@ -8,7 +8,7 @@ import LoadingModal from "../../../components/loadingModal.jsx";
 import AdminDashboard from "./adminDashboard.jsx";
 import ReusableModal from "../../../components/ReusableModal.jsx";
 import Pagination from "../../../components/Pagination.jsx";
-import SearchEmailInput from "../../../components/admin/searchEmail.jsx";
+import SearchInput from "../../../components/admin/searchInput.jsx";
 import StatusFilter from "../../../components/admin/statusFilter.jsx";
 
 const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
@@ -29,7 +29,7 @@ const ManageUsers = () => {
     const [userToBlock, setUserToBlock] = useState(null);
     const [confirmBlockReason, setConfirmBlockReason] = useState("");
 
-    // local controlled input for SearchEmailInput
+    // local controlled input for SearchInput
     const [searchInput, setSearchInput] = useState(searchParams.get("email") || "");
 
     // derive values from URL (defaults)
@@ -117,7 +117,7 @@ const ManageUsers = () => {
         }
     };
 
-    // search handlers passed to SearchEmailInput
+    // search handlers passed to SearchInput
     const triggerSearch = () => updateQuery({ email: (searchInput || "").trim(), page: 1 });
     const clearSearch = () => {
         setSearchInput("");
@@ -133,7 +133,7 @@ const ManageUsers = () => {
                     <h2 className="font-weight-bold mb-0">Quản lý User</h2>
 
                     <div className="d-flex gap-3 align-items-center">
-                        <SearchEmailInput
+                        <SearchInput
                             value={searchInput}
                             onChange={setSearchInput}
                             onSearch={triggerSearch}

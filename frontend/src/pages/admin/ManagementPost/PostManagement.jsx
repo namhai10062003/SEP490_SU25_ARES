@@ -1,82 +1,153 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../../../context/authContext";
-import { getAllPosts } from "../../../service/postService";
+import { Link, useSearchParams } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
+
 import AdminDashboard from "../adminDashboard";
+import Pagination from "../../../../components/Pagination.jsx";
+import LoadingModal from "../../../../components/loadingModal.jsx";
+import SearchInput from "../../../../components/admin/searchInput.jsx";
+import StatusFilter from "../../../../components/admin/statusFilter.jsx";
+import { formatSmartDate } from "../../../../utils/format.jsx";
+import { getAllPosts } from "../../../service/postService.js";
+
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const PostManagement = () => {
+  // URL state management
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // data + ui
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [loadingFetch, setLoadingFetch] = useState(false);
 
-  const [categoryFilter, setCategoryFilter] = useState("pending");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchText, setSearchText] = useState("");
-  const [filterDate, setFilterDate] = useState("");
-  const [page, setPage] = useState(1); // Nếu đang dùng phân trang
+  // Side table data (not affected by filter/search/pagination)
+  const [sidePosts, setSidePosts] = useState([]);
+  const [loadingSide, setLoadingSide] = useState(false);
 
-  const perPage = 7;
+  // URL-based state
+  const page = parseInt(searchParams.get("page")) || 1;
+  const pageSize = parseInt(searchParams.get("pageSize")) || 10;
+  const searchTerm = searchParams.get("search") || "";
+  const statusFilter = searchParams.get("status") || "all";
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalPosts, setTotalPosts] = useState(0);
+  // local state for search input
+  const [searchInput, setSearchInput] = useState(searchTerm);
 
-  const { user } = useAuth();
-
-  const formatSmartTime = (dateStr) => {
-    const d = new Date(dateStr);
-    const now = new Date();
-
-    const sameDay = d.toDateString() === now.toDateString();
-
-    const yesterday = new Date();
-    yesterday.setDate(now.getDate() - 1);
-    const isYesterday = d.toDateString() === yesterday.toDateString();
-
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay());
-    const isThisWeek = d >= weekStart;
-
-    const hhmm = d.toLocaleTimeString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-
-    if (sameDay) return `Hôm nay lúc ${hhmm}`;
-    if (isYesterday) return `Hôm qua lúc ${hhmm}`;
-    if (isThisWeek) {
-      const weekday = d.toLocaleDateString("vi-VN", { weekday: "long" });
-      return `${weekday.charAt(0).toUpperCase() + weekday.slice(1)} lúc ${hhmm}`;
+  // fetch posts from backend (uses search + status + pagination)
+  const fetchPosts = async () => {
+    try {
+      setLoadingFetch(true);
+      // Only use backend pagination, do not filter/slice on frontend
+      const res = await getAllPosts(page, pageSize, statusFilter, searchTerm);
+      const data = res.data || {};
+      setPosts(Array.isArray(data.data) ? data.data : []);
+      setTotalPosts(data.total ?? 0);
+      setTotalPages(data.totalPages ?? Math.max(1, Math.ceil((data.total ?? 0) / pageSize)));
+    } catch (err) {
+      console.error("fetchPosts error:", err);
+      toast.error("Không thể tải danh sách bài đăng");
+      setPosts([]);
+      setTotalPosts(0);
+      setTotalPages(1);
+    } finally {
+      setLoadingFetch(false);
     }
+  };
 
-    return `${d.toLocaleDateString("vi-VN")} lúc ${hhmm}`;
+  // fetch all posts for side tables (not affected by filter/search/pagination)
+  const fetchSidePosts = async () => {
+    try {
+      setLoadingSide(true);
+      // Fetch with large pageSize to get all posts (or at least enough for side tables)
+      const res = await getAllPosts(1, 1000, "all", "");
+      const data = res.data || {};
+      setSidePosts(Array.isArray(data.data) ? data.data : []);
+    } catch (err) {
+      console.error("fetchSidePosts error:", err);
+      setSidePosts([]);
+    } finally {
+      setLoadingSide(false);
+    }
   };
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      try {
-        const res = await getAllPosts();
-        const sortedData = res.data.data.sort((a, b) => {
-          const dateA = new Date(a.updatedAt || a.createdAt);
-          const dateB = new Date(b.updatedAt || b.createdAt);
-          return dateB - dateA; // Mới nhất lên đầu
-        });
-        setPosts(sortedData);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize, statusFilter, searchTerm]);
+
+  // fetch side posts only once on mount
+  useEffect(() => {
+    fetchSidePosts();
   }, []);
 
-  const expiringSoon = (dateStr) => {
-    if (!dateStr) return false;
-    const d = new Date(dateStr);
-    const now = new Date();
-    const diffDays = (d - now) / (1000 * 60 * 60 * 24);
-    return diffDays <= 7 && diffDays >= 0;
+  // sync searchInput with searchTerm from URL
+  useEffect(() => {
+    setSearchInput(searchTerm);
+  }, [searchTerm]);
+
+  // search trigger (button or Enter)
+  const handleSearchTrigger = () => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set("search", searchInput);
+    newSearchParams.set("page", "1");
+    setSearchParams(newSearchParams);
   };
 
+  const handleClearSearch = () => {
+    setSearchInput("");
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.delete("search");
+    newSearchParams.set("page", "1");
+    setSearchParams(newSearchParams);
+  };
+
+  // filter handler
+  const handleStatusChange = (status) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set("status", status);
+    newSearchParams.set("page", "1");
+    setSearchParams(newSearchParams);
+  };
+
+  // approve/reject handlers
+  const handleApprove = async (postId) => {
+    if (!window.confirm("Xác nhận duyệt bài đăng này?")) return;
+
+    try {
+      setLoading(true);
+      await axios.put(`${API_BASE}/api/posts/verify-post/${postId}`);
+      toast.success("Đã duyệt bài đăng thành công");
+      fetchPosts();
+      fetchSidePosts();
+    } catch (err) {
+      console.error("handleApprove error:", err);
+      toast.error("Duyệt bài đăng thất bại");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReject = async (postId) => {
+    if (!window.confirm("Xác nhận từ chối bài đăng này?")) return;
+
+    try {
+      setLoading(true);
+      await axios.put(`${API_BASE}/api/posts/reject-post/${postId}`);
+      toast.success("Đã từ chối bài đăng thành công");
+      fetchPosts();
+      fetchSidePosts();
+    } catch (err) {
+      console.error("handleReject error:", err);
+      toast.error("Từ chối bài đăng thất bại");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // helper functions
   const tagLabel = (type) => {
     switch (type) {
       case "ban":
@@ -90,92 +161,75 @@ const PostManagement = () => {
     }
   };
 
-  const filteredPosts = posts.filter((p) => {
-    const label = tagLabel(p.type).toLowerCase();
+  const expiringSoon = (dateStr) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diffDays = (d - now) / (1000 * 60 * 60 * 24);
+    return diffDays <= 7 && diffDays >= 0;
+  };
 
-    const textMatch =
-      p.title?.toLowerCase().includes(searchText.toLowerCase()) ||
-      p.contactInfo?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-      p.location?.toLowerCase().includes(searchText.toLowerCase()) ||
-      label.includes(searchText.toLowerCase());
+  // helper function to get user name
+  const getUserName = (contactInfo) => {
+    if (!contactInfo) return "Không rõ";
+    if (typeof contactInfo === "string") return "Không rõ";
+    if (contactInfo.name) return contactInfo.name;
+    return "Không rõ";
+  };
 
-    const dateMatch = filterDate
-      ? new Date(p.createdAt).toDateString() ===
-      new Date(filterDate).toDateString()
-      : true;
-
-    const statusMatch =
-      categoryFilter === "all" ? true : p.status === categoryFilter;
-
-    return textMatch && dateMatch && statusMatch;
-  });
-
-
-  const paginatedPosts = filteredPosts.slice(
-    (currentPage - 1) * perPage,
-    currentPage * perPage
-  );
-
-  const totalPages = Math.ceil(filteredPosts.length / perPage);
-
-  const latestPosts = posts
+  // Latest posts (approved, unpaid) - for side table, use sidePosts
+  const latestPosts = sidePosts
     .filter(p => p.status === "approved" && p.paymentStatus === "unpaid")
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5);
 
-
-  console.log("All approved posts:", posts.filter(p => p.status === "approved"));
-  console.log("Latest posts:", latestPosts);
-
-
-  const expiringPosts = posts
+  // Expiring posts - for side table, use sidePosts
+  const expiringPosts = sidePosts
     .filter(p => p.status === "approved" && !p.deletedAt && expiringSoon(p.expiredDate))
     .slice(0, 3);
 
   return (
     <AdminDashboard>
       <div className="container py-3">
+        {(loadingFetch || loading) && <LoadingModal />}
+
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h4 className="mb-0">📰 Quản lý bài đăng</h4>
         </div>
 
         <div className="row g-3 align-items-end mb-3">
-          {/* Ô tìm kiếm text */}
-          <div className="col-md-3">
-            <input
-              type="text"
-              className="form-control"
+          {/* Search Input */}
+          <div className="col-md-4">
+            <SearchInput
               placeholder="Tìm kiếm..."
-              value={searchText}
-              onChange={(e) => {
-                setSearchText(e.target.value);
-                setPage(1);
-              }}
+              value={searchInput}
+              onChange={setSearchInput}
+              onSearch={handleSearchTrigger}
+              onClear={handleClearSearch}
             />
           </div>
 
-          {/* Ô lọc theo ngày */}
-          <div className="col-md-2">
-            <input
-              type="date"
-              className="form-control"
-              value={filterDate}
-              onChange={(e) => {
-                setFilterDate(e.target.value);
-                setPage(1);
-              }}
+          {/* Status Filter */}
+          <div className="col-md-3">
+            <StatusFilter
+              value={statusFilter}
+              onChange={handleStatusChange}
+              type="post"
             />
           </div>
 
-          {/* Nút xóa lọc */}
+          {/* Clear Filter Button */}
           <div className="col-md-2">
-            {(searchText || filterDate) && (
+            {(searchInput || statusFilter !== "all") && (
               <button
                 className="btn btn-outline-secondary w-100"
                 onClick={() => {
-                  setSearchText("");
-                  setFilterDate("");
-                  setPage(1);
+                  setSearchInput("");
+                  const newSearchParams = new URLSearchParams(searchParams);
+                  newSearchParams.delete("search");
+                  newSearchParams.set("status", "all");
+                  newSearchParams.set("page", "1");
+                  setSearchParams(newSearchParams);
                 }}
               >
                 Xóa lọc
@@ -184,108 +238,104 @@ const PostManagement = () => {
           </div>
         </div>
 
-
         <div className="row g-3">
-          {/* Table1 */}
-          <div className="col-md-8">
+          {/* Main Table */}
+          <div className="col-lg-9 col-md-8">
             <div className="d-flex justify-content-between mb-2">
-              <select
-                className="form-select w-auto"
-                value={categoryFilter}
-                onChange={(e) => {
-                  setCategoryFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
-              >
-                <option value="all">Tất cả</option>
-                <option value="pending">Chờ duyệt</option>
-                <option value="approved">Đã duyệt</option>
-                <option value="rejected">Đã từ chối</option>
-                <option value="deleted">Đã xóa</option>
-              </select>
               <div className="text-muted small">
-                Tổng: <strong>{filteredPosts.length}</strong> bài
+                Tổng: <strong>{totalPosts}</strong> bài
               </div>
             </div>
 
             <div className="list-group">
-              {loading ? (
+              {loadingFetch ? (
                 <div className="text-center py-3">Đang tải...</div>
-              ) : paginatedPosts.length === 0 ? (
+              ) : posts.length === 0 ? (
                 <div className="alert alert-info">Không có bài đăng</div>
               ) : (
-                paginatedPosts.map((p) => (
+                posts.map((p) => (
                   <PostItemButton
                     key={p._id}
                     p={p}
-                    navigate={navigate}
-                    formatSmartTime={formatSmartTime}
+                    formatSmartDate={formatSmartDate}
                     tagLabel={tagLabel}
                     isSmall
+                    onApprove={handleApprove}
+                    onReject={handleReject}
+                    loading={loading}
                   />
                 ))
               )}
             </div>
 
-            <nav className="mt-3">
-              <ul className="pagination justify-content-center">
-                {Array.from({ length: totalPages }, (_, i) => (
-                  <li
-                    key={i}
-                    className={`page-item ${currentPage === i + 1 ? "active" : ""}`}
-                  >
-                    <button
-                      className="page-link"
-                      onClick={() => setCurrentPage(i + 1)}
-                    >
-                      {i + 1}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </nav>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={(p) => {
+                const newSearchParams = new URLSearchParams(searchParams);
+                newSearchParams.set("page", p.toString());
+                setSearchParams(newSearchParams);
+              }}
+              pageSize={pageSize}
+              onPageSizeChange={(s) => {
+                const newSearchParams = new URLSearchParams(searchParams);
+                newSearchParams.set("pageSize", s.toString());
+                newSearchParams.set("page", "1");
+                setSearchParams(newSearchParams);
+              }}
+            />
           </div>
 
-          {/* Table2 + Table3 */}
-          <div className="col-md-4 d-flex flex-column gap-3">
-            <div className="card flex-grow-1 shadow-sm">
-              <div className="card-header bg-success text-white py-1">
-                🆕 Bài đăng mới nhất
+          {/* Side Tables */}
+          <div className={`col-lg-3 col-md-4 ${pageSize > 20 ? 'd-none d-lg-block' : ''}`}>
+            <div className="d-flex flex-column gap-3">
+              {/* Latest Posts */}
+              <div className="card shadow-sm">
+                <div className="card-header bg-success text-white py-2">
+                  <small>🆕 Bài đăng mới nhất</small>
+                </div>
+                <div className="list-group list-group-flush">
+                  {loadingSide ? (
+                    <div className="list-group-item small">Đang tải...</div>
+                  ) : latestPosts.length === 0 ? (
+                    <div className="list-group-item small">Không có bài</div>
+                  ) : (
+                    latestPosts.map((p) => (
+                      <PostItemButton
+                        key={p._id}
+                        p={p}
+                        formatSmartDate={formatSmartDate}
+                        tagLabel={tagLabel}
+                        isSmall
+                      />
+                    ))
+                  )}
+                </div>
               </div>
-              <div className="list-group list-group-flush">
-                {latestPosts.map((p) => (
-                  <PostItemButton
-                    key={p._id}
-                    p={p}
-                    navigate={navigate}
-                    formatSmartTime={formatSmartTime}
-                    tagLabel={tagLabel}
-                    isSmall
-                  />
-                ))}
-              </div>
-            </div>
 
-            <div className="card flex-grow-1 shadow-sm">
-              <div className="card-header bg-warning text-dark py-1">
-                ⚠️ Sắp hết hạn
-              </div>
-              <div className="list-group list-group-flush">
-                {expiringPosts.length === 0 ? (
-                  <div className="list-group-item small">Không có bài</div>
-                ) : (
-                  expiringPosts.map((p) => (
-                    <PostItemButton
-                      key={p._id}
-                      p={p}
-                      navigate={navigate}
-                      formatSmartTime={formatSmartTime}
-                      tagLabel={tagLabel}
-                      isSmall
-                      isExpired
-                    />
-                  ))
-                )}
+              {/* Expiring Posts */}
+              <div className="card shadow-sm">
+                <div className="card-header bg-warning text-dark py-2">
+                  <small>⚠️ Sắp hết hạn</small>
+                </div>
+                <div className="list-group list-group-flush">
+                  {loadingSide ? (
+                    <div className="list-group-item small">Đang tải...</div>
+                  ) : expiringPosts.length === 0 ? (
+                    <div className="list-group-item small">Không có bài</div>
+                  ) : (
+                    expiringPosts.map((p) => (
+                      <PostItemButton
+                        key={p._id}
+                        p={p}
+                        formatSmartDate={formatSmartDate}
+                        tagLabel={tagLabel}
+                        isSmall
+                        isExpired
+                      />
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -295,12 +345,19 @@ const PostManagement = () => {
   );
 };
 
-const PostItemButton = ({ p, navigate, formatSmartTime, tagLabel, isSmall }) => {
+const PostItemButton = ({ p, formatSmartDate, tagLabel, isSmall, onApprove, onReject, loading, isExpired }) => {
   const [isHovered, setIsHovered] = useState(false);
 
+  // helper function to get user name
+  const getUserName = (contactInfo) => {
+    if (!contactInfo) return "Không rõ";
+    if (typeof contactInfo === "string") return "Không rõ";
+    if (contactInfo.name) return contactInfo.name;
+    return "Không rõ";
+  };
+
   return (
-    <Link
-      to={`/admin-dashboard/posts/${p._id}`}
+    <div
       className={`list-group-item list-group-item-action ${isSmall ? "small" : ""} mb-2 shadow-sm`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -311,17 +368,58 @@ const PostItemButton = ({ p, navigate, formatSmartTime, tagLabel, isSmall }) => 
         cursor: "pointer",
         textDecoration: "none",
         color: "inherit",
+        fontSize: isSmall ? "0.875rem" : "1rem",
       }}
     >
-      <div className="fw-bold">
-        {tagLabel(p.type)} {p.title}
+      <div className="d-flex justify-content-between align-items-start">
+        <div className="flex-grow-1" style={{ minWidth: 0 }}>
+          <div className="fw-bold text-truncate">
+            {tagLabel(p.type)} {p.title}
+          </div>
+          <div className="small text-muted">
+            <div className="text-truncate">👤 {getUserName(p.contactInfo)}</div>
+            <div className="text-truncate">⏱ {formatSmartDate(p.createdAt)}</div>
+            <div className="text-truncate">📍 {p.location}</div>
+          </div>
+        </div>
+
+        {/* Action buttons for main table */}
+        {onApprove && onReject && p.status === "pending" && (
+          <div className="ms-2 d-flex flex-column gap-1">
+            <button
+              className="btn btn-sm btn-outline-success"
+              style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onApprove(p._id);
+              }}
+              disabled={loading}
+            >
+              Duyệt
+            </button>
+            <button
+              className="btn btn-sm btn-outline-danger"
+              style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem" }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onReject(p._id);
+              }}
+              disabled={loading}
+            >
+              Từ chối
+            </button>
+          </div>
+        )}
       </div>
-      <div className="small text-muted">
-        👤 {p.contactInfo?.name} • ⏱ {formatSmartTime(p.createdAt)} • 📍 {p.location}
-      </div>
-    </Link>
+
+      {/* Link overlay for navigation */}
+      <Link
+        to={`/admin-dashboard/posts/${p._id}`}
+        className="stretched-link"
+        style={{ textDecoration: "none" }}
+      />
+    </div>
   );
 };
-
 
 export default PostManagement;
