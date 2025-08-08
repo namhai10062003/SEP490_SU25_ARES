@@ -103,13 +103,17 @@ const ContractDetail = () => {
     cmndB: contract.cmndB,
     phoneB: contract.phoneB,
     emailB: contract.emailB,
-    addressB: contract.addressB
+    addressB: contract.addressB,
+
+   
   }}
   post={post}
   user={user}
   landlord={post?.contactInfo}
   readOnly={true}
   headerDate={contract.createdAt}
+   signaturePartyBUrl={contract?.signaturePartyBUrl} 
+   signaturePartyAUrl={contract?.signaturePartyAUrl} 
 />
 
       <Footer />
