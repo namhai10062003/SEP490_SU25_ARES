@@ -212,8 +212,14 @@ const login = async (req, res) => {
 
 // verify email 
 function safeDecrypt(value) {
+  if (!value) return value;
+
+  // Nếu không phải hex hoặc độ dài không hợp lý cho ciphertext AES => trả thẳng
   const isHex = /^[0-9a-fA-F]+$/.test(value);
-  if (!value || !isHex) return value;
+  if (!isHex || value.length < 32 || value.length % 32 !== 0) {
+    return value; // Không decrypt vì khả năng cao là plaintext hoặc hash
+  }
+
   try {
     return decrypt(value);
   } catch (err) {
@@ -221,6 +227,7 @@ function safeDecrypt(value) {
     return value;
   }
 }
+
 
 const verifyUser = async (req, res) => {
   try {
