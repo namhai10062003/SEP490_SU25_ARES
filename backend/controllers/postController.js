@@ -245,83 +245,87 @@ export const getPostApproved = async (req, res) => {
 
 // lấy bài đăng chi tiết 
 
-// Hàm giải mã an toàn
-function safeDecrypt(value) {
-    const isHex = /^[0-9a-fA-F]+$/.test(value);
-    if (!value || !isHex) return value;
-    try {
-      return decrypt(value);
-    } catch (err) {
-      console.warn("⚠️ Không thể giải mã CCCD:", err.message);
-      return value;
-    }
+// Hàm giải mã an toàn có log vị trí
+function safeDecrypt(value, fieldName, postId) {
+  const isHex = /^[0-9a-fA-F]+$/.test(value);
+  if (!value || !isHex) return value;
+  try {
+    return decrypt(value);
+  } catch (err) {
+    console.warn(
+      `⚠️ Không thể giải mã ${fieldName} (postId: ${postId}) - ${err.message}`
+    );
+    console.warn(new Error().stack);
+    return value;
   }
-  export const getPostDetail = async (req, res) => {
-    try {
-      const { id } = req.params;
-  
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({
-          message: "ID bài đăng không hợp lệ",
-          success: false,
-          error: true,
-        });
-      }
-  
-      const post = await Post.findById(id)
-        .populate("contactInfo", "name email phone identityNumber address")
-        .populate("postPackage", "type price expireAt")
-        .lean();
-  
-      if (!post) {
-        return res.status(404).json({
-          message: "Không tìm thấy bài đăng",
-          success: false,
-          error: true,
-        });
-      }
-  
-      if (post.status !== "approved") {
-        return res.status(403).json({
-          message: "Bài đăng không hoạt động hoặc chưa được duyệt",
-          success: false,
-          error: true,
-        });
-      }
-  
-      const { contactInfo } = post;
-  
-      // 🔐 Giải mã an toàn thông tin người liên hệ
-      const decryptedContactInfo = {
-        ...contactInfo,
-        userId: contactInfo._id,
-        identityNumber: safeDecrypt(contactInfo.identityNumber),
-        phone: safeDecrypt(contactInfo.phone),
-        address: safeDecrypt(contactInfo.address),
-      };
-  
-      // 📋 Log chi tiết
-      console.log("📌 Thông tin liên hệ gốc:", contactInfo);
-      console.log("🔓 Thông tin sau giải mã:", decryptedContactInfo);
-  
-      return res.status(200).json({
-        message: "Lấy chi tiết bài đăng thành công",
-        success: true,
-        error: false,
-        data: {
-          ...post,
-          contactInfo: decryptedContactInfo,
-        },
-      });
-    } catch (error) {
-      console.error("❌ Lỗi khi lấy chi tiết bài đăng:", error);
-      return res.status(500).json({
-        message: "Lỗi server: " + error.message,
+}
+
+export const getPostDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        message: "ID bài đăng không hợp lệ",
         success: false,
         error: true,
       });
     }
-  };
+
+    const post = await Post.findById(id)
+      .populate("contactInfo", "name email phone identityNumber address")
+      .populate("postPackage", "type price expireAt")
+      .lean();
+
+    if (!post) {
+      return res.status(404).json({
+        message: "Không tìm thấy bài đăng",
+        success: false,
+        error: true,
+      });
+    }
+
+    if (post.status !== "approved") {
+      return res.status(403).json({
+        message: "Bài đăng không hoạt động hoặc chưa được duyệt",
+        success: false,
+        error: true,
+      });
+    }
+
+    const { contactInfo } = post;
+
+    // 🔐 Chỉ giải mã CCCD
+    const decryptedContactInfo = {
+      ...contactInfo,
+      userId: contactInfo._id,
+      identityNumber: safeDecrypt(contactInfo.identityNumber, "identityNumber", post._id),
+    };
+
+    // 📋 Log chi tiết
+    console.log("📌 Thông tin liên hệ gốc:", contactInfo);
+    console.log("🔓 Thông tin sau giải mã:", decryptedContactInfo);
+
+    return res.status(200).json({
+      message: "Lấy chi tiết bài đăng thành công",
+      success: true,
+      error: false,
+      data: {
+        ...post,
+        contactInfo: decryptedContactInfo,
+      },
+    });
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy chi tiết bài đăng:", error);
+    return res.status(500).json({
+      message: "Lỗi server: " + error.message,
+      success: false,
+      error: true,
+    });
+  }
+};
+
+
   
   
 // get post admin histories
