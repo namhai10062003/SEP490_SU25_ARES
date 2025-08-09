@@ -37,6 +37,12 @@ const statusOptions = {
         { value: "rejected", label: "Đã từ chối" },
         { value: "deleted", label: "Đã xóa" },
     ],
+    report: [
+        { value: "", label: "Tất cả" },
+        { value: "pending", label: "Chưa xử lý" },
+        { value: "reviewed", label: "Đã xử lý" },
+        { value: "archived", label: "Đã xoá" },
+    ],
     default: [
         { value: "", label: "Tất cả trạng thái" },
         { value: "active", label: "Active" },

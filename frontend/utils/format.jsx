@@ -13,6 +13,10 @@ export const toInputDate = (date) => {
     const d = String(date.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
 };
+export const formatCurrency = (amount) => {
+    if (isNaN(amount) || amount == null) return "0 ₫";
+    return Number(amount).toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+};
 
 export const formatSmartDate = (dateStr) => {
     if (!dateStr) return "";
