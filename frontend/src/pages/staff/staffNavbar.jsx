@@ -6,7 +6,9 @@ const StaffNavbar = () => {
   // khai bao quan li cu dan
   const isResidentActive =
     location.pathname === "/staff-resident-register" ||
-    location.pathname === "/staff-resident-verification";
+    location.pathname === "/staff-resident-verification" ||
+    location.pathname === "/staff-resident/history"
+    ;
 
   const [showResidentSub, setShowResidentSub] = useState(isResidentActive);
   const isParkingActive =
@@ -352,7 +354,7 @@ const StaffNavbar = () => {
                           : "transparent",
                     }}
                   >
-                    Lịch sữ xác nhận cư dân
+                    Lịch Sử Xác Nhận Cư Dân
                   </Link>
                 </li>
               </ul>
