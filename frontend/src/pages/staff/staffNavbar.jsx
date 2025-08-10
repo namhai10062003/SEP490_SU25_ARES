@@ -338,6 +338,23 @@ const StaffNavbar = () => {
                     Quản Lý Danh Sách Cư Dân
                   </Link>
                 </li>
+                <li className="nav-item">
+                  <Link
+                    to="/staff-resident/history"
+                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === "/staff-resident/history"
+                        ? "active bg-white text-primary fw-bold shadow-sm"
+                        : "text-white"
+                      }`} 
+                    style={{
+                      background:
+                        location.pathname === "/staff-resident/history"
+                          ? "white"
+                          : "transparent",
+                    }}
+                  >
+                    Lịch sữ xác nhận cư dân
+                  </Link>
+                </li>
               </ul>
             </div>
           </li>

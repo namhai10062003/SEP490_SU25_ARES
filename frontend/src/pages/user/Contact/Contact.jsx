@@ -31,20 +31,30 @@ const Contact = () => {
     };
   
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-          await axios.post(`${import.meta.env.VITE_API_URL}/api/contact`, formData);
-          setSubmitted(true);
-          setFormData({ name: "", email: "", message: "" });
-          console.log("✅ Form data đã gửi:", formData);
-        } catch (error) {
-          console.error("❌ Error when sending contact:", error);
-          console.error("🔍 Response data:", error?.response?.data);
-          console.error("🔍 Status:", error?.response?.status);
-          console.error("🔍 Headers:", error?.response?.headers);
-          alert("❌ Gửi thất bại! Vui lòng thử lại.");
-        }
-      };
+      e.preventDefault();
+      try {
+        const token = localStorage.getItem("token"); // Lấy token đã lưu
+    
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/contact`,
+          formData,
+          token
+            ? { headers: { Authorization: `Bearer ${token}` } } // ✅ Gửi token nếu có
+            : {}
+        );
+    
+        setSubmitted(true);
+        setFormData({ name: "", email: "", message: "" });
+        console.log("✅ Form data đã gửi:", formData);
+      } catch (error) {
+        console.error("❌ Error when sending contact:", error);
+        console.error("🔍 Response data:", error?.response?.data);
+        console.error("🔍 Status:", error?.response?.status);
+        console.error("🔍 Headers:", error?.response?.headers);
+        alert("❌ Gửi thất bại! Vui lòng thử lại.");
+      }
+    };
+    
       
 
   return (

@@ -1,15 +1,14 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Link } from "react-router-dom";
-import { useSearchParams } from "react-router-dom";
-import AdminDashboard from "./adminDashboard.jsx";
 import Pagination from "../../../components/Pagination.jsx";
+import ReusableModal from "../../../components/ReusableModal.jsx";
 import StatusFilter from "../../../components/admin/statusFilter.jsx";
 import LoadingModal from "../../../components/loadingModal.jsx";
-import ReusableModal from "../../../components/ReusableModal.jsx";
 import { formatDate, formatPhoneNumber, formatPrice } from "../../../utils/format.jsx";
+import AdminDashboard from "./adminDashboard.jsx";
 
 const ManageApplicationForm = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -25,7 +24,7 @@ const ManageApplicationForm = () => {
   const [showModal, setShowModal] = useState(false);
   const [page, setPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(initialPageSize);
-  const [showEditModal, setShowEditModal] = useState(false);
+  // const [showEditModal, setShowEditModal] = useState(false);
 
   // Confirmation modals
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -51,59 +50,59 @@ const ManageApplicationForm = () => {
     }
   }, [selectedApp]);
 
-  const handleEdit = (app) => {
-    setSelectedApp(app);
-    setShowEditModal(true);
-  };
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setSelectedApp(prev => ({
-      ...prev,
-      newImageFile: file // lưu file tạm thời
-    }));
-  };
-  const updateSelectedApp = (e) => {
-    setSelectedApp
-      (prev => ({
-        ...prev,
-        [e.target.name]: e.target.value,
-      }));
-  };
+  // const handleEdit = (app) => {
+  //   setSelectedApp(app);
+  //   setShowEditModal(true);
+  // };
+  // const handleFileChange = (e) => {
+  //   const file = e.target.files[0];
+  //   setSelectedApp(prev => ({
+  //     ...prev,
+  //     newImageFile: file // lưu file tạm thời
+  //   }));
+  // };
+  // const updateSelectedApp = (e) => {
+  //   setSelectedApp
+  //     (prev => ({
+  //       ...prev,
+  //       [e.target.name]: e.target.value,
+  //     }));
+  // };
 
-  const handleEditSubmit = async () => {
-    try {
-      const formData = new FormData();
+  // const handleEditSubmit = async () => {
+  //   try {
+  //     const formData = new FormData();
 
-      // Thêm các trường văn bản (text fields)
-      for (const key in selectedApp) {
-        if (key !== 'documentImage' && key !== 'newImageFile') {
-          formData.append(key, selectedApp[key]);
-        }
-      }
+  //     // Thêm các trường văn bản (text fields)
+  //     for (const key in selectedApp) {
+  //       if (key !== 'documentImage' && key !== 'newImageFile') {
+  //         formData.append(key, selectedApp[key]);
+  //       }
+  //     }
 
-      // Nếu có ảnh mới được chọn
-      if (selectedApp.newImageFile) {
-        formData.append("documentImage", selectedApp.newImageFile);
-      }
+  //     // Nếu có ảnh mới được chọn
+  //     if (selectedApp.newImageFile) {
+  //       formData.append("documentImage", selectedApp.newImageFile);
+  //     }
 
-      await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/resident-verifications/${selectedApp._id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+  //     await axios.put(
+  //       `${import.meta.env.VITE_API_URL}/api/resident-verifications/${selectedApp._id}`,
+  //       formData,
+  //       {
+  //         headers: {
+  //           "Content-Type": "multipart/form-data",
+  //         },
+  //       }
+  //     );
 
-      toast.success("Cập nhật thành công!");
-      fetchApplications();
-      setShowEditModal(false);
-    } catch (err) {
-      const msg = err?.response?.data?.message || "Cập nhật thất bại!";
-      toast.error(msg);
-    }
-  };
+  //     toast.success("Cập nhật thành công!");
+  //     fetchApplications();
+  //     setShowEditModal(false);
+  //   } catch (err) {
+  //     const msg = err?.response?.data?.message || "Cập nhật thất bại!";
+  //     toast.error(msg);
+  //   }
+  // };
 
   const handleCancel = (id) => {
     setSelectedId(id);
@@ -329,27 +328,36 @@ const ManageApplicationForm = () => {
                           >
                             Xem
                           </button>
-                          <button
+                          {/* <button
                             className="btn btn-sm btn-outline-primary"
                             onClick={() => handleEdit(app)}
                           >
                             Sửa
-                          </button>
+                          </button> */}
                           {app.status === "Chờ duyệt" && (
-                            <>
-                              <button
-                                className="btn btn-sm btn-success"
-                                onClick={() => handleApprove(app._id)}
-                              >
-                                Duyệt
-                              </button>
-                              <button
-                                className="btn btn-sm btn-danger"
-                                onClick={() => handleReject(app._id)}
-                              >
-                                Từ chối
-                              </button>
-                            </>
+                           <>
+                           <button
+                             className="btn btn-sm btn-success me-2"
+                             onClick={() => handleApprove(app._id)}
+                             disabled={app.status === "Đang chỉnh sửa"}
+                           >
+                             Duyệt
+                           </button>
+                           <button
+                             className="btn btn-sm btn-danger"
+                             onClick={() => handleReject(app._id)}
+                             disabled={app.status === "Đang chỉnh sửa"}
+                           >
+                             Từ chối
+                           </button>
+                         
+                           {app.status === "Đang chỉnh sửa" && (
+  <div className="alert alert-warning py-1 px-2 mt-2 mb-0">
+    ⚠ Nhân viên đang chỉnh sửa — bạn không thể duyệt/hủy lúc này
+  </div>
+)}
+                         </>
+                         
                           )}
                           {app.status === "Đã duyệt" && (
                             <button
@@ -402,17 +410,20 @@ const ManageApplicationForm = () => {
                     <li className="list-group-item">
                       <strong>Trạng thái:</strong>{" "}
                       <span
-                        className={`badge px-2 py-1 rounded-pill ${selectedApp.status === "Chờ duyệt"
-                          ? "bg-warning text-dark"
-                          : selectedApp.status === "Đã từ chối"
-                            ? "bg-danger"
-                            : selectedApp.status === "Đã duyệt"
-                              ? "bg-success"
-                              : "bg-secondary"
-                          }`}
-                      >
-                        {selectedApp.status}
-                      </span>
+  className={`badge px-2 py-1 rounded-pill ${
+    selectedApp.status === "Chờ duyệt"
+      ? "bg-warning text-dark"
+      : selectedApp.status === "Đã từ chối"
+      ? "bg-danger"
+      : selectedApp.status === "Đã duyệt"
+      ? "bg-success"
+      : selectedApp.status === "Đã hủy bỏ"
+      ? "bg-secondary"
+      : "bg-light text-dark"
+  }`}
+>
+  {selectedApp.status}
+</span>
                     </li>
                   </ul>
 
@@ -507,7 +518,7 @@ const ManageApplicationForm = () => {
           />
         )}
 
-        {showEditModal && selectedApp && (
+        {/* {showEditModal && selectedApp && (
           <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,0.3)" }}>
             <div className="modal-dialog modal-lg">
               <div className="modal-content position-relative">
@@ -523,7 +534,7 @@ const ManageApplicationForm = () => {
                 </div>
                 <div className="modal-body row g-3">
                   {/* Các trường cơ bản */}
-                  <div className="col-md-6">
+                  {/* <div className="col-md-6">
                     <label>Họ tên</label>
                     <input className="form-control" name="fullName" value={selectedApp.fullName || ""} onChange={updateSelectedApp} />
                   </div>
@@ -538,17 +549,17 @@ const ManageApplicationForm = () => {
                   <div className="col-md-6">
                     <label>Mã căn hộ</label>
                     <input className="form-control" name="apartmentCode" value={selectedApp.apartmentCode || ""} onChange={updateSelectedApp} />
-                  </div>
+                  </div> */} 
 
                   {/* Loại giấy tờ */}
-                  <div className="col-md-6">
+                  {/* <div className="col-md-6">
                     <label>Loại giấy tờ</label>
                     <select className="form-control" name="documentType" value={selectedApp.documentType || ""} onChange={updateSelectedApp}>
                       <option value="Hợp đồng mua bán">Hợp đồng mua bán</option>
                       <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
                       {/* <option value="Giấy chủ quyền">Giấy chủ quyền</option> */}
-                    </select>
-                  </div>
+                    {/* </select>
+                  </div> */} 
 
                   {/* <div className="col-md-6">
             <label>Trạng thái</label>
@@ -560,7 +571,7 @@ const ManageApplicationForm = () => {
           </div> */}
 
                   {/* Hiện thêm ngày và ảnh nếu là HĐ thuê */}
-                  {(selectedApp.documentType === "Hợp đồng cho thuê") && (
+                  {/* {(selectedApp.documentType === "Hợp đồng cho thuê") && (
                     <>
                       <div className="col-md-6">
                         <label>Ngày bắt đầu</label>
@@ -571,10 +582,10 @@ const ManageApplicationForm = () => {
                         <input type="date" className="form-control" name="contractEnd" value={selectedApp.contractEnd?.slice(0, 10) || ""} onChange={updateSelectedApp} />
                       </div>
                     </>
-                  )}
+                  )} */}
 
                   {/* Nếu là HĐ thuê hoặc HĐ mua bán thì cho upload ảnh */}
-                  {(selectedApp.documentType === "Hợp đồng cho thuê" || selectedApp.documentType === "Hợp đồng mua bán") && (
+                  {/* {(selectedApp.documentType === "Hợp đồng cho thuê" || selectedApp.documentType === "Hợp đồng mua bán") && (
                     <div className="col-md-12">
                       <label>Ảnh hợp đồng hiện tại:</label><br />
                       {selectedApp.documentImage ? (
@@ -595,9 +606,9 @@ const ManageApplicationForm = () => {
                         onChange={handleFileChange}
                       />
                     </div>
-                  )}
+                  )} */}
 
-                  <div className="col-12">
+                  {/* <div className="col-12">
                     <label>Ghi chú</label>
                     <textarea className="form-control" name="note" value={selectedApp.note || ""} onChange={updateSelectedApp} />
                   </div>
@@ -610,7 +621,7 @@ const ManageApplicationForm = () => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Confirmation modals */}
         {showCancelModal && (

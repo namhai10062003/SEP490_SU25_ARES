@@ -1,7 +1,11 @@
-// models/Contact.js
 import mongoose from "mongoose";
 
 const contactSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // Nếu có bảng user
+    default: null
+  },
   name: { type: String, required: true },
   email: { type: String, required: true },
   message: { type: String, required: true },
@@ -13,9 +17,8 @@ const contactSchema = new mongoose.Schema({
   isDeleted: {
     type: Boolean,
     default: false,
-    required: true // ⬅️ đảm bảo luôn có mặt trong document
+    required: true
   }
 }, { timestamps: true });
-
 
 export default mongoose.model("Contact", contactSchema);

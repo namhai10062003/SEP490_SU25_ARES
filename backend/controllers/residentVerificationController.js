@@ -433,22 +433,54 @@ const cancelResidentVerification = async (req, res) => {
       return res.status(404).json({ error: "Không tìm thấy đơn xác minh" });
     }
 
+    // Chỉ cho phép hủy nếu đã duyệt
+    if (verification.status !== "Đã duyệt") {
+      return res.status(400).json({ error: "Chỉ có thể hủy đơn đã được duyệt" });
+    }
+
     // Nếu đơn này liên kết với một căn hộ, cập nhật trạng thái căn hộ
     if (verification.apartment) {
       const apartment = await Apartment.findById(verification.apartment);
       if (apartment) {
-        apartment.status = "bỏ trống"; // ✅ giá trị hợp lệ
+        apartment.status = "bỏ trống";
         await apartment.save();
       }
     }
 
-    // Xoá đơn xác minh
-    await ResidentVerification.findByIdAndDelete(id);
+    // Cập nhật trạng thái đơn thành cancelled
+    verification.status = "Đã hủy bỏ";
+    await verification.save();
 
-    return res.status(200).json({ message: "Huỷ đơn xác minh thành công" });
+    return res.status(200).json({ message: "Hủy đơn xác minh thành công" });
   } catch (error) {
     console.error("Lỗi huỷ đơn xác minh:", error);
     return res.status(500).json({ error: "Lỗi server khi huỷ đơn" });
+  }
+};
+// hàm hủy cho staff
+const cancelPendingVerification = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Tìm đơn xác minh
+    const verification = await ResidentVerification.findById(id);
+    if (!verification) {
+      return res.status(404).json({ error: "Không tìm thấy đơn xác minh" });
+    }
+
+    // Chỉ cho phép hủy nếu đang pending
+    if (verification.status !== "Chờ duyệt") {
+      return res.status(400).json({ error: "Chỉ có thể hủy đơn đang chờ duyệt" });
+    }
+
+    // Cập nhật trạng thái thành cancelled
+    verification.status = "Đã hủy bỏ";
+    await verification.save();
+
+    return res.status(200).json({ message: "Hủy đơn đang chờ duyệt thành công" });
+  } catch (error) {
+    console.error("Lỗi hủy đơn pending:", error);
+    return res.status(500).json({ error: "Lỗi server khi hủy đơn pending" });
   }
 };
 // hàm chỉnh sửa hợp đồng cư dân 
@@ -464,17 +496,18 @@ export const updateResidentVerification = async (req, res) => {
 
     // ✅ Xử lý đặc biệt với field user
     if (updateFields.user) {
-      // Nếu là object thì lấy _id
       if (typeof updateFields.user === 'object' && updateFields.user._id) {
         updateFields.user = updateFields.user._id;
       }
 
-      // Nếu không hợp lệ thì xóa
       const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(updateFields.user);
       if (!isValidObjectId) {
         delete updateFields.user;
       }
     }
+
+    // 🔹 Nếu đang lưu thì đổi trạng thái về "Chờ duyệt"
+    updateFields.status = "Chờ duyệt";
 
     const updated = await ResidentVerification.findByIdAndUpdate(id, updateFields, {
       new: true,
@@ -492,6 +525,33 @@ export const updateResidentVerification = async (req, res) => {
   }
 };
 
+export const updateResidentVerificationStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
 
-export { approveResidentVerification, cancelResidentVerification, getAllResidentVerifications, getResidentVerificationById, getUserWithApartment, rejectResidentVerification };
+    if (!status) {
+      return res.status(400).json({ message: "Thiếu trạng thái" });
+    }
+
+    const allowedStatuses = ['Chờ duyệt', 'Đã duyệt', 'Đã từ chối', 'Đã hủy bỏ', 'Đang chỉnh sửa'];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: "Trạng thái không hợp lệ" });
+    }
+
+    const updated = await ResidentVerification.findByIdAndUpdate(id, { status }, { new: true });
+
+    if (!updated) {
+      return res.status(404).json({ message: "Không tìm thấy thông tin cư dân" });
+    }
+
+    res.json(updated);
+  } catch (error) {
+    console.error("Lỗi đổi trạng thái:", error);
+    res.status(500).json({ message: "Lỗi máy chủ khi đổi trạng thái" });
+  }
+};
+
+
+export { approveResidentVerification, cancelPendingVerification, cancelResidentVerification, getAllResidentVerifications, getResidentVerificationById, getUserWithApartment, rejectResidentVerification };
 
