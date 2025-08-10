@@ -92,7 +92,7 @@ function ProtectedRoute({ element, allowedRoles }) {
 // 🎬 Hiển thị routes và các thành phần ngoài route
 function AppRoutes() {
   const { callActive, incomingCall } = useVideoCall();
-
+  const { user } = useAuth(); 
   return (
     <>
       <BrowserRouter>
@@ -168,7 +168,7 @@ function AppRoutes() {
         {/* Global components */}
         <SocketListener />
         <ToastContainer position="top-right" autoClose={1500} theme="light" />
-        <GlobalChatBox />
+        {user?.role === "customer" && <GlobalChatBox />}
         <ScrollButtons />
         <VideoCallPopup />
         {(callActive || incomingCall) && <VideoPlayer />}
