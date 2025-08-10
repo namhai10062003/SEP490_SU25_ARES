@@ -1,11 +1,11 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import AdminDashboard from "../adminDashboard";
-import StatusFilter from "../../../../components/admin/statusFilter.jsx";
 import Pagination from "../../../../components/Pagination.jsx";
 import ReuseableModal from "../../../../components/ReusableModal.jsx";
-import { useSearchParams } from "react-router-dom";
+import StatusFilter from "../../../../components/admin/statusFilter.jsx";
+import AdminDashboard from "../adminDashboard";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
@@ -13,20 +13,26 @@ const AdminContactPage = () => {
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [totalContacts, setTotalContacts] = useState(0);
-
+    const token = localStorage.getItem("token");
     // Helper to render user's name as a link to their detail page (by user id)
     // Helper to render contact's name as a link to their detail page (by contact id)
     const renderNameLink = (contact) => {
-        return (
-            <a
-                href={`/admin-dashboard/manage-user/${contact._id}`}
-                style={{ color: "#007bff", textDecoration: "underline" }}
-                title={`Xem chi tiết liên hệ: ${contact.name}`}
-            >
-                {contact.name}
-            </a>
-        );
+        if (contact.userId?._id) {
+            return (
+                <a
+                    href={`/admin-dashboard/manage-user/${contact.userId._id}`}
+                    style={{ color: "#007bff", textDecoration: "underline" }}
+                    title={`Xem chi tiết người dùng: ${contact.userId.name || contact.name}`}
+                >
+                    {contact.userId.name || contact.name}
+                </a>
+            );
+        }
+        
+        // Nếu không có userId thì chỉ hiện tên
+        return <span>{contact.name}</span>;
     };
+    
     // Use URL search params for search, filter, pagination (like manage-user)
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -76,8 +82,16 @@ const AdminContactPage = () => {
     const loadContacts = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contact/list`);
-            let data = res.data.data || [];
+            const res = await axios.get(
+                `${import.meta.env.VITE_API_URL}/api/contact/admin`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}` // ✅ Gửi token trong header
+                  }
+                }
+              );
+              
+              let data = res.data.data || [];
 
             // StatusFilter by status
             if (statusFilter) {

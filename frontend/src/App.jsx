@@ -38,6 +38,7 @@ import AdminRevenuePost from "./pages/admin/revenue/posts.jsx";
 import ManageUserDetail from "./pages/admin/userDetail.jsx";
 import AdminProfileUpdatePage from "./pages/admin/verifyprofileuser/AdminProfileUpdatePage.jsx";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
+import ResidentVerificationHistory from "./pages/staff/ResidentVerificationList/ResidentVerificationHistory.jsx";
 import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
 import CitizenList from "./pages/staff/ResidentVerify/CitizenList.jsx";
 import ResidentVerifyList from "./pages/staff/ResidentVerify/residentVerifyList";
@@ -159,6 +160,7 @@ function AppRoutes() {
           <Route path="staff-water-data-upload" element={<ProtectedRoute element={<WaterDataUpload />} allowedRoles={["staff"]} />} />
           <Route path="staff-citizenlist" element={<ProtectedRoute element={<CitizenList />} allowedRoles={["staff"]} />} />
           <Route path="staff-residence-decration" element={<ProtectedRoute element={<ResidenceDeclarationVerifyList />} allowedRoles={["staff"]} />} />
+          <Route path="staff-resident/history" element={<ProtectedRoute element={<ResidentVerificationHistory />} allowedRoles={["staff"]} />} />
 
           {/* User */}
         </Routes>

@@ -1,6 +1,7 @@
 import express from "express";
 import {
   approveResidentVerification,
+  cancelPendingVerification,
   cancelResidentVerification,
   getAllResidentVerifications,
   getApartments,
@@ -8,7 +9,7 @@ import {
   getUserWithApartment,
   rejectResidentVerification,
   searchUser,
-  submitVerification, updateResidentVerification
+  submitVerification, updateResidentVerification, updateResidentVerificationStatus
 } from "../controllers/residentVerificationController.js";
 
 import { upload2 } from '../db/cloudinary.js';
@@ -25,6 +26,7 @@ router.get("/:id", getResidentVerificationById);
 router.patch("/:id/approve", approveResidentVerification);
 router.patch("/:id/reject", rejectResidentVerification);
 router.patch("/:id/cancel", cancelResidentVerification);
-
-router.put('/:id', upload2.single('documentImage'), updateResidentVerification);
+router.patch("/:id/cancel-staff", cancelPendingVerification);
+router.patch('/:id/status', updateResidentVerificationStatus);
+router.put('/:id', upload2.array("documentImage", 5), updateResidentVerification);
 export default router;

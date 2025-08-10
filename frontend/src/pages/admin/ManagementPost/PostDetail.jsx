@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+    FaArrowLeft,
     FaCalendarAlt,
     FaCheck,
     FaEnvelope,
@@ -10,7 +11,6 @@ import {
     FaTimes,
     FaTrash,
     FaUser,
-    FaArrowLeft,
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -377,7 +377,7 @@ const AdminPostDetail = () => {
                                 <div className="mb-4">
                                     <div className="text-muted small mb-1">Giá</div>
                                     <h3 className="text-danger fw-bold mb-0">
-                                        {formatCurrency(post.price)} ₫
+                                        {formatCurrency(post.price)} 
                                     </h3>
                                 </div>
 

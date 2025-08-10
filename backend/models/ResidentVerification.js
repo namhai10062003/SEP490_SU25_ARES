@@ -15,7 +15,12 @@ const ResidentVerificationSchema = new Schema({
         type: [String], // <-- Mảng các chuỗi
         required: true
       },
-    status: { type: String, enum: ['Chờ duyệt', 'Đã duyệt', 'Đã từ chối'], default: 'Chờ duyệt' },
+      status: { 
+        type: String, 
+        enum: ['Chờ duyệt', 'Đã duyệt', 'Đã từ chối', 'Đã hủy bỏ', 'Đang chỉnh sửa'], 
+        default: 'Chờ duyệt' 
+    },
+    
     note: { type: String }
 }, { timestamps: true });
 

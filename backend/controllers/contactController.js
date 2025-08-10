@@ -4,13 +4,21 @@ import Contact from "../models/Contact.js";
 
 export const createContact = async (req, res) => {
   try {
-    const contact = new Contact(req.body);
+    const contactData = {
+      ...req.body,
+      userId: req.user ? req.user._id : null // ✅ nếu đăng nhập thì lưu id, nếu không thì null
+    };
+
+    const contact = new Contact(contactData);
     await contact.save();
+
     res.status(201).json({ message: "Liên hệ đã được gửi!" });
   } catch (err) {
+    console.error("❌ Lỗi khi tạo liên hệ:", err);
     res.status(500).json({ error: "Lỗi khi tạo liên hệ" });
   }
 };
+
 
 export const getAllContacts = async (req, res) => {
     try {
@@ -79,3 +87,25 @@ export const updateContactStatus = async (req, res) => {
   };
   
   
+// ✅ Admin xem tất cả liên hệ (có thể lọc theo userId hoặc status)
+export const adminGetContacts = async (req, res) => {
+  try {
+    const { userId, status } = req.query;
+    let query = {};
+
+    if (userId) query.userId = userId; // lọc theo user cụ thể
+    if (status) query.status = status; // lọc theo trạng thái
+
+    const contacts = await Contact.find(query)
+      .populate("userId", "name email") // lấy thông tin user nếu có
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      message: "Lấy danh sách liên hệ cho admin thành công",
+      data: contacts
+    });
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy dữ liệu liên hệ cho admin:", err);
+    res.status(500).json({ error: "Lỗi khi lấy dữ liệu liên hệ cho admin" });
+  }
+};
