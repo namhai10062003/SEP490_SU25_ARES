@@ -155,7 +155,7 @@ const AdminPostDetail = () => {
                 const historyRes = await getPostHistoryByPostId(id);
                 if (!historyRes || !historyRes.data) throw new Error("❌ Không có phản hồi từ getPostHistoryByPostId");
 
-                if (historyRes.data) {
+                if (historyRes) {
                     setHistory(historyRes.data);
                 } else {
                     toast.error("⚠️ Không thể lấy lịch sử chỉnh sửa");
