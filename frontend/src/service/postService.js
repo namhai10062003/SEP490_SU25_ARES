@@ -4,16 +4,16 @@ const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
 const token = localStorage.getItem("token");
 export const getPostHistoryByPostId = async (postId) => {
-    const token = localStorage.getItem("token"); // <-- đọc trực tiếp khi gọi
-    if (!token) throw new Error("❌ Không tìm thấy token");
-
+    const token = localStorage.getItem("token");
+    if (!token) {
+        throw new Error("❌ Không tìm thấy token, vui lòng đăng nhập lại");
+    }
     const response = await axios.get(`${API_BASE}/posts/posts/${postId}/history`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
     });
     return response.data;
 };
+
 // 🟢 GET posts of current user
 export const getPostsByUser = () => {
     const token = localStorage.getItem("token");

@@ -140,36 +140,42 @@ const AdminPostDetail = () => {
     useEffect(() => {
         const fetchPostAndHistory = async () => {
             try {
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    toast.error("Vui lòng đăng nhập để tiếp tục.");
+                    return navigate("/login");
+                }
+    
+                // Lấy bài đăng
                 const res = await getPostByIdForAdmin(id);
-                if (!res || !res.data) throw new Error("❌ Không có phản hồi từ getPostByIdForAdmin");
-
-                if (res.data.success && res.data.data) {
-                    setPost(res.data.data);
-                    setMainImage(res.data.data.images?.[0]);
-                } else {
+                if (!res?.data?.success || !res.data.data) {
                     toast.error("❌ Không tìm thấy bài đăng.");
                     return navigate(-1);
                 }
-
+                setPost(res.data.data);
+                setMainImage(res.data.data.images?.[0]);
+    
                 // Lấy lịch sử chỉnh sửa
-                const historyRes = await getPostHistoryByPostId(id);
-                if (!historyRes || !historyRes.data) throw new Error("❌ Không có phản hồi từ getPostHistoryByPostId");
-
-                if (historyRes) {
+                const historyRes = await getPostHistoryByPostId(id); 
+                // historyRes ở đây đã là response.data trả từ axios
+                if (historyRes?.success && historyRes.data) {
                     setHistory(historyRes.data);
                 } else {
                     toast.error("⚠️ Không thể lấy lịch sử chỉnh sửa");
                 }
+    
             } catch (err) {
+                console.error("Lỗi khi tải dữ liệu:", err);
                 toast.error("❌ Lỗi khi tải bài đăng.");
                 navigate(-1);
             } finally {
                 setLoading(false);
             }
         };
-
+    
         if (id) fetchPostAndHistory();
     }, [id, navigate]);
+    
 
     const handleApprove = async () => {
         try {
