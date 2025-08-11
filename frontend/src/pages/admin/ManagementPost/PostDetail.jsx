@@ -136,7 +136,18 @@ const AdminPostDetail = () => {
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
-
+    const isApproveDisabled =
+    post?.isEditing ||
+    post?.status === "deleted" ||
+    ["approved", "rejected"].includes(post?.status);
+  
+  const isRejectDisabled =
+    post?.isEditing ||
+    post?.status === "deleted" ||
+    ["approved", "rejected"].includes(post?.status);
+  
+  const isDeleteDisabled =
+    post?.isEditing || post?.status === "deleted";
     useEffect(() => {
         const fetchPostAndHistory = async () => {
             try {
@@ -163,7 +174,7 @@ const AdminPostDetail = () => {
                 } else {
                     toast.error("⚠️ Không thể lấy lịch sử chỉnh sửa");
                 }
-    
+                  
             } catch (err) {
                 console.error("Lỗi khi tải dữ liệu:", err);
                 toast.error("❌ Lỗi khi tải bài đăng.");
@@ -335,41 +346,44 @@ const AdminPostDetail = () => {
 
                         {/* Action Buttons */}
                         <div className="d-flex gap-3 justify-content-center">
-                            <button
-                                className="btn btn-success px-4 py-2 d-flex align-items-center gap-2"
-                                onClick={handleApprove}
-                                style={{
-                                    borderRadius: '8px',
-                                    fontWeight: '500',
-                                    minWidth: '120px'
-                                }}
-                            >
-                                <FaCheck /> {post.status === "approved" ? "Đã duyệt" : "Duyệt"}
-                            </button>
+                        <button
+  className="btn btn-success px-4 py-2 d-flex align-items-center gap-2"
+  onClick={handleApprove}
+  style={{
+    borderRadius: '8px',
+    fontWeight: '500',
+    minWidth: '120px'
+  }}
+  disabled={isApproveDisabled}
+>
+  <FaCheck /> {post?.status === "approved" ? "Đã duyệt" : "Duyệt"}
+</button>
 
-                            <button
-                                className="btn btn-warning px-4 py-2 d-flex align-items-center gap-2"
-                                onClick={() => setShowRejectModal(true)}
-                                style={{
-                                    borderRadius: '8px',
-                                    fontWeight: '500',
-                                    minWidth: '120px'
-                                }}
-                            >
-                                <FaTimes /> {post.status === "rejected" ? "Đã từ chối" : "Từ chối"}
-                            </button>
+<button
+  className="btn btn-warning px-4 py-2 d-flex align-items-center gap-2"
+  onClick={() => setShowRejectModal(true)}
+  style={{
+    borderRadius: '8px',
+    fontWeight: '500',
+    minWidth: '120px'
+  }}
+  disabled={isRejectDisabled}
+>
+  <FaTimes /> {post?.status === "rejected" ? "Đã từ chối" : "Từ chối"}
+</button>
 
-                            <button
-                                className="btn btn-danger px-4 py-2 d-flex align-items-center gap-2"
-                                onClick={() => setShowDeleteModal(true)}
-                                style={{
-                                    borderRadius: '8px',
-                                    fontWeight: '500',
-                                    minWidth: '120px'
-                                }}
-                            >
-                                <FaTrash /> {post.status === "deleted" ? "Đã xoá" : "Xoá"}
-                            </button>
+<button
+  className="btn btn-danger px-4 py-2 d-flex align-items-center gap-2"
+  onClick={() => setShowDeleteModal(true)}
+  style={{
+    borderRadius: '8px',
+    fontWeight: '500',
+    minWidth: '120px'
+  }}
+  disabled={isDeleteDisabled}
+>
+  <FaTrash /> {post?.status === "deleted" ? "Đã xoá" : "Xoá"}
+</button>
                         </div>
                     </div>
 
@@ -383,7 +397,7 @@ const AdminPostDetail = () => {
                                 <div className="mb-4">
                                     <div className="text-muted small mb-1">Giá</div>
                                     <h3 className="text-danger fw-bold mb-0">
-                                        {formatCurrency(post.price)} 
+                                        {formatCurrency(post.price)}
                                     </h3>
                                 </div>
 

@@ -38,7 +38,11 @@ const RegistrationForm = () => {
   const [isBlocked, setIsBlocked] = useState(false);
   const [useCustomPlaza, setUseCustomPlaza] = useState(false);
   const [useCustomApartment, setUseCustomApartment] = useState(false);
-
+  const [charCount, setCharCount] = useState({
+    tieuDe: 0,
+    moTaChiTiet: 0,
+  });
+  
   useEffect(() => {
     if (user && user.status === 0) {
       console.log("🚫 Tài khoản bị chặn đăng bài");
@@ -53,14 +57,27 @@ const RegistrationForm = () => {
     const fetchApartments = async () => {
       try {
         const response = await getApartmentList();
-        console.log("📦 Full response:", response); // log toàn bộ response
-
+        console.log("📦 Full response:", response);
+  
         if (response?.data) {
           const apartments = Array.isArray(response.data)
             ? response.data
             : response.data.data;
-          console.log("✅ Danh sách căn hộ:", apartments);
-          setApartmentOptions(apartments);
+  
+          console.log("✅ Danh sách căn hộ (trước sort):", apartments);
+  
+          // ✅ Sắp xếp theo apartmentCode, xử lý khi thiếu
+          const sortedApartments = [...apartments].sort((a, b) =>
+            (a?.apartmentCode || "").localeCompare(
+              b?.apartmentCode || "",
+              "vi",
+              { numeric: true }
+            )
+          );
+  
+          console.log("📑 Danh sách căn hộ (đã sort):", sortedApartments);
+  
+          setApartmentOptions(sortedApartments);
         } else {
           console.warn("⚠️ Không có dữ liệu căn hộ trong response");
         }
@@ -68,9 +85,12 @@ const RegistrationForm = () => {
         console.error("❌ Không thể lấy danh sách căn hộ:", error);
       }
     };
-
+  
     fetchApartments();
   }, []);
+  
+  
+  
 
   // ham de xu li get ra plazaNDate
   useEffect(() => {
@@ -101,7 +121,7 @@ const RegistrationForm = () => {
   // validate khi nhập
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
+  
     // Validate số điện thoại
     if (name === "thongTinNguoiDangBan") {
       if (!/^\d*$/.test(value)) return;
@@ -116,15 +136,17 @@ const RegistrationForm = () => {
       }
       return;
     }
-
-    // Giới hạn số ký tự cho tiêu đề và mô tả
-    if (name === "tieuDe" && value.length > 50) {
-      return; // không cho nhập thêm
+  
+    // Giới hạn ký tự cho tiêu đề và mô tả + cập nhật đếm ký tự
+    if (name === "tieuDe") {
+      if (value.length > 100) return;
+      setCharCount((prev) => ({ ...prev, tieuDe: value.length }));
     }
-    if (name === "moTaChiTiet" && value.length > 200) {
-      return; // không cho nhập thêm
+    if (name === "moTaChiTiet") {
+      if (value.length > 1000) return;
+      setCharCount((prev) => ({ ...prev, moTaChiTiet: value.length }));
     }
-
+  
     // Không cho nhập giá hoặc diện tích âm
     if (
       (name === "gia" || name === "dienTich") &&
@@ -133,12 +155,7 @@ const RegistrationForm = () => {
     ) {
       return;
     }
-
-    // Nếu là căn hộ thì diện tích readonly
-    // if (name === "dienTich" && loaiHinhCon === "nha_can_ho") {
-    //   return; // không cho sửa nếu là căn hộ
-    // }
-
+  
     // Loại hình căn hộ tự gán địa chỉ
     if (name === "loaiHinh") {
       if (value === "nha_can_ho") {
@@ -161,21 +178,22 @@ const RegistrationForm = () => {
   useEffect(() => {
     if (formData.soCanHo && apartmentOptions.length > 0) {
       const selectedApartment = apartmentOptions.find(
-        (apartment) => apartment._id === formData.soCanHo
+        (apartment) => apartment.apartmentCode === formData.soCanHo
       );
-
+  
       if (selectedApartment) {
         setFormData((prev) => ({
           ...prev,
-          dienTich: selectedApartment.area,
-          giayto: selectedApartment.legalDocuments,
-          huongdat: selectedApartment.direction,
-          tinhtrang: selectedApartment.furniture,
+          dienTich: selectedApartment.area || "",
+          giayto: selectedApartment.legalDocuments || "",
+          huongdat: selectedApartment.direction || "",
+          tinhtrang: selectedApartment.furniture || "",
           diaChiCuThe: "FPT City",
         }));
       }
     }
   }, [formData.soCanHo, apartmentOptions]);
+  
   // hàm xử lí lấy sdt của user
   useEffect(() => {
     if (user?.phone && !formData.thongTinNguoiDangBan) {
@@ -534,7 +552,7 @@ const RegistrationForm = () => {
         value={formData.soCanHo || ""}
         onChange={(e) =>
           setFormData((prev) => ({
-            ...prev,
+            ...prev, 
             soCanHo: e.target.value,
           }))
         }
@@ -546,7 +564,7 @@ const RegistrationForm = () => {
           <option disabled>Không có căn hộ phù hợp</option>
         )}
         {filteredApartments.map((apartment) => (
-          <option key={apartment._id} value={apartment._id}>
+            <option key={apartment._id} value={apartment.apartmentCode}>
             {apartment.apartmentCode}
           </option>
         ))}
@@ -633,6 +651,9 @@ const RegistrationForm = () => {
                       className="form-control"
                       required
                     />
+                    <small style={{ color: charCount.tieuDe >= 100 ? "red" : "#555" }}>
+    {charCount.tieuDe}/100
+  </small>
                   </div>
                   <div className="col-12">
                     <label className="form-label">
@@ -647,6 +668,9 @@ const RegistrationForm = () => {
                       className="form-control"
                       required
                     />
+                      <small style={{ color: charCount.moTaChiTiet >= 1000 ? "red" : "#555" }}>
+    {charCount.moTaChiTiet}/1000
+  </small>
                   </div>
                   {["ban", "cho_thue"].includes(loaiBaiDang) && (
                     <div className="col-12 col-md-6">

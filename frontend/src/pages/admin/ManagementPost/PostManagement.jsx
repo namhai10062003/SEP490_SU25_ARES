@@ -1,15 +1,15 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import axios from "axios";
 import { toast } from "react-toastify";
 
-import AdminDashboard from "../adminDashboard";
 import Pagination from "../../../../components/Pagination.jsx";
-import LoadingModal from "../../../../components/loadingModal.jsx";
 import SearchInput from "../../../../components/admin/searchInput.jsx";
 import StatusFilter from "../../../../components/admin/statusFilter.jsx";
+import LoadingModal from "../../../../components/loadingModal.jsx";
 import { formatSmartDate } from "../../../../utils/format.jsx";
 import { getAllPosts } from "../../../service/postService.js";
+import AdminDashboard from "../adminDashboard";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -131,21 +131,43 @@ const PostManagement = () => {
   };
 
   const handleReject = async (postId) => {
+    let reason = prompt("Nhập lý do từ chối:");
+    console.log(">> prompt reason (raw):", reason);
+
+    // Trường hợp bấm Cancel hoặc nhập rỗng
+    if (!reason || !reason.trim()) {
+        alert("Vui lòng nhập lý do từ chối");
+        return;
+    }
+
+    // Đảm bảo là chuỗi thuần
+    if (typeof reason !== "string") {
+        try {
+            reason = JSON.stringify(reason);
+        } catch {
+            reason = String(reason);
+        }
+    }
+    reason = reason.trim();
+
     if (!window.confirm("Xác nhận từ chối bài đăng này?")) return;
 
     try {
-      setLoading(true);
-      await axios.put(`${API_BASE}/api/posts/reject-post/${postId}`);
-      toast.success("Đã từ chối bài đăng thành công");
-      fetchPosts();
-      fetchSidePosts();
+        setLoading(true);
+        console.log(">> Gửi reject với payload:", { reasonreject: reason });
+        await rejectPostByAdmin(postId, reason); // ✅ Gửi string thuần
+        toast.success("Đã từ chối bài đăng thành công");
+        fetchPosts();
+        fetchSidePosts();
     } catch (err) {
-      console.error("handleReject error:", err);
-      toast.error("Từ chối bài đăng thất bại");
+        console.error("handleReject error:", err);
+        toast.error("Từ chối bài đăng thất bại");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
+
+
 
   // helper functions
   const tagLabel = (type) => {

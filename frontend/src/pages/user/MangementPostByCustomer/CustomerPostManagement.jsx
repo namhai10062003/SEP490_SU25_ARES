@@ -214,12 +214,12 @@ const CustomerPostManagement = () => {
 
   // Handle save edit
   const handleSaveEdit = async () => {
-    // Kiểm tra lỗi từng trường
+    // ==== Validate dữ liệu ====
     if (!editForm.title) {
       toast.error("Vui lòng nhập tiêu đề");
       return;
     } else if (editForm.title.length > 200) {
-      toast.error("Tiêu đề không được vượt quá 50 ký tự");
+      toast.error("Tiêu đề không được vượt quá 200 ký tự");
       return;
     }
   
@@ -227,7 +227,7 @@ const CustomerPostManagement = () => {
       toast.error("Vui lòng nhập mô tả");
       return;
     } else if (editForm.description.trim().split(/\s+/).length > 200) {
-      toast.error("Mô tả không được vượt quá 50 từ");
+      toast.error("Mô tả không được vượt quá 200 từ");
       return;
     }
   
@@ -271,22 +271,26 @@ const CustomerPostManagement = () => {
       return;
     }
   
-    // Không có lỗi thì gửi request update
+    // ==== Nếu là rejected thì đổi sang pending khi lưu ====
+    const updatedData = {
+      ...editForm,
+      isEditing: false, 
+      status: editingPost.status === "rejected" ? "pending" : editingPost.status
+    };
+  
     try {
-      const response = await updatePost(editingPost._id, editForm);
+      const response = await updatePost(editingPost._id, updatedData);
       if (response.data.success) {
-        // ✅ Cập nhật lại trạng thái isEditing: false
-        await updatePost(editingPost._id, { isEditing: false });
-      
         toast.success("Cập nhật bài đăng thành công!");
         setShowEditModal(false);
         setEditingPost(null);
-        fetchPosts(); // làm mới danh sách
+        fetchPosts(); // load lại danh sách
       }
     } catch (error) {
       toast.error("Có lỗi xảy ra khi cập nhật bài đăng");
     }
   };
+  
   
 
   const handlePayment = async (postId) => {
