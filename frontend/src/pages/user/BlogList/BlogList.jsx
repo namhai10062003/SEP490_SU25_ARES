@@ -117,7 +117,7 @@ const BlogList = () => {
     if (images && images.length > 1 && !hoverTimer.current) {
       hoverTimer.current = setInterval(() => {
         setHoveredImageIdx((prev) => (prev + 1) % images.length);
-      }, 2000);
+      }, 700);
     }
   };
   const handleMouseLeave = () => {
@@ -388,7 +388,11 @@ const BlogList = () => {
                               <br />
 
                             </div>
-                            <span className="badge bg-secondary">{post.type === "ban" ? "Bán/Cho thuê" : post.type}</span>
+                            <span className="badge bg-secondary">
+  {post.type === "ban" && "Bán"}
+  {post.type === "cho_thue" && "Cho thuê"}
+  {post.type === "dichvu" && "Dịch vụ"}
+</span>
                           </div>
                         </div>
                       </Link>

@@ -114,9 +114,15 @@ export const verifyPostByAdmin = async (postId) => {
 };
 export const rejectPostByAdmin = async (postId, reasonReject) => {
     const token = localStorage.getItem("token");
+
+    // Nếu là object thì lấy thuộc tính reasonreject, nếu không thì dùng nguyên giá trị
+    const reasonText = typeof reasonReject === "object"
+        ? reasonReject.reasonreject
+        : reasonReject;
+
     return axios.put(
         `${API_BASE}/posts/reject-post/${postId}`,
-        { reasonReject },
+        { reasonreject: reasonText },
         {
             headers: {
                 "Content-Type": "application/json",
@@ -125,6 +131,8 @@ export const rejectPostByAdmin = async (postId, reasonReject) => {
         }
     );
 };
+
+
 export const deletePostByAdmin = async (postId) => {
     const token = localStorage.getItem("token");
     return axios.put(

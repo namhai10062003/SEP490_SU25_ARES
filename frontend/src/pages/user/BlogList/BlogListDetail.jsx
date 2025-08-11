@@ -263,55 +263,100 @@ const PostDetail = () => {
 
           {/* Right column: Info */}
           <div className="col-md-5">
-            <h2 className="fw-bold">{post.title}</h2>
-            <h4 className="text-danger">{formatPrice(post.price)}</h4>
-            <div className="my-2">
-              <span className="badge bg-success">
-                {post.status === "active" ? "Đang hoạt động" : "Ẩn"}
-              </span>
-            </div>
+  {/* Tiêu đề & giá */}
+  <h2 className="fw-bold mb-2 text-dark">{post.title}</h2>
+  <h4 className="fw-bold text-danger mb-4">
+    {formatPrice(post.price)} <span className="fs-6 text-muted">₫</span>
+  </h4>
 
-            <ul className="list-unstyled mb-3">
-              <li><FaRulerCombined /> Diện tích: {post.area} m²</li>
-              <li><FaMapMarkerAlt /> Vị trí: {post.location}</li>
-              <li><FaCalendarAlt /> Ngày đăng: {new Date(post.createdAt).toLocaleDateString("vi-VN")}</li>
-              <li><FaStar /> Gói: {post.postPackage?.type || "Standard"}</li>
-            </ul>
+  {/* Thông tin nhanh */}
+  <div className="mb-4">
+    <div className="d-flex align-items-center mb-2">
+      <FaRulerCombined className="text-primary me-2 fs-5" />
+      <span><strong>Diện tích:</strong> {post.area} m²</span>
+    </div>
+    <div className="d-flex align-items-center mb-2">
+      <FaMapMarkerAlt className="text-danger me-2 fs-5" />
+      <span><strong>Vị trí:</strong> {post.location}</span>
+    </div>
+    <div className="d-flex align-items-center mb-2">
+      <FaCalendarAlt className="text-warning me-2 fs-5" />
+      <span>
+        <strong>Ngày đăng:</strong>{" "}
+        {new Date(post.createdAt).toLocaleDateString("vi-VN")}
+      </span>
+    </div>
+    <div className="d-flex align-items-center">
+      <FaStar className="text-warning me-2 fs-5" />
+      <span><strong>Gói:</strong> {post.postPackage?.type || "Standard"}</span>
+    </div>
+    
+<div className="d-flex align-items-center mt-2">
+  <i className="bi bi-person-fill text-primary me-2 fs-5"></i>
+  <span><strong>Người liên hệ:</strong> {post.contactInfo.name || "Không có"}</span>
+</div>
 
-            <button
-              className={`btn ${isLiked ? "btn-danger" : "btn-outline-danger"} me-2`}
-              onClick={handleLike}
-            >
-              {isLiked ? <FaHeart /> : <FaRegHeart />} {likeCount}
-            </button>
+<div className="d-flex align-items-center mt-2">
+  <i className="bi bi-telephone-fill text-success me-2 fs-5"></i>
+  <span><strong>SĐT:</strong> {post.contactInfo.phone || "Không có"}</span>
+</div>
+  </div>
 
-            <button
-              className="btn btn-outline-primary me-2"
-              onClick={() => {
-                setShowComments((prev) => !prev);
-                setTimeout(() => {
-                  const el = document.getElementById("comments");
-                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-                }, 100); // wait for render
-              }}
-            >
-              💬 Bình luận
-            </button>
+  {/* Nút hành động */}
+  <div className="d-flex flex-wrap gap-2 mb-4">
+    <button
+      className={`btn ${isLiked ? "btn-danger" : "btn-outline-danger"} px-3`}
+      onClick={handleLike}
+    >
+      {isLiked ? <FaHeart /> : <FaRegHeart />} {likeCount}
+    </button>
+    <button
+      className="btn btn-outline-primary px-3"
+      onClick={() => {
+        setShowComments((prev) => !prev);
+        setTimeout(() => {
+          const el = document.getElementById("comments");
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+      }}
+    >
+      💬 Bình luận
+    </button>
+    <button
+      className="btn btn-outline-warning px-3"
+      onClick={() => setShowReportModal(true)}
+    >
+      🚩 Báo cáo
+    </button>
+    <button
+      className="btn btn-success px-3"
+      onClick={() => navigate(`/booking/${post._id}`)}
+      disabled={post.property === "nha_dat" || post.type === "dich_vu"}
+    >
+      📄 Đặt chỗ
+    </button>
+  </div>
 
-            <button
-              className="btn btn-outline-warning me-2"
-              onClick={() => setShowReportModal(true)}
-            >
-              🚩 Báo cáo
-            </button>
-            <button
-              className="btn btn-success"
-              onClick={() => navigate(`/booking/${post._id}`)}
-              disabled={post.property === "nha_dat" || post.type === "dich_vu"}
-            >
-              📄 Đặt chỗ
-            </button>
-          </div>
+  {/* Mô tả */}
+  <div>
+    <h5 className="mb-3 d-flex align-items-center text-primary">
+      <FaInfoCircle className="me-2" /> Mô tả
+    </h5>
+    <div
+      className="bg-light rounded p-3 border"
+      style={{
+        fontSize: "1rem",
+        lineHeight: "1.6",
+        color: "#333",
+        whiteSpace: "pre-line",
+      }}
+    >
+      {post.description}
+    </div>
+  </div>
+</div>
+
+
         </div>
         {/* {user && post.contactInfo?.userId !== user._id && (
   <button
@@ -341,25 +386,7 @@ const PostDetail = () => {
     postInfo={selectedPost}
   />
 )} */}
-        {/* Description */}
-        <div className="mt-4">
-          <h4 className="mb-3 d-flex align-items-center text-primary">
-            <FaInfoCircle className="me-2" /> Mô tả
-          </h4>
-
-          <div
-            className="bg-light rounded shadow-sm p-3"
-            style={{
-              fontSize: "1rem",
-              lineHeight: "1.7",
-              color: "#333",
-              textAlign: "justify",
-              whiteSpace: "pre-line",
-            }}
-          >
-            {post.description}
-          </div>
-        </div>
+      
 
         {/* Comments */}
         {showComments && (
