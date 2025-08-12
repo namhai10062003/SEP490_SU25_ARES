@@ -130,22 +130,22 @@ const PostDetail = () => {
             .filter((p) =>
               p._id !== id &&
               p.status === "approved" &&
-              // p.isActive === false &&
-              // p.paymentStatus === "paid" &&
-              (!p.expiredAt || new Date(p.expiredAt) > now)
+              p.paymentStatus === "paid" && // ✅ Chỉ bài đã thanh toán
+              (!p.expiredAt || new Date(p.expiredAt) > now) // ✅ Chưa hết hạn
             )
             .slice(0, 3);
   
-          console.log("👉 Related posts:", others); // log sau khi lọc
-  
+          console.log("👉 Related posts:", others);
           setRelatedPosts(others);
         }
       } catch (err) {
-        console.error("Lỗi gợi ý:", err); // log lỗi chi tiết
+        console.error("Lỗi gợi ý:", err);
       }
     };
+  
     fetchRelated();
   }, [id]);
+  
   
 
   const formatPrice = (price) =>

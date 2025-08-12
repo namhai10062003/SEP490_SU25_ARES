@@ -11,7 +11,7 @@ router.get("/get-post", verifyUser, getPost);
 router.get("/get-all-posts", verifyUser, getAllPosts);
 router.get("/get-post-active", optionalAuth, getPostApproved);
 router.get("/active", verifyUser, getApprovedPosts);
-router.get("/guest/get-post", getPostForGuest); // 👈 KHÔNG verifyUser
+router.get("/guest/get-post", optionalAuth,getPostForGuest); // 👈 KHÔNG verifyUser
 
 //post detail s
 router.get("/postdetail/:id", optionalAuth, getPostDetail);
