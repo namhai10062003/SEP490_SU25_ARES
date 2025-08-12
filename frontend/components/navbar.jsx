@@ -22,9 +22,9 @@ const Navbar = () => {
   return (
     <ul className="navbar-nav flex-row ms-3">
       <li className="nav-item mx-2">
-      <ProtectedLink className={getNavClass("/")} to="/">
+      <Link className={getNavClass("/")} to="/">
   TRANG CHỦ
-</ProtectedLink>
+</Link>
       </li>
       <li className="nav-item mx-2">
         <Link className={getNavClass("/gioi-thieu")} to="/gioi-thieu">

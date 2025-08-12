@@ -3,17 +3,18 @@ import { createPost, deletePost, deletePostByAdmin, getAllPosts, getApprovedPost
 import { upload } from "../db/cloudinary.js";
 import verifyUser from "../middleware/authMiddleware.js";
 import isAdmin from "../middleware/isAdmin.js";
+import { optionalAuth } from "../middleware/optionalAuth.js";
 const router = express.Router();
 
 router.post("/create-post", verifyUser, upload.array("images"), createPost);
 router.get("/get-post", verifyUser, getPost);
 router.get("/get-all-posts", verifyUser, getAllPosts);
-router.get("/get-post-active", verifyUser, getPostApproved);
+router.get("/get-post-active", optionalAuth, getPostApproved);
 router.get("/active", verifyUser, getApprovedPosts);
 router.get("/guest/get-post", getPostForGuest); // 👈 KHÔNG verifyUser
 
 //post detail s
-router.get("/postdetail/:id", verifyUser, getPostDetail);
+router.get("/postdetail/:id", optionalAuth, getPostDetail);
 router.get("/admin/postdetail/:id", verifyUser, getPostDetailForAdmin);
 router.put("/verify-post/:id", verifyUser, verifyPostByAdmin);
 router.put("/reject-post/:id", verifyUser, rejectPostByAdmin);

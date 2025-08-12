@@ -25,12 +25,21 @@ const ProtectedLink = ({ to, children, className, allowWithoutProfile = false })
   
 
   const handleClick = (e) => {
-    if (!allowWithoutProfile && isIncompleteProfile()) {
-      e.preventDefault();
-      toast.warn("⚠️ Vui lòng cập nhật hồ sơ để sử dụng chức năng này!");
-      navigate("/profile");
+    if (!allowWithoutProfile) {
+      if (!user) {
+        toast.warn("⚠️ Vui lòng đăng nhập để sử dụng chức năng này!");
+        navigate("/login");
+        e.preventDefault(); // Chặn link để không đi tiếp
+        return; // Dừng hàm không chạy tiếp
+      }
+      if (isIncompleteProfile()) {
+        e.preventDefault();
+        toast.warn("⚠️ Vui lòng cập nhật hồ sơ để sử dụng chức năng này!");
+        navigate("/profile");
+      }
     }
   };
+  
 
   return (
     <Link to={to} onClick={handleClick} className={className}>
