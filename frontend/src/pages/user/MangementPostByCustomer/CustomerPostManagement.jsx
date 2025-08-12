@@ -45,9 +45,11 @@ const CustomerPostManagement = () => {
     // postPackagename: "",
     packageId: "",
     property: "",
+    status: null, 
     images: [], // ảnh cũ
     oldImages: [], // ảnh cũ còn giữ lại
-    newImages: [],
+    newImages: []
+    
   });
 
   const postStatusLabels = {
@@ -315,6 +317,7 @@ const CustomerPostManagement = () => {
     // ==== Tạo formData để gửi lên server ====
     const formData = new FormData();
 
+    
     // Thêm các trường text
     formData.append("title", editForm.title);
     formData.append("description", editForm.description);
@@ -335,22 +338,32 @@ const CustomerPostManagement = () => {
     //     : editingPost.status
     // );
     const newStatus =
-    editingPost.status === "approved"
-      ? "pending"
-      : ["rejected", "expired"].includes(editingPost.status)
+    ["approved", "rejected", "expired"].includes(editingPost.status)
       ? "pending"
       : editingPost.status;
   
   formData.append("status", newStatus);
   
-  formData.append(
-    "paymentStatus",
-    newStatus === "pending" ? "unpaid" : editingPost.paymentStatus
-  );
+  // ✅ Xử lý paymentStatus
+  let newPaymentStatus;
+  if (editingPost.status === "approved") {
+    // Giữ nguyên nếu đang là approved => pending
+    newPaymentStatus = editingPost.paymentStatus; 
+  } else {
+    // Nếu chuyển sang pending từ rejected hoặc expired => unpaid
+    newPaymentStatus = newStatus === "pending" ? "unpaid" : editingPost.paymentStatus;
+  }
   
-    
-    
-
+  formData.append("paymentStatus", newPaymentStatus);
+  
+  
+  console.log("🔍 Status hiện tại:", editForm.status);
+  console.log(
+    "🔍 Disabled?",
+    editForm.status 
+      ? editForm.status.toLowerCase().trim() !== "expired"
+      : false
+  );
     // ==== Xử lý ảnh ====
     if (editForm.oldImages && editForm.oldImages.length > 0) {
       formData.append("oldImages", JSON.stringify(editForm.oldImages));
@@ -456,6 +469,7 @@ const CustomerPostManagement = () => {
     }));
   };
 
+  
   return (
     <div className="bg-light min-vh-100">
       <Header
@@ -1119,18 +1133,23 @@ const CustomerPostManagement = () => {
                         Gói đăng tin
                       </h6>
                       <select
-                        name="postPackagename"
-                        value={editForm.postPackagename || ""}
-                        onChange={handleInputChange}
-                        className="form-select"
-                      >
-                        <option value="">-- Chọn gói tin --</option>
-                        {postPackage.map((pkg) => (
-                          <option key={pkg._id} value={pkg._id}>
-                            {pkg.type}
-                          </option>
-                        ))}
-                      </select>
+  name="postPackagename"
+  value={editForm.postPackagename || ""}
+  onChange={handleInputChange}
+  className="form-select"
+  disabled={(editingPost.status || "").toLowerCase().trim() !== "expired"} 
+  // ✅ Nếu status null/undefined sẽ thành "" => không crash
+>
+  <option value="">-- Chọn gói tin --</option>
+  {postPackage.map((pkg) => (
+    <option key={pkg._id} value={pkg._id}>
+      {pkg.type}
+    </option>
+  ))}
+</select>
+
+
+
                     </div>
                   </div>
                 </div>

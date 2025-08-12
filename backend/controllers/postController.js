@@ -122,7 +122,13 @@ export const getAllPosts = async (req, res) => {
 
     // Filter theo trạng thái
     if (status && status !== "all") {
-      query.status = status;
+      if (status === "blog") {
+        // ✅ Lấy bài approved + paid
+        query.status = "approved";
+        query.paymentStatus = "paid";
+      } else {
+        query.status = status;
+      }
     }
 
     // Tìm kiếm theo tiêu đề, vị trí, loại bài, tên người liên hệ
@@ -173,20 +179,24 @@ export const getAllPosts = async (req, res) => {
   }
 };
 
+
 // get post ra trang home 
 export const getPostForGuest = async (req, res) => {
   try {
-    const now = new Date(); // thời gian hiện tại
+    const now = new Date();
 
-    const post = await Post.find({
-      status: "approved", // chỉ lấy bài đã được admin duyệt
-      // chỉ lấy bài còn hạn
+    // Lọc ở DB: chỉ lấy bài approved + paid và có expiredDate >= now
+    const posts = await Post.find({
+      status: "approved",
+      paymentStatus: "paid",
+      expiredDate: { $exists: true, $gte: now } // <- quan trọng
     })
       .populate('contactInfo', 'name email phone')
       .populate('postPackage', 'type price expireAt')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
-    if (post.length === 0) {
+    if (posts.length === 0) {
       return res.status(404).json({
         message: "Không có bài đăng hợp lệ.",
         success: false,
@@ -198,7 +208,7 @@ export const getPostForGuest = async (req, res) => {
       message: "Lấy bài đăng thành công (cho khách xem)",
       success: true,
       error: false,
-      data: post
+      data: posts
     });
   } catch (error) {
     return res.status(500).json({
@@ -208,6 +218,7 @@ export const getPostForGuest = async (req, res) => {
     });
   }
 };
+
 // list ra all post have status active
 export const getApprovedPosts = async (req, res) => {
   try {
