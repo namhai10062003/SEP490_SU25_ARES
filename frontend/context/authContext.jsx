@@ -1,20 +1,27 @@
 import axios from "axios";
 import PropTypes from "prop-types";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-// Tạo context
 const AuthContext = createContext();
 
-// Custom hook
 export const useAuth = () => useContext(AuthContext);
 
-// Provider
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const apiUrl = import.meta.env.VITE_API_URL || "https://api.ares.io.vn";
+  const navigate = useNavigate();
+
+  // Hàm logout kèm redirect
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    setUser(null);
+    setError(null);
+    navigate("/login"); // Điều hướng về login
+  }, [navigate]);
 
   // Xác minh token từ localStorage khi app load
   useEffect(() => {
@@ -28,44 +35,39 @@ const AuthProvider = ({ children }) => {
 
       try {
         const response = await axios.post(
-          `${apiUrl}/api/auth/verify`, // ✅ đổi tên endpoint nếu cần
+          `${apiUrl}/api/auth/verify`,
           {},
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
 
-        if (response.data && response.data.user) {
+        if (response.data?.user) {
           setUser(response.data.user);
         } else {
-          throw new Error("Không tìm thấy thông tin người dùng.");
+          logout(); // token không hợp lệ → logout
         }
       } catch (err) {
         console.error("❌ Lỗi xác minh token:", err);
-        localStorage.removeItem("token");
-        setUser(null);
-        setError("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        logout(); // verify lỗi → logout
       } finally {
         setLoading(false);
       }
     };
 
     verifyUser();
-  }, []);
+  }, [apiUrl, logout]);
 
   // Hàm login
-  const login = (userData, token) => {
-    localStorage.setItem("token", token);
-    setUser(userData);
-    setError(null); // xoá lỗi cũ nếu có
-  };
-
-  // Hàm logout
-  const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    setError(null);
-  };
+  const login = useCallback(
+    (userData, token) => {
+      localStorage.setItem("token", token);
+      setUser(userData);
+      setError(null);
+      navigate("/"); // login thành công → về trang chủ
+    },
+    [navigate]
+  );
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading, error }}>

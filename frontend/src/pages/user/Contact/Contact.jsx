@@ -7,55 +7,66 @@ import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
 
 const Contact = () => {
-    const { user, logout } = useAuth();
-    const [formData, setFormData] = useState({
-      name: "",
-      email: "",
-      message: "",
-    });
-  
-    const [submitted, setSubmitted] = useState(false);
-    useEffect(() => {
-      if (submitted) {
-        toast.success("✅ Gửi thành công!", {
-          
-        });
-      }
-    }, [submitted]);
-    
-    const handleChange = (e) => {
+  const { user, logout } = useAuth();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+
+  const [submitted, setSubmitted] = useState(false);
+
+  // ✅ Auto fill nếu user login
+  useEffect(() => {
+    if (user) {
       setFormData((prev) => ({
         ...prev,
-        [e.target.name]: e.target.value,
+        name: user.name || "",
+        email: user.email || "",
       }));
-    };
-  
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-      try {
-        const token = localStorage.getItem("token"); // Lấy token đã lưu
-    
-        await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/contact`,
-          formData,
-          token
-            ? { headers: { Authorization: `Bearer ${token}` } } // ✅ Gửi token nếu có
-            : {}
-        );
-    
-        setSubmitted(true);
-        setFormData({ name: "", email: "", message: "" });
-        console.log("✅ Form data đã gửi:", formData);
-      } catch (error) {
-        console.error("❌ Error when sending contact:", error);
-        console.error("🔍 Response data:", error?.response?.data);
-        console.error("🔍 Status:", error?.response?.status);
-        console.error("🔍 Headers:", error?.response?.headers);
-        alert("❌ Gửi thất bại! Vui lòng thử lại.");
-      }
-    };
-    
-      
+    }
+  }, [user]);
+
+  // ✅ Show toast khi gửi thành công
+  useEffect(() => {
+    if (submitted) {
+      toast.success("✅ Gửi thành công!");
+    }
+  }, [submitted]);
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/contact`,
+        formData,
+        token
+          ? { headers: { Authorization: `Bearer ${token}` } }
+          : {}
+      );
+
+      setSubmitted(true);
+      setFormData({
+        name: user?.name || "",
+        email: user?.email || "",
+        message: "",
+      });
+
+      console.log("✅ Form data đã gửi:", formData);
+    } catch (error) {
+      console.error("❌ Error when sending contact:", error);
+      alert("❌ Gửi thất bại! Vui lòng thử lại.");
+    }
+  };
 
   return (
     <div style={{ background: "#f8fafc", fontFamily: "Segoe UI, sans-serif" }}>
@@ -75,7 +86,7 @@ const Contact = () => {
         />
         <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
           <div className="text-center text-white px-3">
-            <h1 className="display-5 fw-bold">Liên hệ Ban Quản lý</h1>
+            <h1 className="display-5 fw-bold">Liên hệ ARES Team</h1>
             <p className="lead fw-semibold">📞 Chúng tôi luôn sẵn sàng hỗ trợ bạn</p>
           </div>
         </div>
@@ -85,8 +96,9 @@ const Contact = () => {
       <section className="container py-5">
         <div className="bg-white p-4 shadow rounded-4">
           <h3 className="text-warning fw-bold mb-4">📬 Gửi tin nhắn đến Admin</h3>
-          
+
           <form onSubmit={handleSubmit}>
+            {/* Name */}
             <div className="mb-3">
               <label className="form-label fw-semibold">Họ và tên</label>
               <input
@@ -97,8 +109,11 @@ const Contact = () => {
                 value={formData.name}
                 onChange={handleChange}
                 required
+                readOnly={!!user} // ✅ Khóa nếu đã login
               />
             </div>
+
+            {/* Email */}
             <div className="mb-3">
               <label className="form-label fw-semibold">Email</label>
               <input
@@ -109,8 +124,11 @@ const Contact = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
+                readOnly={!!user}
               />
             </div>
+
+            {/* Message */}
             <div className="mb-3">
               <label className="form-label fw-semibold">Nội dung liên hệ</label>
               <textarea
@@ -123,6 +141,7 @@ const Contact = () => {
                 required
               ></textarea>
             </div>
+
             <button type="submit" className="btn btn-warning px-4 fw-bold">
               Gửi yêu cầu
             </button>

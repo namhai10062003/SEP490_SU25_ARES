@@ -331,43 +331,45 @@ const Home = () => {
 
       {/* STATISTICS */}
       <section className="container py-5">
-        <div className="row g-4 justify-content-center">
+      <div className="row g-4 justify-content-center">
 
-          <div className="col-12 col-md-4">
-            <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-              <div className="display-3 fw-bold text-warning">
-                <CountUp end={postStats?.data?.forSale ?? 0} duration={2} />
-              </div>
-              <div className="text-dark fs-5 mt-3">
-                Tin đăng bán
-              </div>
-            </div>
-          </div>
+<div className="col-12 col-md-4">
+  <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
+    <div className="fs-4 fw-bold text-dark mb-3" style={{ color: "#222" }}>
+      Tin đăng bán
+    </div>
+    <div className="display-3 fw-bold text-warning">
+      <CountUp end={postStats?.data?.forSale ?? 0} duration={2} />
+    </div>
+  </div>
+</div>
 
-          <div className="col-12 col-md-4">
-            <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-              <div className="display-3 fw-bold text-warning">
-                <CountUp end={postStats?.data?.forRent ?? 0} duration={2} />
-              </div>
-              <div className="text-dark fs-5 mt-3">
-                Tin cho thuê
-              </div>
-            </div>
-          </div>
+<div className="col-12 col-md-4">
+  <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
+    <div className="fs-4 fw-bold text-dark mb-3" style={{ color: "#222" }}>
+      Tin cho thuê
+    </div>
+    <div className="display-3 fw-bold text-warning">
+      <CountUp end={postStats?.data?.forRent ?? 0} duration={2} />
+    </div>
+  </div>
+</div>
 
-          <div className="col-12 col-md-4">
-            <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-              <div className="display-3 fw-bold text-warning">
-                <CountUp end={postStats?.data?.saleAndRent ?? 0} duration={2} />
-              </div>
-              <div className="text-dark fs-5 mt-3">
-                Tin dịch vụ
-              </div>
-            </div>
-          </div>
+<div className="col-12 col-md-4">
+  <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
+    <div className="fs-4 fw-bold text-dark mb-3" style={{ color: "#222" }}>
+      Tin dịch vụ
+    </div>
+    <div className="display-3 fw-bold text-warning">
+      <CountUp end={postStats?.data?.saleAndRent ?? 0} duration={2} />
+    </div>
+  </div>
+</div>
 
-        </div>
-      </section>
+</div>
+
+</section>
+
 
 
       {/* PROJECTS */}

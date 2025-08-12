@@ -95,7 +95,7 @@ function AppRoutes() {
   const { user } = useAuth(); 
   return (
     <>
-      <BrowserRouter>
+ 
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
@@ -146,8 +146,8 @@ function AppRoutes() {
           <Route path="/admin-dashboard/contact" element={<ProtectedRoute element={<AdminContactPage />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/posts/:id" element={<ProtectedRoute element={<AdminPostDetail />} allowedRoles={["admin"]} />} />
           <Route path="/admin-dashboard/updateprofile" element={<ProtectedRoute element={<AdminProfileUpdatePage />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/manage-notification" element={<ManageNotifications />} />|
-          <Route path="/admin-dashboard/manage-user/:id" element={<ManageUserDetail />} />|
+          <Route path="/admin-dashboard/manage-notification" element={<ManageNotifications />} />
+          <Route path="/admin-dashboard/manage-user/:id" element={<ManageUserDetail />} />
 
           {/* Staff */}
           <Route path="/staff-dashboard" element={<ProtectedRoute element={<DashboardPage />} allowedRoles={["staff"]} />} />
@@ -172,7 +172,7 @@ function AppRoutes() {
         <ScrollButtons />
         <VideoCallPopup />
         {(callActive || incomingCall) && <VideoPlayer />}
-      </BrowserRouter>
+      
     </>
   );
 }
@@ -190,6 +190,7 @@ function AppContent() {
 // ✅ Gốc của ứng dụng
 function App() {
   return (
+    <BrowserRouter>
     <AuthProvider>
       <SocketProvider>
         <ChatProvider>
@@ -197,6 +198,7 @@ function App() {
         </ChatProvider>
       </SocketProvider>
     </AuthProvider>
+    </BrowserRouter>
   );
 }
 

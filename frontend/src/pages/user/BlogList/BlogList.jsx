@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FaFilter, FaTimes } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from 'react-toastify';
 import Footer from "../../../../components/footer";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
@@ -26,7 +27,17 @@ const BlogList = () => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [hoveredImageIdx, setHoveredImageIdx] = useState(0);
   const hoverTimer = useRef(null);
-
+  const navigate = useNavigate();
+  const handleClick = (e) => {
+    if (!user) {
+      e.preventDefault();
+      toast.warn("⚠️ Vui lòng đăng nhập để sử dụng chức năng này!");
+      setTimeout(() => {
+        navigate("/login");
+      }); // delay 1.5s để toast hiện ra
+    }
+  };
+  
   useEffect(() => {
     if (user && user.name) setName(user.name);
   }, [user]);
@@ -279,7 +290,7 @@ const BlogList = () => {
                   currentPosts.map((post, idx) => (
                     <div key={post._id} className="col-12 col-md-6 col-lg-4 d-flex">
                       <Link
-                        to={`/postdetail/${post._id}`}
+                       to={`/postdetail/${post._id}`} onClick={handleClick}
                         className="card h-100 shadow-sm border-0 text-decoration-none text-dark w-100"
                         style={{
                           minHeight: '260px',
