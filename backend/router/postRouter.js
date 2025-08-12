@@ -23,7 +23,7 @@ router.get("/posts/:id/history", isAdmin, getPostHistories);
 // get post by user
 router.put("/:id/start-editing", verifyUser, startEditingPost);
 router.get("/get-postbyUser", verifyUser, getPostbyUser);
-router.put("/update-posts/:id", verifyUser, updatePost);
+router.put("/update-posts/:id", verifyUser, upload.array("images"), updatePost);
 router.delete("/delete-posts/:id", deletePost);
 router.put("/update-posts-statusbyAdmin/:id", verifyUser, updatePostStatusByAdmin);
 router.get('/stats', getPostStats);

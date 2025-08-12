@@ -43,9 +43,10 @@ const PostSchema = new Schema({
   // trạng thái của bài post
   status: {
     type: String,
-    enum: ['pending', 'active', 'approved', 'rejected', 'deleted'],
+    enum: ['pending', 'approved', 'rejected', 'deleted', 'expired'],
     default: 'pending'
   },
+  
   paymentStatus: {
     type: String,
     enum: ['unpaid', 'paid', 'failed'],

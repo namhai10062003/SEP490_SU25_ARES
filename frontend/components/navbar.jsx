@@ -52,7 +52,7 @@ const Navbar = () => {
           </li>
           <li>
             <ProtectedLink className="dropdown-item" to="/dichvu/dangtin">
-              Dịch vụ đăng tin
+              Đăng tin
             </ProtectedLink>
           </li>
         </ul>

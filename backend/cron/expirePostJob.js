@@ -1,26 +1,31 @@
 import cron from 'node-cron';
-import Post from '../models/Post.js'; // Đường dẫn tới Post model
+import Post from '../models/Post.js';
 
-// Chạy mỗi ngày lúc 00:00
+// 🕒 Cron: Chạy mỗi phút để test, khi deploy đổi thành '0 0 * * *' (00:00 hàng ngày)
 cron.schedule('*/1 * * * *', async () => {
     const nowUTC = new Date();
-    const vietnamOffsetMs = 7 * 60 * 60 * 1000; // hoặc 8 * ... nếu bạn dùng UTC+8
+    const vietnamOffsetMs = 7 * 60 * 60 * 1000; // UTC+7
     const nowVN = new Date(nowUTC.getTime() + vietnamOffsetMs);
-    console.log('⏰ CRON chạy giờ VN:', nowUTC.toLocaleString());
+
+    console.log('⏰ CRON chạy giờ VN:', nowVN.toLocaleString());
+
     const result = await Post.updateMany(
-        { isActive: true, expiredDate: { $lte: nowUTC } },
-        { isActive: false }
+        { status: 'approved', expiredDate: { $lte: nowVN } },
+        { $set: { status: 'expired' } }
     );
-    console.log(`🔁 Cập nhật ${result.modifiedCount} bài hết hạn.`);
+
+    console.log(`🔁 CRON: Cập nhật ${result.modifiedCount} bài hết hạn.`);
 });
 
-// Gọi ngay khi load
+// 🧪 Gọi ngay khi server start để test
 (async () => {
-    console.log('🧪 Test gọi hàm cron thủ công:', new Date());
-    const now = new Date();
+    console.log('🧪 Test gọi hàm cron thủ công:', new Date().toLocaleString());
+
+    const nowVN = new Date();
     const result = await Post.updateMany(
-        { isActive: true, expiredDate: { $lte: now } },
-        { isActive: false }
+        { status: 'approved', expiredDate: { $lte: nowVN } },
+        { $set: { status: 'expired' } }
     );
+
     console.log(`✅ Test cập nhật ${result.modifiedCount} bài.`);
 })();

@@ -70,7 +70,15 @@ const getFilteredAndSortedData = (data) => {
 
   return sorted;
 };
-
+// hàm thực hiện sort căn hộ
+const groupByApartment = (data) => {
+  return data.reduce((groups, item) => {
+    const apt = item.mãCănHộ || 'Không rõ căn hộ';
+    if (!groups[apt]) groups[apt] = [];
+    groups[apt].push(item);
+    return groups;
+  }, {});
+};
 
 // hàm hủy khi mà người dùng không muốn đăng ký nữa 
 const handleCancel = (id) => {
@@ -388,8 +396,16 @@ const doCancel = async (id) => {
       <p className="text-center text-secondary py-4">⏳ Đang tải dữ liệu...</p>
     ) : (
       <>
-        {renderTable('🚗 Ô tô', getFilteredAndSortedData(carRegistrations))}
-{renderTable('🏍️ Xe máy', getFilteredAndSortedData(bikeRegistrations))}
+     <>
+  {Object.entries(groupByApartment(getFilteredAndSortedData(carRegistrations))).map(([apt, items]) =>
+    renderTable(`🚗 Ô tô - ${apt}`, items)
+  )}
+  {Object.entries(groupByApartment(getFilteredAndSortedData(bikeRegistrations))).map(([apt, items]) =>
+    renderTable(`🏍️ Xe máy - ${apt}`, items)
+  )}
+</>
+
+
       </>
     )}
   </div>

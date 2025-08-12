@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 import {
   FaCalendarAlt,
+  FaCheckCircle,
   FaExpand,
   FaHeart,
   FaInfoCircle,
@@ -30,7 +31,6 @@ import {
   getAllPosts,
   getPostById,
 } from "../../../service/postService.js";
-
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -337,25 +337,58 @@ const PostDetail = () => {
     </button>
   </div>
 
-  {/* Mô tả */}
-  <div>
-    <h5 className="mb-3 d-flex align-items-center text-primary">
-      <FaInfoCircle className="me-2" /> Mô tả
-    </h5>
-    <div
-      className="bg-light rounded p-3 border"
-      style={{
-        fontSize: "1rem",
-        lineHeight: "1.6",
-        color: "#333",
-        whiteSpace: "pre-line",
-      }}
-    >
-      {post.description}
-    </div>
-  </div>
+ 
 </div>
+ {/* Mô tả */}
+ <div>
+ <h5 className="mb-3 d-flex align-items-center text-primary">
+  <FaInfoCircle className="me-2" /> Mô tả
+</h5>
 
+<div
+  className="bg-light rounded p-4 border"
+  style={{
+    fontSize: "1rem",
+    lineHeight: "1.8",
+    color: "#333",
+    borderColor: "#ddd",
+  }}
+>
+  <ul style={{ margin: 0, paddingLeft: "0", listStyle: "none" }}>
+    {post.description
+      ?.split(/\n+/) // tách dòng
+      .map((line, index) => (
+        <li
+          key={index}
+          style={{
+            marginBottom: "12px",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "8px",
+          }}
+        >
+          <FaCheckCircle
+            style={{
+              color: "#0d6efd",
+              marginTop: "4px",
+              flexShrink: 0,
+            }}
+          />
+          <span
+            dangerouslySetInnerHTML={{
+              __html: line
+                .replace(
+                  /^([^:]+):/,
+                  "<strong>$1:</strong>" // tô đậm phần tiêu đề trước dấu ":"
+                )
+                .trim(),
+            }}
+          />
+        </li>
+      ))}
+  </ul>
+</div>
+  </div>
 
         </div>
         {/* {user && post.contactInfo?.userId !== user._id && (
