@@ -37,13 +37,13 @@ export const createContract = async (req, res) => {
     if (!post) {
       return res.status(404).json({ success: false, message: "Không tìm thấy bài đăng." });
     }
-// Upload xong thì lưu đường dẫn vào trường tương ứng
-// if (side === "A") {
-//   contract.signaturePartyAUrl = req.file.path;
-// } else
- if (side === "B") {
-  contract.signaturePartyBUrl= req.file.path;
-}
+    // Upload xong thì lưu đường dẫn vào trường tương ứng
+    // if (side === "A") {
+    //   contract.signaturePartyAUrl = req.file.path;
+    // } else
+    if (side === "B") {
+      contract.signaturePartyBUrl = req.file.path;
+    }
     // 💵 Tính tiền cọc nếu chưa có
     let finalDeposit = depositAmount || Math.floor(post.price * 0.1);
 
@@ -114,22 +114,22 @@ export const getMyContracts = async (req, res) => {
     const updatedContracts = await Promise.all(
       contracts.map(async (contract) => {
         const isExpired = new Date(contract.endDate) < now;
-    
+
         // Nếu đang approved mà đã hết hạn thì update status → expired
         if (contract.status === "approved" && isExpired) {
           contract.status = "expired";
           await contract.save();
         }
-    
+
         // Trả thêm isExpired cho frontend xử lý lọc
         const contractObject = contract.toObject();
         contractObject.isExpired = isExpired;
         return contractObject;
       })
     );
-    
+
     res.status(200).json({ success: true, data: updatedContracts });
-    
+
   } catch (error) {
     console.error("❌ Lỗi getMyContracts:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -333,6 +333,75 @@ export const getAllPaidContracts = async (req, res) => {
     res.status(200).json({ success: true, data: contracts });
   } catch (error) {
     console.error("❌ Lỗi getAllPaidContracts:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Lấy tất cả hợp đồng đã thanh toán (admin), có tìm kiếm, phân trang, lọc trạng thái
+export const adminGetAllContracts = async (req, res) => {
+  try {
+    // Query params
+    const {
+      page = 1,
+      pageSize = 10,
+      search = "",
+      status = "",
+      sortBy = "createdAt",
+      sortOrder = "desc"
+    } = req.query;
+
+    // Build filter (không lọc paymentStatus nữa, lấy tất cả hợp đồng)
+    const filter = {};
+    if (status && status !== "all") {
+      filter.status = status;
+    }
+
+    // Nếu có search (tìm theo email của user hoặc landlord)
+    let userIds = [];
+    if (search) {
+      // Tìm user có email khớp
+      const users = await User.find({
+        email: { $regex: search, $options: "i" }
+      }).select("_id");
+      userIds = users.map(u => u._id);
+
+      // Lọc hợp đồng mà userId hoặc landlordId nằm trong userIds
+      if (userIds.length > 0) {
+        filter.$or = [
+          { userId: { $in: userIds } },
+          { landlordId: { $in: userIds } }
+        ];
+      } else {
+        // Nếu không tìm thấy user nào thì trả về rỗng
+        return res.status(200).json({ success: true, data: [], total: 0 });
+      }
+    }
+
+    // Đếm tổng số hợp đồng phù hợp
+    const total = await Contract.countDocuments(filter);
+
+    // Sắp xếp
+    const sortObj = {};
+    sortObj[sortBy] = sortOrder === "asc" ? 1 : -1;
+
+    // Lấy dữ liệu phân trang
+    const contracts = await Contract.find(filter)
+      .sort(sortObj)
+      .skip((parseInt(page) - 1) * parseInt(pageSize))
+      .limit(parseInt(pageSize))
+      .populate([
+        { path: "userId", select: "email fullName" },
+        { path: "landlordId", select: "email fullName" },
+        { path: "postId", select: "title" }
+      ]);
+
+    res.status(200).json({
+      success: true,
+      data: contracts,
+      total
+    });
+  } catch (error) {
+    console.error("❌ adminGetAllContracts error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

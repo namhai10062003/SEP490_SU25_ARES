@@ -36,6 +36,7 @@ import AdminRevenueApartment from "./pages/admin/revenue/apartment.jsx";
 import AdminRevenueApartmentDeposit from "./pages/admin/revenue/apartmentDeposit.jsx";
 import AdminRevenuePost from "./pages/admin/revenue/posts.jsx";
 import ManageUserDetail from "./pages/admin/userDetail.jsx";
+import AdminContractDetail from './pages/admin/contractDetail.jsx';
 import AdminProfileUpdatePage from "./pages/admin/verifyprofileuser/AdminProfileUpdatePage.jsx";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
 import ResidentVerificationHistory from "./pages/staff/ResidentVerificationList/ResidentVerificationHistory.jsx";
@@ -80,6 +81,7 @@ import Register from "./pages/user/register.jsx";
 import ResetPassword from "./pages/user/resetpassword";
 import UserRevenue from "./pages/user/revenuer/UserRevenue.jsx";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
+import ManageContract from "./pages/admin/manage-contract.jsx";
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
 function ProtectedRoute({ element, allowedRoles }) {
@@ -92,87 +94,88 @@ function ProtectedRoute({ element, allowedRoles }) {
 // 🎬 Hiển thị routes và các thành phần ngoài route
 function AppRoutes() {
   const { callActive, incomingCall } = useVideoCall();
-  const { user } = useAuth(); 
+  const { user } = useAuth();
   return (
     <>
- 
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/verify-otp" element={<VerifyEmail />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/google/callback" element={<GoogleCallback />} />
-          <Route path="/blog" element={<BlogList />} />
-          <Route path="/postdetail/:id" element={<PostDetail />} />
-          <Route path="/dichvu/dangtin" element={<RegistrationForm />} />
-          <Route path="/profile/quanlipostcustomer" element={<CustomerPostManagement />} />
-          <Route path="/my-apartment" element={<MyApartment />} />
-          <Route path="/canho/nhaukhau" element={<ResidentList />} />
-          <Route path="/canho/dangkynhankhau" element={<ResidentRegister />} />
-          <Route path="/residents/:id" element={<ResidentDetail />} />
-          <Route path="/dichvu/baidoxe" element={<ParkingRegistration />} />
-          <Route path="/dichvu/dangkybaidoxe" element={<FormParkingRegistration />} />
-          <Route path="/parkinglot/detail-parkinglot/:id" element={<ParkingRegistrationDetails />} />
-          <Route path="/updateprofile" element={<UpdateProfileForm />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/changepassword" element={<ChangePassword />} />
-          <Route path="/booking/:postId" element={<BookingForm />} />
-          <Route path="/my-contracts" element={<MyContracts />} />
-          <Route path="/my-requests" element={<MyContractRequests />} />
-          <Route path="/contracts/:id" element={<ContractDetail />} />
-          <Route path="/canho/liked-posts" element={<LikedPosts />} />
-          <Route path="/my-verified" element={<MyVerifiedApplications />} />
-          <Route path="/gioi-thieu" element={<Introduce />} />
-          <Route path="/my-revenue" element={<UserRevenue />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/residence-declaration" element={<ResidenceDeclarationRegister />} />
-          <Route path="/residence-declaration/list" element={<ResidenceDeclarationList />} />
-          <Route path="/residence-declaration/detail/:id" element={<ResidenceDeclarationDetail />} />
-          {/* Admin */}
-          <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/posts" element={<ProtectedRoute element={<PostManagement />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/manage-user" element={<ProtectedRoute element={<ManageUser />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/manage-staff" element={<ProtectedRoute element={<ManageStaff />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/manage-apartment" element={<ProtectedRoute element={<ManageApartment />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/manage-resident-verification" element={<ProtectedRoute element={<ManageApplicationForm />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/resident-verify-admin" element={<ProtectedRoute element={<AdminResidentApproval />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/report" element={<ProtectedRoute element={<AdminReportPage />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/revenue/post" element={<ProtectedRoute element={<AdminRevenuePost />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/revenue/apartment" element={<ProtectedRoute element={<AdminRevenueApartment />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/revenue/apartment-deposit" element={<ProtectedRoute element={<AdminRevenueApartmentDeposit />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/user-revenue" element={<ProtectedRoute element={<AdminWithdrawPage />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/contact" element={<ProtectedRoute element={<AdminContactPage />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/posts/:id" element={<ProtectedRoute element={<AdminPostDetail />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/updateprofile" element={<ProtectedRoute element={<AdminProfileUpdatePage />} allowedRoles={["admin"]} />} />
-          <Route path="/admin-dashboard/manage-notification" element={<ManageNotifications />} />
-          <Route path="/admin-dashboard/manage-user/:id" element={<ManageUserDetail />} />
 
-          {/* Staff */}
-          <Route path="/staff-dashboard" element={<ProtectedRoute element={<DashboardPage />} allowedRoles={["staff"]} />} />
-          <Route path="staff-expenses" element={<ProtectedRoute element={<ManageExpense />} allowedRoles={["staff"]} />} />
-          <Route path="staff-resident-verify" element={<ProtectedRoute element={<ResidentVerifyList />} allowedRoles={["staff"]} />} />
-          <Route path="staff-resident-register" element={<ProtectedRoute element={<ResidentVerificationForm />} allowedRoles={["staff"]} />} />
-          <Route path="staff-resident-verification" element={<ProtectedRoute element={<ResidentVerificationList />} allowedRoles={["staff"]} />} />
-          <Route path="staff-manage-parkinglot" element={<ProtectedRoute element={<ManageParkingLot />} allowedRoles={["staff"]} />} />
-          <Route path="staff-parkinglot-list" element={<ProtectedRoute element={<ParkingLotList />} allowedRoles={["staff"]} />} />
-          <Route path="staff-water-data-upload" element={<ProtectedRoute element={<WaterDataUpload />} allowedRoles={["staff"]} />} />
-          <Route path="staff-citizenlist" element={<ProtectedRoute element={<CitizenList />} allowedRoles={["staff"]} />} />
-          <Route path="staff-residence-decration" element={<ProtectedRoute element={<ResidenceDeclarationVerifyList />} allowedRoles={["staff"]} />} />
-          <Route path="staff-resident/history" element={<ProtectedRoute element={<ResidentVerificationHistory />} allowedRoles={["staff"]} />} />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/verify-otp" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/google/callback" element={<GoogleCallback />} />
+        <Route path="/blog" element={<BlogList />} />
+        <Route path="/postdetail/:id" element={<PostDetail />} />
+        <Route path="/dichvu/dangtin" element={<RegistrationForm />} />
+        <Route path="/profile/quanlipostcustomer" element={<CustomerPostManagement />} />
+        <Route path="/my-apartment" element={<MyApartment />} />
+        <Route path="/canho/nhaukhau" element={<ResidentList />} />
+        <Route path="/canho/dangkynhankhau" element={<ResidentRegister />} />
+        <Route path="/residents/:id" element={<ResidentDetail />} />
+        <Route path="/dichvu/baidoxe" element={<ParkingRegistration />} />
+        <Route path="/dichvu/dangkybaidoxe" element={<FormParkingRegistration />} />
+        <Route path="/parkinglot/detail-parkinglot/:id" element={<ParkingRegistrationDetails />} />
+        <Route path="/updateprofile" element={<UpdateProfileForm />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/changepassword" element={<ChangePassword />} />
+        <Route path="/booking/:postId" element={<BookingForm />} />
+        <Route path="/my-contracts" element={<MyContracts />} />
+        <Route path="/my-requests" element={<MyContractRequests />} />
+        <Route path="/contracts/:id" element={<ContractDetail />} />
+        <Route path="/canho/liked-posts" element={<LikedPosts />} />
+        <Route path="/my-verified" element={<MyVerifiedApplications />} />
+        <Route path="/gioi-thieu" element={<Introduce />} />
+        <Route path="/my-revenue" element={<UserRevenue />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/residence-declaration" element={<ResidenceDeclarationRegister />} />
+        <Route path="/residence-declaration/list" element={<ResidenceDeclarationList />} />
+        <Route path="/residence-declaration/detail/:id" element={<ResidenceDeclarationDetail />} />
+        {/* Admin */}
+        <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/posts" element={<ProtectedRoute element={<PostManagement />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/manage-user" element={<ProtectedRoute element={<ManageUser />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/manage-staff" element={<ProtectedRoute element={<ManageStaff />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/manage-apartment" element={<ProtectedRoute element={<ManageApartment />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/manage-resident-verification" element={<ProtectedRoute element={<ManageApplicationForm />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/resident-verify-admin" element={<ProtectedRoute element={<AdminResidentApproval />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/report" element={<ProtectedRoute element={<AdminReportPage />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/revenue/post" element={<ProtectedRoute element={<AdminRevenuePost />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/revenue/apartment" element={<ProtectedRoute element={<AdminRevenueApartment />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/revenue/apartment-deposit" element={<ProtectedRoute element={<AdminRevenueApartmentDeposit />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/user-revenue" element={<ProtectedRoute element={<AdminWithdrawPage />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/contact" element={<ProtectedRoute element={<AdminContactPage />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/posts/:id" element={<ProtectedRoute element={<AdminPostDetail />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/updateprofile" element={<ProtectedRoute element={<AdminProfileUpdatePage />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/manage-notification" element={<ManageNotifications />} allowedRoles={["admin"]} />
+        <Route path="/admin-dashboard/manage-user/:id" element={<ManageUserDetail allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/manage-contract" element={<ProtectedRoute element={<ManageContract />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/manage-contract/:id" element={<ProtectedRoute element={< AdminContractDetail />} allowedRoles={["admin"]} />} />
+        {/* Staff */}
+        <Route path="/staff-dashboard" element={<ProtectedRoute element={<DashboardPage />} allowedRoles={["staff"]} />} />
+        <Route path="staff-expenses" element={<ProtectedRoute element={<ManageExpense />} allowedRoles={["staff"]} />} />
+        <Route path="staff-resident-verify" element={<ProtectedRoute element={<ResidentVerifyList />} allowedRoles={["staff"]} />} />
+        <Route path="staff-resident-register" element={<ProtectedRoute element={<ResidentVerificationForm />} allowedRoles={["staff"]} />} />
+        <Route path="staff-resident-verification" element={<ProtectedRoute element={<ResidentVerificationList />} allowedRoles={["staff"]} />} />
+        <Route path="staff-manage-parkinglot" element={<ProtectedRoute element={<ManageParkingLot />} allowedRoles={["staff"]} />} />
+        <Route path="staff-parkinglot-list" element={<ProtectedRoute element={<ParkingLotList />} allowedRoles={["staff"]} />} />
+        <Route path="staff-water-data-upload" element={<ProtectedRoute element={<WaterDataUpload />} allowedRoles={["staff"]} />} />
+        <Route path="staff-citizenlist" element={<ProtectedRoute element={<CitizenList />} allowedRoles={["staff"]} />} />
+        <Route path="staff-residence-decration" element={<ProtectedRoute element={<ResidenceDeclarationVerifyList />} allowedRoles={["staff"]} />} />
+        <Route path="staff-resident/history" element={<ProtectedRoute element={<ResidentVerificationHistory />} allowedRoles={["staff"]} />} />
 
-          {/* User */}
-        </Routes>
+        {/* User */}
+      </Routes>
 
-        {/* Global components */}
-        <SocketListener />
-        <ToastContainer position="top-right" autoClose={1500} theme="light" />
-        {user?.role === "customer" && <GlobalChatBox />}
-        <ScrollButtons />
-        <VideoCallPopup />
-        {(callActive || incomingCall) && <VideoPlayer />}
-      
+      {/* Global components */}
+      <SocketListener />
+      <ToastContainer position="top-right" autoClose={1500} theme="light" />
+      {user?.role === "customer" && <GlobalChatBox />}
+      <ScrollButtons />
+      <VideoCallPopup />
+      {(callActive || incomingCall) && <VideoPlayer />}
+
     </>
   );
 }
@@ -191,13 +194,13 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-    <AuthProvider>
-      <SocketProvider>
-        <ChatProvider>
-          <AppContent />
-        </ChatProvider>
-      </SocketProvider>
-    </AuthProvider>
+      <AuthProvider>
+        <SocketProvider>
+          <ChatProvider>
+            <AppContent />
+          </ChatProvider>
+        </SocketProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

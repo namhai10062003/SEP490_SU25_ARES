@@ -45,6 +45,7 @@ export default function AdminDashboard({ children }) {
     { to: "/admin-dashboard", label: "Tổng Quan" },
     { to: "/admin-dashboard/posts", label: "Quản Lý Bài Post" },
     { to: "/admin-dashboard/manage-notification", label: "Quản lý Notification" },
+    { to: "/admin-dashboard/manage-contract", label: "Quản lý Contract" },
     { to: "/admin-dashboard/manage-user", label: "Quản Lý User" },
     { to: "/admin-dashboard/manage-staff", label: "Quản Lý Staff" },
     { to: "/admin-dashboard/manage-apartment", label: "Quản Lý Căn hộ" },
