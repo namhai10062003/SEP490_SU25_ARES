@@ -5,7 +5,8 @@ import { upload } from '../db/cloudinary.js';
 const uploadImage = (req, res, next) => {
   const uploadFields = upload.fields([
     { name: 'documentFront', maxCount: 1 },
-    { name: 'documentBack', maxCount: 1 }
+    { name: 'documentBack', maxCount: 1 },
+    { name: 'images', maxCount: 10 } 
   ]);
 
   uploadFields(req, res, (err) => {
@@ -25,3 +26,4 @@ const uploadImage = (req, res, next) => {
 };
 
 export { uploadImage };
+

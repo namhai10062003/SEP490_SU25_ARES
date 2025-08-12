@@ -1,10 +1,10 @@
-import _ from "lodash";
 import mongoose from "mongoose";
 import { decrypt } from "../db/encryption.js";
 import Post from '../models/Post.js';
 import PostHistory from "../models/PostHistory.js"; // nhớ thêm `.js` nếu dùng ESM
 import PostPackage from '../models/Postpackage.js';
 import User from '../models/User.js';
+
 export const createPost = async (req, res) => {
   try {
     const postData = req.body;
@@ -252,50 +252,23 @@ export const getApprovedPosts = async (req, res) => {
 
 export const getPostbyUser = async (req, res) => {
   try {
-    const userId = req.user._id
-    console.log(userId);
+    const userId = req.user._id;
 
-    const post = await Post.find({ contactInfo: userId })
+    // Lấy tất cả bài của user (bao gồm expired)
+    const posts = await Post.find({ contactInfo: userId })
       .populate('contactInfo', 'name email phone')
-      .populate('postPackage', 'type price expireAt')
-    if (post.length === 0) {
+      .populate('postPackage', 'type price expireAt');
+
+    if (posts.length === 0) {
       return res.status(404).json({
         message: "Post not found",
         success: false,
         error: true
       });
     }
+
     return res.status(200).json({
       message: "Post retrieved successfully",
-      success: true,
-      error: false,
-      data: post
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: error.message,
-      success: false,
-      error: true
-    });
-  }
-};
-
-export const getPostApproved = async (req, res) => {
-  try {
-    const posts = await Post.find({ status: "approved" }) // KHÔNG lọc isActive
-      .populate('contactInfo', 'name email phone')
-      .populate('postPackage', 'type price expireAt');
-
-    if (posts.length === 0) {
-      return res.status(404).json({
-        message: "Không tìm thấy bài viết đã duyệt nào",
-        success: false,
-        error: true
-      });
-    }
-
-    return res.status(200).json({
-      message: "Lấy bài viết đã duyệt thành công",
       success: true,
       error: false,
       data: posts
@@ -308,6 +281,40 @@ export const getPostApproved = async (req, res) => {
     });
   }
 };
+
+
+export const getPostApproved = async (req, res) => {
+  try {
+    const posts = await Post.find({
+      status: "approved",
+      paymentStatus: "paid" // Chỉ lấy bài đã thanh toán
+    })
+      .populate('contactInfo', 'name email phone')
+      .populate('postPackage', 'type price expireAt');
+
+    if (posts.length === 0) {
+      return res.status(404).json({
+        message: "Không tìm thấy bài viết đã duyệt và đã thanh toán nào",
+        success: false,
+        error: true
+      });
+    }
+
+    return res.status(200).json({
+      message: "Lấy bài viết đã duyệt và đã thanh toán thành công",
+      success: true,
+      error: false,
+      data: posts
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error.message,
+      success: false,
+      error: true
+    });
+  }
+};
+
 
 // lấy bài đăng chi tiết 
 
@@ -447,14 +454,42 @@ export const startEditingPost = async (req, res) => {
     });
   }
 };
+
+const normalizeValue = (val, key) => {
+  if (val === null || val === undefined) return val;
+
+  // Convert ObjectId sang string
+  if (val._bsontype === "ObjectID") return val.toString();
+
+  // Riêng với images (mảng), sort rồi so sánh mảng chuỗi
+  if (key === 'images' && Array.isArray(val)) {
+    // Sắp xếp để tránh khác thứ tự cũng bị coi là khác
+    return val.slice().sort();
+  }
+
+  // Riêng amenities, nếu là mảng, sắp xếp, hoặc nếu là chuỗi, tách thành mảng
+  if (key === 'amenities') {
+    if (Array.isArray(val)) {
+      return val.slice().sort();
+    } else if (typeof val === 'string') {
+      // Tách chuỗi theo dấu phẩy hoặc khoảng trắng nếu cần (tùy data)
+      return val.split(',').map(s => s.trim()).sort();
+    }
+  }
+
+  if (Array.isArray(val)) return val.map(v => normalizeValue(v));
+
+  // Chuyển thành string để tránh khác biệt kiểu (vd: 90 vs "90")
+  return val.toString();
+};
 export const updatePost = async (req, res) => {
   try {
     const postId = req.params.id;
     const updateData = req.body;
-    const image = req.file?.path;
-    const userId = req.user?._id; // 👈 Đảm bảo middleware auth gán user
+    const uploadedImages = req.files?.map(file => file.path) || [];
+    const userId = req.user?._id;
+    console.log("req.files:", req.files);
 
-    // Kiểm tra nếu không có userId
     if (!userId) {
       return res.status(401).json({
         message: "Không xác định được người chỉnh sửa (userId)",
@@ -468,49 +503,95 @@ export const updatePost = async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    if (existingPost.status === "approved") {
-      return res.status(400).json({
-        message: "Bài đăng đã được duyệt. Không thể chỉnh sửa.",
-        success: false,
-        error: true,
-      });
-    }
+    // if (existingPost.status === "approved") {
+    //   return res.status(400).json({
+    //     message: "Bài đăng đã được duyệt. Không thể chỉnh sửa.",
+    //     success: false,
+    //     error: true,
+    //   });
+    // }
 
-    // 🔍 So sánh dữ liệu cũ và mới
-    // 🔍 So sánh dữ liệu cũ và mới (đã sửa)
+    // Tạo bản sao object post để so sánh
+    const oldPostData = existingPost.toObject();
+
+    // Xử lý ảnh mới và ảnh cũ giữ lại
+    let keepImages = [];
+    if (updateData.oldImages) {
+      if (typeof updateData.oldImages === "string") {
+        try {
+          keepImages = JSON.parse(updateData.oldImages);
+        } catch {
+          keepImages = [];
+        }
+      } else if (Array.isArray(updateData.oldImages)) {
+        keepImages = updateData.oldImages;
+      }
+    } else {
+      keepImages = existingPost.images || [];
+    }
+    const newImages = [...keepImages, ...uploadedImages];
+
+    // Gán ảnh mới vào updateData để gán sau
+    updateData.images = newImages;
+
+    // Gán các dữ liệu cập nhật (bao gồm cả images)
+    Object.assign(existingPost, updateData);
+
     const editedData = {};
     for (const key in updateData) {
-      if (
-        Object.prototype.hasOwnProperty.call(existingPost.toObject(), key) &&
-        !_.isEqual(existingPost[key], updateData[key]) // ✅ dùng so sánh sâu
-      ) {
-        editedData[key] = {
-          old: existingPost[key],
-          new: updateData[key],
-        };
+      if (Object.prototype.hasOwnProperty.call(oldPostData, key)) {
+        const oldVal = normalizeValue(oldPostData[key], key);
+        const newVal = normalizeValue(updateData[key], key);
+    
+        // Nếu cả 2 là mảng, so sánh từng phần tử
+        if (Array.isArray(oldVal) && Array.isArray(newVal)) {
+          const arraysEqual = oldVal.length === newVal.length &&
+            oldVal.every((v, i) => v === newVal[i]);
+          if (!arraysEqual) {
+            editedData[key] = {
+              old: oldPostData[key],
+              new: updateData[key],
+            };
+          }
+        } else if (oldVal !== newVal) {
+          editedData[key] = {
+            old: oldPostData[key],
+            new: updateData[key],
+          };
+        }
       }
     }
-    if (image && existingPost.images !== image) {
-      editedData.images = {
-        old: existingPost.images,
-        new: image,
-      };
+  
+      // Lưu lịch sử nếu có thay đổi
+      if (Object.keys(editedData).length > 0) {
+        await PostHistory.create({
+          postId,
+          editedData,
+          editedBy: userId,
+          editedAt: new Date(),
+        });
+      }
+
+    // Nếu từ unpaid -> paid thì set ngày đăng
+    if (
+      existingPost.paymentStatus !== "paid" &&
+      updateData.paymentStatus === "paid"
+    ) {
+      existingPost.createdAt = new Date();
     }
 
-    // Nếu có chỉnh sửa, lưu lịch sử
-    if (Object.keys(editedData).length > 0) {
-      await PostHistory.create({
-        postId,
-        editedData,
-        editedBy: userId, // 👈 chắc chắn có userId
-      });
+    // Nếu đổi packageId thì cập nhật hạn
+    if (updateData.packageId) {
+      existingPost.packageId = updateData.packageId;
+
+      const newPackage = await Package.findById(updateData.packageId);
+      if (newPackage) {
+        existingPost.expiredAt = new Date(
+          Date.now() + newPackage.expireAt * 24 * 60 * 60 * 1000
+        );
+      }
     }
 
-    // Cập nhật dữ liệu
-    Object.assign(existingPost, updateData);
-    if (image) existingPost.images = image;
-
-    // Reset trạng thái chỉnh sửa
     existingPost.isEditing = false;
     existingPost.editingAt = null;
 
@@ -523,6 +604,7 @@ export const updatePost = async (req, res) => {
       data: existingPost,
     });
   } catch (error) {
+    console.error("updatePost error:", error);
     return res.status(500).json({
       message: error.message,
       success: false,
@@ -530,6 +612,7 @@ export const updatePost = async (req, res) => {
     });
   }
 };
+
 
 
 export const updatePostStatusByAdmin = async (req, res) => {

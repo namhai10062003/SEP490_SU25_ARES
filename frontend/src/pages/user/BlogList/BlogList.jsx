@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import Footer from "../../../../components/footer";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
-import { getAllPostsActive } from "../../../service/postService";
+import { getPostApproved } from "../../../service/postService";
 const BlogList = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState([]);
@@ -44,9 +44,12 @@ const BlogList = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await getAllPostsActive();
+      const response = await getPostApproved();
       if (response.data.success) {
-        const sorted = response.data.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const filteredData = response.data.data.filter(post => post.paymentDate);
+        const sorted = filteredData.sort(
+          (a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()
+        );
         setPosts(sorted);
       } else {
         setError("Không thể tải dữ liệu bài đăng");
@@ -57,6 +60,7 @@ const BlogList = () => {
       setIsLoading(false);
     }
   };
+  
 
   const applyFilter = () => {
     let filtered = posts;
@@ -374,7 +378,7 @@ const BlogList = () => {
                               <span className="fw-semibold text-muted">Nội thất:</span> {post.interiorStatus || "—"}
                             </div>
                             <div className="col-6">
-                              <span className="fw-semibold text-muted">Ngày đăng:</span> {new Date(post.createdAt).toLocaleDateString("vi-VN")}
+                              <span className="fw-semibold text-muted">Ngày đăng:</span> {new Date(post.paymentDate).toLocaleDateString("vi-VN")}
                             </div>
 
                           </div>
@@ -388,11 +392,19 @@ const BlogList = () => {
                               <br />
 
                             </div>
-                            <span className="badge bg-secondary">
+                            <span
+  className={`badge ${
+    post.type === "ban" ? "bg-danger" :
+    post.type === "cho_thue" ? "bg-success" :
+    post.type === "dich_vu" ? "bg-info" :
+    "bg-secondary"
+  }`}
+>
   {post.type === "ban" && "Bán"}
   {post.type === "cho_thue" && "Cho thuê"}
-  {post.type === "dichvu" && "Dịch vụ"}
+  {post.type === "dich_vu" && "Dịch vụ"}
 </span>
+
                           </div>
                         </div>
                       </Link>

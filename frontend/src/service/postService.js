@@ -48,11 +48,12 @@ export const deletePost = async (postId) => {
 export const updatePost = async (postId, updatedData) => {
     return axios.put(`${API_BASE}/posts/update-posts/${postId}`, updatedData, {
         headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // hoặc lấy từ context nếu muốn
+            Authorization: `Bearer ${token}`, // chỉ set Authorization thôi
+            // Không set Content-Type ở đây
         },
     });
 };
+
 
 // 🔵 CREATE payment for post
 export const createPayment = async (postId) => {
@@ -74,7 +75,7 @@ export const getAllPosts = async (page, pageSize, status, search) => {
     });
 };
 
-export const getAllPostsActive = async () => {
+export const getPostApproved = async () => {
     const token = localStorage.getItem("token");
     return axios.get(`${API_BASE}/posts/get-post-active`, {
         headers: {

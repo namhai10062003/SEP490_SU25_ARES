@@ -248,39 +248,35 @@ const RegistrationForm = () => {
   const apartmentCode = selectedApartment?.apartmentCode || "";
   const handleSubmit = async () => {
     setIsSubmitting(true);
+  
+    // Validate chung
+if (!formData.loaiHinh) return showError("Vui lòng chọn loại hình dịch vụ");
+if (!formData.diaChiCuThe) return showError("Vui lòng nhập địa chỉ");
+if (!formData.tieuDe) return showError("Vui lòng nhập tiêu đề");
+if (!formData.moTaChiTiet) return showError("Vui lòng nhập mô tả");
+if (!formData.thongTinNguoiDangBan) return showError("Vui lòng nhập số điện thoại");
 
-    const errors = {};
+// Validate riêng cho từng loại trước
+if (loaiBaiDang === "ban" || loaiBaiDang === "cho_thue") {
+  if (!formData.toaPlaza) return showError("Vui lòng nhập tòa Plaza");
+  if (!formData.soCanHo) return showError("Vui lòng nhập số căn hộ");
+  if (formData.dienTich === "" || formData.dienTich <= 0) return showError("Diện tích không hợp lệ");
+  if (formData.gia === "" || formData.gia <= 0) return showError("Vui lòng nhập giá hợp lệ");
+  if (!formData.giayto) return showError("Vui lòng nhập giấy tờ pháp lý");
+  if (!formData.tinhtrang) return showError("Vui lòng nhập tình trạng");
+  if (!formData.huongdat) return showError("Vui lòng nhập hướng đất");
+}
 
-    if (!formData.loaiHinh) errors.loaiHinh = "Vui lòng chọn loại hình";
-    if (!formData.diaChiCuThe) errors.diaChiCuThe = "Vui lòng nhập địa chỉ";
-    if (!formData.tieuDe) errors.tieuDe = "Vui lòng nhập tiêu đề";
-    if (!formData.moTaChiTiet) errors.moTaChiTiet = "Vui lòng nhập mô tả";
-    if (formData.dienTich === "" || formData.dienTich < 0)
-      errors.dienTich = "Diện tích không hợp lệ";
-    if (formData.gia === "" || formData.gia < 0)
-      errors.gia = "Giá không hợp lệ";
-    if (!formData.giayto) errors.giayto = "Vui lòng nhập giấy tờ pháp lý";
-    if (!formData.tinhtrang) errors.tinhtrang = "Vui lòng nhập tình trạng";
-    if (!formData.huongdat) errors.huongdat = "Vui lòng nhập hướng đất";
-    if (!formData.thongTinNguoiDangBan)
-      errors.thongTinNguoiDangBan = "Vui lòng nhập số điện thoại";
-    if (formData.images.length === 0)
-      errors.images = "Vui lòng upload ít nhất 1 ảnh";
-    if (!formData.postPackage)
-      errors.postPackage = "Vui lòng chọn gói đăng tin";
+if (loaiBaiDang === "dich_vu") {
+  if (formData.gia === "" || formData.gia <= 0) return showError("Giá không hợp lệ");
+}
 
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
+// Kiểm tra ảnh sau khi đã check giá
+if (formData.images.length === 0) return showError("Vui lòng upload ít nhất 1 ảnh");
 
-      // ✅ Hiển thị từng lỗi riêng
-      Object.values(errors).forEach((msg) => {
-        toast.error(msg);
-      });
-
-      setIsSubmitting(false);
-      return;
-    }
-
+// Kiểm tra gói đăng tin
+if (!formData.postPackage) return showError("Vui lòng chọn gói đăng tin");
+    // Nếu qua hết validate thì submit
     try {
       const submitData = new FormData();
       submitData.append("type", loaiBaiDang);
@@ -288,21 +284,25 @@ const RegistrationForm = () => {
       submitData.append("description", formData.moTaChiTiet);
       submitData.append("location", formData.diaChiCuThe);
       submitData.append("property", formData.loaiHinh);
-      submitData.append("area", formData.dienTich);
       submitData.append("price", formData.gia);
-      submitData.append("legalDocument", formData.giayto);
-      submitData.append("interiorStatus", formData.tinhtrang);
-      submitData.append("amenities", formData.huongdat);
       submitData.append("postPackage", formData.postPackage);
       submitData.append("phone", formData.thongTinNguoiDangBan);
-      submitData.append("apartmentCode", formData.soCanHo);
-
+  
+      if (loaiBaiDang === "ban" || loaiBaiDang === "cho_thue") {
+        submitData.append("area", formData.dienTich);
+        submitData.append("legalDocument", formData.giayto);
+        submitData.append("interiorStatus", formData.tinhtrang);
+        submitData.append("amenities", formData.huongdat);
+        submitData.append("apartmentCode", formData.soCanHo);
+        submitData.append("building", formData.toaPlaza);
+      }
+  
       formData.images.forEach((image) => {
         submitData.append("images", image);
       });
-
+  
       const response = await createPost(submitData);
-
+  
       if (response.data.success) {
         toast.success("Đăng tin thành công!");
         setFormData({
@@ -334,6 +334,16 @@ const RegistrationForm = () => {
       setIsSubmitting(false);
     }
   };
+  
+  // Hàm tiện ích để hiện toast và dừng submit
+  function showError(message) {
+    toast.error(message);
+    setIsSubmitting(false);
+    return false;
+  }
+  
+  
+  
 
   // hàm xử lí lọc plaza vs căn hộ
   const selectedPlaza = plazaOptions.find(
