@@ -43,6 +43,13 @@ const statusOptions = {
         { value: "reviewed", label: "Đã xử lý" },
         { value: "archived", label: "Đã xoá" },
     ],
+    contract: [
+        { value: "pending", label: "Chờ duyệt" },
+        { value: "approved", label: "Đã duyệt" },
+        { value: "rejected", label: "Đã từ chối" },
+        { value: "expired", label: "Hết hạn" },
+        { value: "cancelled", label: "Đã huỷ" },
+    ],
     default: [
         { value: "", label: "Tất cả trạng thái" },
         { value: "active", label: "Active" },

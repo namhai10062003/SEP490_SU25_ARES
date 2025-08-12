@@ -1,5 +1,5 @@
 import express from "express";
-import { approveContract, createContract, deleteContract, getAllPaidContracts, getContractById, getMyContracts, handleSignatureUpload, rejectContract, resubmitContract, updateWithdrawableForAll } from "../controllers/contractController.js";
+import { adminGetAllContracts, approveContract, createContract, deleteContract, getAllPaidContracts, getContractById, getMyContracts, handleSignatureUpload, rejectContract, resubmitContract, updateWithdrawableForAll } from "../controllers/contractController.js";
 import {
   createContractPayment,
   handleContractPaymentWebhook
@@ -98,7 +98,8 @@ router.get('/user/:userId', async (req, res) => {
 });
 
 
-router.put("/update-withdrawable",verifysUser,updateWithdrawableForAll);
+router.put("/update-withdrawable", verifysUser, updateWithdrawableForAll);
 
 router.post("/upload-signature", uploadSignature, handleSignatureUpload);
+router.get("/", verifysUser, adminGetAllContracts);
 export default router;

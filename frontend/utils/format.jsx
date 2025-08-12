@@ -63,6 +63,10 @@ export const getStatusLabel = (status) => {
         1: { label: "🟢 Đang hoạt động", color: "success" },
         0: { label: "🔒 Chặn đăng bài", color: "warning" },
         2: { label: "🚫 Khoá hoàn toàn", color: "danger" },
+        // contract status
+        cancelled: { label: "🚫 Đã hủy", color: "danger" },
+        failed: { label: "❌ Thanh toán thất bại", color: "danger" },
+
     };
     return map[status] || { label: status, color: "secondary" };
 };
