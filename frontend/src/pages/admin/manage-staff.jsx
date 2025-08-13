@@ -154,7 +154,7 @@ const ManageStaff = () => {
     const handleToggleStatus = async (staff) => {
         try {
             const newStatus = staff.status ? 0 : 1;
-            await getAxios().patch(`${API_BASE}/users/${staff._id}/status`, { status: newStatus });
+            await getAxios().patch(`${API_BASE}/staff/${staff._id}`, { status: newStatus });
             toast.success("Đã đổi trạng thái!");
             fetchStaff();
         } catch (err) {

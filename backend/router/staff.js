@@ -23,7 +23,7 @@ router.post('/', createStaff);
 router.put('/:id', updateStaff);
 
 // Đổi trạng thái staff (active/block)
-router.patch('/:id/status', changeStaffStatus);
+router.patch('/:id', changeStaffStatus);
 
 // Xóa staff
 router.delete('/:id', deleteStaff);
