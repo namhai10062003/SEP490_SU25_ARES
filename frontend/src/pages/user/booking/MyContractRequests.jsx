@@ -50,7 +50,10 @@ const [signaturePartyAUrl, setSignaturePartyAUrl] = useState(contractToApprove?.
     if (user) fetchRequests();
   }, [user]);
   
+  const formatVNDate = (date) =>
+  new Date(date).toLocaleDateString("vi-VN");
 
+  
   const handleApprove = async (id) => {
     try {
       await axios.put(`${import.meta.env.VITE_API_URL}/api/contracts/${id}/approve`, {}, {
@@ -256,11 +259,28 @@ const [signaturePartyAUrl, setSignaturePartyAUrl] = useState(contractToApprove?.
                             <span className="fw-semibold">📞 SĐT:</span>{" "}
                             {contract.phoneB}
                           </div>
-                          <div className="mb-1">
-                            <span className="fw-semibold">📅</span>{" "}
-                            {contract.startDate?.slice(0, 10)} -{" "}
-                            {contract.endDate?.slice(0, 10)}
-                          </div>
+                          
+<div className="mb-1">
+  <span className="fw-semibold">📅 Ngày Tạo:</span>{" "}
+  {contract.startDate
+    ? formatVNDate(contract.startDate)
+    : contract.createdAt
+    ? formatVNDate(contract.createdAt)
+    : "-"}{" "}
+  {/* -{" "}
+  {contract.endDate
+    ? formatVNDate(contract.endDate)
+    : contract.createdAt
+    ? formatVNDate(
+        new Date(
+          new Date(contract.createdAt).setDate(
+            new Date(contract.createdAt).getDate() + 7
+          )
+        )
+      )
+    : "-"} */}
+</div>
+
                           <div className="mb-1">
                             <span className="fw-semibold">💰 Cọc:</span>{" "}
                             {contract.depositAmount?.toLocaleString("vi-VN")} VNĐ

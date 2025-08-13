@@ -12,17 +12,15 @@ export const createWithdrawRequest = async (req, res) => {
     console.log("📦 Thông tin nhận:", { accountHolder, bankNumber, bankName, amount });
 
     if (!accountHolder || !bankNumber || !bankName || !amount) {
-      console.log("❌ Thiếu thông tin gửi yêu cầu");
       return res.status(400).json({ message: "Thiếu thông tin cần thiết" });
     }
 
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) {
-      console.log("❌ Số tiền không hợp lệ:", amount);
       return res.status(400).json({ message: "Số tiền rút không hợp lệ" });
     }
 
-    // 👉 Tìm các hợp đồng đã thanh toán
+    // 👉 Lọc hợp đồng đã thanh toán
     const contracts = await Contract.find({
       paymentStatus: "paid",
       landlordId: objectUserId,
@@ -31,20 +29,19 @@ export const createWithdrawRequest = async (req, res) => {
     console.log(`🔍 Tìm thấy ${contracts.length} hợp đồng đã thanh toán`);
 
     if (!contracts.length) {
-      console.log("❌ Không có hợp đồng đủ điều kiện");
       return res.status(400).json({ message: "Không tìm thấy hợp đồng hợp lệ" });
     }
 
-    // 👉 Tính tổng tiền cọc từ hợp đồng
-    const totalDeposits = contracts.reduce(
-      (sum, contract) => sum + Number(contract.depositAmount || 0),
+    // 👉 Tổng tiền có thể rút (dựa trên withdrawableAmount, không dùng depositAmount nữa)
+    const totalWithdrawableFromContracts = contracts.reduce(
+      (sum, contract) => sum + Number(contract.withdrawableAmount || 0),
       0
     );
 
-    // 👉 Tìm các lệnh rút tiền trước đó
+    // 👉 Lịch sử rút tiền trước đó (không tính bị reject)
     const withdrawHistory = await WithdrawRequest.find({
       user: objectUserId,
-      status: { $ne: "rejected" }, // bỏ các yêu cầu bị từ chối
+      status: { $ne: "rejected" },
     });
 
     const totalAlreadyWithdrawn = withdrawHistory.reduce(
@@ -52,17 +49,19 @@ export const createWithdrawRequest = async (req, res) => {
       0
     );
 
-    // 👉 Tính số tiền có thể rút hiện tại
-    const totalWithdrawable = Math.max(Math.floor(totalDeposits - totalAlreadyWithdrawn), 0);
+    // 👉 Tính số dư hiện tại có thể rút
+    const totalWithdrawable = Math.max(
+      Math.floor(totalWithdrawableFromContracts - totalAlreadyWithdrawn),
+      0
+    );
     const requestedInt = Math.floor(numericAmount);
 
-    console.log(`💰 Tổng tiền cọc: ${totalDeposits.toLocaleString()} đ`);
+    console.log(`💰 Tổng tiền có thể rút từ hợp đồng: ${totalWithdrawableFromContracts.toLocaleString()} đ`);
     console.log(`💸 Đã rút: ${totalAlreadyWithdrawn.toLocaleString()} đ`);
     console.log(`✅ Còn lại có thể rút: ${totalWithdrawable.toLocaleString()} đ`);
     console.log(`📤 Số tiền yêu cầu rút: ${requestedInt.toLocaleString()} đ`);
 
     if (requestedInt > totalWithdrawable) {
-      console.log("❌ Số tiền yêu cầu vượt quá giới hạn");
       return res.status(400).json({
         message: `❌ Số tiền vượt quá giới hạn rút (${totalWithdrawable.toLocaleString()} đ)`,
       });
@@ -90,8 +89,6 @@ export const createWithdrawRequest = async (req, res) => {
     return res.status(500).json({ message: "Lỗi server" });
   }
 };
-
-
 
 // 🔍 GET /api/withdrawals/admin - Admin xem tất cả yêu cầu
 export const getAllWithdrawRequests = async (req, res) => {

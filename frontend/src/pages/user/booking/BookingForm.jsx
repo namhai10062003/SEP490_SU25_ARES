@@ -20,8 +20,8 @@ const BookingForm = () => {
   // const [contract, setContract] = useState(null); // hoặc từ props, hoặc từ fetch
   const [post, setPost] = useState(null);
   const [form, setForm] = useState({
-    startDate: "",
-    endDate: "",
+    // startDate: "",
+    // endDate: "",
     agreed: false,
   });
   const [showPreview, setShowPreview] = useState(false);
@@ -82,9 +82,9 @@ const BookingForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (!form.startDate || !form.endDate) {
-      return toast.error("Vui lòng chọn đầy đủ ngày thuê");
-    }
+    // if (!form.startDate || !form.endDate) {
+    //   return toast.error("Vui lòng chọn đầy đủ ngày thuê");
+    // }
     // if (!form.agreed) {
     //   return toast.error("Bạn cần đồng ý với điều khoản");
     // }
@@ -106,8 +106,17 @@ const BookingForm = () => {
   //     console.error("Lỗi tạo hợp đồng:", err);
   //   }
   // };
+// thực hiện hàm lấy 2 type cho_thue vs ban
 
   const confirmBooking = async () => {
+    
+const contractTerms =
+post.type === "cho_thue"
+  ? "Các điều khoản hợp đồng cho thuê căn hộ..."
+  : post.type === "ban"
+  ? "Các điều khoản hợp đồng mua bán căn hộ..."
+  : "Các điều khoản đã đính kèm trong hợp đồng.";
+  
     if (
       !signaturePartyBUrl ||
       typeof signaturePartyBUrl !== "string" ||
@@ -133,7 +142,7 @@ const BookingForm = () => {
       emailA: post.contactInfo.email,
       depositAmount: Math.floor(post.price * 0.1),
       apartmentCode: post.apartmentCode,
-      contractTerms: "Các điều khoản đã đính kèm trong hợp đồng.",
+      contractTerms,
       status: "pending",
     };
 
@@ -247,12 +256,21 @@ for (let pair of formData.entries()) {
             Mã căn hộ: {post.apartmentCode} <br />
             Địa chỉ: {post.location}
           </h4>
-          <p>
-            Giá thuê: <strong>{post.price.toLocaleString("vi-VN")} VNĐ/tháng</strong>
-          </p>
+          {post.type === "cho_thue" && (
+  <p>
+    Giá thuê: <strong>{post.price?.toLocaleString("vi-VN")} VNĐ/tháng</strong>
+  </p>
+)}
+
+{post.type === "ban" && (
+  <p>
+    Giá bán: <strong>{post.price?.toLocaleString("vi-VN")} VNĐ</strong>
+  </p>
+)}
+
 
           <form onSubmit={handleSubmit}>
-            <div className="row mb-3">
+            {/* <div className="row mb-3">
               <div className="col-md-6">
                 <label className="form-label">Ngày bắt đầu</label>
                 <input
@@ -273,7 +291,7 @@ for (let pair of formData.entries()) {
                   onChange={(e) => setForm({ ...form, endDate: e.target.value })}
                 />
               </div>
-            </div>
+            </div> */}
 
             <div className="row g-3 mb-3">
               <div className="col-md-6">
@@ -328,10 +346,16 @@ for (let pair of formData.entries()) {
         <Modal.Body>
           <ContractForm
             contractData={{
-              startDate: form.startDate,
-              endDate: form.endDate,
-              depositAmount: Math.floor(post.price * 0.1),
-              terms: "Các điều khoản đã đính kèm trong hợp đồng.",
+              // startDate: form.startDate,
+              // endDate: form.endDate,
+              depositAmount: Math.floor(post.price * (post.type === "ban" ? 0.01 : 0.1)),
+              terms:
+      post.type === "cho_thue"
+        ? "Các điều khoản hợp đồng cho thuê căn hộ..."
+        : post.type === "ban"
+        ? "Các điều khoản hợp đồng mua bán căn hộ..."
+        : "Các điều khoản đã đính kèm trong hợp đồng.",
+
               signaturePartyBUrl: signaturePartyBUrl, // chữ ký
             }}
             post={post}

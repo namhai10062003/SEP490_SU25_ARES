@@ -29,17 +29,36 @@ const MyContracts = () => {
       .toISOString()
       .split("T")[0];
   };
-  // xử lý ngày h 
-  // ✅ Nếu startDate > endDate → tự set endDate = startDate + 1
-  useEffect(() => {
-    if (!editingContract) return;
-    if (editForm.endDate <= editForm.startDate) {
-      const nextDay = new Date(editForm.startDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      const nextDayStr = nextDay.toISOString().split("T")[0];
-      setEditForm((prev) => ({ ...prev, endDate: nextDayStr }));
-    }
-  }, [editForm.startDate, editingContract]);
+  // xử lý ngày h \
+// Hàm cộng ngày
+const addDays = (date, days) => {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+};
+
+// // Khi load dữ liệu vào form
+// useEffect(() => {
+//   if (post) {
+//     const createdAt = new Date(post.createdAt);
+//     setEditForm({
+//       ...editForm,
+//       startDate: createdAt.toISOString().split("T")[0],
+//       endDate: addDays(createdAt, 7).toISOString().split("T")[0],
+//     });
+//   }
+// }, [post]);
+
+  // // ✅ Nếu startDate > endDate → tự set endDate = startDate + 1
+  // useEffect(() => {
+  //   if (!editingContract) return;
+  //   if (editForm.endDate <= editForm.startDate) {
+  //     const nextDay = new Date(editForm.startDate);
+  //     nextDay.setDate(nextDay.getDate() + 1);
+  //     const nextDayStr = nextDay.toISOString().split("T")[0];
+  //     setEditForm((prev) => ({ ...prev, endDate: nextDayStr }));
+  //   }
+  // }, [editForm.startDate, editingContract]);
   // ✅ Xử lý khi thanh toán thành công
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -82,12 +101,21 @@ const MyContracts = () => {
 
   const openEditPopup = (contract) => {
     setEditingContract(contract);
+  
+    // Tính startDate = createdAt của contract
+    const createdAt = new Date(contract.createdAt);
+    const startDate = createdAt.toISOString().split("T")[0];
+  
+    // endDate = createdAt + 7 ngày
+    const endDate = addDays(createdAt, 7).toISOString().split("T")[0];
+  
     setEditForm({
-      startDate: contract.startDate?.slice(0, 10),
-      endDate: contract.endDate?.slice(0, 10),
+      startDate,
+      endDate,
       contractTerms: contract.contractTerms || "",
     });
   };
+  
 
   const handleResubmit = async () => {
     try {
@@ -301,7 +329,21 @@ const MyContracts = () => {
                         <div>
                           <h5 className="fw-bold mb-1">🏠 {contract.fullNameA}</h5>
                           <div className="mb-1"><span className="fw-semibold">📍 Địa chỉ:</span> {contract.addressA}</div>
-                          <div className="mb-1"><span className="fw-semibold">📅 Từ:</span> {contract.startDate?.slice(0, 10)} - {contract.endDate?.slice(0, 10)}</div>
+                          <div className="mb-1">
+  <span className="fw-semibold">📅 Ngày Tạo:</span>{" "}
+  {contract.createdAt
+    ? new Date(contract.createdAt).toISOString().slice(0, 10)
+    : "-"}{" "}
+  {" "}
+  {/* {contract.createdAt
+    ? new Date(new Date(contract.createdAt).setDate(
+        new Date(contract.createdAt).getDate() + 7
+      ))
+        .toISOString()
+        .slice(0, 10)
+    : "-"} */}
+</div>
+
                           <div className="mb-1"><span className="fw-semibold">💰 Đặt cọc:</span> {contract.depositAmount?.toLocaleString("vi-VN")} VNĐ</div>
                           <div className="mb-1"><span className="fw-semibold">📞 Liên hệ:</span> {contract.phoneA}</div>
   
@@ -391,33 +433,35 @@ const MyContracts = () => {
                             <div className="mb-2"><strong>👤 Người thuê:</strong> {editingContract.fullNameB} - {editingContract.phoneB}</div>
                             <div className="mb-2"><strong>👤 Chủ nhà:</strong> {editingContract.fullNameA} - {editingContract.phoneA}</div>
                             <div className="mb-3">
-                              <label className="form-label">📅 Ngày bắt đầu</label>
-                              <input
-                                type="date"
-                                className="form-control"
-                                value={editForm.startDate}
-                                min={getToday()}
-                                onChange={(e) =>
-                                  setEditForm({ ...editForm, startDate: e.target.value })
-                                }
-                              />
-                            </div>
-                            <div className="mb-3">
-                              <label className="form-label">📅 Ngày kết thúc</label>
-                              <input
-                                type="date"
-                                className="form-control"
-                                value={editForm.endDate}
-                                min={(() => {
-                                  const nextDay = new Date(editForm.startDate);
-                                  nextDay.setDate(nextDay.getDate() + 1);
-                                  return nextDay.toISOString().split("T")[0];
-                                })()}
-                                onChange={(e) =>
-                                  setEditForm({ ...editForm, endDate: e.target.value })
-                                }
-                              />
-                            </div>
+  <label className="form-label">📅 Ngày bắt đầu</label>
+  <input
+    type="date"
+    className="form-control"
+    value={editForm.startDate}
+    min={getToday()}
+    onChange={(e) =>
+      setEditForm({ ...editForm, startDate: e.target.value })
+    }
+  />
+</div>
+
+<div className="mb-3">
+  <label className="form-label">📅 Ngày kết thúc</label>
+  <input
+    type="date"
+    className="form-control"
+    value={editForm.endDate}
+    min={(() => {
+      const nextDay = new Date(editForm.startDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      return nextDay.toISOString().split("T")[0];
+    })()}
+    onChange={(e) =>
+      setEditForm({ ...editForm, endDate: e.target.value })
+    }
+  />
+</div>
+
                             <div className="mb-3">
                               <label className="form-label">📜 Ghi chú thêm vào hợp đồng</label>
                               <textarea
