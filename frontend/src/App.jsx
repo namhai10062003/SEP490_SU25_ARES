@@ -19,13 +19,16 @@ import SocketListener from "../utils/SocketListener.jsx";
 import GlobalChatBox from "./pages/user/messages/GlobalChatBox.jsx";
 import VideoCallPopup from "./pages/user/messages/VideoCallPopup";
 // Các trang
+import AIChatBox from "../components/AIChatBox.jsx";
 import Home from "./home/home";
 import DashboardHome from "./pages/admin/DashboardHome.jsx";
 import AdminPostDetail from "./pages/admin/ManagementPost/PostDetail.jsx";
 import PostManagement from "./pages/admin/ManagementPost/PostManagement.jsx";
 import AdminContactPage from "./pages/admin/contactPage/adminContactPage.jsx";
+import AdminContractDetail from './pages/admin/contractDetail.jsx';
 import ManageApartment from "./pages/admin/manage-apartment.jsx";
 import ManageApplicationForm from "./pages/admin/manage-application-form.jsx";
+import ManageContract from "./pages/admin/manage-contract.jsx";
 import ManageNotifications from "./pages/admin/manage-notification.jsx";
 import ManageStaff from "./pages/admin/manage-staff.jsx";
 import ManageUser from "./pages/admin/manage-user.jsx";
@@ -36,7 +39,6 @@ import AdminRevenueApartment from "./pages/admin/revenue/apartment.jsx";
 import AdminRevenueApartmentDeposit from "./pages/admin/revenue/apartmentDeposit.jsx";
 import AdminRevenuePost from "./pages/admin/revenue/posts.jsx";
 import ManageUserDetail from "./pages/admin/userDetail.jsx";
-import AdminContractDetail from './pages/admin/contractDetail.jsx';
 import AdminProfileUpdatePage from "./pages/admin/verifyprofileuser/AdminProfileUpdatePage.jsx";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
 import ResidentVerificationHistory from "./pages/staff/ResidentVerificationList/ResidentVerificationHistory.jsx";
@@ -81,7 +83,6 @@ import Register from "./pages/user/register.jsx";
 import ResetPassword from "./pages/user/resetpassword";
 import UserRevenue from "./pages/user/revenuer/UserRevenue.jsx";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
-import ManageContract from "./pages/admin/manage-contract.jsx";
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
 function ProtectedRoute({ element, allowedRoles }) {
@@ -186,6 +187,7 @@ function AppContent() {
   return (
     <VideoCallProvider userId={user?._id}>
       <AppRoutes />
+      {user?.role === "customer" && <AIChatBox />}
     </VideoCallProvider>
   );
 }
