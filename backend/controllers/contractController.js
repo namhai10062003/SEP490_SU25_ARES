@@ -9,8 +9,8 @@ export const createContract = async (req, res) => {
   try {
     const {
       postId,
-      startDate,
-      endDate,
+      // startDate,
+      // endDate,
       userId,
       landlordId,
       fullNameA,
@@ -44,8 +44,28 @@ export const createContract = async (req, res) => {
     if (side === "B") {
       contract.signaturePartyBUrl = req.file.path;
     }
-    // 💵 Tính tiền cọc nếu chưa có
-    let finalDeposit = depositAmount || Math.floor(post.price * 0.1);
+    const toInt = (v) => Number(String(v).replace(/[^\d]/g, "")) || 0;
+
+    let finalDeposit;
+    if (post?.type === "ban") {
+      finalDeposit = Math.floor(toInt(post.price) * 0.01);
+    } else if (post?.type === "cho_thue") {
+      finalDeposit = Math.floor(toInt(post.price) * 0.1);
+    } else {
+      finalDeposit = toInt(depositAmount) || 0; // fallback nếu không biết type
+    }
+    
+    console.log({
+      rawPrice: post?.price,
+      parsedPrice: toInt(post?.price),
+      type: post?.type,
+      depositAmount,
+      finalDeposit
+    });
+    
+    
+    
+
 
     // ✨ Snapshot đầy đủ các thông tin từ bài đăng
     const postSnapshot = {
@@ -63,8 +83,8 @@ export const createContract = async (req, res) => {
 
     const contract = new Contract({
       postId,
-      startDate,
-      endDate,
+      // startDate,
+      // endDate,
       userId,
       landlordId,
       fullNameA,

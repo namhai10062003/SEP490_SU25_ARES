@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../../components/header";
@@ -44,8 +44,8 @@ const UserRevenue = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [name, setName] = useState(null);
-  const [availableToWithdraw, setAvailableToWithdraw] = useState(0);
-  const [totalDeposits, setTotalDeposits] = useState(0);
+  // const [totalWithdrawableFromContracts, setTotalWithdrawableFromContracts] = useState(0);
+  // const [availableToWithdraw, setAvailableToWithdraw] = useState(0);
   const [withdrawnAmount, setWithdrawnAmount] = useState(0);
   
   // kiểm tra người thuê
@@ -70,24 +70,16 @@ const UserRevenue = () => {
     const fetchAvailableWithdrawInfo = async () => {
       try {
         const res = await axios.get(`${API_WITHDRAWAL}/available`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
-  
-        const { availableToWithdraw, totalDeposits, withdrawnAmount } = res.data;
-  
-        setAvailableToWithdraw(availableToWithdraw);
-        setTotalDeposits(totalDeposits);
-        setWithdrawnAmount(withdrawnAmount);
+        // Chỉ dùng số đã rút từ backend để đồng bộ với lịch sử rút
+        setWithdrawnAmount(Number(res.data?.withdrawnAmount) || 0);
       } catch (error) {
         console.error("❌ Lỗi khi lấy thông tin rút tiền:", error);
       }
     };
-  
-    fetchAvailableWithdrawInfo(); // Không cần truyền user._id nữa
+    fetchAvailableWithdrawInfo();
   }, []);
-  
 
   useEffect(() => {
     if (user && user.name) {
@@ -165,12 +157,32 @@ const UserRevenue = () => {
   }, [filteredContracts]);
 
   // ✅ Tính tổng số tiền có thể rút
-  const totalWithdrawable = filteredContracts.reduce(
-    (sum, c) =>
-      sum +
-      (typeof c.depositAmount === "number" ? c.depositAmount : 0),
-    0
-  );
+// ✅ Tính tổng số tiền có thể rút
+const totalWithdrawable = filteredContracts.reduce(
+  (sum, c) =>
+    sum + (typeof c.withdrawableAmount === "number" ? c.withdrawableAmount : 0),
+  0
+);
+console.log(filteredContracts.map(c => c.withdrawableAmount));
+
+// ✅ Tính tổng số tiền có thể rút từ các hợp đồng
+const totalWithdrawableFromContracts = filteredContracts.reduce(
+  (sum, c) => {
+    const amount =
+      typeof c.receivedAmount === "number"
+        ? c.receivedAmount
+        : (typeof c.withdrawableAmount === "number"
+            ? c.withdrawableAmount
+            : 0);
+    return sum + amount;
+  },
+  0
+);
+
+// ✅ Còn lại = Tổng có thể rút - Đã rút
+const availableToWithdraw = useMemo(() => {
+  return Math.max(totalWithdrawableFromContracts - (Number(withdrawnAmount) || 0), 0);
+}, [totalWithdrawableFromContracts, withdrawnAmount]);
 
   const handleWithdrawChange = (e) => {
     setWithdrawForm({ ...withdrawForm, [e.target.name]: e.target.value });
@@ -183,7 +195,7 @@ const UserRevenue = () => {
     const amount = parseFloat(withdrawForm.amount);
     const EPSILON = 0.01;
   
-    if (isNaN(amount) || amount <= 0 || amount - totalWithdrawable > EPSILON) {
+    if (isNaN(amount) || amount <= 0 || amount - totalWithdrawableFromContracts > EPSILON) {
       toast.error("❌ Số tiền rút không hợp lệ hoặc vượt quá giới hạn.");
       return;
     }
@@ -289,7 +301,9 @@ const UserRevenue = () => {
               </div>
               <div className="d-flex justify-content-end">
               <p className="fw-bold text-end">
-  Tổng tiền: {formatPrice(totalDeposits)} đ — Đã rút: {formatPrice(withdrawnAmount)} đ — Có thể rút: <span className="text-success">{formatPrice(availableToWithdraw)} đ</span>
+  Tổng tiền có thể rút: {formatPrice(totalWithdrawableFromContracts)} — 
+  Đã rút: {formatPrice(withdrawnAmount)} — 
+  Còn lại: <span className="text-success">{formatPrice(availableToWithdraw)}</span>
 </p>
 </div>
 
@@ -305,7 +319,7 @@ const UserRevenue = () => {
                     <th>Khách thuê</th>
                     <th>Ngày thanh toán</th>
                     <th>Tiền cọc</th>
-                    {/* <th>Tiền nhận được</th> */}
+                    <th>Tiền nhận được</th>
                     <th>Mã giao dịch</th>
                   </tr>
                 </thead>
@@ -318,13 +332,13 @@ const UserRevenue = () => {
                         <td>{c.fullNameB || "Chưa cập nhật"}</td>
                         <td>{formatDate(c.paymentDate)}</td>
                         <td>{formatPrice(c.depositAmount)}</td>
-                        {/* <td className="text-success fw-bold">
+                        <td className="text-success fw-bold">
                           {formatPrice(
                             typeof c.withdrawableAmount === "number"
                               ? c.withdrawableAmount
                               : Math.round(c.depositAmount * 0.9)
                           )}
-                        </td> */}
+                        </td>
                         <td>{c.orderCode || "N/A"}</td>
                       </tr>
                     ))

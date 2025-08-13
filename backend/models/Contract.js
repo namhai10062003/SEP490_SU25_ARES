@@ -5,8 +5,8 @@ const contractSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Bên thuê
   landlordId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Bên cho thuê
 
-  startDate: { type: Date, required: true },
-  endDate: { type: Date, required: true },
+  // startDate: { type: Date, required: true },
+  // endDate: { type: Date, required: true },
   agreed: { type: Boolean, default: false },
 
   fullNameA: String,
