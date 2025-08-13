@@ -7,6 +7,7 @@ import { Server } from "socket.io";
 import './cron/expirePostJob.js';
 import connectToDatabase from "./db/db.js";
 import adminDashboardRoutes from "./router/adminDashboardRoutes.js";
+import aiChatRoutes from "./router/aiChatRoutes.js";
 import apartmentRouter from "./router/apartmentRoutes.js";
 import authRouter from "./router/auth.js";
 import contactRoutes from "./router/contactRoutes.js";
@@ -108,7 +109,7 @@ app.use("/api/revenue", revenueRoutes);
 app.use('/api/staff-dashboard', staffDashboardRoute);
 app.use("/api/profile-update", profileUpdateRoutes);
 app.use("/api/residence-declaration", ResidenceDeclaration);
-
+app.use("/api/ai", aiChatRoutes);
 
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {
