@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaEye } from "react-icons/fa";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -26,6 +26,7 @@ const paymentStatusColor = {
 
 const ManageContract = () => {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     // UI/data state
     const [contractList, setContractList] = useState([]);
@@ -33,14 +34,30 @@ const ManageContract = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
 
-    // filter/search state
-    const [searchInput, setSearchInput] = useState("");
-    const [searchValue, setSearchValue] = useState(""); // controlled input, only search on submit
-    const [filterStatus, setFilterStatus] = useState("");
+    // filter/search state - initialize from URL params
+    const [searchInput, setSearchInput] = useState(searchParams.get("search") || "");
+    const [searchValue, setSearchValue] = useState(searchParams.get("search") || ""); // controlled input, only search on submit
+    const [filterStatus, setFilterStatus] = useState(searchParams.get("status") || "");
 
-    // pagination state
-    const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(10);
+    // pagination state - initialize from URL params
+    const [page, setPage] = useState(parseInt(searchParams.get("page")) || 1);
+    const [limit, setLimit] = useState(parseInt(searchParams.get("limit")) || 10);
+
+    // Update URL params when state changes
+    const updateURLParams = useCallback((newParams) => {
+        const currentParams = new URLSearchParams(searchParams);
+
+        // Update with new params
+        Object.entries(newParams).forEach(([key, value]) => {
+            if (value && value !== "") {
+                currentParams.set(key, value);
+            } else {
+                currentParams.delete(key);
+            }
+        });
+
+        setSearchParams(currentParams);
+    }, [searchParams, setSearchParams]);
 
     // axios with token
     const getAxios = () => {
@@ -93,18 +110,33 @@ const ManageContract = () => {
         if (e) e.preventDefault();
         setSearchInput(searchValue);
         setPage(1);
+        updateURLParams({ search: searchValue, page: 1 });
         // fetchContracts will be triggered by useEffect when searchInput changes
     };
     const clearSearch = () => {
         setSearchValue("");
         setSearchInput("");
         setPage(1);
+        updateURLParams({ search: "", page: 1 });
     };
 
     // status filter handler
     const handleStatusChange = (val) => {
         setFilterStatus(val);
         setPage(1);
+        updateURLParams({ status: val, page: 1 });
+    };
+
+    // pagination handlers
+    const handlePageChange = (newPage) => {
+        setPage(newPage);
+        updateURLParams({ page: newPage });
+    };
+
+    const handlePageSizeChange = (newLimit) => {
+        setLimit(newLimit);
+        setPage(1);
+        updateURLParams({ limit: newLimit, page: 1 });
     };
 
     return (
@@ -244,12 +276,9 @@ const ManageContract = () => {
                 <Pagination
                     page={page}
                     totalPages={totalPages}
-                    onPageChange={(p) => setPage(p)}
+                    onPageChange={handlePageChange}
                     pageSize={limit}
-                    onPageSizeChange={(s) => {
-                        setLimit(s);
-                        setPage(1);
-                    }}
+                    onPageSizeChange={handlePageSizeChange}
                 />
 
             </div>

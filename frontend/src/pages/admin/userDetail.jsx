@@ -193,7 +193,7 @@ export default function ManageUserDetail() {
                         </Link>
                     </li>
                     <li>
-                        <Link to={`/admin-dashboard/manage-contract?user=${id}`} className="text-primary">
+                        <Link to={`/admin-dashboard/manage-contract?search=${user.email}`} className="text-primary">
                             → Xem các hợp đồng liên quan
                         </Link>
                     </li>
