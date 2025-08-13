@@ -177,7 +177,22 @@ console.log(`💰 [${aptCode}] Tổng phí gửi xe cộng dồn đến ${m}/${y
         }
       }
     }
+// Lấy các khoản đã thanh toán để giữ lại trạng thái
+const oldFees = await Fee.find({ paymentStatus: "paid" }).lean();
+const paidMap = {};
+oldFees.forEach(f => {
+  paidMap[`${f.apartmentId}_${f.month}`] = f;
+});
 
+// Gộp trạng thái paid vào feeDocs
+feeDocs.forEach(doc => {
+  const key = `${doc.apartmentId}_${doc.month}`;
+  if (paidMap[key]) {
+    doc.paymentStatus = "paid";
+    doc.paymentDate = paidMap[key].paymentDate;
+    doc.orderCode = paidMap[key].orderCode;
+  }
+});
     // lưu xuống DB (cẩn thận ở production)
     await Fee.deleteMany({});
     await Fee.insertMany(feeDocs);
