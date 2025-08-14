@@ -14,7 +14,6 @@ const AuthProvider = ({ children }) => {
 
   const apiUrl = import.meta.env.VITE_API_URL || "https://api.ares.io.vn";
   const navigate = useNavigate();
-
   // Hàm logout kèm redirect
   const logout = useCallback(() => {
     localStorage.removeItem("token");
@@ -64,10 +63,18 @@ const AuthProvider = ({ children }) => {
       localStorage.setItem("token", token);
       setUser(userData);
       setError(null);
-      navigate("/"); // login thành công → về trang chủ
+  
+      if (userData.role === "admin") {
+        navigate("/admin-dashboard", { state: { showToast: true } });
+      } else if (userData.role === "staff") {
+        navigate("/staff-dashboard", { state: { showToast: true } });
+      } else {
+        navigate("/", { state: { showToast: true } });
+      }
     },
     [navigate]
   );
+  
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading, error }}>

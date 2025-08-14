@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { jwtDecode } from 'jwt-decode';
+import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {
   Bar, BarChart, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis,
@@ -10,7 +10,6 @@ import {
 } from 'recharts';
 import socket from '../../server/socket';
 import StaffNavbar from './staffNavbar';
-
 const StaffDashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({
@@ -22,15 +21,26 @@ const StaffDashboard = () => {
   });
   const [monthlyRevenue, setMonthlyRevenue] = useState([]);
 
-  const token = localStorage.getItem('token');
-  let userName = 'Người dùng';
-  if (token) {
-    try {
-      userName = jwtDecode(token)?.name || userName;
-    } catch (e) {
-      console.error('Invalid token', e);
-    }
-  }
+  const location = useLocation(); // 🔹 Lấy userName từ token
+   // 🔹 Lấy userName từ token (an toàn)
+   const token = localStorage.getItem("token");
+   let userName = "Người dùng";
+   if (token) {
+     try {
+       userName = jwtDecode(token)?.name || "Người dùng";
+     } catch (err) {
+       console.error("Invalid token:", err);
+     }
+   }
+ 
+   // 🔹 Hiện toast nếu đăng nhập thành công
+   useEffect(() => {
+     if (location.state?.showToast) {
+      //  toast.success("Đăng nhập thành công!");
+       // Xóa state để tránh hiện lại khi F5
+       navigate(location.pathname, { replace: true, state: {} });
+     }
+   }, [location, navigate]);
 
   useEffect(() => {
     const fetchAllStats = async () => {
@@ -132,7 +142,7 @@ const StaffDashboard = () => {
 
   return (
     <div className="d-flex min-vh-100 bg-light">
-      <ToastContainer />
+      {/* <ToastContainer /> */}
       <StaffNavbar />
       <main className="flex-grow-1 p-4">
         <div className="d-flex justify-content-between align-items-center mb-4">
@@ -143,20 +153,57 @@ const StaffDashboard = () => {
           </div>
         </div>
 
-        <div className="row g-4 mb-4">
-          {cards.map((c, i) => (
-            <div key={i} className="col-12 col-md-6 col-lg-3">
-              <div className={`card border-0 shadow h-100`}>
-                <div className={`card-body text-center border-start border-5 border-${c.color}`}>
-                  <div className="text-secondary mb-2">{c.title}</div>
-                  <div className="text-start">
-                    {c.lines.map((l, j) => (<div key={j}>{l}</div>))}
-                  </div>
-                </div>
-              </div>
+        <div className="row g-4">
+  {cards.map((c, i) => (
+    <div key={i} className="col-12 col-md-6 col-lg-3">
+      <div 
+        className="card shadow-sm border-0 h-100 rounded-4"
+        style={{
+          transition: "transform 0.2s ease, box-shadow 0.2s ease"
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-5px)";
+          e.currentTarget.style.boxShadow = "0 1rem 2rem rgba(0,0,0,.15)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(0)";
+          e.currentTarget.style.boxShadow = "";
+        }}
+      >
+        <div className="card-body">
+          <div className="d-flex align-items-center">
+            {/* Icon */}
+            <div 
+              className="rounded-circle d-flex align-items-center justify-content-center me-3 text-white"
+              style={{
+                width: "55px",
+                height: "55px",
+                background: `linear-gradient(135deg, var(--bs-${c.color}), rgba(var(--bs-${c.color}-rgb), 0.8))`
+              }}
+            >
+              <i className={`bi bi-${c.icon} fs-4`}></i>
             </div>
-          ))}
+
+            {/* Title & main number */}
+            <div>
+              <h6 className="mb-1 text-secondary">{c.title}</h6>
+              <div className="fs-4 fw-bold">{c.lines[0]}</div>
+            </div>
+          </div>
+
+          {/* Các dòng chi tiết */}
+          <div className="mt-3">
+            {c.lines.slice(1).map((l, j) => (
+              <div key={j} className="small text-muted">{l}</div>
+            ))}
+          </div>
         </div>
+      </div>
+    </div>
+  ))}
+</div>
+
+
         <div className="row">
   <h4 className="fw-bold mb-3">Biểu đồ thống kê</h4>
 
