@@ -26,6 +26,7 @@
     "emoji-picker-react": "^4.12.2",
     "file-saver": "^2.0.5",
     "font-awesome": "^4.7.0",
+    "fullpage.js": "^4.0.37",
     "jquery": "^3.7.1",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.510.0",

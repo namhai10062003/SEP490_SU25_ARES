@@ -12,7 +12,7 @@ import {
     Legend,
 } from "chart.js";
 import { fetchPaidContracts } from "../../../service/feePayment";
-
+import { formatDate, formatPrice } from "../../../../utils/format";
 ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend);
 
 const PAGE_SIZE = 10;
@@ -76,8 +76,7 @@ const RevenueDeposit = () => {
         setPage(1);
     }, [contracts, searchText, startDate, endDate, paymentDate]);
 
-    const formatDate = (date) => date ? new Date(date).toLocaleDateString("vi-VN") : "-";
-    const formatPrice = (amount) => new Intl.NumberFormat("vi-VN").format(amount || 0) + " đ";
+
 
     const paginatedContracts = filteredPosts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
     const totalPages = Math.ceil(filteredPosts.length / PAGE_SIZE);
@@ -204,7 +203,7 @@ const RevenueDeposit = () => {
                             Xóa lọc
                         </button>
                     </div>
-                    <div className="col-md-2 d-grid"> 
+                    <div className="col-md-2 d-grid">
                         <button
                             className="btn btn-success fw-semibold"
                             onClick={exportToExcel}
@@ -228,10 +227,9 @@ const RevenueDeposit = () => {
                                 <tr>
                                     <th>#</th>
                                     <th>Mã căn hộ</th>
-                                    <th>Khách thuê</th>
+                                    <th>Người đặt cọc</th>
                                     <th>Chủ nhà</th>
-                                    <th>Ngày bắt đầu</th>
-                                    <th>Ngày kết thúc</th>
+                                    <th>Ngày tạo hợp đồng</th>
                                     <th>Ngày thanh toán</th>
                                     <th>Tiền cọc</th>
                                     <th>Hoa hồng (10%)</th>
@@ -245,8 +243,7 @@ const RevenueDeposit = () => {
                                         <td>{c.apartmentCode}</td>
                                         <td>{c.fullNameA}</td>
                                         <td>{c.fullNameB}</td>
-                                        <td>{formatDate(c.startDate)}</td>
-                                        <td>{formatDate(c.endDate)}</td>
+                                        <td>{formatDate(c.createdAt)}</td>
                                         <td>{formatDate(c.paymentDate)}</td>
                                         <td>{formatPrice(c.depositAmount)}</td>
                                         <td className="text-success fw-bold">
