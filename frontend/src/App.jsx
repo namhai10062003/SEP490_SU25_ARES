@@ -1,3 +1,4 @@
+import React from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -86,11 +87,18 @@ import VerifyEmail from "./pages/user/verify-otp.jsx";
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
 function ProtectedRoute({ element, allowedRoles }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Đang tải...</div>; // hoặc spinner đẹp hơn
+  }
+
   if (!user) return <Navigate to="/login" />;
   if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/" />;
+
   return element;
 }
+
 
 // 🎬 Hiển thị routes và các thành phần ngoài route
 function AppRoutes() {
@@ -100,7 +108,21 @@ function AppRoutes() {
     <>
 
       <Routes>
-        <Route path="/" element={<Home />} />
+      <Route
+  path="/"
+  element={
+    user?.role === "admin" ? (
+      <Navigate to="/admin-dashboard" replace />
+    ) : user?.role === "staff" ? (
+      <Navigate to="/staff-dashboard" replace />
+    ) : (
+      <Home />
+    )
+  }
+/>
+
+
+        {/* <Route path="/" element={<Home />} /> */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/verify-otp" element={<VerifyEmail />} />
@@ -182,6 +204,7 @@ function AppRoutes() {
 }
 
 // ✅ Bọc provider + gọi AppRoutes bên trong AppContent
+// ✅ AppContent trong App.jsx
 function AppContent() {
   const { user } = useAuth();
   return (
@@ -191,6 +214,7 @@ function AppContent() {
     </VideoCallProvider>
   );
 }
+
 
 // ✅ Gốc của ứng dụng
 function App() {

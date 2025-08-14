@@ -138,7 +138,7 @@ const AIChatBox = () => {
             }}
             onMouseDown={handleMouseDown}
           >
-            <strong>AI Tư vấn</strong>
+            <strong>Trợ lý ảo - ARES</strong>
             <button
               className="btn btn-sm btn-light"
               onClick={() => setIsOpen(false)}

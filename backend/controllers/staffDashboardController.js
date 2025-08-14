@@ -5,57 +5,72 @@ import Resident from '../models/Resident.js';
 import ResidentVerification from "../models/ResidentVerification.js";
 // Thống kê doanh thu theo tháng từ các phí đã thanh toán
 export const getMonthlyRevenue = async (req, res) => {
-    try {
-      const revenues = await Fee.aggregate([
-        {
-          $group: {
-            _id: {
-              month: '$month',
-              status: '$status', // group theo tháng + trạng thái
-            },
-            totalAmount: { $sum: '$amount' },
+  try {
+    const revenues = await Fee.aggregate([
+      {
+        // Chỉ lấy các bản ghi có month dạng hợp lệ
+        $match: {
+          month: { $regex: /[0-9]{2}\/[0-9]{4}/ }
+        }
+      },
+      {
+        $addFields: {
+          // Tách month từ chuỗi "MM/YYYY"
+          monthNum: {
+            $toInt: { $arrayElemAt: [{ $split: ["$month", "/"] }, 0] }
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            month: "$monthNum",
+            status: "$paymentStatus" // ✅ đúng field
           },
-        },
-        {
-          $group: {
-            _id: '$_id.month',
-            revenues: {
-              $push: {
-                status: '$_id.status',
-                total: '$totalAmount',
-              },
-            },
-          },
-        },
-        { $sort: { _id: 1 } },
-      ]);
-  
-      const monthNames = [
-        '', 'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
-      ];
-  
-      const formattedRevenue = revenues.map((r) => {
-        const paid = r.revenues.find((x) => x.status === 'paid')?.total || 0;
-        const unpaid = r.revenues.find((x) => x.status === 'unpaid')?.total || 0;
-  
-        return {
-          month: monthNames[r._id] || `Tháng ${r._id}`,
-          paid,
-          unpaid,
-        };
-      });
-  
-      res.status(200).json({
-        message: 'Revenue by month (paid & unpaid)',
-        data: formattedRevenue,
-      });
-    } catch (error) {
-      console.error('Error in getMonthlyRevenue:', error);
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  };
-  
+          totalAmount: { $sum: "$total" } // ✅ đúng field số tiền
+        }
+      },
+      {
+        $group: {
+          _id: "$_id.month",
+          revenues: {
+            $push: {
+              status: "$_id.status",
+              total: "$totalAmount"
+            }
+          }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const monthNames = [
+      "",
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    const formattedRevenue = revenues.map((r) => {
+      const paid = r.revenues.find((x) => x.status === "paid")?.total || 0;
+      const unpaid = r.revenues.find((x) => x.status === "unpaid")?.total || 0;
+
+      return {
+        month: monthNames[r._id] || `Tháng ${r._id}`,
+        paid,
+        unpaid
+      };
+    });
+
+    res.status(200).json({
+      message: "Revenue by month (paid & unpaid)",
+      data: formattedRevenue
+    });
+  } catch (error) {
+    console.error("Error in getMonthlyRevenue:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 // Đếm số lượng theo trạng thái
 const countResidentVerificationByStatus = async (req, res) => {
     try {
