@@ -65,7 +65,7 @@ export default function DashboardHome() {
     } else if (change < 0) {
       return <span className="text-danger ms-2">-{change}</span>; // vì change đã là số âm
     } else {
-      return <span className="text-muted ms-2">±0</span>;
+      return <span className="text-muted ms-2"></span>; //±0
     }
   };
   

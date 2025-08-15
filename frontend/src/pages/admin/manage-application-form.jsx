@@ -335,29 +335,29 @@ const ManageApplicationForm = () => {
                             Sửa
                           </button> */}
                           {app.status === "Chờ duyệt" && (
-                           <>
-                           <button
-                             className="btn btn-sm btn-success me-2"
-                             onClick={() => handleApprove(app._id)}
-                             disabled={app.status === "Đang chỉnh sửa"}
-                           >
-                             Duyệt
-                           </button>
-                           <button
-                             className="btn btn-sm btn-danger"
-                             onClick={() => handleReject(app._id)}
-                             disabled={app.status === "Đang chỉnh sửa"}
-                           >
-                             Từ chối
-                           </button>
-                         
-                           {app.status === "Đang chỉnh sửa" && (
-  <div className="alert alert-warning py-1 px-2 mt-2 mb-0">
-    ⚠ Nhân viên đang chỉnh sửa — bạn không thể duyệt/hủy lúc này
-  </div>
-)}
-                         </>
-                         
+                            <>
+                              <button
+                                className="btn btn-sm btn-success me-2"
+                                onClick={() => handleApprove(app._id)}
+                                disabled={app.status === "Đang chỉnh sửa"}
+                              >
+                                Duyệt
+                              </button>
+                              <button
+                                className="btn btn-sm btn-danger"
+                                onClick={() => handleReject(app._id)}
+                                disabled={app.status === "Đang chỉnh sửa"}
+                              >
+                                Từ chối
+                              </button>
+
+                              {app.status === "Đang chỉnh sửa" && (
+                                <div className="alert alert-warning py-1 px-2 mt-2 mb-0">
+                                  ⚠ Nhân viên đang chỉnh sửa — bạn không thể duyệt/hủy lúc này
+                                </div>
+                              )}
+                            </>
+
                           )}
                           {app.status === "Đã duyệt" && (
                             <button
@@ -410,20 +410,19 @@ const ManageApplicationForm = () => {
                     <li className="list-group-item">
                       <strong>Trạng thái:</strong>{" "}
                       <span
-  className={`badge px-2 py-1 rounded-pill ${
-    selectedApp.status === "Chờ duyệt"
-      ? "bg-warning text-dark"
-      : selectedApp.status === "Đã từ chối"
-      ? "bg-danger"
-      : selectedApp.status === "Đã duyệt"
-      ? "bg-success"
-      : selectedApp.status === "Đã hủy bỏ"
-      ? "bg-secondary"
-      : "bg-light text-dark"
-  }`}
->
-  {selectedApp.status}
-</span>
+                        className={`badge px-2 py-1 rounded-pill ${selectedApp.status === "Chờ duyệt"
+                            ? "bg-warning text-dark"
+                            : selectedApp.status === "Đã từ chối"
+                              ? "bg-danger"
+                              : selectedApp.status === "Đã duyệt"
+                                ? "bg-success"
+                                : selectedApp.status === "Đã hủy bỏ"
+                                  ? "bg-secondary"
+                                  : "bg-light text-dark"
+                          }`}
+                      >
+                        {selectedApp.status}
+                      </span>
                     </li>
                   </ul>
 
@@ -534,7 +533,7 @@ const ManageApplicationForm = () => {
                 </div>
                 <div className="modal-body row g-3">
                   {/* Các trường cơ bản */}
-                  {/* <div className="col-md-6">
+        {/* <div className="col-md-6">
                     <label>Họ tên</label>
                     <input className="form-control" name="fullName" value={selectedApp.fullName || ""} onChange={updateSelectedApp} />
                   </div>
@@ -549,19 +548,19 @@ const ManageApplicationForm = () => {
                   <div className="col-md-6">
                     <label>Mã căn hộ</label>
                     <input className="form-control" name="apartmentCode" value={selectedApp.apartmentCode || ""} onChange={updateSelectedApp} />
-                  </div> */} 
+                  </div> */}
 
-                  {/* Loại giấy tờ */}
-                  {/* <div className="col-md-6">
+        {/* Loại giấy tờ */}
+        {/* <div className="col-md-6">
                     <label>Loại giấy tờ</label>
                     <select className="form-control" name="documentType" value={selectedApp.documentType || ""} onChange={updateSelectedApp}>
                       <option value="Hợp đồng mua bán">Hợp đồng mua bán</option>
                       <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
                       {/* <option value="Giấy chủ quyền">Giấy chủ quyền</option> */}
-                    {/* </select>
-                  </div> */} 
+        {/* </select>
+                  </div> */}
 
-                  {/* <div className="col-md-6">
+        {/* <div className="col-md-6">
             <label>Trạng thái</label>
             <select className="form-control" name="status" value={selectedApp.status || ""} onChange={updateSelectedApp}>
               <option value="Chờ duyệt">Chờ duyệt</option>
@@ -570,8 +569,8 @@ const ManageApplicationForm = () => {
             </select>
           </div> */}
 
-                  {/* Hiện thêm ngày và ảnh nếu là HĐ thuê */}
-                  {/* {(selectedApp.documentType === "Hợp đồng cho thuê") && (
+        {/* Hiện thêm ngày và ảnh nếu là HĐ thuê */}
+        {/* {(selectedApp.documentType === "Hợp đồng cho thuê") && (
                     <>
                       <div className="col-md-6">
                         <label>Ngày bắt đầu</label>
@@ -584,8 +583,8 @@ const ManageApplicationForm = () => {
                     </>
                   )} */}
 
-                  {/* Nếu là HĐ thuê hoặc HĐ mua bán thì cho upload ảnh */}
-                  {/* {(selectedApp.documentType === "Hợp đồng cho thuê" || selectedApp.documentType === "Hợp đồng mua bán") && (
+        {/* Nếu là HĐ thuê hoặc HĐ mua bán thì cho upload ảnh */}
+        {/* {(selectedApp.documentType === "Hợp đồng cho thuê" || selectedApp.documentType === "Hợp đồng mua bán") && (
                     <div className="col-md-12">
                       <label>Ảnh hợp đồng hiện tại:</label><br />
                       {selectedApp.documentImage ? (
@@ -608,7 +607,7 @@ const ManageApplicationForm = () => {
                     </div>
                   )} */}
 
-                  {/* <div className="col-12">
+        {/* <div className="col-12">
                     <label>Ghi chú</label>
                     <textarea className="form-control" name="note" value={selectedApp.note || ""} onChange={updateSelectedApp} />
                   </div>
