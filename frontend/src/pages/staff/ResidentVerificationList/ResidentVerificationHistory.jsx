@@ -1,9 +1,10 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Button, Form, Modal, Table } from "react-bootstrap";
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 import { toast } from "react-toastify";
 import StaffNavbar from "../staffNavbar";
-
 const ResidentVerificationHistory = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -119,15 +120,31 @@ const fetchApartments = async () => {
   
   // Huỷ xác minh
   const handleCancel = async (id) => {
-    if (!window.confirm("Bạn có chắc muốn huỷ yêu cầu này?")) return;
-    try {
-      await axios.patch(`${API_URL}/api/resident-verifications/${id}/cancel-staff`);
-      toast.success("Huỷ thành công");
-      fetchApplications();
-    } catch (err) {
-      console.error(err);
-      toast.error("Huỷ thất bại");
-    }
+    confirmAlert({
+      title: 'Xác nhận huỷ yêu cầu',
+      message: 'Bạn có chắc muốn huỷ yêu cầu này?',
+      buttons: [
+        {
+          label: 'Đồng ý',
+          onClick: async () => {
+            try {
+              await axios.patch(`${API_URL}/api/resident-verifications/${id}/cancel-staff`);
+              toast.success('✅ Huỷ yêu cầu thành công!');
+              fetchApplications();
+            } catch (err) {
+              console.error(err);
+              toast.error('❌ Huỷ thất bại!');
+            }
+          }
+        },
+        {
+          label: 'Hủy',
+          onClick: () => {
+            // Không làm gì khi người dùng bấm "Hủy"
+          }
+        }
+      ]
+    });
   };
 
   // Mở modal sửa
@@ -394,7 +411,7 @@ const fetchApartments = async () => {
 
       {/* Modal sửa */}
       <Modal show={showEditModal} onHide={() => handleCloseModal} size="lg">
-        <Modal.Header closeButton>
+        <Modal.Header>
           <Modal.Title>Sửa thông tin xác minh</Modal.Title>
         </Modal.Header>
         <Form onSubmit={handleEditSubmit}>

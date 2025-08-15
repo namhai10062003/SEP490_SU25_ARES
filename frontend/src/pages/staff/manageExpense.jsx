@@ -142,8 +142,22 @@ const Expenses = () => {
       const handleAdd = async (e) => {
         e.preventDefault();
     
-        if (!addType || !addLabel || !addPrice) {
-            toast.warn("Vui lòng nhập đầy đủ thông tin!");
+        // Reset lỗi trước khi validate
+        setPriceError("");
+    
+        // Validate từng trường riêng
+        if (!addType) {
+            toast.warn("Vui lòng chọn loại chi phí!");
+            return;
+        }
+    
+        if (!addLabel) {
+            toast.warn("Vui lòng nhập tên tòa nhà!");
+            return;
+        }
+    
+        if (!addPrice) {
+            toast.warn("Vui lòng nhập giá chi phí!");
             return;
         }
     
@@ -169,7 +183,8 @@ const Expenses = () => {
             const msg = err?.response?.data?.error || "Thêm chi phí thất bại!";
             toast.error(msg);
         }
-    };    
+    };
+    
     
 
     const grouped = expenses.reduce((acc, exp) => {
@@ -198,7 +213,7 @@ const Expenses = () => {
                             className="form-select"
                             value={addType}
                             onChange={(e) => setAddType(e.target.value)}
-                            required
+                            
                         >
                             <option value="">Chọn loại chi phí</option>
                             <option value="1">Chi phí quản lý</option>
@@ -213,7 +228,7 @@ const Expenses = () => {
                             placeholder="Tên Tòa nhà"
                             value={addLabel}
                             onChange={(e) => setAddLabel(e.target.value)}
-                            required
+                            
                         />
                     </div>
                     <div className="col-md-3">
@@ -224,7 +239,7 @@ const Expenses = () => {
     value={addPrice}
     onChange={handlePriceChange}
     min={1}
-    required
+    
   />
   {priceError && <div className="invalid-feedback">{priceError}</div>}
 </div>
