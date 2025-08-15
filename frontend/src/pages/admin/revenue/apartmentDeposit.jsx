@@ -228,7 +228,7 @@ const RevenueDeposit = () => {
                                     <th>#</th>
                                     <th>Mã căn hộ</th>
                                     <th>Người đặt cọc</th>
-                                    <th>Chủ nhà</th>
+                                    <th>Người nhận cọc</th>
                                     <th>Ngày tạo hợp đồng</th>
                                     <th>Ngày thanh toán</th>
                                     <th>Tiền cọc</th>

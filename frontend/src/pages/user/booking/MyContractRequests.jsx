@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
+import Spinner from "react-bootstrap/Spinner";
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import { useNavigate } from "react-router-dom";
@@ -22,7 +23,7 @@ const MyContractRequests = () => {
 const [showConfirmForm, setShowConfirmForm] = useState(false);
 const [showSignatureA, setShowSignatureA] = useState(false);
 const [signaturePartyAUrl, setSignaturePartyAUrl] = useState(contractToApprove?.signaturePartyAUrl || "");
-
+const [loadingApprove, setLoadingApprove] = useState(false);
 
   const navigate = useNavigate();
 
@@ -487,6 +488,7 @@ const [signaturePartyAUrl, setSignaturePartyAUrl] = useState(contractToApprove?.
     }
 
     try {
+      setLoadingApprove(true);
       console.log("⛳ Props signaturePartyAUrl:", contractToApprove?.signaturePartyAUrl);
 
       console.log("⛳ CHỮ KÝ A:", signaturePartyAUrl?.slice(0, 50)); // ✅ Log ngay trước khi dùng
@@ -518,10 +520,18 @@ const [signaturePartyAUrl, setSignaturePartyAUrl] = useState(contractToApprove?.
     } catch (error) {
       toast.error("❌ Lỗi khi duyệt hợp đồng hoặc upload chữ ký");
       console.error(error);
+    }finally {
+      setLoadingApprove(false); // tắt loading
     }
   }}
 >
-  Xác nhận duyệt
+{loadingApprove ? (
+    <>
+      <Spinner animation="border" size="sm" /> Đang duyệt...
+    </>
+  ) : (
+    "Xác nhận duyệt"
+  )}
 </Button>
 
 

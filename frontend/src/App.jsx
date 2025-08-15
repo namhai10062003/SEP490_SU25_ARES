@@ -1,3 +1,4 @@
+import React from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -67,6 +68,7 @@ import ResidentList from "./pages/user/Residentpeople/residentpeople";
 import BookingForm from "./pages/user/booking/BookingForm.jsx";
 import ContractDetail from "./pages/user/booking/ContractDetail.jsx";
 import MyContractRequests from "./pages/user/booking/MyContractRequests.jsx";
+import PaymentCancel from "./pages/user/booking/PaymentCancel.jsx";
 import MyContracts from "./pages/user/booking/myContract.jsx";
 import MyVerifiedApplications from "./pages/user/contractofuser/MyVerifiedApplications.jsx";
 import ForgotPassword from "./pages/user/forgotpassword";
@@ -87,11 +89,18 @@ import NotificationPage from "./pages/user/notification.jsx";
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
 function ProtectedRoute({ element, allowedRoles }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Đang tải...</div>; // hoặc spinner đẹp hơn
+  }
+
   if (!user) return <Navigate to="/login" />;
   if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/" />;
+
   return element;
 }
+
 
 // 🎬 Hiển thị routes và các thành phần ngoài route
 function AppRoutes() {
@@ -101,7 +110,21 @@ function AppRoutes() {
     <>
 
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route
+          path="/"
+          element={
+            user?.role === "admin" ? (
+              <Navigate to="/admin-dashboard" replace />
+            ) : user?.role === "staff" ? (
+              <Navigate to="/staff-dashboard" replace />
+            ) : (
+              <Home />
+            )
+          }
+        />
+
+
+        {/* <Route path="/" element={<Home />} /> */}
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/verify-otp" element={<VerifyEmail />} />
@@ -134,6 +157,8 @@ function AppRoutes() {
         <Route path="/residence-declaration" element={<ResidenceDeclarationRegister />} />
         <Route path="/residence-declaration/list" element={<ResidenceDeclarationList />} />
         <Route path="/residence-declaration/detail/:id" element={<ResidenceDeclarationDetail />} />
+        <Route path="/cancel-payment/:orderCode" element={<PaymentCancel />} />
+
         <Route path="/notifications" element={< NotificationPage />} />
         {/* Admin */}
         <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
@@ -184,6 +209,7 @@ function AppRoutes() {
 }
 
 // ✅ Bọc provider + gọi AppRoutes bên trong AppContent
+// ✅ AppContent trong App.jsx
 function AppContent() {
   const { user } = useAuth();
   return (
@@ -193,6 +219,7 @@ function AppContent() {
     </VideoCallProvider>
   );
 }
+
 
 // ✅ Gốc của ứng dụng
 function App() {

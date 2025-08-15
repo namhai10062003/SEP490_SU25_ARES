@@ -168,51 +168,82 @@ export default function ResidentVerificationForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    if (!user || !formData.documentType || !formData.apartmentCode) {
-      toast.error("❌ Vui lòng điền đủ thông tin bắt buộc.");
+    // ===== Validate từng trường =====
+    if (!user) {
+      toast.error("❌ Vui lòng chọn cư dân cần xác thực.");
       return;
     }
-  
-    const data = new FormData();
-    data.append("user", user._id);
-    data.append("fullName", user.name || "");
-    data.append("email", user.email || "");
-    data.append("phone", user.phone || "");
-    data.append("documentType", formData.documentType);
-    data.append("apartmentCode", formData.apartmentCode);
-  
-    formData.documentImage.forEach((img) => {
-      data.append("documentImage", img);
-    });
-  
-    if (formData.documentType === "Hợp đồng cho thuê") {
-      if (formData.contractStart && formData.contractEnd) {
-        try {
-          data.append("contractStart", new Date(formData.contractStart).toISOString());
-          data.append("contractEnd", new Date(formData.contractEnd).toISOString());
-        } catch (err) {
-          toast.error("❌ Ngày không hợp lệ. Vui lòng chọn lại.");
-          return;
-        }
-      } else {
-        toast.error("❌ Vui lòng nhập ngày bắt đầu và kết thúc hợp đồng cho thuê.");
-        return;
-      }
+    if (!formData.documentType) {
+      toast.error("❌ Vui lòng chọn loại giấy tờ.");
+      return;
     }
+    if (!formData.apartmentCode) {
+      toast.error("❌ Vui lòng nhập mã căn hộ.");
+      return;
+    }
+    
+   // Nếu là hợp đồng cho thuê thì bắt buộc nhập ngày
+// Nếu là hợp đồng cho thuê thì bắt buộc nhập ngày
+if (formData.documentType === "Hợp đồng cho thuê") {
+  const { contractStart, contractEnd } = formData;
+
+  if (!contractStart || !contractEnd) {
+    toast.error("❌ Vui lòng nhập ngày bắt đầu và kết thúc hợp đồng.");
+    return;
+  }
+
+  const startDate = new Date(contractStart);
+  const endDate = new Date(contractEnd);
+
+  // Kiểm tra ngày hợp lệ và logic ngày bắt đầu <= ngày kết thúc
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    toast.error("❌ Ngày không hợp lệ. Vui lòng chọn lại.");
+    return;
+  }
+
+  if (startDate > endDate) {
+    toast.error("❌ Ngày bắt đầu không được lớn hơn ngày kết thúc.");
+    return;
+  }
+
+  // Append lên FormData khi gửi
+  data.append("contractStart", startDate.toISOString());
+  data.append("contractEnd", endDate.toISOString());
+}
+
+if (!formData.documentImage || formData.documentImage.length === 0) {
+  toast.error("❌ Vui lòng tải lên ít nhất 1 ảnh giấy tờ.");
+  return;
+}
   
+    // ===== Tạo FormData để gửi =====
     try {
+      const data = new FormData();
+      data.append("user", user._id);
+      data.append("fullName", user.name || "");
+      data.append("email", user.email || "");
+      data.append("phone", user.phone || "");
+      data.append("documentType", formData.documentType);
+      data.append("apartmentCode", formData.apartmentCode);
+  
+      formData.documentImage.forEach((img) => {
+        data.append("documentImage", img);
+      });
+  
+      if (formData.documentType === "Hợp đồng cho thuê") {
+        data.append("contractStart", contractStart.toISOString());
+        data.append("contractEnd", contractEnd.toISOString());
+      }
+  
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/resident-verifications/verification`,
         data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
   
       toast.success("✅ Gửi yêu cầu xác thực thành công!");
   
+      // ===== Reset form =====
       setFormData({
         documentType: "",
         apartmentCode: "",
@@ -221,11 +252,7 @@ export default function ResidentVerificationForm() {
         documentImage: null,
       });
       setPreviewImage(null);
-  
-      if (fileInputRef.current) {
-        fileInputRef.current.value = null;
-      }
-  
+      if (fileInputRef.current) fileInputRef.current.value = null;
       setUser(null);
       setQuery("");
     } catch (err) {
@@ -233,6 +260,7 @@ export default function ResidentVerificationForm() {
       toast.error("❌ Gửi thất bại! Vui lòng kiểm tra lại.");
     }
   };
+  
 
 
   return (
@@ -328,162 +356,174 @@ export default function ResidentVerificationForm() {
           </div>
 
           {user && (
-            <div className="bg-white rounded-4 shadow p-4 mx-auto">
-              <form onSubmit={handleSubmit}>
-                <h3 className="fw-bold text-center mb-4">Nhập thông tin xác thực cư dân</h3>
-                <div className="row g-3">
-                  <div className="col-md-4">
-                    <label className="form-label">Họ và tên</label>
-                    <input
-                      type="text"
-                      value={user.name || ""}
-                      disabled
-                      className="form-control"
-                    />
-                  </div>
-                  <div className="col-md-4">
-                    <label className="form-label">Email</label>
-                    <input
-                      type="email"
-                      value={user.email || ""}
-                      disabled
-                      className="form-control"
-                    />
-                  </div>
-                  <div className="col-md-4">
-                    <label className="form-label">Số điện thoại</label>
-                    <input
-                      type="text"
-                      value={user.phone || ""}
-                      disabled
-                      className="form-control"
-                    />
-                  </div>
+  <div
+    className="modal fade show"
+    id="verifyModal"
+    style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}
+    tabIndex="-1"
+  >
+    <div className="modal-dialog modal-lg modal-dialog-centered">
+      <div
+        className="modal-content rounded-4 shadow-lg border-0"
+        style={{
+          maxHeight: "80vh", // Chiều cao tối đa 80% màn hình
+          overflowY: "auto", // Nếu form dài sẽ có scroll
+        }}
+      >
+        {/* Header */}
+        <div className="modal-header border-0 pb-0">
+          <h5 className="fw-bold text-primary m-0">Nhập thông tin xác thực cư dân</h5>
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => {
+              setUser(null);
+              setFormData({
+                documentType: "",
+                apartmentCode: "",
+                contractStart: "",
+                contractEnd: "",
+                documentImage: null,
+              });
+              setPreviewImage(null);
+              setQuery("");
+            }}
+          ></button>
+        </div>
+
+        {/* Body */}
+        <div className="modal-body pt-3">
+          <form onSubmit={handleSubmit}>
+            <div className="row g-3">
+              {/* Họ tên */}
+              <div className="col-md-4">
+                <label className="form-label">Họ và tên</label>
+                <input type="text" value={user.name || ""} disabled className="form-control" />
+              </div>
+              {/* Email */}
+              <div className="col-md-4">
+                <label className="form-label">Email</label>
+                <input type="email" value={user.email || ""} disabled className="form-control" />
+              </div>
+              {/* SĐT */}
+              <div className="col-md-4">
+                <label className="form-label">Số điện thoại</label>
+                <input type="text" value={user.phone || ""} disabled className="form-control" />
+              </div>
+
+              {/* Loại hợp đồng */}
+              <div className="col-md-6">
+                <label className="form-label">Loại hợp đồng</label>
+                <select
+                  name="documentType"
+                  value={formData.documentType}
+                  onChange={handleChange}
+                  className="form-select"
+                  
+                >
+                  <option value="">-- Loại hợp đồng --</option>
+                  <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
+                  <option value="Hợp đồng mua bán">Hợp đồng mua bán</option>
+                  <option value="Khác">Khác</option>
+                </select>
+              </div>
+
+              {/* Căn hộ */}
+              <div className="col-md-6">
+                <label className="form-label">Căn hộ</label>
+                <Select
+                  options={apartmentOptions}
+                  value={apartmentOptions.find(opt => opt.value === formData.apartmentCode)}
+                  onChange={(selected) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      apartmentCode: selected ? selected.value : ""
+                    }))
+                  }
+                  placeholder="Nhập hoặc chọn căn hộ"
+                  styles={customStyles}
+                  isClearable
+                />
+              </div>
+
+              {/* Ngày hợp đồng */}
+              {formData.documentType === "Hợp đồng cho thuê" && (
+                <>
                   <div className="col-md-6">
-                    <label className="form-label">Loại hợp đồng</label>
-                    <select
-                      name="documentType"
-                      value={formData.documentType}
+                    <label className="form-label">Ngày bắt đầu hợp đồng</label>
+                    <input
+                      type="date"
+                      name="contractStart"
+                      value={formData.contractStart}
                       onChange={handleChange}
-                      className="form-select"
-                      required
-                    >
-                      <option value="">-- Loại hợp đồng --</option>
-                      <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
-                      <option value="Hợp đồng mua bán">Hợp đồng mua bán</option>
-                      <option value="Khác">Khác</option>
-                    </select>
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">Căn hộ</label>
-                    <Select
-                      options={apartmentOptions}
-                      value={apartmentOptions.find(opt => opt.value === formData.apartmentCode)}
-                      onChange={(selected) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          apartmentCode: selected ? selected.value : ""
-                        }))
-                      }
-                      placeholder="Nhập hoặc chọn căn hộ"
-                      styles={customStyles}
-                      isClearable
+                      className="form-control"
                     />
                   </div>
-
-                  {formData.documentType === "Hợp đồng cho thuê" && (
-                    <>
-                      <div className="col-md-6">
-                        <label className="form-label">Ngày bắt đầu hợp đồng</label>
-                        <input
-                          type="date"
-                          name="contractStart"
-                          value={formData.contractStart}
-                          onChange={handleChange}
-                          className="form-control"
-                          required
-                        />
-                      </div>
-                      <div className="col-md-6">
-                        <label className="form-label">Ngày kết thúc hợp đồng</label>
-                        <input
-                          type="date"
-                          name="contractEnd"
-                          value={formData.contractEnd}
-                          onChange={handleChange}
-                          className="form-control"
-                          required
-                          min={formData.contractStart}
-                        />
-                      </div>
-                    </>
-                  )}
-                  <div className="col-md-12">
-                    <label className="form-label">Ảnh hợp đồng</label>
+                  <div className="col-md-6">
+                    <label className="form-label">Ngày kết thúc hợp đồng</label>
                     <input
-  type="file"
-  name="documentImage"
-  accept="image/*"
-  multiple
-  ref={fileInputRef}
-  onChange={(e) => {
-    const files = Array.from(e.target.files);
-    setFormData((prev) => ({
-      ...prev,
-      documentImage: files,
-    }));
+                      type="date"
+                      name="contractEnd"
+                      value={formData.contractEnd}
+                      onChange={handleChange}
+                      className="form-control"
+                      min={formData.contractStart}
+                    />
+                  </div>
+                </>
+              )}
 
-    const previews = files.map((file) => URL.createObjectURL(file));
-    setPreviewImage(previews);
-  }}
-/>
+              {/* Upload ảnh */}
+              <div className="col-md-12">
+                <label className="form-label">Ảnh hợp đồng</label>
+                <input
+                  type="file"
+                  name="documentImage"
+                  accept="image/*"
+                  multiple
+                  ref={fileInputRef}
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files);
+                    setFormData((prev) => ({
+                      ...prev,
+                      documentImage: files,
+                    }));
+                    const previews = files.map((file) => URL.createObjectURL(file));
+                    setPreviewImage(previews);
+                  }}
+                />
+                {previewImage?.length > 0 && (
+                  <div className="mt-3">
+                    <span className="d-block mb-2 text-secondary">Ảnh hợp đồng đã chọn:</span>
+                    <div className="d-flex flex-wrap gap-2">
+                      {previewImage.map((imgUrl, idx) => (
+                        <img
+                          key={idx}
+                          src={imgUrl}
+                          alt={`Ảnh ${idx + 1}`}
+                          className="img-thumbnail"
+                          style={{ maxHeight: 150 }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
-{previewImage.length > 0 && (
-  <div className="mt-3">
-    <span className="d-block mb-2 text-secondary">Ảnh hợp đồng đã chọn:</span>
-    <div className="d-flex flex-wrap gap-2">
-      {previewImage.map((imgUrl, idx) => (
-        <img
-          key={idx}
-          src={imgUrl}
-          alt={`Ảnh ${idx + 1}`}
-          className="img-thumbnail"
-          style={{ maxHeight: 180 }}
-        />
-      ))}
+            {/* Footer */}
+            <div className="d-flex justify-content-end mt-4">
+              <button type="submit" className="btn btn-success px-5">
+                Gửi xác thực
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 )}
 
-                  </div>
-                </div>
-                <div className="d-flex justify-content-between mt-4">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => {
-                      setUser(null);
-                      setFormData({
-                        documentType: "",
-                        apartmentCode: "",
-                        contractStart: "",
-                        contractEnd: "",
-                        documentImage: null,
-                      });
-                      setPreviewImage(null);
-                      setQuery("");
-                    }}
-                  >
-                    Quay lại
-                  </button>
-                  <button type="submit" className="btn btn-success btn-lg px-5">
-                    Gửi xác thực
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
         </div>
       </main>
     </div>

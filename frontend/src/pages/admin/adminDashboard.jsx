@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-
+import { useAuth } from "../../../context/authContext";
 export default function AdminDashboard({ children }) {
   const location = useLocation();
   const navRef = useRef(null);
-
+  const { logout } = useAuth();
   // submenu visibility (controlled by pathname + toggles)
   const [showRevenueSub, setShowRevenueSub] = useState(false);
   const [showFeedbackSub, setShowFeedbackSub] = useState(false);
@@ -177,7 +177,7 @@ export default function AdminDashboard({ children }) {
                       </li>
                       <li className="nav-item">
                         <Link to="/admin-dashboard/revenue/apartment-deposit" className={linkClass("/admin-dashboard/revenue/apartment-deposit") + " ps-3"}>
-                          • <span className="ms-2">Đặt Cọc Căn Hộ</span>
+                          • <span className="ms-2">Đặt Cọc</span>
                         </Link>
                       </li>
                     </ul>
@@ -187,11 +187,20 @@ export default function AdminDashboard({ children }) {
 
               {/* Logout at bottom: push down with margin top */}
               <li className="nav-item mt-4">
-                <Link to="/login" className="nav-link rounded-3 px-3 py-2 d-flex align-items-center text-white" style={{ background: "rgba(255,255,255,0.04)", transition: "all .15s" }}>
-                  <span style={{ fontWeight: 600 }}>•</span>
-                  <span className="ms-2">Đăng xuất</span>
-                </Link>
-              </li>
+      <button
+        onClick={logout}
+        className="nav-link rounded-3 px-3 py-2 d-flex align-items-center text-white"
+        style={{
+          background: "rgba(255,255,255,0.04)",
+          transition: "all .15s",
+          border: "none",
+          cursor: "pointer"
+        }}
+      >
+        <span style={{ fontWeight: 600 }}>•</span>
+        <span className="ms-2">Đăng xuất</span>
+      </button>
+    </li>
             </ul>
           </nav>
         </aside>
