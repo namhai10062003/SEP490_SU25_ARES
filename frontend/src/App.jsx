@@ -83,6 +83,7 @@ import Register from "./pages/user/register.jsx";
 import ResetPassword from "./pages/user/resetpassword";
 import UserRevenue from "./pages/user/revenuer/UserRevenue.jsx";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
+import NotificationPage from "./pages/user/notification.jsx";
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
 function ProtectedRoute({ element, allowedRoles }) {
@@ -133,6 +134,7 @@ function AppRoutes() {
         <Route path="/residence-declaration" element={<ResidenceDeclarationRegister />} />
         <Route path="/residence-declaration/list" element={<ResidenceDeclarationList />} />
         <Route path="/residence-declaration/detail/:id" element={<ResidenceDeclarationDetail />} />
+        <Route path="/notifications" element={< NotificationPage />} />
         {/* Admin */}
         <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/posts" element={<ProtectedRoute element={<PostManagement />} allowedRoles={["admin"]} />} />

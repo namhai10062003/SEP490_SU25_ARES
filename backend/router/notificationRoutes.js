@@ -1,11 +1,13 @@
 import express from "express";
-import { getNotifications, markAsRead, markAllAsRead, deleteNotification, sendGlobalNotification, getAllNotifications } from "../controllers/notificationController.js";
+import { getUnreadNotifications, getNotifications, markAsRead, markAllAsRead, deleteNotification, sendGlobalNotification, getAllNotifications } from "../controllers/notificationController.js";
 
 const router = express.Router();
 
 // Get all notifications for a user
 router.get("/:userId", getNotifications);
 
+//getUnreadNotifications
+router.get("/unread/:userId", getUnreadNotifications);
 // Mark as read
 router.patch("/:id/read", markAsRead);
 
