@@ -91,6 +91,7 @@ const ApartmentFormModal = ({ show, onClose, onSubmit, form, setForm, isEdit }) 
                                         placeholder="Ví dụ: P2-18.01"
                                         value={form.apartmentCode}
                                         onChange={handleChange("apartmentCode")}
+                                        disabled={isEdit}
                                     />
                                 </div>
 

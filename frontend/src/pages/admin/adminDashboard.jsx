@@ -177,7 +177,7 @@ export default function AdminDashboard({ children }) {
                       </li>
                       <li className="nav-item">
                         <Link to="/admin-dashboard/revenue/apartment-deposit" className={linkClass("/admin-dashboard/revenue/apartment-deposit") + " ps-3"}>
-                          • <span className="ms-2">Đặt Cọc Căn Hộ</span>
+                          • <span className="ms-2">Đặt Cọc</span>
                         </Link>
                       </li>
                     </ul>

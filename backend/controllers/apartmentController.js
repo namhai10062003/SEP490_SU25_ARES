@@ -6,16 +6,30 @@ import ResidentVerification from "../models/ResidentVerification.js";
 import { emitNotification } from "../helpers/socketHelper.js";
 import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
 import mongoose from "mongoose";
+import Fee from "../models/Fee.js";
 // Thêm mới căn hộ
 export const createApartment = async (req, res) => {
   try {
+    // Tạo slug từ mã căn hộ nếu chưa có
+    if (!req.body.slug && req.body.apartmentCode) {
+      req.body.slug = req.body.apartmentCode.trim().toLowerCase().replace(/\s+/g, '-');
+    }
+
     const apartment = new Apartment(req.body);
     await apartment.save();
     res.status(201).json(apartment);
+
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    // Lỗi trùng key (MongoDB code 11000)
+    if (err.code === 11000) {
+      return res.status(409).json({ message: "Căn hộ đã tồn tại" });
+    }
+
+    console.error("Create apartment error:", err);
+    res.status(500).json({ message: "Lỗi máy chủ" });
   }
 };
+
 
 // Lấy tất cả căn hộ
 
@@ -214,6 +228,62 @@ export const getApartmentHistory = async (req, res) => {
     res.json(history);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+// Lấy danh sách phí theo mã căn hộ + logging
+export const getFeesByApartmentCode = async (req, res) => {
+  const { code } = req.params;
+
+  try {
+    console.log("[APARTMENTS] GET /:code/fees -> code:", code);
+
+    // Nếu quên import Fee, typeof sẽ trả 'undefined' mà không crash
+    if (typeof Fee === "undefined") {
+      console.error("[APARTMENTS] Fee model is UNDEFINED. Kiểm tra đường dẫn import '../models/Fee.js'");
+      return res.status(500).json({ message: "Fee model chưa được import. Kiểm tra server." });
+    }
+
+    console.time(`[APARTMENTS] Query fees for ${code}`);
+    const fees = await Fee.find({ apartmentCode: code }).lean();
+    console.timeEnd(`[APARTMENTS] Query fees for ${code}`);
+
+    console.log(`[APARTMENTS] fees length = ${fees?.length || 0}`);
+    if (fees?.length) {
+      console.log("[APARTMENTS] First fee doc sample:", {
+        _id: fees[0]._id,
+        apartmentCode: fees[0].apartmentCode,
+        month: fees[0].month,
+        managementFee: fees[0].managementFee,
+        waterFee: fees[0].waterFee,
+        parkingFee: fees[0].parkingFee,
+        total: fees[0].total,
+        paymentStatus: fees[0].paymentStatus,
+      });
+    }
+
+    // Nếu month là "MM/YYYY", sort về mới nhất trước
+    const sorted = (fees || []).sort((a, b) => {
+      const [ma, ya] = String(a.month || "").split("/");
+      const [mb, yb] = String(b.month || "").split("/");
+      const da = new Date(Number(ya) || 0, (Number(ma) || 1) - 1, 1);
+      const db = new Date(Number(yb) || 0, (Number(mb) || 1) - 1, 1);
+      return db - da; // desc
+    });
+
+    if (!sorted.length) {
+      console.warn(`[APARTMENTS] Không có phí cho căn hộ: ${code}`);
+      return res.status(200).json([]); // Trả về mảng rỗng thay vì 404
+    }
+
+    return res.json(sorted);
+  } catch (err) {
+    console.error("[APARTMENTS] getFeesByApartmentCode ERROR:", {
+      message: err?.message,
+      stack: err?.stack,
+      name: err?.name,
+    });
+    return res.status(500).json({ message: "Lỗi server khi lấy phí", error: err?.message });
   }
 };
 
