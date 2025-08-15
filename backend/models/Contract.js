@@ -48,9 +48,10 @@ const contractSchema = new mongoose.Schema({
   rejectionReason: { type: String },
   paymentStatus: {
     type: String,
-    enum: ['unpaid', 'paid', 'failed'],
+    enum: ['unpaid', 'pending', 'paid', 'failed'],
     default: 'unpaid'
   },
+  
   orderCode: {
     type: String,
   },

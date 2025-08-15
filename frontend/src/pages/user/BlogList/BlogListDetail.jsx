@@ -14,6 +14,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import Slider from "react-slick";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import Header from "../../../../components/header.jsx";
@@ -54,12 +55,42 @@ const PostDetail = () => {
   const [reportDescription, setReportDescription] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
-
+  const [contract, setContract] = useState(null);
   //chat 
   const { setReceiver, setPostInfo } = useChat();
   const [showChat, setShowChat] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const API_URL = import.meta.env.VITE_API_URL;
+  useEffect(() => {
+    const fetchContract = async () => {
+      try {
+        const token = localStorage.getItem("token"); // lấy token
+        const res = await fetch(`${API_URL}/api/contracts/by-post/${post._id}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // gửi token
+          },
+        });
+  
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+  
+        const data = await res.json();
+        if (data.success) {
+          setContract(data.data);
+        } else {
+          console.warn("API trả về không thành công:", data.message);
+        }
+      } catch (err) {
+        console.error("Không lấy được hợp đồng:", err);
+      }
+    };
+  
+    if (post?._id) fetchContract();
+  }, [post]);
+  
   // hàm thực hiện chat vs người bài đăng 
   useEffect(() => {
     if (post?.contactInfo?.userId) {
@@ -329,15 +360,27 @@ const PostDetail = () => {
       🚩 Báo cáo
     </button>
     <button
-      className="btn btn-success px-3"
-      onClick={() => navigate(`/booking/${post._id}`)}
-      disabled={post.property === "nha_dat" || post.type === "dich_vu"}
-    >
-      📄 Đặt chỗ
-    </button>
+  className="btn btn-success px-3"
+  onClick={() => {
+    if (contract.paymentStatus === "paid") {
+      toast.info("Căn hộ/bất động sản này đã được đặt cọc", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
+    }
+    navigate(`/booking/${post._id}`);
+  }}
+  disabled={post.type === "dich_vu"}
+>
+  📄 Đặt Cọc
+</button>
   </div>
-
- 
 </div>
  {/* Mô tả */}
  <div>

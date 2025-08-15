@@ -68,6 +68,7 @@ import ResidentList from "./pages/user/Residentpeople/residentpeople";
 import BookingForm from "./pages/user/booking/BookingForm.jsx";
 import ContractDetail from "./pages/user/booking/ContractDetail.jsx";
 import MyContractRequests from "./pages/user/booking/MyContractRequests.jsx";
+import PaymentCancel from "./pages/user/booking/PaymentCancel.jsx";
 import MyContracts from "./pages/user/booking/myContract.jsx";
 import MyVerifiedApplications from "./pages/user/contractofuser/MyVerifiedApplications.jsx";
 import ForgotPassword from "./pages/user/forgotpassword";
@@ -155,6 +156,8 @@ function AppRoutes() {
         <Route path="/residence-declaration" element={<ResidenceDeclarationRegister />} />
         <Route path="/residence-declaration/list" element={<ResidenceDeclarationList />} />
         <Route path="/residence-declaration/detail/:id" element={<ResidenceDeclarationDetail />} />
+        <Route path="/cancel-payment/:orderCode" element={<PaymentCancel />} />
+
         {/* Admin */}
         <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/posts" element={<ProtectedRoute element={<PostManagement />} allowedRoles={["admin"]} />} />

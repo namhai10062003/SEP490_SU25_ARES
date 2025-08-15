@@ -15,6 +15,7 @@ const MyContracts = () => {
   const [searchText, setSearchText] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [paidStatus, setPaidStatus] = useState({});
   const [editForm, setEditForm] = useState({
     startDate: "",
     endDate: "",
@@ -59,6 +60,29 @@ const addDays = (date, days) => {
   //     setEditForm((prev) => ({ ...prev, endDate: nextDayStr }));
   //   }
   // }, [editForm.startDate, editingContract]);
+  //fix lấy trạng thaias 
+  useEffect(() => {
+    contracts.forEach(contract => {
+      fetch(`${import.meta.env.VITE_API_URL}/api/contracts/posts/${contract.postId}/has-paid-contract`)
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then(data => {
+          setPaidStatus(prev => ({
+            ...prev,
+            [contract.postId]: data.hasPaid
+          }));
+        })
+        .catch(err => {
+          console.error(`Lỗi fetch trạng thái paid của postId ${contract.postId}:`, err);
+        });
+    });
+  }, [contracts]);
+  
+  
   // ✅ Xử lý khi thanh toán thành công
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -183,7 +207,7 @@ const addDays = (date, days) => {
           },
         }
       );
-
+  
       const paymentUrl = res.data.data.paymentUrl;
       if (paymentUrl) {
         toast.success("💳 Đang chuyển đến cổng thanh toán...");
@@ -192,10 +216,15 @@ const addDays = (date, days) => {
         toast.error("❌ Không nhận được link thanh toán");
       }
     } catch (err) {
-      toast.error("❌ Lỗi khi tạo thanh toán hợp đồng");
+      if (err.response && err.response.status === 400) {
+        // Lỗi do có người khác đang thanh toán
+        toast.warning(err.response.data.message || "Hiện tại hợp đồng này đang được thanh toán bởi người khác");
+      } else {
+        toast.error("❌ Lỗi khi tạo thanh toán hợp đồng");
+      }
     }
   };
-
+  
   if (loading) return <p>🔄 Đang tải...</p>;
 
   const filteredContracts = contracts.filter((c) => {
@@ -206,35 +235,66 @@ const addDays = (date, days) => {
     const now = new Date();
     const isExpired = new Date(c.endDate) < now;
   
+    // Danh sách hợp đồng đã thanh toán
+    const paidContracts = contracts.filter(
+      (pc) => pc.paymentStatus === "paid"
+    );
+  
+    // ✅ Kiểm tra xem có hợp đồng khác cùng postId đã thanh toán không
+    const hasOtherPaid = paidContracts.some(
+      (pc) => pc.postId === c.postId && pc._id !== c._id
+    );
+  
     const matchesStatus = (() => {
       switch (filter) {
         case "all":
           return true;
-        case "pending":
-          // pending nhưng chưa hết hạn
+  
+        case "pending": // Chờ duyệt, chưa hết hạn
           return c.status === "pending" && !isExpired;
-        case "unpaid":
-          return c.paymentStatus === "unpaid" && c.status === "approved" && !isExpired;
-        case "paid":
-          return c.paymentStatus === "paid";
-        case "failed":
+  
+        case "unpaid": // Approved, chưa thanh toán, không bị chặn, chưa hết hạn
+          return (
+            c.status === "approved" &&
+            c.paymentStatus === "unpaid" &&
+            !hasOtherPaid &&
+            !isExpired
+          );
+  
+        case "paid": // Đã thanh toán hoặc bị tính đã thanh toán do hợp đồng khác cùng postId
+          return c.paymentStatus === "paid" || hasOtherPaid;
+  
+        case "cannotPay": // Approved, chưa thanh toán nhưng bị chặn
+          return (
+            c.status === "approved" &&
+            c.paymentStatus === "unpaid" &&
+            hasOtherPaid
+          );
+  
+        case "failed": // Thanh toán thất bại
           return c.paymentStatus === "failed";
-        case "rejected":
+  
+        case "rejected": // Bị từ chối
           return c.status === "rejected";
-        case "expired":
-          // pending nhưng hết hạn
-          return c.status === "pending" && isExpired;
+  
+        case "expired": // pending hoặc approved nhưng hết hạn
+          return (
+            (c.status === "expired") &&
+            isExpired
+          );
+  
         default:
           return false;
       }
     })();
-  
+
     const keyword = searchText.toLowerCase().trim();
     const combined = `${c.fullNameA} ${c.addressA} ${c.phoneA}`.toLowerCase();
     const matchesText = combined.includes(keyword);
   
     const inputAsNumber = parseFloat(searchText.replace(/[^\d]/g, ""));
-    const matchesDeposit = isNaN(inputAsNumber) || c.depositAmount >= inputAsNumber;
+    const matchesDeposit =
+      isNaN(inputAsNumber) || c.depositAmount >= inputAsNumber;
   
     const matchesKeyword = matchesText || matchesDeposit;
   
@@ -248,11 +308,6 @@ const addDays = (date, days) => {
     return matchesStatus && matchesKeyword && matchesDate;
   });
   
-  
-  
-
-
-
   return (
     <div className="bg-light min-vh-100">
       <Header
@@ -282,6 +337,7 @@ const addDays = (date, days) => {
   <option value="paid">Đã thanh toán</option>
   {/* <option value="failed">Thanh toán thất bại</option> */}
   <option value="rejected">Bị từ chối</option>
+  <option value="cannotPay">Không thể thanh toán</option>
           </select>
   
           <input
@@ -347,28 +403,41 @@ const addDays = (date, days) => {
                           <div className="mb-1"><span className="fw-semibold">💰 Đặt cọc:</span> {contract.depositAmount?.toLocaleString("vi-VN")} VNĐ</div>
                           <div className="mb-1"><span className="fw-semibold">📞 Liên hệ:</span> {contract.phoneA}</div>
   
-                          {/* Trạng thái */}
-                          <div>
-  <span className="fw-semibold">Trạng thái: </span>
-  {contract.status === "rejected" ? (
-    <span className="badge bg-danger">❌ Bị từ chối</span>
-  ) : contract.paymentStatus === "failed" ? (
-    <span className="badge bg-danger">❌ Thanh toán thất bại</span>
-  ) : contract.status === "pending" && isExpired ? (
-    <span className="badge bg-secondary">📅 Đã hết hạn</span>
-  ) : contract.status === "pending" ? (
-    <span className="badge bg-warning text-dark">⏳ Chờ duyệt</span>
-  ) : contract.paymentStatus === "paid" ? (
-    <span className="badge bg-success">✅ Đã thanh toán</span>
-  ) : (
-    <span className="badge bg-info text-dark">💵 Chưa thanh toán</span>
+                          <div className="payment-status">
+  {/* 1. Theo status */}
+  {contract.status === "expired" && (
+    <span className="badge bg-secondary p-2">⏳ Hợp đồng đã hết hạn</span>
   )}
+  {contract.status === "pending" && (
+    <span className="badge bg-info text-dark p-2">📋 Đang chờ duyệt</span>
+  )}
+  {contract.status === "rejected" && (
+    <span className="badge bg-danger p-2">❌ Hợp đồng bị từ chối</span>
+  )}
+  {contract.status === "cancelled" && (
+    <span className="badge bg-warning text-dark p-2">⚠️ Hợp đồng đã bị hủy</span>
+  )}
+
+  {/* 2. Theo paymentStatus (chỉ khi approved) */}
+  {contract.status === "approved" && (() => {
+    const hasOtherPaid = !!paidStatus?.[contract.postId];
+
+    switch (contract.paymentStatus) {
+      case "paid":
+        return <span className="badge bg-success p-2">✅ Đã thanh toán</span>;
+      case "pending":
+        return <span className="badge bg-warning text-dark p-2">⏳ Đang chờ thanh toán...</span>;
+      case "unpaid":
+        return hasOtherPaid
+          ? <span className="badge bg-info text-dark p-2">🔒 Đã có hợp đồng khác thanh toán</span>
+          : <span className="badge bg-primary p-2">💳 Chưa thanh toán</span>;
+      case "failed":
+        return <span className="badge bg-danger p-2">❌ Thanh toán thất bại</span>;
+      default:
+        return null;
+    }
+  })()}
 </div>
-
-
-
-
-
 
   
                           {/* Nếu bị từ chối & chưa hết hạn => Gửi lại */}
@@ -409,13 +478,27 @@ const addDays = (date, days) => {
   
                         {/* THANH TOÁN nếu đã được duyệt và chưa thanh toán */}
                         {contract.status === "approved" && contract.paymentStatus === "unpaid" && (
-                          <button
-                            className="btn btn-primary fw-bold"
-                            onClick={() => handlePayment(contract._id)}
-                          >
-                            THANH TOÁN
-                          </button>
-                        )}
+  <button
+    className="btn btn-primary fw-bold"
+    onClick={() => handlePayment(contract._id)}
+    disabled={paidStatus[contract.postId]} // disable nếu đã có người khác thanh toán
+  >
+    {paidStatus[contract.postId] ? "Đã có hợp đồng khác thanh toán" : "THANH TOÁN"}
+  </button>
+)}
+
+{contract.status === "approved" && contract.paymentStatus === "pending" && (
+  <span className="text-warning fw-bold">Đang chờ thanh toán...</span>
+)}
+
+{contract.status === "approved" && contract.paymentStatus === "paid" && (
+  <span className="text-success fw-bold">Đã thanh toán</span>
+)}
+
+{contract.paymentStatus === "failed" && (
+  <span className="text-danger fw-bold">Thanh toán thất bại</span>
+)}
+
                       </div>
                     </div>
                   </div>
