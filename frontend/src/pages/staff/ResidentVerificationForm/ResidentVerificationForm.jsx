@@ -168,51 +168,82 @@ export default function ResidentVerificationForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
   
-    if (!user || !formData.documentType || !formData.apartmentCode) {
-      toast.error("❌ Vui lòng điền đủ thông tin bắt buộc.");
+    // ===== Validate từng trường =====
+    if (!user) {
+      toast.error("❌ Vui lòng chọn cư dân cần xác thực.");
       return;
     }
-  
-    const data = new FormData();
-    data.append("user", user._id);
-    data.append("fullName", user.name || "");
-    data.append("email", user.email || "");
-    data.append("phone", user.phone || "");
-    data.append("documentType", formData.documentType);
-    data.append("apartmentCode", formData.apartmentCode);
-  
-    formData.documentImage.forEach((img) => {
-      data.append("documentImage", img);
-    });
-  
-    if (formData.documentType === "Hợp đồng cho thuê") {
-      if (formData.contractStart && formData.contractEnd) {
-        try {
-          data.append("contractStart", new Date(formData.contractStart).toISOString());
-          data.append("contractEnd", new Date(formData.contractEnd).toISOString());
-        } catch (err) {
-          toast.error("❌ Ngày không hợp lệ. Vui lòng chọn lại.");
-          return;
-        }
-      } else {
-        toast.error("❌ Vui lòng nhập ngày bắt đầu và kết thúc hợp đồng cho thuê.");
-        return;
-      }
+    if (!formData.documentType) {
+      toast.error("❌ Vui lòng chọn loại giấy tờ.");
+      return;
     }
+    if (!formData.apartmentCode) {
+      toast.error("❌ Vui lòng nhập mã căn hộ.");
+      return;
+    }
+    
+   // Nếu là hợp đồng cho thuê thì bắt buộc nhập ngày
+// Nếu là hợp đồng cho thuê thì bắt buộc nhập ngày
+if (formData.documentType === "Hợp đồng cho thuê") {
+  const { contractStart, contractEnd } = formData;
+
+  if (!contractStart || !contractEnd) {
+    toast.error("❌ Vui lòng nhập ngày bắt đầu và kết thúc hợp đồng.");
+    return;
+  }
+
+  const startDate = new Date(contractStart);
+  const endDate = new Date(contractEnd);
+
+  // Kiểm tra ngày hợp lệ và logic ngày bắt đầu <= ngày kết thúc
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    toast.error("❌ Ngày không hợp lệ. Vui lòng chọn lại.");
+    return;
+  }
+
+  if (startDate > endDate) {
+    toast.error("❌ Ngày bắt đầu không được lớn hơn ngày kết thúc.");
+    return;
+  }
+
+  // Append lên FormData khi gửi
+  data.append("contractStart", startDate.toISOString());
+  data.append("contractEnd", endDate.toISOString());
+}
+
+if (!formData.documentImage || formData.documentImage.length === 0) {
+  toast.error("❌ Vui lòng tải lên ít nhất 1 ảnh giấy tờ.");
+  return;
+}
   
+    // ===== Tạo FormData để gửi =====
     try {
+      const data = new FormData();
+      data.append("user", user._id);
+      data.append("fullName", user.name || "");
+      data.append("email", user.email || "");
+      data.append("phone", user.phone || "");
+      data.append("documentType", formData.documentType);
+      data.append("apartmentCode", formData.apartmentCode);
+  
+      formData.documentImage.forEach((img) => {
+        data.append("documentImage", img);
+      });
+  
+      if (formData.documentType === "Hợp đồng cho thuê") {
+        data.append("contractStart", contractStart.toISOString());
+        data.append("contractEnd", contractEnd.toISOString());
+      }
+  
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/resident-verifications/verification`,
         data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
   
       toast.success("✅ Gửi yêu cầu xác thực thành công!");
   
+      // ===== Reset form =====
       setFormData({
         documentType: "",
         apartmentCode: "",
@@ -221,11 +252,7 @@ export default function ResidentVerificationForm() {
         documentImage: null,
       });
       setPreviewImage(null);
-  
-      if (fileInputRef.current) {
-        fileInputRef.current.value = null;
-      }
-  
+      if (fileInputRef.current) fileInputRef.current.value = null;
       setUser(null);
       setQuery("");
     } catch (err) {
@@ -233,6 +260,7 @@ export default function ResidentVerificationForm() {
       toast.error("❌ Gửi thất bại! Vui lòng kiểm tra lại.");
     }
   };
+  
 
 
   return (
@@ -391,7 +419,7 @@ export default function ResidentVerificationForm() {
                   value={formData.documentType}
                   onChange={handleChange}
                   className="form-select"
-                  required
+                  
                 >
                   <option value="">-- Loại hợp đồng --</option>
                   <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
@@ -429,7 +457,6 @@ export default function ResidentVerificationForm() {
                       value={formData.contractStart}
                       onChange={handleChange}
                       className="form-control"
-                      required
                     />
                   </div>
                   <div className="col-md-6">
@@ -440,7 +467,6 @@ export default function ResidentVerificationForm() {
                       value={formData.contractEnd}
                       onChange={handleChange}
                       className="form-control"
-                      required
                       min={formData.contractStart}
                     />
                   </div>
