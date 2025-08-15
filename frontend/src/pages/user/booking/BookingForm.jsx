@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
+import Spinner from "react-bootstrap/Spinner";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import SignaturePopup from "../../../../components/SignaturePopup";
@@ -25,7 +26,7 @@ const BookingForm = () => {
     agreed: false,
   });
   const [showPreview, setShowPreview] = useState(false);
-
+  const [loading, setLoading] = useState(false);
   const todayStr = () => {
     const today = new Date();
     return today.toISOString().split("T")[0];
@@ -148,7 +149,7 @@ post.type === "cho_thue"
 
     try {
       // 1. Gửi API tạo hợp đồng
-
+      setLoading(true); 
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/contracts`,
         payload,
@@ -203,6 +204,8 @@ for (let pair of formData.entries()) {
     } catch (error) {
       console.error(error);
       toast.error("❌ Lỗi khi gửi yêu cầu");
+    }finally {
+      setLoading(false); // 🔹 Tắt loading sau khi xong
     }
   };
 
@@ -249,7 +252,7 @@ for (let pair of formData.entries()) {
         >
           ← Quay lại
         </button>
-        <h2 className="text-center mb-4">Đặt cọc giữ chỗ</h2>
+        <h2 className="text-center mb-4">Đặt Cọc</h2>
 
         <div className="card shadow-sm p-4">
           <h4 className="fw-bold text-primary mb-3">
@@ -313,9 +316,12 @@ for (let pair of formData.entries()) {
             </div>
 
             <div className="alert alert-info">
-              Tiền đặt cọc:{" "}
-              <strong>{Math.floor(post.price * 0.1).toLocaleString("vi-VN")} VNĐ</strong>
-            </div>
+  Tiền đặt cọc:{" "}
+  <strong>
+    {Math.floor(post.price * (post.type === "ban" ? 0.01 : 0.1)).toLocaleString("vi-VN")} VNĐ
+  </strong>
+</div>
+
 
             {/* <div className="form-check mb-3">
               <input
@@ -371,9 +377,15 @@ for (let pair of formData.entries()) {
           <Button variant="secondary" onClick={() => setShowPreview(false)}>
             Hủy
           </Button>
-          <Button variant="primary" onClick={confirmBooking}>
-            Xác nhận gửi yêu cầu
-          </Button>
+          <Button variant="primary" onClick={confirmBooking} disabled={loading}>
+      {loading ? (
+        <>
+          <Spinner size="sm" /> Đang gửi...
+        </>
+      ) : (
+        "Xác nhận gửi yêu cầu"
+      )}
+    </Button>
         </Modal.Footer>
       </Modal>
 
