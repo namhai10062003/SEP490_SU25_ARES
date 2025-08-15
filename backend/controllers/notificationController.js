@@ -6,13 +6,46 @@ import User from '../models/User.js';
 const getNotifications = async (req, res) => {
     try {
         const { userId } = req.params;
-        const notifications = await Notification.find({ userId }).sort({ createdAt: -1 });
+        const { page = 1, limit = 10, read } = req.query;
+
+        // Build filter
+        const filter = { userId };
+        if (read === "true") filter.read = true;
+        else if (read === "false") filter.read = false;
+
+        const pageNum = Math.max(parseInt(page, 10) || 1, 1);
+        const limitNum = Math.max(parseInt(limit, 10) || 10, 1);
+
+        const totalItems = await Notification.countDocuments(filter);
+        const totalPages = Math.ceil(totalItems / limitNum);
+
+        const notifications = await Notification.find(filter)
+            .sort({ createdAt: -1 })
+            .skip((pageNum - 1) * limitNum)
+            .limit(limitNum);
+
+        res.json({
+            notifications,
+            totalItems,
+            totalPages,
+            currentPage: pageNum,
+            pageSize: limitNum,
+        });
+    } catch (err) {
+        res.status(500).json({ error: "Server error" });
+    }
+};
+// Get all unreadNotifications for a user
+const getUnreadNotifications = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const notifications = await Notification.find({ userId, read: false })
+            .sort({ createdAt: -1 });
         res.json(notifications);
     } catch (err) {
         res.status(500).json({ error: "Server error" });
     }
 };
-
 // Mark a notification as read
 const markAsRead = async (req, res) => {
     try {
@@ -130,4 +163,5 @@ export {
     deleteNotification,
     sendGlobalNotification,
     getAllNotifications,
+    getUnreadNotifications,
 };

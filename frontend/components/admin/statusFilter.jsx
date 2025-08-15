@@ -50,6 +50,11 @@ const statusOptions = {
         { value: "expired", label: "Hết hạn" },
         { value: "cancelled", label: "Đã huỷ" },
     ],
+    notification: [
+        { value: "", label: "Tất cả" },
+        { value: "false", label: "Chưa đọc" },
+        { value: "true", label: "Đã đọc" },
+    ],
     default: [
         { value: "", label: "Tất cả trạng thái" },
         { value: "active", label: "Active" },

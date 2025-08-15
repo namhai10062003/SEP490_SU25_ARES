@@ -1,167 +1,259 @@
 import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import { FiBell } from "react-icons/fi";
 import { toast } from "react-toastify";
+import { formatSmartDate } from "../utils/format";
+import { Link, useNavigate } from "react-router-dom";
+
+/**
+ * NotificationBell
+ * - No useRef (uses useId + getElementById for outside click)
+ * - Works with endpoints:
+ *   GET    /api/notifications/unread/:userId
+ *   PATCH  /api/notifications/:notificationId/read
+ *   PATCH  /api/notifications/:userId/read-all
+ */
 const NotificationBell = ({ user }) => {
     const [notifications, setNotifications] = useState([]);
-    const [selectedNotification, setSelectedNotification] = useState(null);
     const [showDropdown, setShowDropdown] = useState(false);
-    const dropdownRef = useRef();
+    const [selectedNotification, setSelectedNotification] = useState(null);
+    const navigate = useNavigate();
 
-    const extractDeclarationId = (msg) => {
-        const match = msg.match(/hồ sơ ([a-f0-9]{24})/i); // match ObjectId
+    // Stable unique id to scope outside-click without useRef
+    const rootId = useId();
+    const rootDomId = `nbell-${String(rootId).replace(/[^a-zA-Z0-9-_:.]/g, "")}`;
+
+    // Helpers
+    const extractPostId = (msg = "") => {
+        const match = msg.match(/bài đăng ([a-f0-9]{24})/i);
         return match ? match[1] : null;
     };
-
-    const getNotificationActionButton = () => {
-        const declarationId = selectedNotification?.data?.declarationId;
-        if (declarationId) {
-          return (
-            <a
-              href={`/residence-declaration/detail/${declarationId}`}
-              className="btn btn-primary"
-            >
-              Xem chi tiết
-            </a>
-          );
-        }
-        return null;
-      };
-      
-    
-    const fetchNotifications = async () => {
-        if (user?._id) {
-            try {
-                const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/notifications/${user._id}`);
-                setNotifications(res.data.filter((n) => !n.read));
-            } catch (err) {
-                setNotifications([]);
-            }
+    const extractDeclarationId = (msg = "") => {
+        const match = msg.match(/hồ sơ ([a-f0-9]{24})/i);
+        return match ? match[1] : null;
+    };
+    const fmtTime = (d) => {
+        try {
+            return typeof formatSmartDate === "function"
+                ? formatSmartDate(d)
+                : new Date(d).toLocaleString("vi-VN");
+        } catch {
+            return new Date(d).toLocaleString("vi-VN");
         }
     };
-    const handleMarkAllRead = async () => {
+
+    // Fetch unread notifications
+    const fetchNotifications = async () => {
+        if (!user?._id) return;
         try {
-            await axios.patch(`${import.meta.env.VITE_API_URL}/api/notifications/${user._id}/read-all`);
+            const token = localStorage.getItem("token");
+            const res = await axios.get(
+                `${import.meta.env.VITE_API_URL}/api/notifications/unread/${user._id}`,
+                token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+            );
+            setNotifications(Array.isArray(res.data) ? res.data : []);
+        } catch (err) {
+            console.error("❌ Fetch notifications failed:", err?.response?.data || err.message);
+            setNotifications([]);
+        }
+    };
+
+    // Mark all as read
+    const handleMarkAllRead = async () => {
+        if (!user?._id) return;
+        try {
+            const token = localStorage.getItem("token");
+            await axios.patch(
+                `${import.meta.env.VITE_API_URL}/api/notifications/${user._id}/read-all`,
+                {},
+                token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+            );
             setNotifications([]);
             toast.success("Đã đánh dấu tất cả thông báo là đã đọc");
             setShowDropdown(false);
         } catch (err) {
-            console.error("Mark all failed:", err);
+            console.error("❌ Mark all read failed:", err?.response?.data || err.message);
+            toast.error("Không thể đánh dấu tất cả đã đọc");
         }
     };
+
+    // Mark single as read
+    const markOneRead = async (notificationId) => {
+        try {
+            const token = localStorage.getItem("token");
+            await axios.patch(
+                `${import.meta.env.VITE_API_URL}/api/notifications/${notificationId}/read`,
+                {},
+                token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+            );
+            setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
+        } catch (err) {
+            console.error("❌ Mark one read failed:", err?.response?.data || err.message);
+            toast.error("Không thể đánh dấu đã đọc");
+        }
+    };
+
+    // When user changes, refetch unread
     useEffect(() => {
         fetchNotifications();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?._id]);
 
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    // Close dropdown when clicking outside (without useRef)
+    useEffect(() => {
+        if (!showDropdown) return;
+        const onDown = (e) => {
+            const root = document.getElementById(rootDomId);
+            if (!root) return;
+            if (!root.contains(e.target)) {
                 setShowDropdown(false);
             }
         };
+        document.addEventListener("mousedown", onDown);
+        return () => document.removeEventListener("mousedown", onDown);
+    }, [showDropdown, rootDomId]);
 
-        if (showDropdown) {
-            document.addEventListener("mousedown", handleClickOutside);
-        }
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [user, showDropdown]);
-
-    const handleNotificationClick = (note, e) => {
-        e.stopPropagation();
-        e.preventDefault();
+    // Open modal for a single notification
+    const openNotification = (note) => {
         setSelectedNotification(note);
+        setShowDropdown(false);
     };
-    const extractPostId = (msg) => {
-        const match = msg.match(/bài đăng ([a-f0-9]{24})/i); // i = ignore case, match ObjectId chuẩn
-        return match ? match[1] : null;
-    };
+
+    // Close modal and mark selected as read
     const closeModal = async () => {
-        if (selectedNotification) {
-            try {
-                await axios.patch(`${import.meta.env.VITE_API_URL}/api/notifications/${selectedNotification._id}/read`);
-                setNotifications((prev) => prev.filter((n) => n._id !== selectedNotification._id));
-            } catch (err) {
-                console.error("Failed to mark as read");
-            }
+        if (selectedNotification?._id) {
+            await markOneRead(selectedNotification._id);
         }
         setSelectedNotification(null);
     };
 
+    // Navigate helpers (no preventDefault/stopPropagation)
+    const handleViewPost = () => {
+        const postId = extractPostId(selectedNotification?.message);
+        if (postId) {
+            navigate(`/postdetail/${postId}`);
+            // Mark read & close
+            closeModal();
+        }
+    };
+    const handleViewDeclaration = () => {
+        const id = selectedNotification?.data?.declarationId || extractDeclarationId(selectedNotification?.message);
+        if (id) {
+            navigate(`/residence-declaration/detail/${id}`);
+            closeModal();
+        }
+    };
+
     return (
-        <div className="position-relative" style={{ minWidth: 40 }}>
-            <div ref={dropdownRef} className="position-relative">
-                <button
-                    className="btn btn-link p-0 position-relative"
-                    onClick={() => setShowDropdown((prev) => !prev)}
-                    title="Thông báo"
-                >
-                    <FiBell size={22} className="text-dark" />
-                    {notifications.length > 0 && (
-                        <span
-                            className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                            style={{ fontSize: "0.75rem", minWidth: 20 }}
-                        >
-                            {notifications.length}
-                        </span>
-                    )}
-                </button>
-
-                {showDropdown && (
-                    <div
-                        className="dropdown-menu show shadow border-0 rounded-3 mt-2"
-                        style={{
-                            minWidth: 260,
-                            maxWidth: 340,
-                            right: 0,
-                            left: "auto",
-                            top: "100%",
-                            zIndex: 1050,
-                            fontSize: 15,
-                            overflow: "hidden",
-                        }}
+        <div id={rootDomId} className="notification-bell-wrapper" style={{ position: "relative" }}>
+            {/* Bell button */}
+            <button
+                type="button"
+                className="btn btn-link p-0 position-relative"
+                style={{ minWidth: 40 }}
+                onClick={() => setShowDropdown((v) => !v)}
+                title="Thông báo"
+                aria-label="Thông báo"
+            >
+                <FiBell size={22} className="text-dark" />
+                {notifications.length > 0 && (
+                    <span
+                        className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        style={{ fontSize: "0.8rem", minWidth: 20, padding: "2px 6px" }}
                     >
-                        {notifications.length > 0 && (
-                            <div className="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
-                                <span className="fw-semibold">Thông báo mới</span>
-                                <button
-                                    className="btn btn-sm btn-link text-decoration-none"
-                                    onClick={handleMarkAllRead}
-                                >
-                                    Đánh dấu tất cả đã đọc
-                                </button>
-                            </div>
-                        )}
+                        {notifications.length}
+                    </span>
+                )}
+            </button>
+
+            {/* Dropdown */}
+            {showDropdown && (
+                <div
+                    className="notification-dropdown shadow"
+                    style={{
+                        position: "absolute",
+                        right: 0,
+                        top: "110%",
+                        minWidth: 320,
+                        maxWidth: 380,
+                        background: "#fff",
+                        borderRadius: 10,
+                        zIndex: 2000,
+                        boxShadow: "0 2px 16px rgba(0,0,0,0.12)",
+                        overflow: "hidden",
+                        border: "1px solid #eee",
+                    }}
+                    role="menu"
+                    aria-label="Danh sách thông báo"
+                >
+                    <div
+                        className="d-flex align-items-center justify-content-between px-3 py-2 border-bottom"
+                        style={{ background: "#f8f9fa" }}
+                    >
+                        <span className="fw-semibold">Thông báo mới</span>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={handleMarkAllRead}
+                            disabled={notifications.length === 0}
+                        >
+                            Đánh dấu tất cả đã đọc
+                        </button>
+                    </div>
+
+                    <div style={{ maxHeight: 320, overflowY: "auto" }}>
                         {notifications.length === 0 ? (
-                            <div className="text-center py-3 text-muted">
-                                Không có thông báo mới
-                            </div>
-
+                            <div className="text-center text-muted py-4">Không có thông báo mới</div>
                         ) : (
-                            <div style={{ maxHeight: 260, overflowY: "auto" }}>
-                                {notifications.map((note) => (
-                                    <button
-                                        key={note._id}
-                                        className="dropdown-item text-start py-2"
-                                        onClick={(e) => handleNotificationClick(note, e)}
-                                        style={{ whiteSpace: "normal", lineHeight: 1.4 }}
-                                    >
-                                        <div>{note.message}</div>
-
-                                        <div className="small text-muted mt-1">
-                                            {new Date(note.createdAt).toLocaleString("vi-VN")}
+                            notifications.map((note) => (
+                                <button
+                                    key={note._id}
+                                    type="button"
+                                    className="notification-item px-3 py-2 w-100 text-start"
+                                    style={{
+                                        cursor: "pointer",
+                                        background: "transparent",
+                                        border: "none",
+                                        borderBottom: "1px solid #eee",
+                                        transition: "background 0.15s",
+                                    }}
+                                    onClick={() => openNotification(note)}
+                                    onMouseEnter={(e) => (e.currentTarget.style.background = "#f8f9fa")}
+                                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                                >
+                                    <div className="d-flex align-items-start">
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div
+                                                className="fw-normal"
+                                                style={{ whiteSpace: "normal", wordBreak: "break-word", fontSize: 15 }}
+                                            >
+                                                {note.message}
+                                            </div>
+                                            <div className="small text-muted mt-1">{fmtTime(note.createdAt)}</div>
                                         </div>
-                                    </button>
-                                ))}
-                            </div>
+                                    </div>
+                                </button>
+                            ))
                         )}
                     </div>
-                )}
-            </div>
 
-            {/* Modal */}
+                    <div className="text-end px-3 py-2 border-top bg-light">
+                        <Link
+                            to="/notifications"
+                            className="btn btn-sm btn-primary"
+                            style={{ minWidth: 100 }}
+                            onClick={() => setShowDropdown(false)}
+                        >
+                            Xem tất cả
+                        </Link>
+                    </div>
+                </div>
+            )}
+
+            {/* Notification Detail Modal */}
             {selectedNotification && (
                 <>
-                    {/* Modal Backdrop */}
+                    {/* Backdrop */}
                     <div
                         className="modal-backdrop show"
                         style={{
@@ -170,92 +262,86 @@ const NotificationBell = ({ user }) => {
                             left: 0,
                             width: "100vw",
                             height: "100vh",
-                            backgroundColor: "rgba(0, 0, 0, 0.5)",
-                            zIndex: 1050,
+                            background: "rgba(0,0,0,0.35)",
+                            zIndex: 3000,
                         }}
-                        onClick={() => closeModal()}
+                        onClick={closeModal}
                     ></div>
 
-                    {/* Modal Centered */}
+                    {/* Modal */}
                     <div
-                        className="modal fade show d-flex align-items-center justify-content-center"
-                        tabIndex="-1"
+                        className="modal show"
+                        tabIndex={-1}
                         role="dialog"
                         style={{
-                            display: "flex",
                             position: "fixed",
                             top: 0,
                             left: 0,
                             width: "100vw",
                             height: "100vh",
-                            zIndex: 1060,
+                            zIndex: 3100,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                         }}
-                        onClick={() => closeModal()}
+                        onClick={closeModal}
                     >
                         <div
                             className="modal-dialog modal-dialog-centered"
-                            style={{ maxWidth: "500px" }}
-                            onClick={(e) => e.stopPropagation()} // prevent close when clicking inside
+                            style={{ maxWidth: 500, width: "100%" }}
+                            onClick={(e) => e.stopPropagation()} // allow clicking inside without closing
                         >
                             <div className="modal-content border-0 shadow">
                                 <div className="modal-header bg-light">
-                                    <h5 className="modal-title">Chi tiết thông báo</h5>
-                                    <button
-                                        type="button"
-                                        className="btn-close"
-                                        onClick={closeModal}
-                                    ></button>
+                                    <h5 className="modal-title mb-0">Chi tiết thông báo</h5>
+                                    <button type="button" className="btn-close" onClick={closeModal}></button>
                                 </div>
 
                                 <div className="modal-body">
-                                    <p style={{ whiteSpace: "normal", lineHeight: 1.5 }}>
+                                    <div style={{ whiteSpace: "normal", lineHeight: 1.6, fontSize: 16 }}>
                                         {selectedNotification.message}
-                                    </p>
-                                    <div className="text-muted small mt-2">
-                                        {new Date(selectedNotification.createdAt).toLocaleString("vi-VN")}
+                                    </div>
+                                    <div className="text-muted small mt-3">
+                                        {fmtTime(selectedNotification.createdAt)}
                                     </div>
                                 </div>
 
-                                <div
-  className="modal-footer bg-light"
-  style={{
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "10px",
-    flexWrap: "nowrap",
-  }}
->
-  {extractPostId(selectedNotification.message) && (
-    <a
-      href={`/postdetail/${extractPostId(selectedNotification.message)}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="btn btn-primary"
-    >
-      Xem chi tiết
-    </a>
-  )}
-
-  {selectedNotification?.data?.declarationId && (
-    <a
-      href={`/residence-declaration/detail/${selectedNotification.data.declarationId}`}
-      className="btn btn-primary"
-    >
-      Xem chi tiết
-    </a>
-  )}
-
-  <button className="btn btn-outline-secondary" onClick={closeModal}>
-    Đóng
-  </button>
-</div>
-
+                                <div className="modal-footer bg-light d-flex flex-wrap justify-content-between gap-2">
+                                    <div>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-success btn-sm"
+                                            onClick={closeModal}
+                                        >
+                                            Đánh dấu đã đọc
+                                        </button>
+                                    </div>
+                                    <div className="d-flex gap-2">
+                                        {extractPostId(selectedNotification.message) && (
+                                            <button type="button" className="btn btn-primary btn-sm" onClick={handleViewPost}>
+                                                Xem bài đăng
+                                            </button>
+                                        )}
+                                        {selectedNotification?.data?.declarationId ||
+                                            extractDeclarationId(selectedNotification?.message) ? (
+                                            <button
+                                                type="button"
+                                                className="btn btn-primary btn-sm"
+                                                onClick={handleViewDeclaration}
+                                            >
+                                                Xem hồ sơ
+                                            </button>
+                                        ) : null}
+                                        <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setSelectedNotification(null)}>
+                                            Đóng
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </>
             )}
-
         </div>
     );
 };

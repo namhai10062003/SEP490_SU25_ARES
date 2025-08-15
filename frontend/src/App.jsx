@@ -85,6 +85,7 @@ import Register from "./pages/user/register.jsx";
 import ResetPassword from "./pages/user/resetpassword";
 import UserRevenue from "./pages/user/revenuer/UserRevenue.jsx";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
+import NotificationPage from "./pages/user/notification.jsx";
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
 function ProtectedRoute({ element, allowedRoles }) {
@@ -109,18 +110,18 @@ function AppRoutes() {
     <>
 
       <Routes>
-      <Route
-  path="/"
-  element={
-    user?.role === "admin" ? (
-      <Navigate to="/admin-dashboard" replace />
-    ) : user?.role === "staff" ? (
-      <Navigate to="/staff-dashboard" replace />
-    ) : (
-      <Home />
-    )
-  }
-/>
+        <Route
+          path="/"
+          element={
+            user?.role === "admin" ? (
+              <Navigate to="/admin-dashboard" replace />
+            ) : user?.role === "staff" ? (
+              <Navigate to="/staff-dashboard" replace />
+            ) : (
+              <Home />
+            )
+          }
+        />
 
 
         {/* <Route path="/" element={<Home />} /> */}
@@ -158,6 +159,7 @@ function AppRoutes() {
         <Route path="/residence-declaration/detail/:id" element={<ResidenceDeclarationDetail />} />
         <Route path="/cancel-payment/:orderCode" element={<PaymentCancel />} />
 
+        <Route path="/notifications" element={< NotificationPage />} />
         {/* Admin */}
         <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/posts" element={<ProtectedRoute element={<PostManagement />} allowedRoles={["admin"]} />} />
