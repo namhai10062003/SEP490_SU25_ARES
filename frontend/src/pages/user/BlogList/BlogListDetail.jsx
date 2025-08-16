@@ -362,7 +362,7 @@ const PostDetail = () => {
     <button
   className="btn btn-success px-3"
   onClick={() => {
-    if (contract.paymentStatus === "paid") {
+    if (contract?.paymentStatus === "paid") {
       toast.info("Căn hộ/bất động sản này đã được đặt cọc", {
         position: "top-right",
         autoClose: 3000,

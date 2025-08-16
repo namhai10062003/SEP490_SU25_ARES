@@ -1,6 +1,6 @@
 // --- Currency ---
 export const formatPrice = (p) =>
-    new Intl.NumberFormat("vi-VN").format(p || 0) + " đ";
+    new Intl.NumberFormat("vi-VN").format(p || 0) + " VND";
 
 // --- Dates ---
 export const formatDate = (d) =>
@@ -14,7 +14,7 @@ export const toInputDate = (date) => {
     return `${y}-${m}-${d}`;
 };
 export const formatCurrency = (amount) => {
-    if (isNaN(amount) || amount == null) return "0 ₫";
+    if (isNaN(amount) || amount == null) return "0 VND";
     return Number(amount).toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 };
 
