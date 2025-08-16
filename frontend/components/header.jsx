@@ -163,6 +163,15 @@ const Header = ({ user, name, logout }) => {
                         Doanh Thu Của Tôi
                       </Link>
                     </li>
+                    <li>
+                      <Link
+                        className="dropdown-item"
+                        to="/payment-history"
+                        onClick={() => setShowProfileDropdown(false)}
+                      >
+                        Lịch sữ thanh toán
+                      </Link>
+                    </li>
                   </ul>
                 </div>
 

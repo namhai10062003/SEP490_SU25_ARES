@@ -19,6 +19,7 @@ import messageRoutes from "./router/messageRoutes.js";
 import notificationRoutes from './router/notificationRoutes.js';
 import parkingRouter from "./router/parkingRegistration.js";
 import paymentRouter from "./router/payment.js";
+import paymentAllRoutes from "./router/paymentAllRoutes.js";
 import plazaRoutes from "./router/plazaRoutes.js";
 import postPackage from "./router/postPackage.js";
 import postRouter from "./router/postRouter.js";
@@ -110,6 +111,7 @@ app.use('/api/staff-dashboard', staffDashboardRoute);
 app.use("/api/profile-update", profileUpdateRoutes);
 app.use("/api/residence-declaration", ResidenceDeclaration);
 app.use("/api/ai", aiChatRoutes);
+app.use("/api/payment-history", paymentAllRoutes);
 
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {
