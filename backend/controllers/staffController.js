@@ -107,7 +107,7 @@ const updateStaff = async (req, res) => {
 const changeStaffStatus = async (req, res) => {
     try {
         const { status } = req.body;
-        if (typeof status !== "number" || ![0, 1].includes(status)) {
+        if (typeof status !== "number" || ![0, 1, 2].includes(status)) {
             return res.status(400).json({ error: "Trạng thái không hợp lệ" });
         }
         const staff = await User.findOneAndUpdate(

@@ -46,6 +46,19 @@ const getUnreadNotifications = async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 };
+// Get all notifications for a user but only 10 recent, for the bell
+const getRecentNotifications = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const notifications = await Notification.find({ userId })
+            .sort({ createdAt: -1 })
+            .limit(10);
+        res.json(notifications);
+    } catch (err) {
+        res.status(500).json({ error: "Server error" });
+    }
+};
+
 // Mark a notification as read
 const markAsRead = async (req, res) => {
     try {
@@ -164,4 +177,5 @@ export {
     sendGlobalNotification,
     getAllNotifications,
     getUnreadNotifications,
+    getRecentNotifications,
 };
