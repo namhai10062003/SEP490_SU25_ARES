@@ -58,6 +58,7 @@ import LikedPosts from "./pages/user/BlogList/LikedPosts.jsx";
 import Contact from "./pages/user/Contact/Contact.jsx";
 import Introduce from "./pages/user/Introduce/Introduce.jsx";
 import CustomerPostManagement from "./pages/user/MangementPostByCustomer/CustomerPostManagement.jsx";
+import PaymentHistoryTable from "./pages/user/PaymentHistory/paymentHistory.jsx";
 import RegistrationForm from "./pages/user/PostRegistration/registrationForm.jsx";
 import ResidenceDeclarationDetail from "./pages/user/ResidenceDeclaration/ResidenceDeclarationDetail.jsx";
 import ResidenceDeclarationList from "./pages/user/ResidenceDeclaration/ResidenceDeclarationList.jsx";
@@ -75,6 +76,7 @@ import ForgotPassword from "./pages/user/forgotpassword";
 import GoogleCallback from "./pages/user/google-callback.jsx";
 import Login from "./pages/user/login.jsx";
 import MyApartment from "./pages/user/manageUserApartment/MyApartment.jsx";
+import NotificationPage from "./pages/user/notification.jsx";
 import FormParkingRegistration from "./pages/user/parkingRegistration/formParkingRegistation";
 import ParkingRegistrationDetails from "./pages/user/parkingRegistration/parkingRegistartionDetail";
 import ParkingRegistration from "./pages/user/parkingRegistration/parkingRegistration";
@@ -85,7 +87,6 @@ import Register from "./pages/user/register.jsx";
 import ResetPassword from "./pages/user/resetpassword";
 import UserRevenue from "./pages/user/revenuer/UserRevenue.jsx";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
-import NotificationPage from "./pages/user/notification.jsx";
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
 function ProtectedRoute({ element, allowedRoles }) {
@@ -158,7 +159,7 @@ function AppRoutes() {
         <Route path="/residence-declaration/list" element={<ResidenceDeclarationList />} />
         <Route path="/residence-declaration/detail/:id" element={<ResidenceDeclarationDetail />} />
         <Route path="/cancel-payment/:orderCode" element={<PaymentCancel />} />
-
+        <Route path="/payment-history" element={<PaymentHistoryTable />} />
         <Route path="/notifications" element={< NotificationPage />} />
         {/* Admin */}
         <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
