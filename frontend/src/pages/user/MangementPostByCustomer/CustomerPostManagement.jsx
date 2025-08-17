@@ -15,6 +15,7 @@ import {
 import { Modal, Button } from "react-bootstrap";
 
 const PAGE_SIZE = 5;
+const API_URL = import.meta.env.VITE_API_URL;
 
 const CustomerPostManagement = () => {
   const { user, logout, loading: authLoading } = useAuth();
@@ -25,14 +26,15 @@ const CustomerPostManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedImages, setSelectedImages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [newImages, setNewImages] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [preview, setPreview] = useState(null);
   const [filters, setFilters] = useState({
     month: "",
     status: "",
     type: "",
     postPackage: "",
   });
-
+  const [originalPost, setOriginalPost] = useState(null); 
   const navigate = useNavigate();
 
   // Form state for editing
@@ -231,6 +233,11 @@ const CustomerPostManagement = () => {
     const updatedImages = Array.isArray(post.images) ? post.images : [];
 
     setEditingPost(post);
+    setOriginalPost({
+      ...post,
+      postPackage: post.postPackage?._id || post.postPackage || "", // ép về id/string
+      images: Array.isArray(post.images) ? post.images : [],
+    });
     setEditForm({
       title: post.title,
       description: post.description,
@@ -253,12 +260,17 @@ const CustomerPostManagement = () => {
   // Handle form input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditForm((prev) => ({
-      ...prev,
+  
+    if (name === "price" && value.length > 12) {
+      return; // ❌ Không cho nhập quá 12 số
+    }
+  
+    setEditForm({
+      ...editForm,
       [name]: value,
-    }));
+    });
   };
-
+  
   // Handle save edit
   const handleSaveEdit = async () => {
     // ==== Validate dữ liệu ====
@@ -341,33 +353,49 @@ const CustomerPostManagement = () => {
     //     ? "pending"
     //     : editingPost.status
     // );
-    const newStatus =
-      ["approved", "rejected", "expired"].includes(editingPost.status)
-        ? "pending"
-        : editingPost.status;
 
-    formData.append("status", newStatus);
+    const isChanged =
+  (editForm.title ?? "") !== (originalPost.title ?? "") ||
+  (editForm.description ?? "") !== (originalPost.description ?? "") ||
+  Number(editForm.area ?? 0) !== Number(originalPost.area ?? 0) ||
+  Number(editForm.price ?? 0) !== Number(originalPost.price ?? 0) ||
+  (editForm.legalDocument ?? "") !== (originalPost.legalDocument ?? "") ||
+  (editForm.interiorStatus ?? "") !== (originalPost.interiorStatus ?? "") ||
+  (editForm.amenities ?? "") !== (originalPost.amenities ?? "") ||
+  (editForm.location ?? "") !== (originalPost.location ?? "") ||
+  (editForm.property ?? "") !== (originalPost.property ?? "") ||
+  (editForm.postPackagename ?? "") !== (originalPost.postPackage ?? "") ||
+  JSON.stringify(editForm.oldImages ?? []) !== JSON.stringify(originalPost.images ?? []) ||
+  (editForm.newImages?.length ?? 0) > 0;
 
-    // ✅ Xử lý paymentStatus
-    let newPaymentStatus;
-    if (editingPost.status === "approved") {
-      // Giữ nguyên nếu đang là approved => pending
-      newPaymentStatus = editingPost.paymentStatus;
+let newStatus = originalPost.status;
+let newPaymentStatus = originalPost.paymentStatus;
+
+if (isChanged) {
+  if (["approved", "rejected", "expired"].includes(originalPost.status)) {
+    newStatus = "pending";
+  }
+
+  if (newStatus === "pending") {
+    if (originalPost.status === "expired") {
+      newPaymentStatus = "unpaid";
     } else {
-      // Nếu chuyển sang pending từ rejected hoặc expired => unpaid
-      newPaymentStatus = newStatus === "pending" ? "unpaid" : editingPost.paymentStatus;
+      newPaymentStatus = originalPost.paymentStatus; // giữ nguyên paid/unpaid
     }
+  }
+}
 
-    formData.append("paymentStatus", newPaymentStatus);
+formData.append("status", newStatus);
+formData.append("paymentStatus", newPaymentStatus);
 
+  console.log("🔍 Status hiện tại:", editForm.status);
+  console.log(
+    "🔍 Disabled?",
+    editForm.status 
+      ? editForm.status.toLowerCase().trim() !== "expired"
+      : false
+  );
 
-    console.log("🔍 Status hiện tại:", editForm.status);
-    console.log(
-      "🔍 Disabled?",
-      editForm.status
-        ? editForm.status.toLowerCase().trim() !== "expired"
-        : false
-    );
     // ==== Xử lý ảnh ====
     if (editForm.oldImages && editForm.oldImages.length > 0) {
       formData.append("oldImages", JSON.stringify(editForm.oldImages));
@@ -380,6 +408,12 @@ const CustomerPostManagement = () => {
       });
 
     try {
+      const totalImages = editForm.oldImages.length + editForm.newImages.length;
+      if (totalImages === 0) {
+        toast.error("⚠️ Bắt buộc phải có ít nhất 1 ảnh!");
+        return; // ❌ không cho submit
+      }
+      setIsSaving(true);
       const response = await updatePost(editingPost._id, formData, {});
 
       if (response.data.success) {
@@ -390,6 +424,8 @@ const CustomerPostManagement = () => {
       }
     } catch (error) {
       toast.error("Có lỗi xảy ra khi cập nhật bài đăng");
+    }finally {
+      setIsSaving(false);
     }
   };
 
@@ -447,31 +483,63 @@ const CustomerPostManagement = () => {
     setEditingPost(null);
   };
   // hàm chỉnh sửa up ảnh
-  // Xóa ảnh cũ khỏi state (và gửi danh sách giữ lại về backend)
-  const handleRemoveOldImage = (imgUrl) => {
-    setEditForm((prev) => ({
-      ...prev,
-      oldImages: prev.oldImages.filter((img) => img !== imgUrl),
-      images: prev.images.filter((img) => img !== imgUrl),
-    }));
-  };
+// Xóa ảnh cũ
+const handleRemoveOldImage = async (imageUrl) => {
+  if (!editingPost || !editingPost._id) {
+    console.error("❌ Không tìm thấy postId khi xóa ảnh!");
+    return;
+  }
 
-  const handleNewImagesChange = (e) => {
-    const files = Array.from(e.target.files).filter(
-      (file) => file instanceof File
-    );
-    setEditForm((prev) => ({
-      ...prev,
-      newImages: [...(prev.newImages || []), ...files].flat(),
-    }));
-  };
+  const postId = editingPost._id;
 
-  const handleRemoveNewImage = (file) => {
+  try {
+    console.log("🗑️ Gửi yêu cầu xóa ảnh:", { postId, imageUrl });
+    await axios.delete(`${API_URL}/api/posts/${postId}/images`, {
+      data: { imageUrl },
+    });
+
     setEditForm((prev) => ({
       ...prev,
-      newImages: prev.newImages.filter((f) => f !== file),
+      oldImages: prev.oldImages.filter((img) => img !== imageUrl),
     }));
-  };
+
+    toast.success("Ảnh đã được xóa!");
+  } catch (err) {
+    console.error("❌ Lỗi khi xóa ảnh:", err);
+    toast.error("Không thể xóa ảnh!");
+  }
+};
+
+
+
+// Xóa ảnh mới
+const handleRemoveNewImage = (file) => {
+  setEditForm((prev) => ({
+    ...prev,
+    newImages: prev.newImages.filter((f) => f !== file),
+  }));
+};
+
+// Chọn ảnh mới
+const handleNewImagesChange = (e) => {
+  const files = Array.from(e.target.files).filter((file) => file instanceof File);
+
+  // Lọc chỉ lấy file ảnh hợp lệ
+  const imageFiles = files.filter(
+    (file) =>
+      file.type.startsWith("image/") ||
+      /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.name)
+  );
+
+  if (imageFiles.length < files.length) {
+    toast.error("❌ Có file không phải ảnh (vd: .zip), hệ thống sẽ bỏ qua!");
+  }
+
+  setEditForm((prev) => ({
+    ...prev,
+    newImages: [...(prev.newImages || []), ...imageFiles],
+  }));
+};
 
 
   return (
@@ -1031,15 +1099,23 @@ const CustomerPostManagement = () => {
                           />
                         </div>
                         <div className="col-md-6">
-                          <label className="form-label">Giá (VND)</label>
-                          <input
-                            type="number"
-                            name="price"
-                            value={editForm.price}
-                            onChange={handleInputChange}
-                            className="form-control"
-                          />
-                        </div>
+
+  <label className="form-label">Giá (triệu VND)</label>
+  <input
+    type="text"
+    name="price"
+    value={editForm.price}
+    onChange={(e) => {
+      const value = e.target.value;
+      // ✅ Chỉ cho phép số và tối đa 12 chữ số
+      if (/^\d{0,12}$/.test(value)) {
+        handleInputChange(e);
+      }
+    }}
+    className="form-control"
+    placeholder="Nhập giá (tối đa 12 chữ số)"
+  />
+</div>
                       </div>
                     </div>
                   </div>
@@ -1090,44 +1166,101 @@ const CustomerPostManagement = () => {
                     </div>
                   )}
                   {/* Ảnh hiện tại */}
-                  {/* Ảnh cũ */}
-                  <div className="d-flex flex-wrap gap-2 mb-3">
-                    {editForm.images.length > 0 ? (
-                      editForm.images.map((img, idx) => (
-                        <div key={img} className="position-relative">
-                          <img
-                            src={img}
-                            alt=""
-                            style={{ width: 100, height: 100 }}
-                          />
-                          <button onClick={() => handleRemoveOldImage(img)}>
-                            ✕
-                          </button>
-                        </div>
-                      ))
-                    ) : (
-                      <p>Chưa có ảnh nào</p>
-                    )}
-                  </div>
+                  <>
+      {/* Ảnh cũ */}
+      <div className="d-flex flex-wrap gap-2 mb-3">
+  {editForm.oldImages && editForm.oldImages.length > 0 ? (
+    editForm.oldImages.map((img, idx) => (
+      <div
+        key={idx}
+        className="position-relative border rounded shadow-sm"
+        style={{ width: 100, height: 100 }}
+      >
+        <img
+          src={img}
+          alt=""
+          className="img-fluid rounded"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            cursor: "pointer",
+          }}
+          onClick={() => setPreview(img)}
+        />
 
-                  {/* Ảnh mới */}
-                  {editForm.newImages.length > 0 && (
-                    <div className="d-flex flex-wrap gap-2 mb-3">
-                      {editForm.newImages.map((file, idx) => (
-                        <div key={idx} className="position-relative">
-                          <img
-                            src={URL.createObjectURL(file)}
-                            alt=""
-                            style={{ width: 100, height: 100 }}
-                          />
-                          <button onClick={() => handleRemoveNewImage(file)}>
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+        <button
+          type="button"
+          onClick={() => {
+            handleRemoveOldImage(img); // ✅ truyền đúng postId
+          }}
+          className="btn btn-danger btn-sm position-absolute"
+          style={{
+            top: -6,
+            right: -6,
+            borderRadius: "50%",
+            padding: "2px 6px",
+            fontSize: 12,
+          }}
+        >
+          ✕
+        </button>
+      </div>
+    ))
+  ) : (
+    <p className="text-muted">Chưa có ảnh nào</p>
+  )}
+</div>
 
+
+
+      {/* Ảnh mới */}
+      {editForm.newImages.length > 0 && (
+        <div className="d-flex flex-wrap gap-2 mb-3">
+          {editForm.newImages.map((file, idx) => (
+            <div key={idx} className="position-relative" style={{ width: 100, height: 100 }}>
+              <img
+                src={URL.createObjectURL(file)}
+                alt=""
+                className="img-fluid rounded"
+                style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer" }}
+                onClick={() => setPreview(URL.createObjectURL(file))}
+              />
+              <button
+                type="button"
+                onClick={() => handleRemoveNewImage(file)}
+                className="btn btn-danger btn-sm position-absolute"
+                style={{ top: 2, right: 2, padding: "0 6px", lineHeight: 1, borderRadius: "50%" }}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Lightbox xem ảnh */}
+      {preview && (
+        <div
+          onClick={() => setPreview(null)}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0,0,0,0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            cursor: "pointer",
+          }}
+        >
+          <img src={preview} alt="" style={{ maxHeight: "90%", maxWidth: "90%" }} />
+        </div>
+      )}
+    </>
                   {/* Ảnh mới upload (preview) */}
                   {/* {newImages.length > 0 && (
   <div className="d-flex flex-wrap gap-2 mb-3">
@@ -1198,11 +1331,25 @@ const CustomerPostManagement = () => {
                     Hủy
                   </button>
                   <button
-                    className="btn btn-primary px-4"
-                    onClick={handleSaveEdit}
-                  >
-                    💾 Lưu thay đổi
-                  </button>
+      className="btn btn-primary px-4 d-flex align-items-center gap-2"
+      onClick={handleSaveEdit}
+      disabled={isSaving}
+    >
+      {isSaving ? (
+        <>
+          <span
+            className="spinner-border spinner-border-sm"
+            role="status"
+            aria-hidden="true"
+          ></span>
+          Đang lưu...
+        </>
+      ) : (
+        <>
+          💾 Lưu thay đổi
+        </>
+      )}
+    </button>
                 </div>
               </div>
             </div>
