@@ -26,7 +26,7 @@ const ManageApartment = () => {
   const page = parseInt(searchParams.get("page")) || 1;
   const pageSize = parseInt(searchParams.get("pageSize")) || 10;
   const searchTerm = searchParams.get("search") || "";
-  const statusFilter = searchParams.get("status") || "all";
+  const statusFilter = searchParams.get("status") || "active";
   const [totalPages, setTotalPages] = useState(1);
 
   // local state for search input

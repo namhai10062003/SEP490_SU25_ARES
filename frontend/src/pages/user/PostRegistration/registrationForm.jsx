@@ -16,8 +16,8 @@ const RegistrationForm = () => {
     quanHuyen: "",
     diaChiCuThe: "",
     tieuDe: "",
-    toaplaza: "",
-    socanho: "",
+    toaPlaza: "",
+    soCanHo: "",
     moTaChiTiet: "",
     dienTich: "",
     gia: "",
@@ -199,7 +199,7 @@ const RegistrationForm = () => {
         }));
       }
     }
-  }, [formData.socanho, apartmentOptions]);
+  }, [formData.soCanHo, apartmentOptions]);
 
   // hàm xử lí lấy sdt của user
   useEffect(() => {
@@ -523,7 +523,7 @@ const RegistrationForm = () => {
                                 type="text"
                                 className="form-control flex-grow-1" // ❌ không dùng form-control-sm
                                 placeholder="Nhập tên tòa plaza"
-                                value={formData.toaplaza || ""}
+                                value={formData.toaPlaza || ""}
                                 onChange={(e) =>
                                   setFormData((prev) => ({
                                     ...prev,

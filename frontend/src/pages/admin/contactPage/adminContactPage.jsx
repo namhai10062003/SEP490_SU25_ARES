@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Pagination from "../../../../components/Pagination.jsx";
-import ReuseableModal from "../../../../components/ReusableModal.jsx";
+import ReusableModal from "../../../../components/ReusableModal.jsx";
 import StatusFilter from "../../../../components/admin/statusFilter.jsx";
 import AdminDashboard from "../adminDashboard";
 
@@ -14,40 +14,18 @@ const AdminContactPage = () => {
     const [loading, setLoading] = useState(false);
     const [totalContacts, setTotalContacts] = useState(0);
     const token = localStorage.getItem("token");
-    // Helper to render user's name as a link to their detail page (by user id)
-    // Helper to render contact's name as a link to their detail page (by contact id)
-    const renderNameLink = (contact) => {
-        if (contact.userId?._id) {
-            return (
-                <a
-                    href={`/admin-dashboard/manage-user/${contact.userId._id}`}
-                    style={{ color: "#007bff", textDecoration: "underline" }}
-                    title={`Xem chi tiết người dùng: ${contact.userId.name || contact.name}`}
-                >
-                    {contact.userId.name || contact.name}
-                </a>
-            );
-        }
-        
-        // Nếu không có userId thì chỉ hiện tên
-        return <span>{contact.name}</span>;
-    };
-    
-    // Use URL search params for search, filter, pagination (like manage-user)
-    const [searchParams, setSearchParams] = useSearchParams();
 
-    // Derive state from URL
+    const [searchParams, setSearchParams] = useSearchParams();
     const searchText = searchParams.get("search") || "";
-    const statusFilter = searchParams.get("status") || "";
+    const statusFilter = searchParams.get("status") || "pending";
     const currentPage = Number(searchParams.get("page")) || 1;
     const pageSize = Number(searchParams.get("pageSize")) || PAGE_SIZE_OPTIONS[0];
 
-    // Modal state
     const [modalOpen, setModalOpen] = useState(false);
-    const [modalType, setModalType] = useState(""); // "delete"
+    const [modalType, setModalType] = useState("");
     const [selectedContact, setSelectedContact] = useState(null);
 
-    // Helper to update query params (merge, like manage-user)
+    // cập nhật query string
     const updateQuery = (next = {}) => {
         const params = new URLSearchParams(Object.fromEntries(searchParams.entries()));
         const keys = ["search", "status", "page", "pageSize"];
@@ -61,44 +39,31 @@ const AdminContactPage = () => {
         setSearchParams(params, { replace: true });
     };
 
-    // Handlers for filter/search/pagination that update URL params
-    const handleStatusFilterChange = (value) => {
-        updateQuery({ status: value, page: 1 });
-    };
+    const handleStatusFilterChange = (value) => updateQuery({ status: value, page: 1 });
+    const handleSearchTextChange = (e) => updateQuery({ search: e.target.value, page: 1 });
+    const handlePageChange = (page) => updateQuery({ page });
+    const handlePageSizeChange = (size) => updateQuery({ pageSize: size, page: 1 });
 
-    const handleSearchTextChange = (e) => {
-        updateQuery({ search: e.target.value, page: 1 });
-    };
-
-    const handlePageChange = (page) => {
-        updateQuery({ page });
-    };
-
-    const handlePageSizeChange = (size) => {
-        updateQuery({ pageSize: size, page: 1 });
-    };
-
-    // Fetch contacts with filter, search, pagination
     const loadContacts = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(
-                `${import.meta.env.VITE_API_URL}/api/contact/admin`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${token}` // ✅ Gửi token trong header
-                  }
-                }
-              );
-              
-              let data = res.data.data || [];
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contact/admin`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
 
-            // StatusFilter by status
+            let data = res.data.data || [];
+
+            // filter theo trạng thái
             if (statusFilter) {
-                data = data.filter((c) => c.status === statusFilter);
+                if (statusFilter === "pending") {
+                    // chỉ lấy chưa xoá
+                    data = data.filter((c) => c.status === "pending" && !c.isDeleted);
+                } else {
+                    data = data.filter((c) => c.status === statusFilter);
+                }
             }
 
-            // StatusFilter by search text
+            // filter theo từ khoá
             if (searchText.trim()) {
                 const keyword = searchText.toLowerCase();
                 data = data.filter((c) =>
@@ -110,7 +75,6 @@ const AdminContactPage = () => {
 
             setTotalContacts(data.length);
 
-            // Pagination
             const startIdx = (currentPage - 1) * pageSize;
             const pagedData = data.slice(startIdx, startIdx + pageSize);
 
@@ -130,7 +94,6 @@ const AdminContactPage = () => {
         // eslint-disable-next-line
     }, [statusFilter, searchText, currentPage, pageSize]);
 
-    // Modal handlers
     const openDeleteModal = (contact) => {
         setSelectedContact(contact);
         setModalType("delete");
@@ -144,23 +107,31 @@ const AdminContactPage = () => {
     };
 
     const handleDelete = async () => {
-        if (!selectedContact) return;
+        if (!selectedContact?._id) {
+            toast.error("❌ Không tìm thấy ID liên hệ!");
+            return;
+        }
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/api/contact/list/${selectedContact._id}`);
+            await axios.delete(
+                `${import.meta.env.VITE_API_URL}/api/contact/list/${selectedContact._id}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             toast.success("🗑️ Đã xoá liên hệ!");
             closeModal();
             loadContacts();
         } catch (err) {
-            console.error("❌ Xoá thất bại:", err);
+            console.error("❌ Xoá thất bại:", err.response || err);
             toast.error("❌ Xoá liên hệ thất bại!");
         }
     };
 
     const handleMarkReviewed = async (id) => {
         try {
-            await axios.put(`${import.meta.env.VITE_API_URL}/api/contact/list/${id}/status`, {
-                status: "reviewed",
-            });
+            await axios.put(
+                `${import.meta.env.VITE_API_URL}/api/contact/list/${id}/status`,
+                { status: "reviewed" },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
             toast.success("✅ Đã đánh dấu đã xử lý!");
             loadContacts();
         } catch (err) {
@@ -172,24 +143,31 @@ const AdminContactPage = () => {
     return (
         <AdminDashboard active="contact">
             <div className="container py-4">
-                <div className="d-flex justify-content-between align-items-center mb-4 gap-3">
-                    <h2 className="fw-bold mb-0">Quản lý Liên hệ</h2>
+
+                {/* Header */}
+                <div className="bg-primary text-white rounded-4 p-3 mb-4 text-center">
+                    <h2 className="mb-0">Quản lý Liên hệ</h2>
                 </div>
 
-                {/* StatusFilter & Search */}
-                <div className="mb-3 d-flex justify-content-end align-items-center gap-3 flex-wrap">
+                {/* Bộ lọc trạng thái + tìm kiếm */}
+                <div className="mb-3 d-flex justify-content-end align-items-center gap-2 flex-wrap">
                     <StatusFilter
                         type="report"
                         value={statusFilter}
                         onChange={handleStatusFilterChange}
                         label="Trạng thái"
-                        className="w-auto"
+                        className="form-select w-auto"
+                        options={[
+                            { value: "", label: "Tất cả" },
+                            { value: "pending", label: "Chờ xử lý" },
+                            { value: "reviewed", label: "Đã xem xét" },
+                            { value: "archived", label: "Lưu trữ" },
+                        ]}
                     />
                     <input
                         type="text"
-                        className="form-control"
+                        className="form-control w-auto"
                         placeholder="Tìm kiếm..."
-                        style={{ maxWidth: 200 }}
                         value={searchText}
                         onChange={handleSearchTextChange}
                     />
@@ -222,7 +200,7 @@ const AdminContactPage = () => {
                                 ) : (
                                     contacts.map((c) => (
                                         <tr key={c._id}>
-                                            <td>{renderNameLink(c)}</td>
+                                            <td>{c.name}</td>
                                             <td>{c.email}</td>
                                             <td>{c.message}</td>
                                             <td>
@@ -232,7 +210,7 @@ const AdminContactPage = () => {
                                                         : c.status === "reviewed"
                                                             ? "bg-success"
                                                             : "bg-warning text-dark"
-                                                        }`}
+                                                    }`}
                                                 >
                                                     {c.isDeleted
                                                         ? "Đã xoá"
@@ -249,7 +227,7 @@ const AdminContactPage = () => {
                                                 ) : (
                                                     <>
                                                         <button
-                                                            className="btn btn-sm btn-success me-2"
+                                                            className="btn btn-sm btn-success me-1"
                                                             onClick={() => handleMarkReviewed(c._id)}
                                                         >
                                                             ✅ Đã xử lý
@@ -280,24 +258,17 @@ const AdminContactPage = () => {
                     </div>
                 )}
 
-                {/* ReuseableModal for delete confirmation */}
-                <ReuseableModal
+                {/* Modal xác nhận xoá */}
+                <ReusableModal
                     show={modalOpen && modalType === "delete"}
-                    title="Xác nhận xóa liên hệ"
+                    title="Xác nhận xoá liên hệ"
                     onClose={closeModal}
-                    onConfirm={handleDelete}
-                    confirmText="Xoá"
-                    cancelText="Huỷ"
-                >
-                    <div>Bạn có chắc muốn xoá liên hệ này?</div>
-                    {selectedContact && (
-                        <div className="mt-2 small text-muted">
-                            <div><b>Họ tên:</b> {selectedContact.name}</div>
-                            <div><b>Email:</b> {selectedContact.email}</div>
-                            <div><b>Nội dung:</b> {selectedContact.message}</div>
-                        </div>
-                    )}
-                </ReuseableModal>
+                    body={<div>Bạn có chắc muốn xoá liên hệ này?</div>}
+                    footerButtons={[
+                        { label: "Huỷ", variant: "secondary", onClick: closeModal },
+                        { label: "🗑️ Xoá", variant: "danger", onClick: handleDelete },
+                    ]}
+                />
             </div>
         </AdminDashboard>
     );
