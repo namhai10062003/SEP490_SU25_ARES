@@ -153,7 +153,7 @@ const ManageStaff = () => {
     // toggle active/block status
     const handleToggleStatus = async (staff) => {
         try {
-            const newStatus = staff.status ? 0 : 1;
+            const newStatus = staff.status === 1 ? 2 : 1;
             await getAxios().patch(`${API_BASE}/staff/${staff._id}`, { status: newStatus });
             toast.success("Đã đổi trạng thái!");
             fetchStaff();
@@ -295,8 +295,8 @@ const ManageStaff = () => {
                                             <td>{staff.name}</td>
                                             <td>{staff.email}</td>
                                             <td>
-                                                <span className={`badge ${staff.status ? "bg-success" : "bg-secondary"}`}>
-                                                    {staff.status ? "Active" : "Blocked"}
+                                                <span className={`badge ${staff.status === 1 ? "bg-success" : "bg-secondary"}`}>
+                                                    {staff.status === 1 ? "Active" : "Blocked"}
                                                 </span>
                                             </td>
                                             <td>
@@ -308,11 +308,11 @@ const ManageStaff = () => {
                                                     Cập nhật
                                                 </button>
                                                 <button
-                                                    className={`btn btn-sm ${staff.status ? "btn-outline-danger" : "btn-outline-success"}`}
+                                                    className={`btn btn-sm ${staff.status === 1 ? "btn-outline-danger" : "btn-outline-success"}`}
                                                     style={{ whiteSpace: "nowrap", minWidth: 70 }}
                                                     onClick={() => handleToggleStatus(staff)}
                                                 >
-                                                    {staff.status ? "Block" : "Active"}
+                                                    {staff.status === 1 ? "Block" : "Active"}
                                                 </button>
                                             </td>
                                         </tr>
