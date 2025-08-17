@@ -8,6 +8,7 @@ import {
   getApartmentList,
   getPlazaList,
 } from "../../../service/postService.js";
+import { formatCurrency } from "../../../../utils/format.jsx";
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
     loaiHinh: "",
@@ -156,13 +157,19 @@ const RegistrationForm = () => {
       return;
     }
 
+    if (name === "gia") {
+      const raw = value.replace(/\D/g, ""); // bỏ ký tự không phải số
+      setFormData((prev) => ({ ...prev, gia: raw ? Number(raw) : "" }));
+      return;
+    }
+
     // Loại hình căn hộ tự gán địa chỉ
     if (name === "loaiHinh") {
       if (value === "nha_can_ho") {
         setFormData((prev) => ({
           ...prev,
           [name]: value,
-          diaChiCuThe: "FPT City",
+          diaChiCuThe: "FPT City, Phường Ngũ Hành Sơn, Thành Phố Đà Nẵng",
         }));
       } else {
         setFormData((prev) => ({ ...prev, [name]: value, diaChiCuThe: "" }));
@@ -188,11 +195,11 @@ const RegistrationForm = () => {
           giayto: selectedApartment.legalDocuments || "",
           huongdat: selectedApartment.direction || "",
           tinhtrang: selectedApartment.furniture || "",
-          diaChiCuThe: "FPT City",
+          diaChiCuThe: "FPT City, Phường Ngũ Hành Sơn, Thành Phố Đà Nẵng",
         }));
       }
     }
-  }, [formData.soCanHo, apartmentOptions]);
+  }, [formData.socanho, apartmentOptions]);
 
   // hàm xử lí lấy sdt của user
   useEffect(() => {
@@ -429,7 +436,7 @@ const RegistrationForm = () => {
               {/* Form Content */}
               <div className="col-12 col-md-9">
                 <div className="row g-3">
-                  <div className="col-12 col-md-6">
+                  <div className="col-12 col-md-6 mb-3">
                     <label className="form-label">
                       Dịch Vụ <span className="text-danger">*</span>
                     </label>
@@ -466,9 +473,7 @@ const RegistrationForm = () => {
                   </div>
                   {loaiHinhCon === "nha_can_ho" && (
                     <>
-                      <div className="row align-items-end mb-3">
-
-
+                      <div className="row align-items-end">
                         {/* TOA PLAZA */}
                         <div className="col-md-6">
                           <label className="form-label">
@@ -518,7 +523,7 @@ const RegistrationForm = () => {
                                 type="text"
                                 className="form-control flex-grow-1" // ❌ không dùng form-control-sm
                                 placeholder="Nhập tên tòa plaza"
-                                value={formData.toaPlaza || ""}
+                                value={formData.toaplaza || ""}
                                 onChange={(e) =>
                                   setFormData((prev) => ({
                                     ...prev,
@@ -691,10 +696,11 @@ const RegistrationForm = () => {
                           name="dienTich"
                           value={formData.dienTich}
                           onChange={handleInputChange}
-                          placeholder="m²"
                           className="form-control"
+                          placeholder="Nhập diện tích"
                           required
                         />
+                        <span className="input-group-text">m²</span> {/* 👈 thêm đơn vị ở ngoài */}
                       </div>
                     </div>
                   )}
@@ -705,14 +711,26 @@ const RegistrationForm = () => {
                     <div className="input-group">
                       <span className="input-group-text">💰</span>
                       <input
-                        type="number"
+                        type="text"
                         name="gia"
-                        value={formData.gia}
-                        onChange={handleInputChange}
-                        placeholder="Thỏa thuận hoặc giá cụ thể"
+                        value={
+                          formData.gia
+                            ? new Intl.NumberFormat("vi-VN").format(formData.gia)
+                            : ""
+                        }
+                        onChange={(e) => {
+                          let raw = e.target.value.replace(/\D/g, ""); // chỉ lấy số
+                          if (raw.length > 12) raw = raw.slice(0, 12); // giới hạn 12 chữ số
+                          setFormData((prev) => ({
+                            ...prev,
+                            gia: raw ? Number(raw) : "",
+                          }));
+                        }}
+                        placeholder="Nhập giá"
                         className="form-control"
                         required
                       />
+                      <span className="input-group-text">VND</span>
                     </div>
                   </div>
                   {["ban", "cho_thue"].includes(loaiBaiDang) && (
@@ -855,9 +873,9 @@ const RegistrationForm = () => {
                           value: "685039e4f8f1552c6378a7a5",
                           title: (
                             <div>
-                              <div className="fw-bold">VIP 1</div>
-                              <div>Hiển thị Blog 3 ngày</div>
-                              <div>10.000đ/tin</div>
+                              <div className="fw-bold fs-5 mb-1">VIP 1</div>
+                              <div className="text-secondary mb-1">Hiển thị 3 ngày trên Blog</div>
+                              <div className="fw-bold fs-6 text-danger">10.000 VND / tin</div>
                             </div>
                           ),
                         },
@@ -866,9 +884,9 @@ const RegistrationForm = () => {
                           value: "685174b550c6fbcbc4efbe87",
                           title: (
                             <div>
-                              <div className="fw-bold">VIP 2</div>
-                              <div>Hiển thị Blog 5 ngày</div>
-                              <div>20.000đ/tin</div>
+                              <div className="fw-bold fs-5 mb-1">VIP 2</div>
+                              <div className="text-secondary mb-1">Hiển thị 5 ngày trên Blog</div>
+                              <div className="fw-bold fs-6 text-danger">20.000 VND / tin</div>
                             </div>
                           ),
                         },
@@ -876,9 +894,9 @@ const RegistrationForm = () => {
                           value: "685174db50c6fbcbc4efbe88",
                           title: (
                             <div>
-                              <div className="fw-bold">VIP 3</div>
-                              <div>Hiển thị Blog 7 ngày</div>
-                              <div>30.000đ/tin</div>
+                              <div className="fw-bold fs-5 mb-1">VIP 3</div>
+                              <div className="text-secondary mb-1">Hiển thị 7 ngày trên Blog</div>
+                              <div className="fw-bold fs-6 text-danger">30.000 VND / tin</div>
                             </div>
                           ),
                         },
@@ -886,8 +904,8 @@ const RegistrationForm = () => {
                         <div className="col-12 col-md-4" key={option.value}>
                           <div
                             className={`card h-100 ${formData.postPackage === option.value
-                                ? "border-primary shadow"
-                                : ""
+                              ? "border-primary shadow"
+                              : ""
                               }`}
                             style={{ cursor: "pointer" }}
                             onClick={() => handleGenderSelect(option.value)}

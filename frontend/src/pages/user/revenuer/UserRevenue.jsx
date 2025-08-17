@@ -9,8 +9,9 @@ const API_WITHDRAWAL = `${import.meta.env.VITE_API_URL}/api/withdrawals`;
 
 const PAGE_SIZE = 10;
 
+
 const formatPrice = (price) =>
-  new Intl.NumberFormat("vi-VN").format(price || 0) + " đ";
+  new Intl.NumberFormat("vi-VN").format(price || 0) + " VND";
 
 const formatDate = (dateStr) => {
   if (!dateStr) return "-";
@@ -22,6 +23,7 @@ const formatDate = (dateStr) => {
 const UserRevenue = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [amount, setAmount] = useState("");
 
   const [contracts, setContracts] = useState([]);
   const [withdrawHistory, setWithdrawHistory] = useState([]);
@@ -47,7 +49,7 @@ const UserRevenue = () => {
   // const [totalWithdrawableFromContracts, setTotalWithdrawableFromContracts] = useState(0);
   // const [availableToWithdraw, setAvailableToWithdraw] = useState(0);
   const [withdrawnAmount, setWithdrawnAmount] = useState(0);
-  
+
   // kiểm tra người thuê
   // const hasNotified = useRef(false);
 
@@ -66,6 +68,53 @@ const UserRevenue = () => {
   //   }
   // }, [user, contracts]);
   // setname
+  const formatNumber = (value) => {
+    let onlyDigits = value.replace(/\./g, "").replace(/\D/g, "");
+    if (!onlyDigits) return "";
+    return onlyDigits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
+  const handleChange = (e) => {
+    let raw = e.target.value.replace(/\./g, "").replace(/\D/g, ""); // số gốc
+    if (!raw) {
+      setAmount("");
+      return;
+    }
+    let numberValue = parseInt(raw, 10);
+
+    // Giới hạn không cho nhập lớn hơn availableToWithdraw
+    if (numberValue > availableToWithdraw) {
+      numberValue = availableToWithdraw;
+    }
+
+    setAmount(formatNumber(numberValue.toString()));
+  };
+
+  const formatPrice = (num) => {
+    if (!num) return "0 VND";
+    return (
+      num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + " VND"
+    );
+  };
+
+  // onChange cho input số tiền
+  const handleAmountChange = (e) => {
+    let rawValue = e.target.value.replace(/\D/g, ""); // bỏ hết ký tự không phải số
+    if (rawValue === "") {
+      setWithdrawForm({ ...withdrawForm, amount: "" });
+      return;
+    }
+
+    let numericValue = parseInt(rawValue, 10);
+
+    // ✅ giới hạn theo availableToWithdraw thay vì tổng tiền
+    if (numericValue > availableToWithdraw) {
+      numericValue = availableToWithdraw;
+    }
+
+    setWithdrawForm({ ...withdrawForm, amount: numericValue });
+  };
+
   useEffect(() => {
     const fetchAvailableWithdrawInfo = async () => {
       try {
@@ -121,21 +170,21 @@ const UserRevenue = () => {
   // ✅ Lọc và phân trang hợp đồng
   const filteredContracts = contracts.filter((c) => {
     const keyword = contractSearchText.toLowerCase();
-  
+
     const matchesSearch =
       c.apartmentCode?.toLowerCase().includes(keyword) ||
       c.fullNameB?.toLowerCase().includes(keyword) ||
       c.orderCode?.toLowerCase().includes(keyword) ||
       c.depositAmount?.toString().includes(keyword) ||
       c.withdrawableAmount?.toString().includes(keyword);
-  
+
     const matchesDate = contractFilterDate
       ? new Date(c.paymentDate).toLocaleDateString("vi-VN") ===
-        new Date(contractFilterDate).toLocaleDateString("vi-VN")
+      new Date(contractFilterDate).toLocaleDateString("vi-VN")
       : true;
-  
+
     const isOwnContract = c.landlordId === user._id; // 🔥 BỔ SUNG DÒNG NÀY
-  
+
     return (
       isOwnContract && // 🔥 THÊM Ở ĐÂY
       c.paymentStatus === "paid" &&
@@ -157,32 +206,32 @@ const UserRevenue = () => {
   }, [filteredContracts]);
 
   // ✅ Tính tổng số tiền có thể rút
-// ✅ Tính tổng số tiền có thể rút
-const totalWithdrawable = filteredContracts.reduce(
-  (sum, c) =>
-    sum + (typeof c.withdrawableAmount === "number" ? c.withdrawableAmount : 0),
-  0
-);
-console.log(filteredContracts.map(c => c.withdrawableAmount));
+  // ✅ Tính tổng số tiền có thể rút
+  const totalWithdrawable = filteredContracts.reduce(
+    (sum, c) =>
+      sum + (typeof c.withdrawableAmount === "number" ? c.withdrawableAmount : 0),
+    0
+  );
+  console.log(filteredContracts.map(c => c.withdrawableAmount));
 
-// ✅ Tính tổng số tiền có thể rút từ các hợp đồng
-const totalWithdrawableFromContracts = filteredContracts.reduce(
-  (sum, c) => {
-    const amount =
-      typeof c.receivedAmount === "number"
-        ? c.receivedAmount
-        : (typeof c.withdrawableAmount === "number"
+  // ✅ Tính tổng số tiền có thể rút từ các hợp đồng
+  const totalWithdrawableFromContracts = filteredContracts.reduce(
+    (sum, c) => {
+      const amount =
+        typeof c.receivedAmount === "number"
+          ? c.receivedAmount
+          : (typeof c.withdrawableAmount === "number"
             ? c.withdrawableAmount
             : 0);
-    return sum + amount;
-  },
-  0
-);
+      return sum + amount;
+    },
+    0
+  );
 
-// ✅ Còn lại = Tổng có thể rút - Đã rút
-const availableToWithdraw = useMemo(() => {
-  return Math.max(totalWithdrawableFromContracts - (Number(withdrawnAmount) || 0), 0);
-}, [totalWithdrawableFromContracts, withdrawnAmount]);
+  // ✅ Còn lại = Tổng có thể rút - Đã rút
+  const availableToWithdraw = useMemo(() => {
+    return Math.max(totalWithdrawableFromContracts - (Number(withdrawnAmount) || 0), 0);
+  }, [totalWithdrawableFromContracts, withdrawnAmount]);
 
   const handleWithdrawChange = (e) => {
     setWithdrawForm({ ...withdrawForm, [e.target.name]: e.target.value });
@@ -190,22 +239,24 @@ const availableToWithdraw = useMemo(() => {
 
   const handleWithdrawSubmit = async (e) => {
     e.preventDefault();
-    setWithdrawMessage(""); // có thể bỏ nếu chỉ dùng toast
-  
-    const amount = parseFloat(withdrawForm.amount);
+    setWithdrawMessage("");
+
+    // 👉 loại bỏ dấu . trong chuỗi
+    const rawAmount = withdrawForm.amount.toString().replace(/\./g, "");
+    const amount = parseFloat(rawAmount);
     const EPSILON = 0.01;
-  
+
     if (isNaN(amount) || amount <= 0 || amount - totalWithdrawableFromContracts > EPSILON) {
       toast.error("❌ Số tiền rút không hợp lệ hoặc vượt quá giới hạn.");
       return;
     }
-  
+
     try {
       const token = localStorage.getItem("token");
-      await axios.post(API_WITHDRAWAL, withdrawForm, {
+      await axios.post(API_WITHDRAWAL, { ...withdrawForm, amount }, {
         headers: { Authorization: `Bearer ${token}` },
       });
-  
+
       toast.success("✅ Gửi yêu cầu rút tiền thành công!");
       setWithdrawForm({
         accountHolder: "",
@@ -213,15 +264,13 @@ const availableToWithdraw = useMemo(() => {
         bankName: "",
         amount: "",
       });
-  
+
       await Promise.all([
         fetchContracts(token),
         fetchWithdrawHistory(token),
       ]);
     } catch (err) {
       console.error("❌ Gửi yêu cầu thất bại:", err);
-  
-      // 👉 nếu API có trả message chi tiết thì hiển thị lên
       const errorMessage =
         err?.response?.data?.message || "❌ Có lỗi xảy ra. Vui lòng thử lại.";
       toast.error(errorMessage);
@@ -300,12 +349,12 @@ const availableToWithdraw = useMemo(() => {
                 )}
               </div>
               <div className="d-flex justify-content-end">
-              <p className="fw-bold text-end">
-  Tổng tiền có thể rút: {formatPrice(totalWithdrawableFromContracts)} — 
-  Đã rút: {formatPrice(withdrawnAmount)} — 
-  Còn lại: <span className="text-success">{formatPrice(availableToWithdraw)}</span>
-</p>
-</div>
+                <p className="fw-bold text-end">
+                  Tổng tiền có thể rút: {formatPrice(totalWithdrawableFromContracts)} —
+                  Đã rút: {formatPrice(withdrawnAmount)} —
+                  Còn lại: <span className="text-success">{formatPrice(availableToWithdraw)}</span>
+                </p>
+              </div>
 
             </div>
 
@@ -404,36 +453,41 @@ const availableToWithdraw = useMemo(() => {
                       ))}
                       <div className="mb-3">
                         <label className="form-label fw-bold">Số tiền muốn rút</label>
-                        <input
-                          type="number"
-                          name="amount"
-                          className="form-control"
-                          value={withdrawForm.amount}
-                          onChange={handleWithdrawChange}
-                          required
-                          min={1000}
-                          step="any"
-                        />
-                     <small className="text-muted">
-  Tối đa: {formatPrice(availableToWithdraw || 0)}
-</small>
-
+                        <div className="input-group">
+                          <input
+                            type="text"
+                            name="amount"
+                            className="form-control"
+                            value={
+                              withdrawForm.amount
+                                ? withdrawForm.amount.toLocaleString("vi-VN")
+                                : ""
+                            }
+                            onChange={handleAmountChange}
+                            required
+                            placeholder="Nhập số tiền"
+                          />
+                          <span className="input-group-text">VND</span>
+                        </div>
+                        <small className="text-muted">
+                          Tối đa: {formatPrice(availableToWithdraw || 0)}
+                        </small>
                       </div>
                       <button type="submit" className="btn btn-primary w-100">
                         Rút tiền
                       </button>
                       <button
-  type="button"
-  className="btn btn-outline-secondary mt-2"
-  onClick={() =>
-    setWithdrawForm({
-      ...withdrawForm,
-      amount: availableToWithdraw.toFixed(2),
-    })
-  }
->
-  Rút toàn bộ {/* ({formatPrice(availableToWithdraw)}) */}
-</button>
+                        type="button"
+                        className="btn btn-outline-secondary mt-2"
+                        onClick={() =>
+                          setWithdrawForm({
+                            ...withdrawForm,
+                            amount: availableToWithdraw.toFixed(2),
+                          })
+                        }
+                      >
+                        Rút toàn bộ {/* ({formatPrice(availableToWithdraw)}) */}
+                      </button>
 
                       {withdrawMessage && (
                         <div className="alert alert-info mt-3 text-center">
@@ -496,56 +550,55 @@ const availableToWithdraw = useMemo(() => {
 
             {/* Lịch sử yêu cầu rút tiền */}
             <div className="mt-5">
-  <h5 className="mb-3 border-start border-4 ps-3 text-primary">
-    📝 Lịch sử các yêu cầu rút tiền
-  </h5>
-  {withdrawHistory.length === 0 ? (
-  <p className="text-muted">Chưa có yêu cầu nào.</p>
-) : (
-  <div className="table-responsive">
-    <table className="table table-bordered table-striped align-middle">
-      <thead className="table-light">
-        <tr>
-          <th>Ngày gửi</th>
-          <th>Số tiền</th>
-          <th>Ngân hàng</th>
-          <th>Số tài khoản</th>
-          <th>Chủ tài khoản</th>
-          <th>Trạng thái</th>
-          <th>Lý do từ chối</th>
-        </tr>
-      </thead>
-      <tbody>
-        {withdrawHistory.map((w) => (
-          <tr key={w._id}>
-            <td>{formatDate(w.createdAt)}</td>
-            <td>{formatPrice(w.amount)}</td>
-            <td>{w.bankName}</td>
-            <td>{w.bankNumber}</td>
-            <td>{w.accountHolder || "--"}</td>
-            <td>
-              <span
-                className={`badge text-capitalize ${
-                  w.status === "approved"
-                    ? "bg-success"
-                    : w.status === "rejected"
-                    ? "bg-danger"
-                    : "bg-warning text-dark"
-                }`}
-              >
-                {w.status}
-              </span>
-            </td>
-            <td>{w.rejectedReason || "--"}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
+              <h5 className="mb-3 border-start border-4 ps-3 text-primary">
+                📝 Lịch sử các yêu cầu rút tiền
+              </h5>
+              {withdrawHistory.length === 0 ? (
+                <p className="text-muted">Chưa có yêu cầu nào.</p>
+              ) : (
+                <div className="table-responsive">
+                  <table className="table table-bordered table-striped align-middle">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Ngày gửi</th>
+                        <th>Số tiền</th>
+                        <th>Ngân hàng</th>
+                        <th>Số tài khoản</th>
+                        <th>Chủ tài khoản</th>
+                        <th>Trạng thái</th>
+                        <th>Lý do từ chối</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {withdrawHistory.map((w) => (
+                        <tr key={w._id}>
+                          <td>{formatDate(w.createdAt)}</td>
+                          <td>{formatPrice(w.amount)}</td>
+                          <td>{w.bankName}</td>
+                          <td>{w.bankNumber}</td>
+                          <td>{w.accountHolder || "--"}</td>
+                          <td>
+                            <span
+                              className={`badge text-capitalize ${w.status === "approved"
+                                ? "bg-success"
+                                : w.status === "rejected"
+                                  ? "bg-danger"
+                                  : "bg-warning text-dark"
+                                }`}
+                            >
+                              {w.status}
+                            </span>
+                          </td>
+                          <td>{w.rejectedReason || "--"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
 
-  </div>
-         </>
+            </div>
+          </>
         )}
       </div>
     </>

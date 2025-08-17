@@ -261,13 +261,13 @@ for (let pair of formData.entries()) {
           </h4>
           {post.type === "cho_thue" && (
   <p>
-    Giá thuê: <strong>{post.price?.toLocaleString("vi-VN")} VNĐ/tháng</strong>
+    Giá thuê: <strong>{post.price?.toLocaleString("vi-VN")} VND/tháng</strong>
   </p>
 )}
 
 {post.type === "ban" && (
   <p>
-    Giá bán: <strong>{post.price?.toLocaleString("vi-VN")} VNĐ</strong>
+    Giá bán: <strong>{post.price?.toLocaleString("vi-VN")} VND</strong>
   </p>
 )}
 
@@ -318,7 +318,7 @@ for (let pair of formData.entries()) {
             <div className="alert alert-info">
   Tiền đặt cọc:{" "}
   <strong>
-    {Math.floor(post.price * (post.type === "ban" ? 0.01 : 0.1)).toLocaleString("vi-VN")} VNĐ
+    {Math.floor(post.price * (post.type === "ban" ? 0.01 : 0.1)).toLocaleString("vi-VN")} VND
   </strong>
 </div>
 
