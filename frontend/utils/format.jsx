@@ -14,9 +14,9 @@ export const toInputDate = (date) => {
     return `${y}-${m}-${d}`;
 };
 export const formatCurrency = (amount) => {
-    if (isNaN(amount) || amount == null) return "0 VND";
-    return Number(amount).toLocaleString("vi-VN", { style: "currency", currency: "VND" });
-};
+    if (amount == null || isNaN(amount)) return "0 VND";
+    return Number(amount).toLocaleString("vi-VN") + " VND";
+  };  
 
 export const formatSmartDate = (dateStr) => {
     if (!dateStr) return "";

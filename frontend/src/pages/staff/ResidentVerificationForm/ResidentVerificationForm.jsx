@@ -207,8 +207,7 @@ if (formData.documentType === "Hợp đồng cho thuê") {
   }
 
   // Append lên FormData khi gửi
-  data.append("contractStart", startDate.toISOString());
-  data.append("contractEnd", endDate.toISOString());
+
 }
 
 if (!formData.documentImage || formData.documentImage.length === 0) {
@@ -229,12 +228,15 @@ if (!formData.documentImage || formData.documentImage.length === 0) {
       formData.documentImage.forEach((img) => {
         data.append("documentImage", img);
       });
-  
+      
       if (formData.documentType === "Hợp đồng cho thuê") {
-        data.append("contractStart", contractStart.toISOString());
-        data.append("contractEnd", contractEnd.toISOString());
+        const startDate = new Date(formData.contractStart);
+        const endDate = new Date(formData.contractEnd);
+      
+        data.append("contractStart", startDate.toISOString());
+        data.append("contractEnd", endDate.toISOString());
       }
-  
+      
       await axios.post(
         `${import.meta.env.VITE_API_URL}/api/resident-verifications/verification`,
         data,

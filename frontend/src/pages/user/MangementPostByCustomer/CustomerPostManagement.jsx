@@ -12,6 +12,8 @@ import {
   getPostsByUser,
   updatePost,
 } from "../../../service/postService.js";
+import { Modal, Button } from "react-bootstrap";
+
 const PAGE_SIZE = 5;
 
 const CustomerPostManagement = () => {
@@ -20,6 +22,8 @@ const CustomerPostManagement = () => {
   const [loading, setLoading] = useState(true);
   const [editingPost, setEditingPost] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImages, setSelectedImages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [newImages, setNewImages] = useState([]);
   const [filters, setFilters] = useState({
@@ -45,11 +49,11 @@ const CustomerPostManagement = () => {
     // postPackagename: "",
     packageId: "",
     property: "",
-    status: null, 
+    status: null,
     images: [], // ảnh cũ
     oldImages: [], // ảnh cũ còn giữ lại
     newImages: []
-    
+
   });
 
   const postStatusLabels = {
@@ -185,7 +189,7 @@ const CustomerPostManagement = () => {
         },
         {
           label: "Huỷ",
-          onClick: () => {},
+          onClick: () => { },
         },
       ],
     });
@@ -317,7 +321,7 @@ const CustomerPostManagement = () => {
     // ==== Tạo formData để gửi lên server ====
     const formData = new FormData();
 
-    
+
     // Thêm các trường text
     formData.append("title", editForm.title);
     formData.append("description", editForm.description);
@@ -338,32 +342,32 @@ const CustomerPostManagement = () => {
     //     : editingPost.status
     // );
     const newStatus =
-    ["approved", "rejected", "expired"].includes(editingPost.status)
-      ? "pending"
-      : editingPost.status;
-  
-  formData.append("status", newStatus);
-  
-  // ✅ Xử lý paymentStatus
-  let newPaymentStatus;
-  if (editingPost.status === "approved") {
-    // Giữ nguyên nếu đang là approved => pending
-    newPaymentStatus = editingPost.paymentStatus; 
-  } else {
-    // Nếu chuyển sang pending từ rejected hoặc expired => unpaid
-    newPaymentStatus = newStatus === "pending" ? "unpaid" : editingPost.paymentStatus;
-  }
-  
-  formData.append("paymentStatus", newPaymentStatus);
-  
-  
-  console.log("🔍 Status hiện tại:", editForm.status);
-  console.log(
-    "🔍 Disabled?",
-    editForm.status 
-      ? editForm.status.toLowerCase().trim() !== "expired"
-      : false
-  );
+      ["approved", "rejected", "expired"].includes(editingPost.status)
+        ? "pending"
+        : editingPost.status;
+
+    formData.append("status", newStatus);
+
+    // ✅ Xử lý paymentStatus
+    let newPaymentStatus;
+    if (editingPost.status === "approved") {
+      // Giữ nguyên nếu đang là approved => pending
+      newPaymentStatus = editingPost.paymentStatus;
+    } else {
+      // Nếu chuyển sang pending từ rejected hoặc expired => unpaid
+      newPaymentStatus = newStatus === "pending" ? "unpaid" : editingPost.paymentStatus;
+    }
+
+    formData.append("paymentStatus", newPaymentStatus);
+
+
+    console.log("🔍 Status hiện tại:", editForm.status);
+    console.log(
+      "🔍 Disabled?",
+      editForm.status
+        ? editForm.status.toLowerCase().trim() !== "expired"
+        : false
+    );
     // ==== Xử lý ảnh ====
     if (editForm.oldImages && editForm.oldImages.length > 0) {
       formData.append("oldImages", JSON.stringify(editForm.oldImages));
@@ -469,7 +473,7 @@ const CustomerPostManagement = () => {
     }));
   };
 
-  
+
   return (
     <div className="bg-light min-vh-100">
       <Header
@@ -602,7 +606,8 @@ const CustomerPostManagement = () => {
                           src={post.images[0]}
                           alt="Post"
                           className="rounded-3 shadow-sm"
-                          style={{ width: 80, height: 60, objectFit: "cover" }}
+                          style={{ width: 80, height: 60, objectFit: "cover", cursor: "pointer" }}
+                          onClick={() => setSelectedImages(post.images)} // 👉 gán tất cả ảnh của post vào modal
                           onError={(e) => {
                             e.target.style.display = "none";
                           }}
@@ -621,6 +626,42 @@ const CustomerPostManagement = () => {
                         </div>
                       )}
                     </div>
+                    <Modal
+                      show={Array.isArray(selectedImages) && selectedImages.length > 0}
+                      onHide={() => setSelectedImages([])}
+                      size="lg"
+                      centered
+                    >
+                      <Modal.Header closeButton>
+                        <Modal.Title>Ảnh bài post</Modal.Title>
+                      </Modal.Header>
+                      <Modal.Body>
+                        <div className="d-flex flex-wrap gap-3">
+                          {selectedImages?.map((img, index) => (
+                            <div
+                              key={index}
+                              className="rounded shadow-sm overflow-hidden"
+                              style={{
+                                width: "30%",   // 3 ảnh / dòng
+                                aspectRatio: "1/1", // giữ tỷ lệ vuông
+                                background: "#f8f9fa", // màu nền fallback
+                              }}
+                            >
+                              <img
+                                src={img}
+                                alt={`Ảnh ${index + 1}`}
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover", // đảm bảo ảnh fill khung
+                                }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </Modal.Body>
+                    </Modal>
+
                     {/* Post Info */}
                     <div className="col">
                       <div className="fw-bold mb-1 d-flex align-items-center gap-2">
@@ -631,18 +672,18 @@ const CustomerPostManagement = () => {
                           {post.type === "ban"
                             ? "sell"
                             : post.type === "dich_vu"
-                            ? "handyman"
-                            : post.type === "cho_thue"
-                            ? "home_work"
-                            : "article"}
+                              ? "handyman"
+                              : post.type === "cho_thue"
+                                ? "home_work"
+                                : "article"}
                         </span>
                         {(post.type === "ban"
                           ? "Bán"
                           : post.type === "dich_vu"
-                          ? "Dịch vụ"
-                          : post.type === "cho_thue"
-                          ? "Cho thuê"
-                          : post.type) +
+                            ? "Dịch vụ"
+                            : post.type === "cho_thue"
+                              ? "Cho thuê"
+                              : post.type) +
                           " - " +
                           post.title}
                       </div>
@@ -655,7 +696,7 @@ const CustomerPostManagement = () => {
                         </span>
                         {post.location} • {post.area}m² •{" "}
                         {formatPrice(post.price)}{" "}
-                        {post.type === "ban" ? "triệu" : "triệu/tháng"}
+                        {post.type === "ban" ? "VND" : "VND/tháng"}
                       </div>
                       <div className="text-secondary small mb-1">
                         <span
@@ -676,22 +717,20 @@ const CustomerPostManagement = () => {
                         </span>
                         Ngày đăng: {formatDate(post.paymentDate)} •
                         <span
-                          className={`badge ms-2 px-2 py-1 rounded-pill fw-normal ${
-                            post.status === "pending"
-                              ? "bg-warning text-dark"
-                              : post.status === "approved"
+                          className={`badge ms-2 px-2 py-1 rounded-pill fw-normal ${post.status === "pending"
+                            ? "bg-warning text-dark"
+                            : post.status === "approved"
                               ? "bg-success"
                               : "bg-danger"
-                          }`}
+                            }`}
                         >
                           {postStatusLabels[post.status] || post.status}
                         </span>
                         <span
-                          className={`badge ms-2 px-2 py-1 rounded-pill fw-normal ${
-                            post.paymentStatus === "unpaid"
-                              ? "bg-light text-danger border"
-                              : "bg-success"
-                          }`}
+                          className={`badge ms-2 px-2 py-1 rounded-pill fw-normal ${post.paymentStatus === "unpaid"
+                            ? "bg-light text-danger border"
+                            : "bg-success"
+                            }`}
                         >
                           {post.paymentStatus === "unpaid"
                             ? "Chưa thanh toán"
@@ -703,16 +742,15 @@ const CustomerPostManagement = () => {
                     <div className="col-auto d-flex flex-column gap-2">
                       <button
                         onClick={() => handleEdit(post)}
-                        className={`btn btn-success btn-sm rounded-pill d-flex align-items-center gap-1 ${
-                          ![
-                            "pending",
-                            "rejected",
-                            "expired",
-                            "approved",
-                          ].includes(post.status)
-                            ? "disabled"
-                            : ""
-                        }`}
+                        className={`btn btn-success btn-sm rounded-pill d-flex align-items-center gap-1 ${![
+                          "pending",
+                          "rejected",
+                          "expired",
+                          "approved",
+                        ].includes(post.status)
+                          ? "disabled"
+                          : ""
+                          }`}
                         disabled={
                           ![
                             "pending",
@@ -734,10 +772,10 @@ const CustomerPostManagement = () => {
                         {post.status === "expired"
                           ? "Gia hạn"
                           : ["pending", "rejected", "approved"].includes(
-                              post.status
-                            )
-                          ? "Chỉnh sửa"
-                          : "Không thể sửa"}
+                            post.status
+                          )
+                            ? "Chỉnh sửa"
+                            : "Không thể sửa"}
                       </button>
 
                       {post.status !== "deleted" && (
@@ -758,12 +796,11 @@ const CustomerPostManagement = () => {
 
                       <button
                         onClick={() => handlePayment(post._id)}
-                        className={`btn btn-primary btn-sm rounded-pill d-flex align-items-center gap-1 ${
-                          post.paymentStatus !== "unpaid" ||
+                        className={`btn btn-primary btn-sm rounded-pill d-flex align-items-center gap-1 ${post.paymentStatus !== "unpaid" ||
                           post.status !== "approved"
-                            ? "disabled"
-                            : ""
-                        }`}
+                          ? "disabled"
+                          : ""
+                          }`}
                         disabled={
                           post.paymentStatus !== "unpaid" ||
                           post.status !== "approved"
@@ -779,8 +816,8 @@ const CustomerPostManagement = () => {
                         {post.paymentStatus !== "unpaid"
                           ? "Đã thanh toán"
                           : post.status !== "approved"
-                          ? "Chờ duyệt để thanh toán"
-                          : "Thanh toán"}
+                            ? "Chờ duyệt để thanh toán"
+                            : "Thanh toán"}
                       </button>
                     </div>
                   </div>
@@ -826,9 +863,8 @@ const CustomerPostManagement = () => {
               {Array.from({ length: totalPages }, (_, i) => (
                 <li
                   key={i}
-                  className={`page-item ${
-                    currentPage === i + 1 ? "active" : ""
-                  }`}
+                  className={`page-item ${currentPage === i + 1 ? "active" : ""
+                    }`}
                 >
                   <button
                     className="page-link"
@@ -839,9 +875,8 @@ const CustomerPostManagement = () => {
                 </li>
               ))}
               <li
-                className={`page-item ${
-                  currentPage === totalPages ? "disabled" : ""
-                }`}
+                className={`page-item ${currentPage === totalPages ? "disabled" : ""
+                  }`}
               >
                 <button
                   className="page-link"
@@ -996,7 +1031,7 @@ const CustomerPostManagement = () => {
                           />
                         </div>
                         <div className="col-md-6">
-                          <label className="form-label">Giá (triệu VND)</label>
+                          <label className="form-label">Giá (VND)</label>
                           <input
                             type="number"
                             name="price"
@@ -1133,20 +1168,20 @@ const CustomerPostManagement = () => {
                         Gói đăng tin
                       </h6>
                       <select
-  name="postPackagename"
-  value={editForm.postPackagename || ""}
-  onChange={handleInputChange}
-  className="form-select"
-  disabled={(editingPost.status || "").toLowerCase().trim() !== "expired"} 
-  // ✅ Nếu status null/undefined sẽ thành "" => không crash
->
-  <option value="">-- Chọn gói tin --</option>
-  {postPackage.map((pkg) => (
-    <option key={pkg._id} value={pkg._id}>
-      {pkg.type}
-    </option>
-  ))}
-</select>
+                        name="postPackagename"
+                        value={editForm.postPackagename || ""}
+                        onChange={handleInputChange}
+                        className="form-select"
+                        disabled={(editingPost.status || "").toLowerCase().trim() !== "expired"}
+                      // ✅ Nếu status null/undefined sẽ thành "" => không crash
+                      >
+                        <option value="">-- Chọn gói tin --</option>
+                        {postPackage.map((pkg) => (
+                          <option key={pkg._id} value={pkg._id}>
+                            {pkg.type}
+                          </option>
+                        ))}
+                      </select>
 
 
 

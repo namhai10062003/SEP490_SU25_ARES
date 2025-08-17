@@ -165,7 +165,7 @@ const MyApartment = () => {
         <div className="d-flex flex-column gap-4 text-w">
           {filteredApartments.length === 0 && (
             <div className="text-center text-muted py-5">
-               🏢 Bạn không có căn hộ nào
+              🏢 Bạn không có căn hộ nào
             </div>
           )}
           {filteredApartments.map((apartment) => {
@@ -190,33 +190,35 @@ const MyApartment = () => {
                 <h5 className="fw-bold mb-3">Tháng {formattedMonth}</h5>
                 <div><span className="fw-bold">Tòa nhà:</span> {apartment.building}</div>
                 <div><span className="fw-bold">Diện tích:</span> {apartment.area} m²</div>
-                <div><span className="fw-bold">Phí bảo trì:</span> {maintenanceFee.toLocaleString("vi-VN")} đ</div>
-                <div><span className="fw-bold">Phí nước:</span> {waterFee.toLocaleString("vi-VN")} đ</div>
+                <div><span className="fw-bold">Phí bảo trì:</span> {maintenanceFee.toLocaleString("vi-VN")} VND</div>
+                <div><span className="fw-bold">Phí nước:</span> {waterFee.toLocaleString("vi-VN")} VND</div>
                 <div><span className="fw-bold">Phí gửi xe:</span>
                   <ul className="ps-3 mb-0">
                     {parkingRegs.length ? parkingRegs.map((reg, i) => (
-                      <li key={i}>{reg.vehicleType} ({reg.licensePlate}): {reg.price?.toLocaleString("vi-VN")} đ</li>
+                      <li key={i}>{reg.vehicleType} ({reg.licensePlate}): {reg.price?.toLocaleString("vi-VN")} VND</li>
                     )) : <li>Không có</li>}
                   </ul>
-                  <div className="ms-3 fw-semibold text-secondary">Tổng: {parkingFee.toLocaleString("vi-VN")} đ</div>
+                  <div className="ms-3 fw-semibold text-secondary">Tổng: {parkingFee.toLocaleString("vi-VN")} VND</div>
                 </div>
-                <div className="mt-2 fw-bold">Tổng cộng: {total.toLocaleString("vi-VN")} đ</div>
+                <div className="mt-2 fw-bold">Tổng cộng: {total.toLocaleString("vi-VN")} VND</div>
 
-                {paymentStatus === "unpaid" ? (
-                  <button
-                    className="btn btn-success rounded-pill fw-semibold mt-3"
-                    onClick={() => handlePayment(apartment._id)}
-                  >
-                    Thanh toán
-                  </button>
-                ) : (
-                  <button
-                    className="btn btn-primary rounded-pill fw-semibold mt-3"
-                    onClick={() => handleShowBill(apartment._id)}
-                  >
-                    Xem hóa đơn
-                  </button>
-                )}
+                {apartment.canPay ? (
+                  apartment.paymentStatus === "unpaid" ? (
+                    <button
+                      className="btn btn-success rounded-pill fw-semibold mt-3"
+                      onClick={() => handlePayment(apartment._id)}
+                    >
+                      Thanh toán
+                    </button>
+                  ) : (
+                    <button
+                      className="btn btn-primary rounded-pill fw-semibold mt-3"
+                      onClick={() => handleShowBill(apartment._id)}
+                    >
+                      Xem hóa đơn
+                    </button>
+                  )
+                ) : null}
               </div>
             );
           })}

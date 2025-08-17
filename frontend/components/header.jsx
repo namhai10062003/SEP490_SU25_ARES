@@ -169,7 +169,7 @@ const Header = ({ user, name, logout }) => {
                         to="/payment-history"
                         onClick={() => setShowProfileDropdown(false)}
                       >
-                        Lịch sữ thanh toán
+                        Lịch Sử Thanh Toán
                       </Link>
                     </li>
                   </ul>
