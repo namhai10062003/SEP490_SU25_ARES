@@ -1,12 +1,14 @@
+import axios from "axios";
 import React, { useEffect, useState } from 'react';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css'; // CSS mặc định
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 import io from 'socket.io-client';
 import Header from '../../../../components/header';
 import { useAuth } from '../../../../context/authContext';
-
+import EditVehicleModal from "./updateParkingRegistationModal";
 const socket = io(`${import.meta.env.VITE_API_URL}`); // địa chỉ backend socket
 
 const ParkingRegistrationList = () => {
@@ -21,6 +23,92 @@ const [filterApartment, setFilterApartment] = useState('');
 const [sortOption, setSortOption] = useState('date_desc');
 const [loading, setLoading] = useState(true);
 const [filterOwnerName, setFilterOwnerName] = useState('');
+const [selectedItem, setSelectedItem] = useState(null);
+// State quản lý modal
+const [showEditModal, setShowEditModal] = useState(false);
+const [parkingLots, setParkingLots] = useState([]);
+
+const API_URL = import.meta.env.VITE_API_URL;
+
+/// Khi bấm "Sửa"
+const handleEdit = (item) => {
+  setSelectedItem(item);
+  setShowEditModal(true);
+};
+
+// Lưu thay đổi (cha xử lý API)
+const handleSaveEdit = async (formData) => {
+  const id = formData.get("_id");
+  if (!id) return toast.error("❌ Không tìm thấy ID!");
+
+  const token = localStorage.getItem("token");
+  if (!token) return toast.error("⚠️ Token không tồn tại!");
+
+  try {
+    const response = await axios.put(`${API_URL}/api/parkinglot/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const updatedItem = response.data.data;
+
+    const mappedItem = {
+      id: updatedItem._id || updatedItem.id, // Luôn có _id
+      ...updatedItem,
+      tênChủSởHữu: updatedItem.owner,
+      loạiXe: updatedItem.vehicleType,
+      biểnSốXe: updatedItem.licensePlate,
+      mãCănHộ: updatedItem.apartmentCode,
+      giá: updatedItem.vehicleType === "ô tô" ? "800.000VNĐ/ tháng" : "80.000VNĐ/ tháng",
+      ngàyĐăngKý: updatedItem.registerDate,
+      trạngThái: updatedItem.status,
+      ảnhTrước: updatedItem.documentFront || null,
+      ảnhSau: updatedItem.documentBack || null,
+    };
+    
+    // ✅ Check id
+    console.log("mappedItem _id:", mappedItem._id);
+    
+    const updateList = (prevList, item) => {
+      const index = prevList.findIndex(p => 
+        p._id === item._id || 
+        (p.biểnSốXe === item.biểnSốXe && p.mãCănHộ === item.mãCănHộ)
+      );
+    
+      if (index !== -1) {
+        const newList = [...prevList];
+        newList[index] = item; // Replace item cũ
+        return newList;
+      } else {
+        return [item, ...prevList]; // Thêm mới nếu không tìm thấy
+      }
+    };
+
+    // Gán giá mặc định theo loại xe
+const mappedItemWithPrice = {
+  ...mappedItem,
+  giá: mappedItem.loạiXe === "ô tô" ? "800.000VNĐ/ tháng" : "80.000VNĐ/ tháng"
+};
+
+// Cập nhật danh sách đúng loại xe
+if (mappedItemWithPrice.loạiXe === "ô tô") {
+  setCarRegistrations(prev => updateList(prev, mappedItemWithPrice));
+} else {
+  setBikeRegistrations(prev => updateList(prev, mappedItemWithPrice));
+}
+
+
+    // Cập nhật modal load dữ liệu mới
+    setSelectedItem(mappedItem);
+    setShowEditModal(false);
+    toast.success("✅ Cập nhật thành công!");
+  } catch (error) {
+    console.error("❌ Lỗi khi cập nhật:", error);
+    toast.error("⚠️ Không thể cập nhật. Vui lòng thử lại!");
+  }
+};
+
 // hàm sort dữ liệu 
 const statusMapping = {
   pending: "pending",       // Nếu có
@@ -280,6 +368,15 @@ const doCancel = async (id) => {
     </button>
   </>
 )}
+ {item.trạngThái === 'rejected' && (
+        <button
+          className="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 shadow-sm px-3 py-1 rounded-pill"
+          onClick={() => handleEdit(item)}
+        >
+          <i className="bi bi-pencil-square"></i>
+          Chỉnh sửa
+        </button>
+      )}
 
 
 </td>
@@ -469,6 +566,12 @@ const doCancel = async (id) => {
     {renderTable('🏍️ Xe máy', applySort(applyFilters(bikeRegistrations)))}
   </>
 )} */}
+<EditVehicleModal
+  show={showEditModal}
+  onClose={() => setShowEditModal(false)}
+  vehicleData={selectedItem}
+  onSave={handleSaveEdit}   // ✅ chỉ gọi cha
+/>
         </div>
         
         <footer className="text-center mt-4 text-secondary small">
