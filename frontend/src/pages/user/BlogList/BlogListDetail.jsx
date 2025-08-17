@@ -142,14 +142,15 @@ const PostDetail = () => {
         setIsLiked(likedRes.data.liked);
         setLikeCount(countRes.data.count);
       } catch {
-        setErr("Có lỗi khi tải dữ liệu bài đăng.");
+        toast.error("Bài đăng đã hết hạn.");  // Hiện thông báo lỗi
+        navigate("/blog");                    // Quay lại trang blog
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [id]);
+  }, [id, navigate]);
 
   useEffect(() => {
     const fetchRelated = async () => {
