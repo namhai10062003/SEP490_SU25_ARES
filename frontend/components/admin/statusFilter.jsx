@@ -11,7 +11,7 @@ const statusOptions = {
     staff: [
         { value: "", label: "Tất cả trạng thái" },
         { value: "1", label: "Active" },
-        { value: "0", label: "Blocked" },
+        { value: "2", label: "Blocked" },
     ],
     form: [
         { value: "", label: "Tất cả trạng thái" },
