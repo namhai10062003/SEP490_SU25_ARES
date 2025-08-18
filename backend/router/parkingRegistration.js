@@ -1,5 +1,5 @@
 import express from "express";
-import { approveParkingRegistration, createParkingRegistration, getAvailableParkingSlots, getParkingRegistrationAll, getParkingRegistrationDetail, getParkingRegistrations, getUserParkingRegistrations, rejectParkingRegistration, updateRejectedParking } from "../controllers/parkingRegistration.js";
+import { approveParkingRegistration, createParkingRegistration, getAvailableParkingSlots, getParkingRegistrationAll, getParkingRegistrationDetail, getParkingRegistrations, getUserParkingRegistrations, rejectParkingRegistration } from "../controllers/parkingRegistration.js";
 import verifyUser from "../middleware/authMiddleware.js";
 import isStaff from "../middleware/isStaff.js";
 import { uploadImage } from "../middleware/upload.js";
@@ -70,10 +70,4 @@ router.get("/fee/:userId/:apartmentId/:month", async (req, res) => {
       res.status(500).json({ message: 'Lỗi server', error: err.message });
     }
   });
-  router.put(
-    '/:id',
-    verifyUser,
-    uploadImage,
-    updateRejectedParking
-  );
 export default router;

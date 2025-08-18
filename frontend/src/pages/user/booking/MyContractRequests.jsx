@@ -284,7 +284,7 @@ const [loadingApprove, setLoadingApprove] = useState(false);
 
                           <div className="mb-1">
                             <span className="fw-semibold">💰 Cọc:</span>{" "}
-                            {contract.depositAmount?.toLocaleString("vi-VN")} VND
+                            {contract.depositAmount?.toLocaleString("vi-VN")} VNĐ
                           </div>
                           <div>
                             <span className="fw-semibold">Trạng thái: </span>

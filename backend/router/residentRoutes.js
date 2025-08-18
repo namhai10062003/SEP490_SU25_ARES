@@ -1,5 +1,5 @@
 import express from 'express';
-import { countResidentsByApartment, createResident, getMyResidents, getResidentDetail, getResidentsByApartment, getResidentsByStatus, getResidentsUnverifiedByStaff, getUnverifiedResidents, rejectResidentByStaff, updateResident, verifyResidentByStaff } from '../controllers/residentController.js';
+import {getUnverifiedResidents, getResidentsByStatus, countResidentsByApartment, createResident, getMyResidents, getResidentDetail, getResidentsByApartment, getResidentsUnverifiedByStaff, rejectResidentByStaff, verifyResidentByStaff } from '../controllers/residentController.js';
 import verifyUser from '../middleware/authMiddleware.js';
 import isStaff from '../middleware/isStaff.js';
 import { uploadImage } from '../middleware/upload.js';
@@ -29,6 +29,5 @@ router.put("/reject-by-staff/:id", isStaff, rejectResidentByStaff);
 // Có thể mở rộng: update, delete,...
 // router.put('/:id', verifyUser, updateResident);
 // router.delete('/:id', isStaff, deleteResident);
-//hàm update 
-router.put('/:residentId', verifyUser, uploadImage, updateResident);
+
 export default router;

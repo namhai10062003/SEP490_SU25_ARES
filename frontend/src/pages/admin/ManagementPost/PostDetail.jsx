@@ -434,7 +434,7 @@ const AdminPostDetail = () => {
                                         <div>
                                             <div className="fw-medium">Gói VIP</div>
                                             <div className="text-muted">
-                                                ({formatCurrency(post.postPackage?.price)})
+                                                ({formatCurrency(post.postPackage?.price)} ₫)
                                             </div>
                                         </div>
                                     </div>

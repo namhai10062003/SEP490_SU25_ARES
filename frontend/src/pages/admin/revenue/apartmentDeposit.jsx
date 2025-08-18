@@ -123,7 +123,7 @@ const RevenueDeposit = () => {
             labels,
             datasets: [
                 {
-                    label: "Doanh thu hoa hồng (VND)",
+                    label: "Doanh thu hoa hồng (VNĐ)",
                     data: labels.map((k) => stats[k]),
                     backgroundColor: "rgba(153, 102, 255, 0.6)",
                 },

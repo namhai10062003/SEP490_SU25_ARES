@@ -35,18 +35,18 @@ const Expenses = () => {
         })()
         : null;
 
-    const handlePriceChange = (e) => {
-        const value = e.target.value;
-
-        // Cho phép xóa ô hoặc nhập hợp lệ (> 0)
-        if (value === '' || (/^[0-9]*$/.test(value) && Number(value) > 0)) {
-            setAddPrice(value);
-            setPriceError('');
-        } else {
-            setAddPrice(value);
-            setPriceError('Giá phải lớn hơn 0');
-        }
-    };
+        const handlePriceChange = (e) => {
+            const value = e.target.value;
+        
+            // Cho phép xóa ô hoặc nhập hợp lệ (> 0)
+            if (value === '' || (/^[0-9]*$/.test(value) && Number(value) > 0)) {
+                setAddPrice(value);
+                setPriceError('');
+            } else {
+                setAddPrice(value);
+                setPriceError('Giá phải lớn hơn 0');
+            }
+        };
 
 
     // console.log("Filter month:", formattedFilterMonth);
@@ -66,7 +66,6 @@ const Expenses = () => {
 
             const matchesStatus =
                 filterStatus === "all" || fee.paymentStatus === filterStatus;
-                console.log(fee.paymentStatus);
 
             return matchesMonth && matchesText && matchesStatus;
         }).sort((a, b) => {
@@ -116,58 +115,58 @@ const Expenses = () => {
 
     const handleDelete = async (id) => {
         confirmAlert({
-            title: 'Xác nhận xoá chi phí',
-            message: 'Bạn có chắc muốn xóa loại chi phí này?',
-            buttons: [
-                {
-                    label: 'Có',
-                    onClick: async () => {
-                        try {
-                            await axios.delete(`${API_URL}/api/expenses/${id}`);
-                            toast.success("🗑️ Đã xóa chi phí!");
-                            fetchExpenses(); // Refresh lại danh sách
-                        } catch (err) {
-                            toast.error("❌ Xóa thất bại!");
-                        }
-                    }
-                },
-                {
-                    label: 'Không',
-                    onClick: () => { /* Không làm gì nếu hủy */ }
+          title: 'Xác nhận xoá chi phí',
+          message: 'Bạn có chắc muốn xóa loại chi phí này?',
+          buttons: [
+            {
+              label: 'Có',
+              onClick: async () => {
+                try {
+                  await axios.delete(`${API_URL}/api/expenses/${id}`);
+                  toast.success("🗑️ Đã xóa chi phí!");
+                  fetchExpenses(); // Refresh lại danh sách
+                } catch (err) {
+                  toast.error("❌ Xóa thất bại!");
                 }
-            ]
+              }
+            },
+            {
+              label: 'Không',
+              onClick: () => { /* Không làm gì nếu hủy */ }
+            }
+          ]
         });
-    };
+      };
 
 
-    const handleAdd = async (e) => {
+      const handleAdd = async (e) => {
         e.preventDefault();
-
+    
         // Reset lỗi trước khi validate
         setPriceError("");
-
+    
         // Validate từng trường riêng
         if (!addType) {
             toast.warn("Vui lòng chọn loại chi phí!");
             return;
         }
-
+    
         if (!addLabel) {
             toast.warn("Vui lòng nhập tên tòa nhà!");
             return;
         }
-
+    
         if (!addPrice) {
             toast.warn("Vui lòng nhập giá chi phí!");
             return;
         }
-
+    
         if (Number(addPrice) <= 0) {
             setPriceError("Giá phải lớn hơn 0");
             toast.warn("Giá phải lớn hơn 0!");
             return;
         }
-
+    
         try {
             await axios.post(`${API_URL}/api/expenses`, {
                 type: Number(addType),
@@ -185,8 +184,8 @@ const Expenses = () => {
             toast.error(msg);
         }
     };
-
-
+    
+    
 
     const grouped = expenses.reduce((acc, exp) => {
         if (!acc[exp.label]) acc[exp.label] = [];
@@ -214,7 +213,7 @@ const Expenses = () => {
                             className="form-select"
                             value={addType}
                             onChange={(e) => setAddType(e.target.value)}
-
+                            
                         >
                             <option value="">Chọn loại chi phí</option>
                             <option value="1">Chi phí quản lý</option>
@@ -229,21 +228,21 @@ const Expenses = () => {
                             placeholder="Tên Tòa nhà"
                             value={addLabel}
                             onChange={(e) => setAddLabel(e.target.value)}
-
+                            
                         />
                     </div>
                     <div className="col-md-3">
-                        <input
-                            type="number"
-                            className={`form-control ${priceError ? 'is-invalid' : ''}`}
-                            placeholder="Giá (VND/m²)"
-                            value={addPrice}
-                            onChange={handlePriceChange}
-                            min={1}
-
-                        />
-                        {priceError && <div className="invalid-feedback">{priceError}</div>}
-                    </div>
+  <input
+    type="number"
+    className={`form-control ${priceError ? 'is-invalid' : ''}`}
+    placeholder="Giá (VND/m²)"
+    value={addPrice}
+    onChange={handlePriceChange}
+    min={1}
+    
+  />
+  {priceError && <div className="invalid-feedback">{priceError}</div>}
+</div>
 
 
                     <div className="col-md-2">
@@ -393,35 +392,27 @@ const Expenses = () => {
                                             <td>{row.ownerName}</td>
                                             <td>
                                                 {(() => {
-                                                    if (!row.month) return "---"; // Không có tháng thì hiện ---
-
-                                                    let m;
-                                                    // Nếu row.month dạng "MM/YYYY"
-                                                    if (/^\d{2}\/\d{4}$/.test(row.month)) {
-                                                        const [month, year] = row.month.split("/");
-                                                        m = new Date(`${year}-${month}-01`);
-                                                    } else {
-                                                        m = new Date(row.month);
-                                                    }
-
+                                                    const m = new Date(row.month);
                                                     return isNaN(m)
-                                                        ? "---"
-                                                        : `${(m.getMonth() + 1).toString().padStart(2, "0")}/${m.getFullYear()}`;
+                                                        ? row.month
+                                                        : `${(m.getMonth() + 1)
+                                                            .toString()
+                                                            .padStart(2, "0")}/${m.getFullYear()}`;
                                                 })()}
                                             </td>
-                                            <td>{row.managementFee?.toLocaleString()} VND</td>
-                                            <td>{row.waterFee?.toLocaleString()} VND</td>
-                                            <td>{row.parkingFee?.toLocaleString()} VND</td>
+                                            <td>{row.managementFee?.toLocaleString()} đ</td>
+                                            <td>{row.waterFee?.toLocaleString()} đ</td>
+                                            <td>{row.parkingFee?.toLocaleString()} đ</td>
                                             <td className="text-end fw-bold text-primary">
-                                                {row.total?.toLocaleString()} VND
+                                                {row.total?.toLocaleString()} đ
                                             </td>
                                             <td className="text-end">
-                                                {(row.paymentStatus || "").toLowerCase().trim() === "paid" ? (
-                                                    <span className="text-success">✔️ Đã thanh toán</span>
-                                                ) : (
-                                                    <span className="text-danger">❌ Chưa thanh toán</span>
-                                                )}
-                                            </td>
+    {(row.paymentStatus || "").toLowerCase().trim() === "paid" ? (
+        <span className="text-success">✔️ Đã thanh toán</span>
+    ) : (
+        <span className="text-danger">❌ Chưa thanh toán</span>
+    )}
+</td>
 
                                         </tr>
                                     ))}
