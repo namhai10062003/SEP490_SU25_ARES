@@ -1,23 +1,45 @@
-/**
- * Helper functions for extracting IDs from notification messages
- */
+// utils/getLinkFromNoti.jsx
+export const getNotificationLink = (notification) => {
+    if (!notification) return null;
 
-/**
- * Lấy ID bài đăng từ message
- * @param {string} msg - Nội dung thông báo
- * @returns {string|null} - ID bài đăng (Mongo ObjectId) hoặc null nếu không tìm thấy
- */
-export const extractPostId = (msg = "") => {
-    const match = msg.match(/bài đăng ([a-f0-9]{24})/i);
-    return match ? match[1] : null;
+    // Ưu tiên data (backend trả kèm id)
+    if (notification?.data?.postId) {
+        return `/postdetail/${notification.data.postId}`;
+    }
+    if (notification?.data?.declarationId) {
+        return `/residence-declaration/detail/${notification.data.declarationId}`;
+    }
+    if (notification?.data?.contractId) {
+        return `/contracts/${notification.data.contractId}`;
+    }
+
+    const msg = notification.message || "";
+
+    // ==== Regex có ObjectId ====
+    const postMatch = msg.match(/bài\s*đăng.*?([a-f0-9]{24})/i);
+    if (postMatch) return `/postdetail/${postMatch[1]}`;
+
+    const declMatch = msg.match(/hồ\s*sơ.*?([a-f0-9]{24})/i);
+    if (declMatch) return `/residence-declaration/detail/${declMatch[1]}`;
+
+    const contractMatch = msg.match(/hợp\s*đồng.*?([a-f0-9]{24})/i);
+    if (contractMatch) return `/contracts/${contractMatch[1]}`;
+
+    // ==== Các case đặc biệt không có id ====
+
+    // Đơn xác nhận cư dân
+    if (/đơn\s+xác\s+nhận\s+cư\s+dân/i.test(msg)) {
+        return `/canho/nhaukhau`;
+    }
+
+    // Thanh toán trước khi xác nhận cư dân
+    if (/vui lòng thanh toán.*xác nhận cư dân/i.test(msg)) {
+        return `/my-apartment`;
+    }
+
+    return null;
 };
-
-/**
- * Lấy ID hồ sơ từ message
- * @param {string} msg - Nội dung thông báo
- * @returns {string|null} - ID hồ sơ (Mongo ObjectId) hoặc null nếu không tìm thấy
- */
-export const extractDeclarationId = (msg = "") => {
-    const match = msg.match(/hồ sơ ([a-f0-9]{24})/i);
-    return match ? match[1] : null;
+// Mask id in message
+export const maskNotificationMessage = (message = "") => {
+    return message.replace(/\s*[a-f0-9]{24}\s*/gi, " ");
 };

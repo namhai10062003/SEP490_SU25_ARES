@@ -8,7 +8,7 @@ import Header from "../../../components/header.jsx";
 import Footer from "../../../components/footer.jsx";
 import ReuseableModal from "../../../components/ReusableModal.jsx";
 import { formatSmartDate } from "../../../utils/format.jsx";
-
+import { getNotificationLink, maskNotificationMessage } from "../../../utils/getLinkFromNoti.jsx";
 const NotificationPage = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
@@ -107,25 +107,7 @@ const NotificationPage = () => {
         };
     }, [showModal]);
 
-    const extractPostId = (msg = "") => {
-        const m = msg.match(/bài\s*đăng\s*([a-f0-9]{24})/i);
-        return m ? m[1] : null;
-    };
 
-    const extractDeclarationId = (msg = "") => {
-        const m = msg.match(/hồ\s*sơ\s*([a-f0-9]{24})/i);
-        return m ? m[1] : null;
-    };
-
-    const selectedPostId =
-        selectedNotification?.message
-            ? extractPostId(selectedNotification.message)
-            : null;
-
-    const selectedDeclId = selectedNotification
-        ? selectedNotification?.data?.declarationId ??
-        extractDeclarationId(selectedNotification.message)
-        : null;
 
     // Cập nhật query string
     const updateSearchParams = (updates) => {
@@ -211,46 +193,19 @@ const NotificationPage = () => {
                                             handleNotificationClick(note);
                                         }
                                     }}
-                                    aria-label={`Thông báo: ${note.message}`}
+                                    aria-label={`Thông báo: ${maskNotificationMessage(note.message)}`}
                                 >
                                     <div className="flex-grow-1">
                                         <div
                                             className="fw-medium"
                                             style={{ whiteSpace: "normal" }}
                                         >
-                                            {note.message}
+                                            {maskNotificationMessage(note.message)}
                                         </div>
                                         <div className="small text-muted mt-1">
                                             {formatSmartDate(note.createdAt)}
                                         </div>
-                                        <div className="mt-2 d-flex gap-2 flex-wrap">
-                                            {extractPostId(note.message) && (
-                                                <a
-                                                    href={`/postdetail/${extractPostId(
-                                                        note.message
-                                                    )}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="btn btn-sm btn-outline-primary"
-                                                    onClick={(e) =>
-                                                        e.stopPropagation()
-                                                    }
-                                                >
-                                                    Xem bài đăng
-                                                </a>
-                                            )}
-                                            {note?.data?.declarationId && (
-                                                <a
-                                                    href={`/residence-declaration/detail/${note.data.declarationId}`}
-                                                    className="btn btn-sm btn-outline-primary"
-                                                    onClick={(e) =>
-                                                        e.stopPropagation()
-                                                    }
-                                                >
-                                                    Xem hồ sơ
-                                                </a>
-                                            )}
-                                        </div>
+
                                     </div>
                                     {!note.read && (
                                         <span
@@ -286,7 +241,7 @@ const NotificationPage = () => {
                             <div className="mb-3">
                                 <strong>Nội dung:</strong>
                                 <p className="mt-2">
-                                    {selectedNotification?.message}
+                                    {maskNotificationMessage(selectedNotification?.message)}
                                 </p>
                             </div>
 
@@ -300,23 +255,14 @@ const NotificationPage = () => {
                             </div>
 
                             <div className="d-flex gap-2 flex-wrap">
-                                {selectedPostId && (
+                                {getNotificationLink(selectedNotification) && (
                                     <a
-                                        href={`/postdetail/${selectedPostId}`}
+                                        href={getNotificationLink(selectedNotification)}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="btn btn-primary"
                                     >
-                                        Xem bài đăng
-                                    </a>
-                                )}
-
-                                {selectedDeclId && (
-                                    <a
-                                        href={`/residence-declaration/detail/${selectedDeclId}`}
-                                        className="btn btn-primary"
-                                    >
-                                        Xem hồ sơ
+                                        Đi đến chi tiết
                                     </a>
                                 )}
                             </div>
