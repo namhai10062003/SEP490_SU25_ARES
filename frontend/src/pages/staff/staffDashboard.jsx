@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {
@@ -145,13 +145,28 @@ const StaffDashboard = () => {
       {/* <ToastContainer /> */}
       <StaffNavbar />
       <main className="flex-grow-1 p-4">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="fw-bold mb-0">Dashboard</h2>
-          <div className="d-flex align-items-center gap-3">
-            <input type="text" placeholder="Tìm kiếm..." className="form-control rounded-pill" style={{ width: 250 }} />
-            <span className="fw-bold text-primary">{userName}</span>
-          </div>
-        </div>
+      
+<div className="d-flex justify-content-between align-items-center mb-4">
+  <h2 className="fw-bold mb-0">Dashboard</h2>
+  <div className="d-flex align-items-center gap-3">
+    {/* Nút đổi mật khẩu */}
+    <Link
+      to="/staff-changePassWord"
+      className="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold"
+    >
+      🔑 Đổi mật khẩu
+    </Link>
+
+    <input
+      type="text"
+      placeholder="Tìm kiếm..."
+      className="form-control rounded-pill"
+      style={{ width: 250 }}
+    />
+    <span className="fw-bold text-primary">{userName}</span>
+  </div>
+</div>
+
 
         <div className="row g-4">
   {cards.map((c, i) => (

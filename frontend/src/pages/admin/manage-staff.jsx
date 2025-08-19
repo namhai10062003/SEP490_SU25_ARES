@@ -1,16 +1,16 @@
 import { faEye, faEyeSlash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-import { toast } from "react-toastify";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
-import AdminDashboard from "./adminDashboard.jsx";
 import Pagination from "../../../components/Pagination.jsx";
 import ReusableModal from "../../../components/ReusableModal.jsx";
 import SearchInput from "../../../components/admin/searchInput.jsx";
 import StatusFilter from "../../../components/admin/statusFilter.jsx";
 import LoadingModal from "../../../components/loadingModal.jsx";
+import AdminDashboard from "./adminDashboard.jsx";
 
 const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
@@ -138,7 +138,7 @@ const ManageStaff = () => {
         toast.success("Cập nhật thành công!");
         fetchStaff();
       } else {
-        await getAxios().post(`${API_BASE}/users`, {
+        await getAxios().post(`${API_BASE}/staff`, {
           name: form.username,
           password: form.password,
           email: form.email,

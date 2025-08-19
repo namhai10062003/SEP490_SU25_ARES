@@ -57,6 +57,7 @@ export default function AdminDashboard({ children }) {
       label: "Quản Lý Xác Nhận Cư Dân",
     },
     { to: "/admin-dashboard/user-revenue", label: "Quản Lý Yêu Cầu Rút Tiền" },
+
   ];
 
   // helper to render Link class names
@@ -263,7 +264,7 @@ export default function AdminDashboard({ children }) {
                   )}
                 </div>
               </li>
-              <li className="nav-item mt-4">
+              {/* <li className="nav-item mt-4">
                 <Link
                   to="/admin-dashboard/changePassWord"
                   className="nav-link rounded-3 px-3 py-2 d-flex align-items-center text-white"
@@ -277,7 +278,7 @@ export default function AdminDashboard({ children }) {
                   <span style={{ fontWeight: 600 }}>•</span>
                   <span className="ms-2">Đổi Mật Khẩu</span>
                 </Link>
-              </li>
+              </li> */}
               {/* Logout at bottom: push down with margin top */}
               <li className="nav-item mt-4">
                 <button
