@@ -2,7 +2,7 @@ import React from "react";
 import StaffDashboard from "./staffDashboard";
 
 const stats = [
-    { title: 'Bài Post', count: 128, color: 'blue' },
+    { title: 'Bài Đăng', count: 128, color: 'blue' },
     { title: 'Căn hộ & BĐS', count: 56, color: 'green' },
     { title: 'Bài đồ xe', count: 78, color: 'orange' },
     { title: 'Chi phí', count: 45, color: 'red' },

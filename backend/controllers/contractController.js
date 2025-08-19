@@ -54,7 +54,7 @@ export const createContract = async (req, res) => {
     } else {
       finalDeposit = toInt(depositAmount) || 0; // fallback nếu không biết type
     }
-    
+
     console.log({
       rawPrice: post?.price,
       parsedPrice: toInt(post?.price),
@@ -62,9 +62,9 @@ export const createContract = async (req, res) => {
       depositAmount,
       finalDeposit
     });
-    
-    
-    
+
+
+
 
 
     // ✨ Snapshot đầy đủ các thông tin từ bài đăng
@@ -177,7 +177,7 @@ export const approveContract = async (req, res) => {
   await contract.save();
   const newNotification = await Notification.create({
     userId: contract.userId,
-    message: `Hợp đồng ${contract._id} của bạn đã được duyệt ✅.`
+    message: `Hợp đồng ${contract._id} của bạn đã được duyệt.`
   });
   const user = await User.findById(contract.userId);
   // Gửi thông báo qua socket
@@ -187,14 +187,14 @@ export const approveContract = async (req, res) => {
     await sendEmailNotification({
       to: user.email,
       subject: "Thông báo duyệt hợp đồng",
-      text: `Hợp đồng ${contract._id} của bạn đã được duyệt ✅.`,
-      html: `<b>Hợp đồng ${contract._id} của bạn đã được duyệt ✅.</b>`
+      text: `Hợp đồng ${contract._id} của bạn đã được duyệt.`,
+      html: `<b>Hợp đồng ${contract._id} của bạn đã được duyệt.</b>`
     });
   }
   if (user.phone) {
     await sendSMSNotification({
       to: user.phone,
-      body: `Hợp đồng ${contract._id} của bạn đã được duyệt ✅.`
+      body: `Hợp đồng ${contract._id} của bạn đã được duyệt.`
     });
   }
   // --- END EMAIL & SMS NOTIFICATION ---
@@ -445,7 +445,7 @@ export const updateWithdrawableForAll = async (req, res) => {
       }
     }
 
-    res.json({ message: "✅ Đã cập nhật withdrawableAmount cho tất cả hợp đồng" });
+    res.json({ message: "Đã cập nhật withdrawableAmount cho tất cả hợp đồng" });
   } catch (error) {
     console.error("❌ Error:", error);
     res.status(500).json({ message: "❌ Server error" });

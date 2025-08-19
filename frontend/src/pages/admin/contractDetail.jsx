@@ -4,7 +4,7 @@ import axios from "axios";
 import AdminDashboard from "./adminDashboard.jsx";
 import LoadingModal from "../../../components/loadingModal.jsx";
 import ContractForm from "../../../components/contractForm";
-import { formatDate, formatSmartDate } from "../../../utils/format";
+import { formatDate, formatSmartDate, getStatusLabel } from "../../../utils/format";
 
 const AdminContractDetail = () => {
     const { id } = useParams();
@@ -60,6 +60,21 @@ const AdminContractDetail = () => {
                 >
                     ← Quay lại
                 </button>
+                <div className="d-flex justify-content-center align-items-center mb-4">
+                    {!loading && contract && (
+                        (() => {
+                            const { label, color } = getStatusLabel(contract.status);
+                            return (
+                                <span
+                                    className={`badge px-4 py-2 fs-6 fw-semibold bg-${color}${color === "warning" ? " text-dark" : ""}`}
+                                    style={{ minWidth: 180, textTransform: "capitalize" }}
+                                >
+                                    {label}
+                                </span>
+                            );
+                        })()
+                    )}
+                </div>
                 {!loading && contract ? (
                     <ContractForm
                         contractData={{

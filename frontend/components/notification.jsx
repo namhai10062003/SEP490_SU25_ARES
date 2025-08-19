@@ -4,7 +4,7 @@ import { FiBell } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { formatSmartDate } from "../utils/format";
 import { Link, useNavigate } from "react-router-dom";
-
+import { getNotificationLink, maskNotificationMessage } from "../utils/getLinkFromNoti";
 const NotificationBell = ({ user }) => {
     const [notifications, setNotifications] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
@@ -194,7 +194,7 @@ const NotificationBell = ({ user }) => {
                                                 className="fw-normal"
                                                 style={{ whiteSpace: "normal", wordBreak: "break-word", fontSize: 15 }}
                                             >
-                                                {note.message}
+                                                {maskNotificationMessage(note.message)}
                                             </div>
                                             <div className="small text-muted mt-1">{fmtTime(note.createdAt)}</div>
                                         </div>
@@ -217,6 +217,7 @@ const NotificationBell = ({ user }) => {
                 </div>
             )}
 
+            {/* Notification Detail Modal */}
             {/* Notification Detail Modal */}
             {selectedNotification && (
                 <>
@@ -263,22 +264,37 @@ const NotificationBell = ({ user }) => {
                                 </div>
                                 <div className="modal-body">
                                     <div style={{ whiteSpace: "normal", lineHeight: 1.6, fontSize: 16 }}>
-                                        {selectedNotification.message}
+                                        {maskNotificationMessage(selectedNotification.message)}
                                     </div>
                                     <div className="text-muted small mt-3">
                                         {fmtTime(selectedNotification.createdAt)}
                                     </div>
                                 </div>
-                                <div className="modal-footer bg-light">
-                                    <button type="button" className="btn btn-outline-secondary btn-sm" onClick={closeModal}>
+                                <div className="modal-footer bg-light d-flex justify-content-between">
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-secondary btn-sm"
+                                        onClick={closeModal}
+                                    >
                                         Đóng
                                     </button>
+                                    {getNotificationLink(selectedNotification) && (
+                                        <a
+                                            href={getNotificationLink(selectedNotification)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="btn btn-primary btn-sm"
+                                        >
+                                            Đi đến chi tiết
+                                        </a>
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </>
             )}
+
         </div>
     );
 };

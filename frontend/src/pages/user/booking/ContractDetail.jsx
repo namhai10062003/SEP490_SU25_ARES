@@ -6,6 +6,8 @@ import ContractForm from "../../../../components/contractForm";
 import Footer from "../../../../components/footer";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
+import LoadingModal from "../../../../components/loadingModal";
+import { getStatusLabel } from "../../../../utils/format";
 const ContractDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -13,19 +15,8 @@ const ContractDetail = () => {
   const [contract, setContract] = useState(null);
   const [post, setPost] = useState(null);
   const today = new Date();
-  const { logout } = useAuth(); 
-  const formatVNDate = (dateStr) => {
-    if (!dateStr) return "....../....../......";
-    const d = new Date(dateStr);
-    return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
-  };
+  const { logout } = useAuth();
 
-  const getAutoEndDateVN = (startDate, plusDays = 7) => {
-    if (!startDate) return "....../....../......";
-    const d = new Date(startDate);
-    d.setDate(d.getDate() + plusDays);
-    return formatVNDate(d.toISOString());
-  };
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -34,10 +25,10 @@ const ContractDetail = () => {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contracts/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-  
+
         const contractData = res.data.data;
         setContract(contractData);
-  
+
         if (contractData.postId) {
           try {
             const postRes = await axios.get(
@@ -56,19 +47,14 @@ const ContractDetail = () => {
         navigate("/my-contracts");
       }
     };
-  
+
     fetchDetail();
   }, [id, navigate]);
-  
+
 
   if (loading || !contract)
-    return <div className="text-center py-4">🔄 Đang tải chi tiết...</div>;
-  const formatVNDayOfWeek = (dateStr) => {
-    if (!dateStr) return "....../....../......";
-    const d = new Date(dateStr);
-    const days = ["Chủ nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
-    return `${days[d.getDay()]}, ngày ${String(d.getDate()).padStart(2, "0")} tháng ${String(d.getMonth() + 1).padStart(2, "0")} năm ${d.getFullYear()}`;
-  };
+    return <LoadingModal />;
+
 
   return (
     <div className="bg-light min-vh-100">
@@ -82,39 +68,54 @@ const ContractDetail = () => {
         >
           <FaArrowCircleLeft className="me-1 " /> Quay lại
         </button>
+        <div className="d-flex justify-content-center align-items-center mb-4 mt-3">
+          {!loading && contract && (
+            (() => {
+              const { label, color } = getStatusLabel(contract.status);
+              return (
+                <span
+                  className={`badge px-4 py-2 fs-6 fw-semibold bg-${color}${color === "warning" ? " text-dark" : ""}`}
+                  style={{ minWidth: 180, textTransform: "capitalize" }}
+                >
+                  {label}
+                </span>
+              );
+            })()
+          )}
+        </div>
       </div>
       <ContractForm
-  contractData={{
-    startDate: contract.startDate,
-    endDate: contract.endDate,
-    depositAmount: contract.depositAmount,
-    terms: contract.contractTerms,
-    orderCode: contract.orderCode,
-    paymentStatus: contract.paymentStatus,
+        contractData={{
+          startDate: contract.startDate,
+          endDate: contract.endDate,
+          depositAmount: contract.depositAmount,
+          terms: contract.contractTerms,
+          orderCode: contract.orderCode,
+          paymentStatus: contract.paymentStatus,
 
-    // 👇 Bổ sung đầy đủ BÊN A và BÊN B
-    fullNameA: contract.fullNameA,
-    cmndA : contract.cmndA,
-    phoneA: contract.phoneA,
-    emailA: contract.emailA,
-    addressA: contract.addressA,
+          // 👇 Bổ sung đầy đủ BÊN A và BÊN B
+          fullNameA: contract.fullNameA,
+          cmndA: contract.cmndA,
+          phoneA: contract.phoneA,
+          emailA: contract.emailA,
+          addressA: contract.addressA,
 
-    fullNameB: contract.fullNameB,
-    cmndB: contract.cmndB,
-    phoneB: contract.phoneB,
-    emailB: contract.emailB,
-    addressB: contract.addressB,
+          fullNameB: contract.fullNameB,
+          cmndB: contract.cmndB,
+          phoneB: contract.phoneB,
+          emailB: contract.emailB,
+          addressB: contract.addressB,
 
-   
-  }}
-  post={post}
-  user={user}
-  landlord={post?.contactInfo}
-  readOnly={true}
-  headerDate={contract.createdAt}
-   signaturePartyBUrl={contract?.signaturePartyBUrl} 
-   signaturePartyAUrl={contract?.signaturePartyAUrl} 
-/>
+
+        }}
+        post={post}
+        user={user}
+        landlord={post?.contactInfo}
+        readOnly={true}
+        headerDate={contract.createdAt}
+        signaturePartyBUrl={contract?.signaturePartyBUrl}
+        signaturePartyAUrl={contract?.signaturePartyAUrl}
+      />
 
       <Footer />
     </div>

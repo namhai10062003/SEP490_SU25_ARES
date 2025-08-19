@@ -3,6 +3,7 @@ import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import AdminDashboard from '../adminDashboard'
 const AdminResidentApproval = () => {
   const [residents, setResidents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -71,23 +72,7 @@ const AdminResidentApproval = () => {
   return (
     <div className="d-flex min-vh-100">
       {/* Sidebar */}
-      <aside className="bg-primary text-white p-3" style={{ minWidth: 220 }}>
-        <h5 className="fw-bold text-uppercase mb-4">ADMIN PANEL</h5>
-        <ul className="nav flex-column gap-1">
-          <li><Link to="/admin-dashboard" className="nav-link text-white">• Tổng quan</Link></li>
-          <li><Link to="/admin-dashboard/reports" className="nav-link text-white">• Quản lí bài Report</Link></li>
-          <li><Link to="/admin-dashboard/create-account" className="nav-link text-white">• Tạo tài khoản</Link></li>
-          <li><Link to="/admin-dashboard/posts" className="nav-link text-white">• Quản lí bài Post</Link></li>
-          <li><Link to="/admin-dashboard/revenue" className="nav-link text-white">• Phân tích doanh thu</Link></li>
-          <li><Link to="/admin-dashboard/notifications" className="nav-link text-white">• Quản lý thông báo</Link></li>
-          <li><Link to="/admin-dashboard/manage-user" className="nav-link text-white">• Quản lí User</Link></li>
-          <li><Link to="/admin-dashboard/manage-staff" className="nav-link text-white">• Quản lí Staff</Link></li>
-          <li><Link to="/admin-dashboard/manage-apartment" className="nav-link text-white">• Quản lí Căn hộ</Link></li>
-          <li><Link to="/admin-dashboard/resident-verify-admin" className="nav-link active bg-white text-primary fw-bold">• Quản lí Nhân Khẩu</Link></li>
-          <li><Link to="/admin-dashboard/manage-resident-verification" className="nav-link text-white">• Quản lý xác nhận cư dân</Link></li>
-          <li><Link to="/login" className="nav-link text-white">Đăng xuất</Link></li>
-        </ul>
-      </aside>
+      <AdminDashboard />
 
       {/* Main Content */}
       <main className="flex-grow-1 p-4 bg-light">

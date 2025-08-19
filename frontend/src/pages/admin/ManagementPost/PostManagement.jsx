@@ -136,36 +136,36 @@ const PostManagement = () => {
 
     // Trường hợp bấm Cancel hoặc nhập rỗng
     if (!reason || !reason.trim()) {
-        alert("Vui lòng nhập lý do từ chối");
-        return;
+      alert("Vui lòng nhập lý do từ chối");
+      return;
     }
 
     // Đảm bảo là chuỗi thuần
     if (typeof reason !== "string") {
-        try {
-            reason = JSON.stringify(reason);
-        } catch {
-            reason = String(reason);
-        }
+      try {
+        reason = JSON.stringify(reason);
+      } catch {
+        reason = String(reason);
+      }
     }
     reason = reason.trim();
 
     if (!window.confirm("Xác nhận từ chối bài đăng này?")) return;
 
     try {
-        setLoading(true);
-        console.log(">> Gửi reject với payload:", { reasonreject: reason });
-        await rejectPostByAdmin(postId, reason); // ✅ Gửi string thuần
-        toast.success("Đã từ chối bài đăng thành công");
-        fetchPosts();
-        fetchSidePosts();
+      setLoading(true);
+      console.log(">> Gửi reject với payload:", { reasonreject: reason });
+      await rejectPostByAdmin(postId, reason); // ✅ Gửi string thuần
+      toast.success("Đã từ chối bài đăng thành công");
+      fetchPosts();
+      fetchSidePosts();
     } catch (err) {
-        console.error("handleReject error:", err);
-        toast.error("Từ chối bài đăng thất bại");
+      console.error("handleReject error:", err);
+      toast.error("Từ chối bài đăng thất bại");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
 
 
@@ -406,7 +406,7 @@ const PostItemButton = ({ p, formatSmartDate, tagLabel, isSmall, onApprove, onRe
         </div>
 
         {/* Action buttons for main table */}
-        {onApprove && onReject && p.status === "pending" && (
+        {/* {onApprove && onReject && p.status === "pending" && (
           <div className="ms-2 d-flex flex-column gap-1">
             <button
               className="btn btn-sm btn-outline-success"
@@ -431,7 +431,7 @@ const PostItemButton = ({ p, formatSmartDate, tagLabel, isSmall, onApprove, onRe
               Từ chối
             </button>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Link overlay for navigation */}
