@@ -194,7 +194,7 @@ const login = async (req, res) => {
     user.isOnline = true;
     await user.save();
     const token = jwt.sign(
-      { _id: user._id, role: user.role, name: user.name, phone: user.phone, address: user.address, identityNumber: user.identityNumber, email: user.email, dob: user.dob },
+      { _id: user._id, role: user.role, name: user.name, phone: user.phone, address: user.address, identityNumber: user.identityNumber, email: user.email, dob: user.dob, profileImage: user.profileImage },
       process.env.JWT_SECRET,
       { expiresIn: "10d" }
     );
@@ -202,7 +202,7 @@ const login = async (req, res) => {
     return res.status(200).json({
       success: true,
       token,
-      user: { _id: user._id, name: user.name, role: user.role, isOnline: user.isOnline, phone: user.phone, address: user.address, identityNumber: user.identityNumber, email: user.email, dob: user.dob },
+      user: { _id: user._id, name: user.name, role: user.role, isOnline: user.isOnline, phone: user.phone, address: user.address, identityNumber: user.identityNumber, email: user.email, dob: user.dob, profileImage: user.profileImage },
     });
   } catch (error) {
     console.error("❌ Lỗi đăng nhập:", error.message);
@@ -303,7 +303,8 @@ const verifyUser = async (req, res) => {
           identityNumber: safeDecrypt(user.identityNumber), // ✅ giải mã trước khi trả
           address: user.address,
           phone: user.phone,
-          dob: user.dob
+          dob: user.dob,
+          profileImage: user.profileImage
         },
       });
     }

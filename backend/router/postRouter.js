@@ -1,5 +1,5 @@
 import express from "express";
-import { createPost, deletePost, deletePostByAdmin, getAllPosts, getApprovedPosts, getPost, getPostApproved, getPostDetail, getPostDetailForAdmin, getPostForGuest, getPostHistories, getPostStats, getPostbyUser, rejectPostByAdmin, startEditingPost, updatePost, updatePostStatusByAdmin, verifyPostByAdmin } from "../controllers/postController.js";
+import { createPost, deletePost, deletePostByAdmin, getAllPosts, getApprovedPosts, getPost, getPostApproved, getPostDetail, getPostDetailForAdmin, getPostForGuest, getPostHistories, getPostStats, getPostbyUser, rejectPostByAdmin, startEditingPost, updatePost, updatePostStatusByAdmin, verifyPostByAdmin, countPostsByUser } from "../controllers/postController.js";
 import { upload } from "../db/cloudinary.js";
 import verifyUser from "../middleware/authMiddleware.js";
 import isAdmin from "../middleware/isAdmin.js";
@@ -29,6 +29,7 @@ router.put("/update-posts/:id", verifyUser, upload.array("images"), updatePost);
 router.delete("/delete-posts/:id", deletePost);
 router.put("/update-posts-statusbyAdmin/:id", verifyUser, updatePostStatusByAdmin);
 router.get('/stats', getPostStats);
+router.get("/count/:userId", countPostsByUser);
 // routes/postRoutes.js
 // DELETE /:postId/images
 // routes/postRouter.js

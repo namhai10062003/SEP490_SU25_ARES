@@ -37,7 +37,7 @@ const BlogList = () => {
       }); // delay 1.5s để toast hiện ra
     }
   };
-  
+
   useEffect(() => {
     if (user && user.name) setName(user.name);
   }, [user]);
@@ -71,7 +71,7 @@ const BlogList = () => {
       setIsLoading(false);
     }
   };
-  
+
 
   const applyFilter = () => {
     let filtered = posts;
@@ -294,7 +294,7 @@ const BlogList = () => {
                   currentPosts.map((post, idx) => (
                     <div key={post._id} className="col-12 col-md-6 col-lg-4 d-flex">
                       <Link
-                       to={`/postdetail/${post._id}`} onClick={handleClick}
+                        to={`/postdetail/${post._id}`} onClick={handleClick}
                         className="card h-100 shadow-sm border-0 text-decoration-none text-dark w-100"
                         style={{
                           minHeight: '260px',
@@ -348,7 +348,19 @@ const BlogList = () => {
                             >
                               {post.title}
                             </span>
-                            <span className="badge bg-primary  flex-shrink-0">{post.postPackage?.type || "Standard"}</span>
+                            <span
+                              className={`badge flex-shrink-0 ${post.postPackage?.type === "VIP1"
+                                  ? "bg-success"
+                                  : post.postPackage?.type === "VIP2"
+                                    ? "bg-warning text-dark"
+                                    : post.postPackage?.type === "VIP3"
+                                      ? "bg-danger"
+                                      : "bg-primary"
+                                }`}
+                            >
+                              {post.postPackage?.type || "Standard"}
+                            </span>
+
                           </div>
                           {/* Practical info grid */}
                           <div className="row g-1 small mb-2">
@@ -408,17 +420,16 @@ const BlogList = () => {
 
                             </div>
                             <span
-  className={`badge ${
-    post.type === "ban" ? "bg-danger" :
-    post.type === "cho_thue" ? "bg-success" :
-    post.type === "dich_vu" ? "bg-info" :
-    "bg-secondary"
-  }`}
->
-  {post.type === "ban" && "Bán"}
-  {post.type === "cho_thue" && "Cho thuê"}
-  {post.type === "dich_vu" && "Dịch vụ"}
-</span>
+                              className={`badge ${post.type === "ban" ? "bg-danger" :
+                                  post.type === "cho_thue" ? "bg-success" :
+                                    post.type === "dich_vu" ? "bg-info" :
+                                      "bg-secondary"
+                                }`}
+                            >
+                              {post.type === "ban" && "Bán"}
+                              {post.type === "cho_thue" && "Cho thuê"}
+                              {post.type === "dich_vu" && "Dịch vụ"}
+                            </span>
 
                           </div>
                         </div>
