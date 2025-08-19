@@ -394,128 +394,162 @@ const ManageApplicationForm = () => {
 
         {/* Modal xem chi tiết đơn */}
         {showModal && selectedApp && (
-          <ReusableModal
-            show={showModal}
-            onClose={() => setShowModal(false)}
-            title="Chi tiết đơn đăng ký"
-            body={
-              <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-                {/* Thông tin hợp đồng */}
-                <div className="mb-4">
-                  <h5 className="fw-bold mb-3 text-primary">📄 Thông tin hợp đồng</h5>
-                  <ul className="list-group list-group-flush">
-                    <li className="list-group-item"><strong>Loại giấy tờ:</strong> {selectedApp.documentType}</li>
-                    <li className="list-group-item"><strong>Thời hạn:</strong> {formatDate(selectedApp.contractStart)} - {formatDate(selectedApp.contractEnd)}</li>
-                    <li className="list-group-item"><strong>Ngày gửi:</strong> {formatDate(selectedApp.createdAt)}</li>
-                    <li className="list-group-item">
-                      <strong>Trạng thái:</strong>{" "}
-                      <span
-                        className={`badge px-2 py-1 rounded-pill ${selectedApp.status === "Chờ duyệt"
-                            ? "bg-warning text-dark"
-                            : selectedApp.status === "Đã từ chối"
-                              ? "bg-danger"
-                              : selectedApp.status === "Đã duyệt"
-                                ? "bg-success"
-                                : selectedApp.status === "Đã hủy bỏ"
-                                  ? "bg-secondary"
-                                  : "bg-light text-dark"
-                          }`}
-                      >
-                        {selectedApp.status}
-                      </span>
-                    </li>
-                  </ul>
+  <ReusableModal
+    show={showModal}
+    onClose={() => setShowModal(false)}
+    title="📑 Chi tiết đơn đăng ký"
+    size="xl"  // hoặc 'lg' nếu muốn vừa
+    fullscreen  // chiếm toàn màn hình, đẹp như form
+    body={
+      <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
+        
+        {/* Thông tin hợp đồng */}
+        <div className="card border-0 shadow-sm mb-4 rounded-3">
+          <div className="card-header bg-primary text-white fw-bold rounded-top-3">
+            📄 Thông tin hợp đồng
+          </div>
+          <ul className="list-group list-group-flush">
+            <li className="list-group-item">
+              <strong>Loại giấy tờ:</strong> {selectedApp.documentType}
+            </li>
+            <li className="list-group-item">
+              <strong>Thời hạn:</strong> {formatDate(selectedApp.contractStart)} - {formatDate(selectedApp.contractEnd)}
+            </li>
+            <li className="list-group-item">
+              <strong>Ngày gửi:</strong> {formatDate(selectedApp.createdAt)}
+            </li>
+            <li className="list-group-item">
+              <strong>Trạng thái:</strong>{" "}
+              <span
+                className={`badge px-3 py-2 rounded-pill shadow-sm ${
+                  selectedApp.status === "Chờ duyệt"
+                    ? "bg-warning text-dark"
+                    : selectedApp.status === "Đã từ chối"
+                    ? "bg-danger"
+                    : selectedApp.status === "Đã duyệt"
+                    ? "bg-success"
+                    : selectedApp.status === "Đã hủy bỏ"
+                    ? "bg-secondary"
+                    : "bg-light text-dark"
+                }`}
+              >
+                {selectedApp.status}
+              </span>
+            </li>
+          </ul>
 
-                  {documentImages.length > 0 && (
-                    <div className="mt-3">
-                      <label className="fw-semibold mb-2 d-block">Ảnh hợp đồng:</label>
-                      <div className="d-flex flex-wrap gap-3">
-                        {documentImages.map((img, idx) => (
-                          <img
-                            key={idx}
-                            src={img}
-                            alt={`Hợp đồng ${idx + 1}`}
-                            className="rounded shadow-sm"
-                            style={{ maxHeight: 200, maxWidth: 300, objectFit: "cover" }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <hr />
-
-                {/* Người thuê */}
-                <div className="mb-4">
-                  <h5 className="fw-bold mb-3 text-primary">👤 Người thuê</h5>
-                  <ul className="list-group list-group-flush">
-                    <li className="list-group-item"><strong>Họ tên:</strong> {selectedApp.user && selectedApp.user._id ? (
-                      <Link to={`/admin-dashboard/manage-user/${selectedApp.user._id}`}>{selectedApp.fullName}</Link>
-                    ) : selectedApp.fullName}</li>
-                    <li className="list-group-item"><strong>Email:</strong> {selectedApp.resident?.email || selectedApp.email}</li>
-                    <li className="list-group-item"><strong>SĐT:</strong> {formatPhoneNumber(selectedApp.resident?.phone || selectedApp.phone)}</li>
-                  </ul>
-                </div>
-
-                <hr />
-
-                {/* Thông tin căn hộ */}
-                <div className="mb-4">
-                  <h5 className="fw-bold mb-3 text-primary">🏢 Thông tin căn hộ</h5>
-                  <ul className="list-group list-group-flush">
-                    <li className="list-group-item"><strong>Mã căn hộ:</strong> {selectedApp.apartmentCode || selectedApp.apartment?.code || ""}</li>
-                    <li className="list-group-item"><strong>Tầng:</strong> {selectedApp.apartment?.floor}</li>
-                    <li className="list-group-item"><strong>Diện tích:</strong> {selectedApp.apartment?.area} m²</li>
-                    <li className="list-group-item"><strong>Nội thất:</strong> {selectedApp.apartment?.furniture}</li>
-                    <li className="list-group-item"><strong>Hướng:</strong> {selectedApp.apartment?.direction}</li>
-                    <li className="list-group-item"><strong>Trạng thái:</strong> {selectedApp.apartment?.status}</li>
-                  </ul>
-                </div>
-
-                {/* Các tháng chưa thanh toán */}
-                {selectedApp.unpaidFees && selectedApp.unpaidFees.length > 0 && (
-                  <div className="mb-3">
-                    <h5 className="fw-bold mb-3 text-danger">📅 Các tháng chưa thanh toán</h5>
-                    <div className="table-responsive">
-                      <table className="table table-bordered table-hover table-striped align-middle">
-                        <thead className="table-secondary text-center">
-                          <tr>
-                            <th>Tháng</th>
-                            <th>Phí quản lý</th>
-                            <th>Phí nước</th>
-                            <th>Phí giữ xe</th>
-                            <th>Tổng</th>
-                            <th>Trạng thái</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {selectedApp.unpaidFees.map((fee, index) => (
-                            <tr key={index}>
-                              <td className="text-center">{fee.month}</td>
-                              <td className="text-end">{formatPrice(fee.managementFee)}</td>
-                              <td className="text-end">{formatPrice(fee.waterFee)}</td>
-                              <td className="text-end">{formatPrice(fee.parkingFee)}</td>
-                              <td className="text-end fw-bold">{formatPrice(fee.total)}</td>
-                              <td className="text-center text-danger fw-semibold">{fee.status}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
+          {documentImages.length > 0 && (
+            <div className="p-3">
+              <label className="fw-semibold mb-2 d-block">Ảnh hợp đồng:</label>
+              <div className="d-flex flex-wrap gap-3">
+                {documentImages.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt={`Hợp đồng ${idx + 1}`}
+                    className="rounded shadow-sm border"
+                    style={{
+                      maxHeight: 200,
+                      maxWidth: 300,
+                      objectFit: "cover",
+                    }}
+                  />
+                ))}
               </div>
-            }
-            footerButtons={[
-              {
-                label: "Đóng",
-                variant: "secondary",
-                onClick: () => setShowModal(false),
-              },
-            ]}
-          />
+            </div>
+          )}
+        </div>
+
+        {/* Người thuê */}
+        <div className="card border-0 shadow-sm mb-4 rounded-3">
+          <div className="card-header bg-info text-white fw-bold rounded-top-3">
+            👤 Người thuê
+          </div>
+          <ul className="list-group list-group-flush">
+            <li className="list-group-item">
+              <strong>Họ tên:</strong>{" "}
+              {selectedApp.user && selectedApp.user._id ? (
+                <Link
+                  to={`/admin-dashboard/manage-user/${selectedApp.user._id}`}
+                  className="text-decoration-none fw-semibold"
+                >
+                  {selectedApp.fullName}
+                </Link>
+              ) : (
+                selectedApp.fullName
+              )}
+            </li>
+            <li className="list-group-item">
+              <strong>Email:</strong> {selectedApp.resident?.email || selectedApp.email}
+            </li>
+            <li className="list-group-item">
+              <strong>SĐT:</strong>{" "}
+              {formatPhoneNumber(selectedApp.resident?.phone || selectedApp.phone)}
+            </li>
+          </ul>
+        </div>
+
+        {/* Thông tin căn hộ */}
+        <div className="card border-0 shadow-sm mb-4 rounded-3">
+          <div className="card-header bg-secondary text-white fw-bold rounded-top-3">
+            🏢 Thông tin căn hộ
+          </div>
+          <ul className="list-group list-group-flush">
+            <li className="list-group-item"><strong>Mã căn hộ:</strong> {selectedApp.apartmentCode || selectedApp.apartment?.code || ""}</li>
+            <li className="list-group-item"><strong>Tầng:</strong> {selectedApp.apartment?.floor}</li>
+            <li className="list-group-item"><strong>Diện tích:</strong> {selectedApp.apartment?.area} m²</li>
+            <li className="list-group-item"><strong>Nội thất:</strong> {selectedApp.apartment?.furniture}</li>
+            <li className="list-group-item"><strong>Hướng:</strong> {selectedApp.apartment?.direction}</li>
+            <li className="list-group-item"><strong>Trạng thái:</strong> {selectedApp.apartment?.status}</li>
+          </ul>
+        </div>
+
+        {/* Các tháng chưa thanh toán */}
+        {selectedApp.unpaidFees && selectedApp.unpaidFees.length > 0 && (
+          <div className="card border-0 shadow-sm mb-3 rounded-3">
+            <div className="card-header bg-danger text-white fw-bold rounded-top-3">
+              📅 Các tháng chưa thanh toán
+            </div>
+            <div className="table-responsive">
+              <table className="table table-bordered table-hover align-middle mb-0">
+                <thead className="table-light text-center">
+                  <tr>
+                    <th>Tháng</th>
+                    <th>Phí quản lý</th>
+                    <th>Phí nước</th>
+                    <th>Phí giữ xe</th>
+                    <th>Tổng</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedApp.unpaidFees.map((fee, index) => (
+                    <tr key={index}>
+                      <td className="text-center fw-semibold">{fee.month}</td>
+                      <td className="text-end">{formatPrice(fee.managementFee)}</td>
+                      <td className="text-end">{formatPrice(fee.waterFee)}</td>
+                      <td className="text-end">{formatPrice(fee.parkingFee)}</td>
+                      <td className="text-end fw-bold text-primary">{formatPrice(fee.total)}</td>
+                      <td className="text-center text-danger fw-semibold">{fee.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
+      </div>
+    }
+    footerButtons={[
+      {
+        label: "Đóng",
+        variant: "secondary",
+        onClick: () => setShowModal(false),
+      },
+    ]}
+  />
+)}
+
 
         {/* {showEditModal && selectedApp && (
           <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,0.3)" }}>

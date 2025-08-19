@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Select from "react-select";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Header from "../../../../components/header.jsx";
@@ -8,7 +9,6 @@ import {
   getApartmentList,
   getPlazaList,
 } from "../../../service/postService.js";
-import { formatCurrency } from "../../../../utils/format.jsx";
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
     loaiHinh: "",
@@ -352,20 +352,30 @@ const RegistrationForm = () => {
 
 
 
-  // hàm xử lí lọc plaza vs căn hộ
-  const selectedPlaza = plazaOptions.find(
-    (plaza) => String(plaza._id) === String(formData.toaPlaza)
-  );
+  // 1️⃣ tìm tòa plaza đang chọn dựa vào _id trong formData
+const selectedPlaza = plazaOptions.find(
+  (plaza) => String(plaza._id) === String(formData.toaPlaza)
+);
 
+// 2️⃣ lấy ra tên plaza (building name) để so sánh với danh sách căn hộ
+const selectedPlazaName = selectedPlaza?.name || "";
 
-  const selectedPlazaName = selectedPlaza?.name || "";
+// 3️⃣ lọc danh sách căn hộ theo plaza
+const filteredApartments = apartmentOptions.filter(
+  (apartment) => apartment.building === selectedPlazaName
+);
 
-  console.log("🧱 Tòa plaza đã chọn (_id):", formData.toaPlaza);
-  console.log("🏷️ Tên plaza đã chọn:", selectedPlazaName);
-  const filteredApartments = apartmentOptions.filter(
-    (apartment) => apartment.building === selectedPlazaName
-  );
-
+  const apartmentSelectStyles = {
+    control: (provided) => ({
+      ...provided,
+      borderRadius: "8px",
+      minHeight: "40px",
+    }),
+    menu: (provided) => ({
+      ...provided,
+      zIndex: 9999,
+    }),
+  };
   console.log("🏘️ Danh sách căn hộ sau lọc theo plaza:", filteredApartments);
   return (
     <div className="bg-light min-vh-100">
@@ -554,80 +564,36 @@ const RegistrationForm = () => {
 
                         {/* SO CAN HO */}
                         <div className="col-md-6">
-                          <label className="form-label">
-                            Số căn hộ <span className="text-danger">*</span>
-                          </label>
-                          {!useCustomApartment ? (
-                            <div className="d-flex align-items-center gap-2">
-                              <select
-                                name="soCanHo"
-                                value={formData.soCanHo || ""}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    soCanHo: e.target.value,
-                                  }))
-                                }
-                                className="form-select flex-grow-1"
-                                required
-                              >
-                                <option value="">Chọn số căn hộ</option>
-                                {filteredApartments.length === 0 && (
-                                  <option disabled>Không có căn hộ phù hợp</option>
-                                )}
-                                {filteredApartments.map((apartment) => (
-                                  <option key={apartment._id} value={apartment.apartmentCode}>
-                                    {apartment.apartmentCode}
-                                  </option>
-                                ))}
-                              </select>
-                              {/* <button
-                                type="button"
-                                className="btn btn-outline-secondary py-0 px-2"
-
-                                onClick={() => {
-                                  setUseCustomApartment(true);
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    soCanHo: "",
-                                  }));
-                                }}
-                              >
-                                Nhập mới
-                              </button> */}
-                            </div>
-                          ) : (
-                            <div className="d-flex align-items-center gap-2">
-                              <input
-                                type="text"
-                                className="form-control flex-grow-1"
-                                placeholder="Nhập số căn hộ"
-                                value={formData.soCanHo || ""}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    soCanHo: e.target.value,
-                                  }))
-                                }
-                                required
-                              />
-                              {/* <button
-                                type="button"
-                                className="btn btn-outline-secondary py-0 px-2"
-
-                                onClick={() => {
-                                  setUseCustomApartment(false);
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    soCanHo: "",
-                                  }));
-                                }}
-                              >
-                                Chọn từ danh sách
-                              </button> */}
-                            </div>
-                          )}
-                        </div>
+      <label className="form-label">
+        Căn hộ <span className="text-danger">*</span>
+      </label>
+      <Select
+  options={filteredApartments.map((apt) => ({
+    value: apt.apartmentCode,
+    label: apt.apartmentCode,
+  }))}
+  value={
+    filteredApartments
+      .map((apt) => ({ value: apt.apartmentCode, label: apt.apartmentCode }))
+      .find((opt) => opt.value === formData.apartmentCode) || null
+  }
+  onChange={(selected) =>
+    setFormData((prev) => ({
+      ...prev,
+      apartmentCode: selected ? selected.value : "",
+    }))
+  }
+  placeholder={
+    filteredApartments.length === 0
+      ? "Không có căn hộ phù hợp"
+      : "Nhập hoặc chọn căn hộ"
+  }
+  isClearable
+  menuPortalTarget={document.body}
+  menuPosition="fixed"
+  menuPlacement="bottom"
+/>
+    </div>
 
                       </div>
                     </>
