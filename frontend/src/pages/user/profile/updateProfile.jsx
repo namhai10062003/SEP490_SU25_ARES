@@ -20,7 +20,7 @@ const UpdateProfileForm = () => {
 const [cccdBackImage, setCccdBackImage] = useState(null);
 const [previewFront, setPreviewFront] = useState(null);
 const [previewBack, setPreviewBack] = useState(null);
-
+const [loading, setLoading] = useState(false);
 //hàm cccd 
 const handleCccdFrontChange = (e) => {
   const file = e.target.files[0];
@@ -141,7 +141,7 @@ const handleCccdBackChange = (e) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setLoading(true);
     const errors = [];
 
     if (!form.name?.trim()) errors.push("⚠️ Vui lòng nhập họ tên!");
@@ -227,6 +227,8 @@ const handleCccdBackChange = (e) => {
       const backendMessage = err.response?.data?.message || "❌ Gửi yêu cầu thất bại, thử lại sau!";
       toast.error(backendMessage);
       console.error("Lỗi cập nhật hồ sơ:", err);
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -384,17 +386,30 @@ const handleCccdBackChange = (e) => {
             </div>
 
             <div className="d-flex justify-content-between gap-2 mt-4">
-              <button
-                type="button"
-                className="btn btn-secondary px-4"
-                onClick={() => navigate(-1)}
-              >
-                ← Quay lại
-              </button>
-              <button type="submit" className="btn btn-primary px-4">
-                Cập nhật
-              </button>
-            </div>
+  <button
+    type="button"
+    className="btn btn-secondary px-4"
+    onClick={() => navigate(-1)}
+  >
+    ← Quay lại
+  </button>
+
+  <button
+    type="submit"
+    className="btn btn-primary px-4 d-flex align-items-center gap-2"
+    disabled={loading} // khi đang loading thì disable
+  >
+    {loading && (
+      <span
+        className="spinner-border spinner-border-sm"
+        role="status"
+        aria-hidden="true"
+      ></span>
+    )}
+    {loading ? "Đang cập nhật..." : "Cập nhật"}
+  </button>
+</div>
+
             {updateStatus && (
   <div className="alert alert-info mt-3">
     <p>

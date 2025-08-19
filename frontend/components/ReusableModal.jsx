@@ -21,7 +21,8 @@ const ReusableModal = ({
         style={{ display: "block" }}
         tabIndex="-1"
       >
-        <div className="modal-dialog modal-dialog-centered">
+        <div className="modal-dialog modal-dialog-centered modal-lg">
+
           <div className="modal-content position-relative">
             {/* Close button */}
             <button
