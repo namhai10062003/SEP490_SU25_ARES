@@ -22,6 +22,7 @@ import VideoCallPopup from "./pages/user/messages/VideoCallPopup";
 // Các trang
 import AIChatBox from "../components/AIChatBox.jsx";
 import Home from "./home/home";
+import ChangPassWord1 from "./pages/admin/ChangePassWord/ChangePassWord.jsx";
 import DashboardHome from "./pages/admin/DashboardHome.jsx";
 import AdminPostDetail from "./pages/admin/ManagementPost/PostDetail.jsx";
 import PostManagement from "./pages/admin/ManagementPost/PostManagement.jsx";
@@ -41,6 +42,7 @@ import AdminRevenueApartmentDeposit from "./pages/admin/revenue/apartmentDeposit
 import AdminRevenuePost from "./pages/admin/revenue/posts.jsx";
 import ManageUserDetail from "./pages/admin/userDetail.jsx";
 import AdminProfileUpdatePage from "./pages/admin/verifyprofileuser/AdminProfileUpdatePage.jsx";
+import ChangePasswordStaff from "./pages/staff/ChangePassWordStaff.jsx";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
 import ResidentVerificationHistory from "./pages/staff/ResidentVerificationList/ResidentVerificationHistory.jsx";
 import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
@@ -181,6 +183,7 @@ function AppRoutes() {
         <Route path="/admin-dashboard/manage-user/:id" element={<ManageUserDetail allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/manage-contract" element={<ProtectedRoute element={<ManageContract />} allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/manage-contract/:id" element={<ProtectedRoute element={< AdminContractDetail />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/changePassWord" element={<ProtectedRoute element={< ChangPassWord1 />} allowedRoles={["admin"]} />} />
         {/* Staff */}
         <Route path="/staff-dashboard" element={<ProtectedRoute element={<DashboardPage />} allowedRoles={["staff"]} />} />
         <Route path="staff-expenses" element={<ProtectedRoute element={<ManageExpense />} allowedRoles={["staff"]} />} />
@@ -193,7 +196,7 @@ function AppRoutes() {
         <Route path="staff-citizenlist" element={<ProtectedRoute element={<CitizenList />} allowedRoles={["staff"]} />} />
         <Route path="staff-residence-decration" element={<ProtectedRoute element={<ResidenceDeclarationVerifyList />} allowedRoles={["staff"]} />} />
         <Route path="staff-resident/history" element={<ProtectedRoute element={<ResidentVerificationHistory />} allowedRoles={["staff"]} />} />
-
+        <Route path="staff-changePassWord" element={<ProtectedRoute element={<ChangePasswordStaff />} allowedRoles={["staff"]} />} />
         {/* User */}
       </Routes>
 
