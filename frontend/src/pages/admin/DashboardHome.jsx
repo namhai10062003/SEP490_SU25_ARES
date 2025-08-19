@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { Bar } from "react-chartjs-2";
-import AdminDashboard from "./adminDashboard";
-import { getAllPosts } from "../../service/postService";
 import {
-  Chart as ChartJS,
   BarElement,
   CategoryScale,
+  Chart as ChartJS,
+  Legend,
   LinearScale,
   Title,
   Tooltip,
-  Legend,
 } from "chart.js";
+import React, { useEffect, useState } from "react";
+import { Bar } from "react-chartjs-2";
+import { Link } from "react-router-dom";
+import { getAllPosts } from "../../service/postService";
+import AdminDashboard from "./adminDashboard";
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend);
 
@@ -291,8 +292,18 @@ const fetchAllData = async () => {
   return (
     <AdminDashboard>
       <div className="container-fluid px-0">
-        <h3 className="mb-4 fw-bold">Dashboard tổng hợp</h3>
-
+      <div className="d-flex justify-content-between align-items-center mb-4">
+  <h3 className="fw-bold mb-0">Dashboard tổng hợp</h3>
+  
+  {/* Nút đổi mật khẩu */}
+  <Link
+    to="/admin-dashboard/changePassWord"
+    className="btn btn-outline-primary fw-semibold px-4 py-2"
+    style={{ borderRadius: "10px" }}
+  >
+    🔑 Đổi mật khẩu
+  </Link>
+</div>
         {/* Stats Cards */}
         <div className="row g-4 mb-4">
           {/* Apartments */}
