@@ -77,7 +77,7 @@ const LikedPosts = () => {
       <Header user={user} logout={logout} name={user?.name || user?.username || ""} />
 
       <div className="container py-4">
-        <h3 className="mb-3 text-primary">📌 bài đăng bạn đã thích</h3>
+        <h3 className="mb-3 text-primary">📌 Bài đăng bạn đã thích</h3>
 
         <div className="row mb-4 g-3">
           <div className="col-md-3">
@@ -169,7 +169,7 @@ const LikedPosts = () => {
                     <div className="text-muted small mb-1">
                       <span className="material-symbols-rounded align-middle" style={{ fontSize: 16, verticalAlign: "middle" }}>location_on</span>
                       {post.location} • {post.area}m² • {formatPrice(post.price)}{" "}
-                      {post.type === "ban" ? "triệu" : "triệu/tháng"}
+                      {post.type === "ban" ? "VND" : "VND/tháng"}
                     </div>
                     <div className="text-secondary small mb-1">
                       <span className="material-symbols-rounded align-middle" style={{ fontSize: 16 }}>calendar_month</span>

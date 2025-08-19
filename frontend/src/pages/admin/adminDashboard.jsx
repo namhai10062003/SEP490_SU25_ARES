@@ -14,8 +14,8 @@ export default function AdminDashboard({ children }) {
     setShowRevenueSub(location.pathname.startsWith("/admin-dashboard/revenue"));
     setShowFeedbackSub(
       location.pathname.startsWith("/admin-dashboard/report") ||
-        location.pathname.startsWith("/admin-dashboard/contact") ||
-        location.pathname.startsWith("/admin-dashboard/updateprofile")
+      location.pathname.startsWith("/admin-dashboard/contact") ||
+      location.pathname.startsWith("/admin-dashboard/updateprofile")
     );
 
     // scroll active item into view inside the nav scroll area (smooth)
@@ -44,28 +44,18 @@ export default function AdminDashboard({ children }) {
   const navItems = [
     { to: "/admin-dashboard", label: "Tổng Quan" },
     { to: "/admin-dashboard/posts", label: "Quản Lý Bài Post" },
-    {
-      to: "/admin-dashboard/manage-notification",
-      label: "Quản lý Notification",
-    },
+    { to: "/admin-dashboard/manage-notification", label: "Quản lý Notification" },
     { to: "/admin-dashboard/manage-contract", label: "Quản lý Contract" },
     { to: "/admin-dashboard/manage-user", label: "Quản Lý User" },
     { to: "/admin-dashboard/manage-staff", label: "Quản Lý Staff" },
     { to: "/admin-dashboard/manage-apartment", label: "Quản Lý Căn hộ" },
-    {
-      to: "/admin-dashboard/manage-resident-verification",
-      label: "Quản Lý Xác Nhận Cư Dân",
-    },
+    { to: "/admin-dashboard/manage-resident-verification", label: "Quản Lý Xác Nhận Cư Dân" },
     { to: "/admin-dashboard/user-revenue", label: "Quản Lý Yêu Cầu Rút Tiền" },
-
   ];
 
   // helper to render Link class names
   const linkClass = (path) =>
-    `nav-link rounded-3 px-3 py-2 d-flex align-items-center ${
-      location.pathname === path
-        ? "active bg-white text-primary fw-bold shadow-sm"
-        : "text-white"
+    `nav-link rounded-3 px-3 py-2 d-flex align-items-center ${location.pathname === path ? "active bg-white text-primary fw-bold shadow-sm" : "text-white"
     }`;
 
   return (
@@ -124,65 +114,31 @@ export default function AdminDashboard({ children }) {
                 <div>
                   <button
                     type="button"
-                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center w-100 border-0 ${
-                      showFeedbackSub
-                        ? "bg-white text-primary fw-bold shadow-sm"
-                        : "text-white"
-                    }`}
-                    style={{
-                      cursor: "pointer",
-                      userSelect: "none",
-                      textAlign: "left",
-                      background: "transparent",
-                    }}
+                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center w-100 border-0 ${showFeedbackSub ? "bg-white text-primary fw-bold shadow-sm" : "text-white"}`}
+                    style={{ cursor: "pointer", userSelect: "none", textAlign: "left", background: "transparent" }}
                     onClick={() => setShowFeedbackSub((v) => !v)}
                     aria-expanded={showFeedbackSub}
                     aria-controls="feedback-submenu"
                   >
                     <span style={{ fontWeight: 600 }}>•</span>
                     <span className="ms-2">Quản Lý Phản Hồi</span>
-                    <span className="ms-auto" aria-hidden>
-                      {showFeedbackSub ? "▲" : "▼"}
-                    </span>
+                    <span className="ms-auto" aria-hidden>{showFeedbackSub ? "▲" : "▼"}</span>
                   </button>
 
                   {showFeedbackSub && (
-                    <ul
-                      id="feedback-submenu"
-                      className="nav flex-column ps-4 mt-1"
-                      style={{
-                        borderLeft: "2px solid rgba(255,255,255,0.12)",
-                        transition: "all .18s",
-                      }}
-                    >
+                    <ul id="feedback-submenu" className="nav flex-column ps-4 mt-1" style={{ borderLeft: "2px solid rgba(255,255,255,0.12)", transition: "all .18s" }}>
                       <li className="nav-item">
-                        <Link
-                          to="/admin-dashboard/report"
-                          className={
-                            linkClass("/admin-dashboard/report") + " ps-3"
-                          }
-                        >
+                        <Link to="/admin-dashboard/report" className={linkClass("/admin-dashboard/report") + " ps-3"}>
                           • <span className="ms-2">Báo Cáo</span>
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link
-                          to="/admin-dashboard/contact"
-                          className={
-                            linkClass("/admin-dashboard/contact") + " ps-3"
-                          }
-                        >
+                        <Link to="/admin-dashboard/contact" className={linkClass("/admin-dashboard/contact") + " ps-3"}>
                           • <span className="ms-2">Liên Hệ</span>
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link
-                          to="/admin-dashboard/updateprofile"
-                          className={
-                            linkClass("/admin-dashboard/updateprofile") +
-                            " ps-3"
-                          }
-                        >
+                        <Link to="/admin-dashboard/updateprofile" className={linkClass("/admin-dashboard/updateprofile") + " ps-3"}>
                           • <span className="ms-2">Cập nhật thông tin</span>
                         </Link>
                       </li>
@@ -196,67 +152,31 @@ export default function AdminDashboard({ children }) {
                 <div>
                   <button
                     type="button"
-                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center w-100 border-0 ${
-                      showRevenueSub
-                        ? "bg-white text-primary fw-bold shadow-sm"
-                        : "text-white"
-                    }`}
-                    style={{
-                      cursor: "pointer",
-                      userSelect: "none",
-                      textAlign: "left",
-                      background: "transparent",
-                    }}
+                    className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center w-100 border-0 ${showRevenueSub ? "bg-white text-primary fw-bold shadow-sm" : "text-white"}`}
+                    style={{ cursor: "pointer", userSelect: "none", textAlign: "left", background: "transparent" }}
                     onClick={() => setShowRevenueSub((v) => !v)}
                     aria-expanded={showRevenueSub}
                     aria-controls="revenue-submenu"
                   >
                     <span style={{ fontWeight: 600 }}>•</span>
                     <span className="ms-2">Phân Tích Doanh Thu</span>
-                    <span className="ms-auto" aria-hidden>
-                      {showRevenueSub ? "▲" : "▼"}
-                    </span>
+                    <span className="ms-auto" aria-hidden>{showRevenueSub ? "▲" : "▼"}</span>
                   </button>
 
                   {showRevenueSub && (
-                    <ul
-                      id="revenue-submenu"
-                      className="nav flex-column ps-4 mt-1"
-                      style={{
-                        borderLeft: "2px solid rgba(255,255,255,0.12)",
-                        transition: "all .18s",
-                      }}
-                    >
+                    <ul id="revenue-submenu" className="nav flex-column ps-4 mt-1" style={{ borderLeft: "2px solid rgba(255,255,255,0.12)", transition: "all .18s" }}>
                       <li className="nav-item">
-                        <Link
-                          to="/admin-dashboard/revenue/post"
-                          className={
-                            linkClass("/admin-dashboard/revenue/post") + " ps-3"
-                          }
-                        >
+                        <Link to="/admin-dashboard/revenue/post" className={linkClass("/admin-dashboard/revenue/post") + " ps-3"}>
                           • <span className="ms-2">Post</span>
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link
-                          to="/admin-dashboard/revenue/apartment"
-                          className={
-                            linkClass("/admin-dashboard/revenue/apartment") +
-                            " ps-3"
-                          }
-                        >
+                        <Link to="/admin-dashboard/revenue/apartment" className={linkClass("/admin-dashboard/revenue/apartment") + " ps-3"}>
                           • <span className="ms-2">Căn Hộ</span>
                         </Link>
                       </li>
                       <li className="nav-item">
-                        <Link
-                          to="/admin-dashboard/revenue/apartment-deposit"
-                          className={
-                            linkClass(
-                              "/admin-dashboard/revenue/apartment-deposit"
-                            ) + " ps-3"
-                          }
-                        >
+                        <Link to="/admin-dashboard/revenue/apartment-deposit" className={linkClass("/admin-dashboard/revenue/apartment-deposit") + " ps-3"}>
                           • <span className="ms-2">Đặt Cọc</span>
                         </Link>
                       </li>
@@ -264,37 +184,23 @@ export default function AdminDashboard({ children }) {
                   )}
                 </div>
               </li>
-              {/* <li className="nav-item mt-4">
-                <Link
-                  to="/admin-dashboard/changePassWord"
-                  className="nav-link rounded-3 px-3 py-2 d-flex align-items-center text-white"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    transition: "all .15s",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  <span style={{ fontWeight: 600 }}>•</span>
-                  <span className="ms-2">Đổi Mật Khẩu</span>
-                </Link>
-              </li> */}
+
               {/* Logout at bottom: push down with margin top */}
               <li className="nav-item mt-4">
-                <button
-                  onClick={logout}
-                  className="nav-link rounded-3 px-3 py-2 d-flex align-items-center text-white"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    transition: "all .15s",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  <span style={{ fontWeight: 600 }}>•</span>
-                  <span className="ms-2">Đăng xuất</span>
-                </button>
-              </li>
+      <button
+        onClick={logout}
+        className="nav-link rounded-3 px-3 py-2 d-flex align-items-center text-white"
+        style={{
+          background: "rgba(255,255,255,0.04)",
+          transition: "all .15s",
+          border: "none",
+          cursor: "pointer"
+        }}
+      >
+        <span style={{ fontWeight: 600 }}>•</span>
+        <span className="ms-2">Đăng xuất</span>
+      </button>
+    </li>
             </ul>
           </nav>
         </aside>

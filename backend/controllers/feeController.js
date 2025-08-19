@@ -8,23 +8,23 @@ import WaterUsage from "../models/WaterUsage.js";
 // Tính và lưu tất cả các phí theo tháng
 const calculateAndSaveFees = async (req, res) => {
   try {
-    const apartments = await Apartment.find().lean();
-    const expenses = await Expense.find({ deletedAt: null }).lean();
-    const waterUsages = await WaterUsage.find().populate("apartment").lean();
-    const now = new Date();
+    // 1. Lấy dữ liệu cần thiết
+    const [apartments, expenses, waterUsages, parkingRegs] = await Promise.all([
+      Apartment.find().lean(),
+      Expense.find({ deletedAt: null }).lean(),
+      WaterUsage.find().populate("apartment").lean(),
+      ParkingRegistration.find({ status: "approved" }).lean(),
+    ]);
 
-    // Lấy hết các đăng ký đã APPROVED (không filter registerDate ở DB)
-    const parkingRegs = await ParkingRegistration.find({
-      status: "approved",
-    }).lean();
-
-    // Helpers
+    // ===== Helpers =====
     const pad = (n) => n.toString().padStart(2, "0");
+
     const monthKeyFromDate = (d) => {
       const dd = new Date(d);
       if (isNaN(dd)) return null;
       return `${dd.getFullYear()}-${pad(dd.getMonth() + 1)}`; // YYYY-MM
     };
+
     const normalizeMonthKey = (raw) => {
       if (!raw) return null;
       if (typeof raw === "string") {
@@ -35,39 +35,48 @@ const calculateAndSaveFees = async (req, res) => {
       }
       return null;
     };
+
+    const now = new Date();
+    const currentMonthKey = monthKeyFromDate(now);
+
     const parsePrice = (v) => {
       if (v == null) return 0;
       const s = String(v).replace(/[^\d.-]/g, "");
       const n = Number(s);
       return isNaN(n) ? 0 : n;
     };
+
     const getAptIdFromParking = (p) => {
       if (!p) return "";
       if (p.apartmentId) return String(p.apartmentId);
-      if (p.apartment && (p.apartment._id || p.apartment.id)) return String(p.apartment._id ?? p.apartment.id);
+      if (p.apartment && (p.apartment._id || p.apartment.id))
+        return String(p.apartment._id ?? p.apartment.id);
       if (typeof p.apartment === "string") return p.apartment;
       return "";
     };
 
-    // expense map
+    // ===== Map dữ liệu phí quản lý =====
     const expenseMap = {};
-    expenses.forEach((e) => { if (e.type === 1) expenseMap[e.label] = e; });
+    expenses.forEach((e) => {
+      if (e.type === 1) expenseMap[e.label] = e;
+    });
 
-    // group parking regs by apartmentId -> monthKey
+    // ===== Gom đăng ký gửi xe theo apartmentId -> monthKey =====
     const parkingByApt = {};
     parkingRegs.forEach((p) => {
       const aptId = getAptIdFromParking(p);
       const regMonth = monthKeyFromDate(p.registerDate);
       if (!aptId || !regMonth) return;
-      parkingByApt[aptId] = parkingByApt[aptId] || {};
-      parkingByApt[aptId][regMonth] = parkingByApt[aptId][regMonth] || [];
+
+      if (!parkingByApt[aptId]) parkingByApt[aptId] = {};
+      if (!parkingByApt[aptId][regMonth]) parkingByApt[aptId][regMonth] = [];
+
       parkingByApt[aptId][regMonth].push(p);
     });
 
-    const currentMonthKey = monthKeyFromDate(now);
+    // ===== Bắt đầu tính phí =====
     const feeDocs = [];
 
-    // build fees
     for (const apt of apartments) {
       if (!apt.ownerName || apt.ownerName.trim() === "") {
         console.log(`⏭️ Bỏ qua căn hộ ${apt.apartmentCode} vì chưa có chủ hộ`);
@@ -81,80 +90,106 @@ const calculateAndSaveFees = async (req, res) => {
       const area = apt.area || 0;
 
       const mgmtExpense = expenseMap[building];
-      const managementFee = mgmtExpense ? parsePrice(mgmtExpense.price) * area : 0;
+      const managementFee = mgmtExpense
+        ? parsePrice(mgmtExpense.price) * area
+        : 0;
 
-      const waterForApt = waterUsages.filter((w) => String(w.apartment?._id ?? w.apartment ?? "") === aptId);
+      // Nước
+      const waterForApt = waterUsages.filter(
+        (w) => String(w.apartment?._id ?? w.apartment ?? "") === aptId
+      );
 
-      // parking map for this apt
+      // Xe
       const parkingMap = parkingByApt[aptId] || {};
 
-      // months to bill: từ nước + các tháng đăng ký gửi xe <= currentMonthKey
+      // ===== Xác định các tháng cần tính =====
       const months = new Set();
+
       waterForApt.forEach((w) => {
         const nk = normalizeMonthKey(w.month);
         if (nk) months.add(nk);
       });
-      // thêm các tháng có đăng ký gửi xe (chỉ <= currentMonthKey)
+
       Object.keys(parkingMap).forEach((k) => {
         if (k <= currentMonthKey) months.add(k);
       });
 
-      // nếu không có tháng -> chỉ QL
+      // Nếu không có tháng sử dụng dịch vụ -> chỉ tính QL cho tháng hiện tại
       if (months.size === 0) {
+        const [cy, cmRaw] = currentMonthKey.split("-");
+        const cm = pad(cmRaw);
+        const displayMonth = `${cm}/${cy}`;
         feeDocs.push({
-          apartmentId: apt._id,
-          apartmentCode: aptCode,
-          ownerName,
-          month: "---",
-          managementFee,
-          waterFee: 0,
-          parkingFee: 0,
-          total: managementFee,
-          paymentStatus: "unpaid",
-          orderCode: null,
-          paymentDate: null,
+            apartmentId: apt._id,
+            apartmentCode: aptCode,
+            ownerName,
+            month: displayMonth, // luôn cùng format
+            monthDate: new Date(`${cy}-${cm}-01`),
+            managementFee,
+            waterFee: 0,
+            parkingFee: 0,
+            total: managementFee,
+            paymentStatus: "unpaid",
+            orderCode: null,
+            paymentDate: null,
         });
-        console.log(`ℹ️ ${aptCode} không có tháng sử dụng dịch vụ nào, chỉ tính phí quản lý`);
+
+        console.log(
+          `ℹ️ ${aptCode} không có tháng sử dụng dịch vụ nào, chỉ tính phí quản lý`
+        );
         continue;
       }
 
-      // duyệt từng month
-      for (const rawMonth of months) {
+      // ===== Tính cho từng tháng =====
+      const sortedMonths = Array.from(months).sort((a, b) => {
+        const [ya, ma] = a.split("-").map(Number);
+        const [yb, mb] = b.split("-").map(Number);
+        return yb - ya || mb - ma; // năm giảm dần, nếu bằng thì tháng giảm dần
+      });
+
+      for (const rawMonth of sortedMonths) {
         const monthKey = normalizeMonthKey(rawMonth) || rawMonth;
         const [y, mRaw] = monthKey.split("-");
         const m = pad(mRaw);
         const monthDate = new Date(`${y}-${m}-01`);
-        const waterFee = parsePrice(waterForApt.find((w) => normalizeMonthKey(w.month) === monthKey)?.total || 0);
 
-        // cộng tất cả đăng ký gửi xe cho tháng đó
-        const regsThisMonth = parkingMap[monthKey] || [];
-        // Gom tất cả đăng ký gửi xe từ đầu đến tháng hiện tại
-const allMonthsKeys = Object.keys(parkingMap).sort(); // YYYY-MM sort
-const monthsUpToNow = allMonthsKeys.filter((k) => k <= monthKey);
+        // Nước
+        const waterFee = parsePrice(
+          waterForApt.find((w) => normalizeMonthKey(w.month) === monthKey)
+            ?.total || 0
+        );
 
-let parkingFee = 0;
-monthsUpToNow.forEach((mKey) => {
-  const [yStr, mStr] = mKey.split("-");
-  const m = parseInt(mStr, 10);
-  const y = parseInt(yStr, 10);
+        // Xe (cộng dồn từ đầu đến tháng đó)
+        const allMonthsKeys = Object.keys(parkingMap).sort((a, b) =>
+          normalizeMonthKey(b).localeCompare(normalizeMonthKey(a))
+        );
+        const monthsUpToNow = allMonthsKeys.filter((k) => k <= monthKey);
 
-  const regs = parkingMap[mKey] || [];
-  regs.forEach((p) => {
-    const price = parsePrice(p.price);
-    parkingFee += price;
-    console.log(
-      `✅ [${aptCode}] Phí xe tháng ${m}/${y}: +${price} (từ ${new Date(p.registerDate).toString()}${
-        p.plate ? `, biển: ${p.plate}` : ""
-      })`
-    );
-  });
-});
+        let parkingFee = 0;
+        monthsUpToNow.forEach((mKey) => {
+          const [yStr, mStr] = mKey.split("-");
+          const regs = parkingMap[mKey] || [];
 
-// In tổng cộng dồn
-console.log(`💰 [${aptCode}] Tổng phí gửi xe cộng dồn đến ${m}/${y}: ${parkingFee}`);
+          regs.forEach((p) => {
+            const price = parsePrice(p.price);
+            parkingFee += price;
+            console.log(
+              `✅ [${aptCode}] Phí xe tháng ${mStr}/${yStr}: +${price}${
+                p.plate ? `, biển: ${p.plate}` : ""
+              }`
+            );
+          });
+        });
+
+        console.log(
+          `💰 [${aptCode}] Tổng phí gửi xe cộng dồn đến ${m}/${y}: ${parkingFee}`
+        );
 
         const total = managementFee + waterFee + parkingFee;
-        console.log(`💰 [${aptCode}] Tổng phí tháng ${m}/${y} = ${total} (QL: ${managementFee} | Nước: ${waterFee} | Xe: ${parkingFee})`);
+
+        console.log(
+          `💰 [${aptCode}] Tổng phí tháng ${m}/${y} = ${total} (QL: ${managementFee} | Nước: ${waterFee} | Xe: ${parkingFee})`
+        );
 
         feeDocs.push({
           apartmentId: apt._id,
@@ -171,40 +206,50 @@ console.log(`💰 [${aptCode}] Tổng phí gửi xe cộng dồn đến ${m}/${y
           paymentDate: null,
         });
 
-        // debug: nếu có đăng ký nhưng parkingFee = 0 thì in chi tiết
         if (Object.keys(parkingMap).length > 0 && parkingFee === 0) {
-          console.log(`⚠️ [DEBUG] ${aptCode} có đăng ký gửi xe nhưng tổng = 0 cho tháng ${monthKey}. parkingMap months = ${Object.keys(parkingMap).join(", ")}`);
+          console.log(
+            `⚠️ [DEBUG] ${aptCode} có đăng ký gửi xe nhưng tổng = 0 cho tháng ${monthKey}. parkingMap months = ${Object.keys(
+              parkingMap
+            ).join(", ")}`
+          );
         }
       }
     }
-// Lấy các khoản đã thanh toán để giữ lại trạng thái
+
+// Giữ trạng thái đã thanh toán
 const oldFees = await Fee.find({ paymentStatus: "paid" }).lean();
 const paidMap = {};
-oldFees.forEach(f => {
-  paidMap[`${f.apartmentId}_${f.month}`] = f;
+oldFees.forEach((f) => {
+  const normMonth = normalizeMonthKey(f.month);
+  paidMap[`${f.apartmentId}_${normMonth}`] = f;
 });
 
-// Gộp trạng thái paid vào feeDocs
-feeDocs.forEach(doc => {
-  const key = `${doc.apartmentId}_${doc.month}`;
+feeDocs.forEach((doc) => {
+  const normMonth = normalizeMonthKey(doc.month);
+  const key = `${doc.apartmentId}_${normMonth}`;
   if (paidMap[key]) {
     doc.paymentStatus = "paid";
     doc.paymentDate = paidMap[key].paymentDate;
     doc.orderCode = paidMap[key].orderCode;
   }
 });
-    // lưu xuống DB (cẩn thận ở production)
+
+    // ===== Lưu xuống DB =====
     await Fee.deleteMany({});
     await Fee.insertMany(feeDocs);
 
     console.log("✅ Đã tính và lưu xong tất cả phí. Tổng:", feeDocs.length);
-    res.status(200).json({ message: "Tính toán và lưu phí thành công", count: feeDocs.length, data: feeDocs });
+
+    res.status(200).json({
+      message: "Tính toán và lưu phí thành công",
+      count: feeDocs.length,
+      data: feeDocs,
+    });
   } catch (err) {
     console.error("❌ Lỗi khi tính và lưu phí:", err);
     res.status(500).json({ error: "Lỗi server khi tính toán phí" });
   }
 };
-
 
 const getAllFees = async (req, res) => {
   try {
