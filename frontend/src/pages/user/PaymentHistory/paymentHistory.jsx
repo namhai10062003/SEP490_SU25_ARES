@@ -61,46 +61,71 @@ export default function PaymentHistoryTable() {
               </tr>
             </thead>
             <tbody>
-  {history.map((h, i) => (
-    <tr key={i}>
-      {/* Kênh thanh toán với icon */}
-      <td className="text-truncate d-flex align-items-center" style={{ maxWidth: "150px" }}>
-        <img
-          src={h1} // thay bằng icon tương ứng với h.channel
-          alt="icon"
-          style={{ width: "24px", height: "24px", marginRight: "8px" }}
-        />
-        {h.channel}
-      </td>
+              {history.map((h, i) => (
+                <tr key={i}>
+                  {/* Kênh thanh toán với icon */}
+                  <td className="text-truncate" style={{ maxWidth: "150px" }}>
+                    <div className="d-flex align-items-center">
+                      <img
+                        src={h1}
+                        alt="icon"
+                        style={{ width: "24px", height: "24px", marginRight: "8px" }}
+                      />
+                      {h.channel}
+                    </div>
+                  </td>
 
-      <td className="fw-bold">{Number(h.orderAmount).toLocaleString()}</td>
-      <td className="fw-bold">{Number(h.paidAmount).toLocaleString()}</td>
-      <td>{new Date(h.createdAt).toLocaleString("vi-VN")}</td>
+                  <td className="fw-bold">
+                    <span className="text-primary">
+                      {Number(h.orderAmount).toLocaleString()}
+                    </span>{" "}
+                    <span className="text-muted">VND</span>
+                  </td>
 
-      <td className="text-truncate" style={{ maxWidth: "300px" }}>{h.description}</td>
+                  <td className="fw-bold">
+                    <span className="text-success">
+                      {Number(h.paidAmount).toLocaleString()}
+                    </span>{" "}
+                    <span className="text-muted">VND</span>
+                  </td>
 
-      {/* Số tài khoản với icon */}
-      <td className="d-flex align-items-center">
-        <img
-          src={h2} // icon cho số tài khoản 
-          alt="account"
-          style={{ width: "24px", height: "24px", marginRight: "8px" }}
-        />
-        {h.accountNumber}
-      </td>
+                  <td>{new Date(h.createdAt).toLocaleString("vi-VN")}</td>
 
-      <td className="text-truncate" style={{ maxWidth: "150px" }}>{h.orderCode}</td>
-      <td>
-        <span
-          className={`badge ${h.status === "paid" ? "bg-success text-white" : "bg-danger text-white"}`}
-          style={{ padding: "0.4em 0.6em", fontSize: "0.9em" }}
-        >
-          {h.status === "paid" ? "Đã thanh toán" : "Hủy"}
-        </span>
-      </td>
-    </tr>
-  ))}
-</tbody>
+                  <td className="text-truncate" style={{ maxWidth: "300px" }}>
+                    {h.description}
+                  </td>
+
+                  {/* Số tài khoản với icon */}
+                  <td>
+                    <div className="d-flex align-items-center">
+                      <img
+                        src={h2}
+                        alt="account"
+                        style={{ width: "24px", height: "24px", marginRight: "8px" }}
+                      />
+                      {h.accountNumber}
+                    </div>
+                  </td>
+
+                  <td className="text-truncate" style={{ maxWidth: "150px" }}>
+                    {h.orderCode}
+                  </td>
+
+                  <td>
+                    <span
+                      className={`badge ${h.status === "paid"
+                          ? "bg-success text-white"
+                          : "bg-danger text-white"
+                        }`}
+                      style={{ padding: "0.4em 0.6em", fontSize: "0.9em" }}
+                    >
+                      {h.status === "paid" ? "Đã thanh toán" : "Hủy"}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+
           </table>
         </div>
       </div>

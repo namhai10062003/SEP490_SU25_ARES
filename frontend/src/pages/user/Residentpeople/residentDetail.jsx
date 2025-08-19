@@ -102,19 +102,20 @@ const ResidentDetail = () => {
                 </li>
                 <li className="list-group-item">
                   <strong>Trạng thái:</strong>{" "}
-                  {resident.verifiedByStaff ? (
-                    <span className="badge bg-success">✅ Đã duyệt</span>
-                  ) : resident.rejectReason ? (
-                    <span className="badge bg-danger">❌ Đã từ chối</span>
-                  ) : (
-                    <span className="badge bg-warning text-dark">🟡 Chờ xác minh</span>
-                  )}
-                </li>
-                {resident.rejectReason && (
-                  <li className="list-group-item text-danger">
-                    <strong>Lý do từ chối:</strong> {resident.rejectReason}
-                  </li>
-                )}
+                  {resident.verifiedByStaff === "false" ? (
+    <span className="badge bg-danger">❌ Đã từ chối</span>
+  ) : resident.verifiedByStaff === "true" ? (
+    <span className="badge bg-success">✅ Đã duyệt</span>
+  ) : (
+    <span className="badge bg-warning text-dark">🟡 Chờ xác minh</span>
+  )}
+</li>
+
+{resident.verifiedByStaff === "false" && resident.rejectReason && (
+  <li className="list-group-item text-danger">
+    <strong>Lý do từ chối:</strong> {resident.rejectReason}
+  </li>
+)}
               </ul>
             </div>
             <div className="col-md-6">

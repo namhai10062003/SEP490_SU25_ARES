@@ -28,18 +28,52 @@ const RevenueApartment = () => {
     const formatDate = (d) =>
         d ? new Date(d).toLocaleDateString("vi-VN") : "Chưa thanh toán";
     const formatPrice = (p) =>
-        new Intl.NumberFormat("vi-VN").format(p || 0) + " đ";
+        new Intl.NumberFormat("vi-VN").format(p || 0) + " VND";
+
+    const sortFeesByMonth = (data) => {
+    return [...data].sort((a, b) => {
+        const parseMonth = (monthStr) => {
+            if (!monthStr) return { year: 0, month: 0 };
+
+            if (monthStr.includes("-")) {
+                // YYYY-MM
+                const [y, m] = monthStr.split("-");
+                return { year: Number(y), month: Number(m) };
+            } else {
+                // MM/YYYY
+                const [m, y] = monthStr.split("/");
+                return { year: Number(y), month: Number(m) };
+            }
+        };
+
+        const dateA = parseMonth(a.month);
+        const dateB = parseMonth(b.month);
+
+        // Sắp xếp mới nhất lên trước
+        if (dateA.year !== dateB.year) return dateB.year - dateA.year;
+        return dateB.month - dateA.month;
+    });
+};
 
     const filteredFees = fees.filter((f) => {
         const matchDate = !selectedMonth || (() => {
             if (!f.month || f.month === "---") return false;
-
+        
             const [year, month] = selectedMonth.split("-");
-            const selectedMonthFormatted = `${month}/${year}`; // "01/2025"
-
-            // So sánh chính xác
-            return f.month === selectedMonthFormatted;
-        })();
+            const selectedMonthFormatted = `${month.padStart(2, "0")}/${year}`;
+        
+            let feeMonthFormatted;
+            if (f.month.includes("-")) {
+                // Nếu dạng YYYY-MM
+                const [y, m] = f.month.split("-");
+                feeMonthFormatted = `${m.padStart(2, "0")}/${y}`;
+            } else {
+                // Nếu dạng MM/YYYY
+                feeMonthFormatted = f.month;
+            }
+        
+            return feeMonthFormatted === selectedMonthFormatted;
+        })();                
 
         const matchStatus =
             statusFilter === "all" ||
@@ -70,13 +104,14 @@ const RevenueApartment = () => {
         page * PAGE_SIZE
     );
 
-    useEffect(() => {
-        getAllFees()
-            .then((res) => {
-                setFees(res.data?.data || []);
-            })
-            .catch(console.error);
-    }, []);
+useEffect(() => {
+    getAllFees()
+        .then((res) => {
+            const sortedData = sortFeesByMonth(res.data?.data || []);
+            setFees(sortedData);
+        })
+        .catch(console.error);
+}, []);
 
     useEffect(() => {
         const newTotalPages = Math.max(
@@ -237,7 +272,7 @@ const RevenueApartment = () => {
                                     <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
                                     <td>{f.apartmentCode}</td>
                                     <td>{f.ownerName}</td>
-                                    <td>{f.month}</td>
+                                    <td>{f.month && f.month.includes("-") ? f.month.split("-").reverse().join("/") : f.month}</td>
                                     <td>{formatDate(f.paymentDate)}</td>
                                     <td>{formatPrice(f.managementFee)}</td>
                                     <td>{formatPrice(f.waterFee)}</td>

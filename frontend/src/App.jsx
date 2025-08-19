@@ -87,8 +87,6 @@ import Register from "./pages/user/register.jsx";
 import ResetPassword from "./pages/user/resetpassword";
 import UserRevenue from "./pages/user/revenuer/UserRevenue.jsx";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
-import ChangPassWord from "./pages/admin/ChangePassWord/ChangePassWord.jsx";
-import ChangePasswordStaff from "./pages/staff/ChangePassWordStaff.jsx";
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
 function ProtectedRoute({ element, allowedRoles }) {
@@ -183,8 +181,6 @@ function AppRoutes() {
         <Route path="/admin-dashboard/manage-user/:id" element={<ManageUserDetail allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/manage-contract" element={<ProtectedRoute element={<ManageContract />} allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/manage-contract/:id" element={<ProtectedRoute element={< AdminContractDetail />} allowedRoles={["admin"]} />} />
-        <Route path="/admin-dashboard/changePassWord" element={<ProtectedRoute element={< ChangPassWord />} allowedRoles={["admin"]} />} />
-
         {/* Staff */}
         <Route path="/staff-dashboard" element={<ProtectedRoute element={<DashboardPage />} allowedRoles={["staff"]} />} />
         <Route path="staff-expenses" element={<ProtectedRoute element={<ManageExpense />} allowedRoles={["staff"]} />} />
@@ -197,8 +193,6 @@ function AppRoutes() {
         <Route path="staff-citizenlist" element={<ProtectedRoute element={<CitizenList />} allowedRoles={["staff"]} />} />
         <Route path="staff-residence-decration" element={<ProtectedRoute element={<ResidenceDeclarationVerifyList />} allowedRoles={["staff"]} />} />
         <Route path="staff-resident/history" element={<ProtectedRoute element={<ResidentVerificationHistory />} allowedRoles={["staff"]} />} />
-        <Route path="staff-changePassWord" element={<ProtectedRoute element={<ChangePasswordStaff />} allowedRoles={["staff"]} />} />
-
 
         {/* User */}
       </Routes>

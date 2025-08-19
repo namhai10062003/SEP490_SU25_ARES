@@ -72,11 +72,11 @@ const PostDetail = () => {
             Authorization: `Bearer ${token}`, // gửi token
           },
         });
-  
+
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-  
+
         const data = await res.json();
         if (data.success) {
           setContract(data.data);
@@ -87,10 +87,10 @@ const PostDetail = () => {
         console.error("Không lấy được hợp đồng:", err);
       }
     };
-  
+
     if (post?._id) fetchContract();
   }, [post]);
-  
+
   // hàm thực hiện chat vs người bài đăng 
   useEffect(() => {
     if (post?.contactInfo?.userId) {
@@ -142,14 +142,15 @@ const PostDetail = () => {
         setIsLiked(likedRes.data.liked);
         setLikeCount(countRes.data.count);
       } catch {
-        setErr("Có lỗi khi tải dữ liệu bài đăng.");
+        toast.error("Bài đăng đã hết hạn.");  // Hiện thông báo lỗi
+        navigate("/blog");                    // Quay lại trang blog
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [id]);
+  }, [id, navigate]);
 
   useEffect(() => {
     const fetchRelated = async () => {
@@ -165,7 +166,7 @@ const PostDetail = () => {
               (!p.expiredAt || new Date(p.expiredAt) > now) // ✅ Chưa hết hạn
             )
             .slice(0, 3);
-  
+
           console.log("👉 Related posts:", others);
           setRelatedPosts(others);
         }
@@ -173,16 +174,17 @@ const PostDetail = () => {
         console.error("Lỗi gợi ý:", err);
       }
     };
-  
+
     fetchRelated();
   }, [id]);
-  
-  
+
+
 
   const formatPrice = (price) =>
     new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
+      currencyDisplay: "code",
     }).format(price);
 
   const handleLike = async () => {
@@ -294,144 +296,144 @@ const PostDetail = () => {
 
           {/* Right column: Info */}
           <div className="col-md-5">
-  {/* Tiêu đề & giá */}
-  <h2 className="fw-bold mb-2 text-dark">{post.title}</h2>
-  <h4 className="fw-bold text-danger mb-4">
-    {formatPrice(post.price)} <span className="fs-6 text-muted">₫</span>
-  </h4>
+            {/* Tiêu đề & giá */}
+            <h2 className="fw-bold mb-2 text-dark">{post.title}</h2>
+            <h4 className="fw-bold text-danger mb-4">
+              {formatPrice(post.price)}
+            </h4>
 
-  {/* Thông tin nhanh */}
-  <div className="mb-4">
-    <div className="d-flex align-items-center mb-2">
-      <FaRulerCombined className="text-primary me-2 fs-5" />
-      <span><strong>Diện tích:</strong> {post.area} m²</span>
-    </div>
-    <div className="d-flex align-items-center mb-2">
-      <FaMapMarkerAlt className="text-danger me-2 fs-5" />
-      <span><strong>Vị trí:</strong> {post.location}</span>
-    </div>
-    <div className="d-flex align-items-center mb-2">
-      <FaCalendarAlt className="text-warning me-2 fs-5" />
-      <span>
-        <strong>Ngày đăng:</strong>{" "}
-        {new Date(post.createdAt).toLocaleDateString("vi-VN")}
-      </span>
-    </div>
-    <div className="d-flex align-items-center">
-      <FaStar className="text-warning me-2 fs-5" />
-      <span><strong>Gói:</strong> {post.postPackage?.type || "Standard"}</span>
-    </div>
-    
-<div className="d-flex align-items-center mt-2">
-  <i className="bi bi-person-fill text-primary me-2 fs-5"></i>
-  <span><strong>Người liên hệ:</strong> {post.contactInfo.name || "Không có"}</span>
-</div>
+            {/* Thông tin nhanh */}
+            <div className="mb-4">
+              <div className="d-flex align-items-center mb-2">
+                <FaRulerCombined className="text-primary me-2 fs-5" />
+                <span><strong>Diện tích:</strong> {post.area} m²</span>
+              </div>
+              <div className="d-flex align-items-center mb-2">
+                <FaMapMarkerAlt className="text-danger me-2 fs-5" />
+                <span><strong>Vị trí:</strong> {post.location}</span>
+              </div>
+              <div className="d-flex align-items-center mb-2">
+                <FaCalendarAlt className="text-warning me-2 fs-5" />
+                <span>
+                  <strong>Ngày đăng:</strong>{" "}
+                  {new Date(post.createdAt).toLocaleDateString("vi-VN")}
+                </span>
+              </div>
+              <div className="d-flex align-items-center">
+                <FaStar className="text-warning me-2 fs-5" />
+                <span><strong>Gói:</strong> {post.postPackage?.type || "Standard"}</span>
+              </div>
 
-<div className="d-flex align-items-center mt-2">
-  <i className="bi bi-telephone-fill text-success me-2 fs-5"></i>
-  <span><strong>SĐT:</strong> {post.contactInfo.phone || "Không có"}</span>
-</div>
-  </div>
+              <div className="d-flex align-items-center mt-2">
+                <i className="bi bi-person-fill text-primary me-2 fs-5"></i>
+                <span><strong>Người liên hệ:</strong> {post.contactInfo.name || "Không có"}</span>
+              </div>
 
-  {/* Nút hành động */}
-  <div className="d-flex flex-wrap gap-2 mb-4">
-    <button
-      className={`btn ${isLiked ? "btn-danger" : "btn-outline-danger"} px-3`}
-      onClick={handleLike}
-    >
-      {isLiked ? <FaHeart /> : <FaRegHeart />} {likeCount}
-    </button>
-    <button
-      className="btn btn-outline-primary px-3"
-      onClick={() => {
-        setShowComments((prev) => !prev);
-        setTimeout(() => {
-          const el = document.getElementById("comments");
-          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 100);
-      }}
-    >
-      💬 Bình luận
-    </button>
-    <button
-      className="btn btn-outline-warning px-3"
-      onClick={() => setShowReportModal(true)}
-    >
-      🚩 Báo cáo
-    </button>
-    <button
-  className="btn btn-success px-3"
-  onClick={() => {
-    if (contract.paymentStatus === "paid") {
-      toast.info("Căn hộ/bất động sản này đã được đặt cọc", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-      return;
-    }
-    navigate(`/booking/${post._id}`);
-  }}
-  disabled={post.type === "dich_vu"}
->
-  📄 Đặt Cọc
-</button>
-  </div>
-</div>
- {/* Mô tả */}
- <div>
- <h5 className="mb-3 d-flex align-items-center text-primary">
-  <FaInfoCircle className="me-2" /> Mô tả
-</h5>
+              <div className="d-flex align-items-center mt-2">
+                <i className="bi bi-telephone-fill text-success me-2 fs-5"></i>
+                <span><strong>SĐT:</strong> {post.contactInfo.phone || "Không có"}</span>
+              </div>
+            </div>
 
-<div
-  className="bg-light rounded p-4 border"
-  style={{
-    fontSize: "1rem",
-    lineHeight: "1.8",
-    color: "#333",
-    borderColor: "#ddd",
-  }}
->
-  <ul style={{ margin: 0, paddingLeft: "0", listStyle: "none" }}>
-    {post.description
-      ?.split(/\n+/) // tách dòng
-      .map((line, index) => (
-        <li
-          key={index}
-          style={{
-            marginBottom: "12px",
-            display: "flex",
-            alignItems: "flex-start",
-            gap: "8px",
-          }}
-        >
-          <FaCheckCircle
-            style={{
-              color: "#0d6efd",
-              marginTop: "4px",
-              flexShrink: 0,
-            }}
-          />
-          <span
-            dangerouslySetInnerHTML={{
-              __html: line
-                .replace(
-                  /^([^:]+):/,
-                  "<strong>$1:</strong>" // tô đậm phần tiêu đề trước dấu ":"
-                )
-                .trim(),
-            }}
-          />
-        </li>
-      ))}
-  </ul>
-</div>
-  </div>
+            {/* Nút hành động */}
+            <div className="d-flex flex-wrap gap-2 mb-4">
+              <button
+                className={`btn ${isLiked ? "btn-danger" : "btn-outline-danger"} px-3`}
+                onClick={handleLike}
+              >
+                {isLiked ? <FaHeart /> : <FaRegHeart />} {likeCount}
+              </button>
+              <button
+                className="btn btn-outline-primary px-3"
+                onClick={() => {
+                  setShowComments((prev) => !prev);
+                  setTimeout(() => {
+                    const el = document.getElementById("comments");
+                    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }, 100);
+                }}
+              >
+                💬 Bình luận
+              </button>
+              <button
+                className="btn btn-outline-warning px-3"
+                onClick={() => setShowReportModal(true)}
+              >
+                🚩 Báo cáo
+              </button>
+              <button
+                className="btn btn-success px-3"
+                onClick={() => {
+                  if (contract?.paymentStatus === "paid") {
+                    toast.info("Căn hộ/bất động sản này đã được đặt cọc", {
+                      position: "top-right",
+                      autoClose: 3000,
+                      hideProgressBar: false,
+                      closeOnClick: true,
+                      pauseOnHover: true,
+                      draggable: true,
+                      progress: undefined,
+                    });
+                    return;
+                  }
+                  navigate(`/booking/${post._id}`);
+                }}
+                disabled={post.type === "dich_vu"}
+              >
+                📄 Đặt Cọc
+              </button>
+            </div>
+          </div>
+          {/* Mô tả */}
+          <div>
+            <h5 className="mb-3 d-flex align-items-center text-primary">
+              <FaInfoCircle className="me-2" /> Mô tả
+            </h5>
+
+            <div
+              className="bg-light rounded p-4 border"
+              style={{
+                fontSize: "1rem",
+                lineHeight: "1.8",
+                color: "#333",
+                borderColor: "#ddd",
+              }}
+            >
+              <ul style={{ margin: 0, paddingLeft: "0", listStyle: "none" }}>
+                {post.description
+                  ?.split(/\n+/) // tách dòng
+                  .map((line, index) => (
+                    <li
+                      key={index}
+                      style={{
+                        marginBottom: "12px",
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: "8px",
+                      }}
+                    >
+                      <FaCheckCircle
+                        style={{
+                          color: "#0d6efd",
+                          marginTop: "4px",
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html: line
+                            .replace(
+                              /^([^:]+):/,
+                              "<strong>$1:</strong>" // tô đậm phần tiêu đề trước dấu ":"
+                            )
+                            .trim(),
+                        }}
+                      />
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          </div>
 
         </div>
         {/* {user && post.contactInfo?.userId !== user._id && (
@@ -462,7 +464,7 @@ const PostDetail = () => {
     postInfo={selectedPost}
   />
 )} */}
-      
+
 
         {/* Comments */}
         {showComments && (
@@ -512,28 +514,41 @@ const PostDetail = () => {
         {/* Related posts */}
         {relatedPosts.length > 0 && (
           <div className="mt-4">
-            <h4>🗂️ bài đăng gợi ý</h4>
+            <h4>🗂️ Bài đăng gợi ý</h4>
             <div className="row g-3">
-              {relatedPosts.map((rp) => (
-                <div className="col-md-4" key={rp._id}>
-                  <div
-                    className="card h-100 shadow-sm"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => navigate(`/postdetail/${rp._id}`)}
-                  >
-                    <img
-                      src={rp.images?.[0] || "https://via.placeholder.com/300x200"}
-                      className="card-img-top"
-                      alt={rp.title}
-                      style={{ height: 150, objectFit: "cover" }}
-                    />
-                    <div className="card-body">
-                      <h5 className="card-title">{rp.title}</h5>
-                      <p className="card-text text-danger">{formatPrice(rp.price)}</p>
+              {relatedPosts.map((rp) => {
+                // Cắt title còn 1/2
+                const truncatedTitle =
+                  rp.title.length > 0
+                    ? rp.title.slice(0, Math.ceil(rp.title.length / 2)) + "..."
+                    : "";
+
+                // Cắt mô tả còn 20 ký tự
+                const truncatedDesc =
+                  rp.description && rp.description.length > 20
+                    ? rp.description.slice(0, 20) + "..."
+                    : rp.description || "";
+
+                return (
+                  <div className="col-md-4" key={rp._id}>
+                    <div className="card h-100 shadow-sm" style={{ cursor: "pointer" }} onClick={() => navigate(`/postdetail/${rp._id}`)}>
+                      <img
+                        src={rp.images?.[0] || "https://via.placeholder.com/300x200"}
+                        className="card-img-top"
+                        alt={rp.title}
+                        style={{ height: 150, objectFit: "cover" }}
+                      />
+                      <div className="card-body d-flex flex-column justify-content-between">
+                        <h5 className="card-title">{truncatedTitle}</h5>
+                        <p className="card-text text-muted" style={{ fontSize: "0.9rem" }}>
+                          {truncatedDesc}
+                        </p>
+                        <p className="card-text fw-bold fs-5 text-danger">{formatPrice(rp.price)}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
