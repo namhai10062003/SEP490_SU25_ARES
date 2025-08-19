@@ -6,9 +6,7 @@ import StatusFilter from "../../../components/admin/statusFilter.jsx";
 import Pagination from "../../../components/Pagination.jsx";
 import Header from "../../../components/header.jsx";
 import Footer from "../../../components/footer.jsx";
-import ReuseableModal from "../../../components/ReusableModal.jsx";
 import { formatSmartDate } from "../../../utils/format.jsx";
-
 const NotificationPage = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
@@ -18,15 +16,12 @@ const NotificationPage = () => {
     const [loading, setLoading] = useState(false);
     const [totalPages, setTotalPages] = useState(1);
     const [totalItems, setTotalItems] = useState(0);
-    const [selectedNotification, setSelectedNotification] = useState(null);
-    const [showModal, setShowModal] = useState(false);
 
-    // Lấy query params
-    const page = parseInt(searchParams.get("page")) || 1;
-    const pageSize = parseInt(searchParams.get("pageSize")) || 10;
-    const filterRead = searchParams.get("read") || "";
+    // Get values from URL search params
+    const page = parseInt(searchParams.get('page')) || 1;
+    const pageSize = parseInt(searchParams.get('pageSize')) || 10;
+    const filterRead = searchParams.get('read') || "";
 
-    // Fetch notifications
     useEffect(() => {
         const fetchNotifications = async () => {
             const token = localStorage.getItem("token");
@@ -81,53 +76,11 @@ const NotificationPage = () => {
         } catch { }
     };
 
-    const handleNotificationClick = async (notification) => {
-        setSelectedNotification(notification);
-        setShowModal(true);
-
-        if (!notification.read) {
-            await markAsRead(notification._id);
-        }
+    const extractPostId = (msg) => {
+        const match = msg.match(/bài đăng ([a-f0-9]{24})/i);
+        return match ? match[1] : null;
     };
 
-    const closeModal = () => {
-        setShowModal(false);
-        setSelectedNotification(null);
-    };
-
-    // Chặn scroll background khi mở modal
-    useEffect(() => {
-        if (showModal) {
-            document.body.classList.add("modal-open");
-        } else {
-            document.body.classList.remove("modal-open");
-        }
-        return () => {
-            document.body.classList.remove("modal-open");
-        };
-    }, [showModal]);
-
-    const extractPostId = (msg = "") => {
-        const m = msg.match(/bài\s*đăng\s*([a-f0-9]{24})/i);
-        return m ? m[1] : null;
-    };
-
-    const extractDeclarationId = (msg = "") => {
-        const m = msg.match(/hồ\s*sơ\s*([a-f0-9]{24})/i);
-        return m ? m[1] : null;
-    };
-
-    const selectedPostId =
-        selectedNotification?.message
-            ? extractPostId(selectedNotification.message)
-            : null;
-
-    const selectedDeclId = selectedNotification
-        ? selectedNotification?.data?.declarationId ??
-        extractDeclarationId(selectedNotification.message)
-        : null;
-
-    // Cập nhật query string
     const updateSearchParams = (updates) => {
         const newSearchParams = new URLSearchParams(searchParams);
         Object.entries(updates).forEach(([key, value]) => {
@@ -154,13 +107,6 @@ const NotificationPage = () => {
 
     return (
         <>
-            <style>
-                {`
-        body.modal-open {
-          overflow: hidden;
-        }
-      `}
-            </style>
             <Header user={user} logout={logout} />
 
             <div className="container py-4" style={{ maxWidth: 700 }}>
@@ -178,9 +124,7 @@ const NotificationPage = () => {
 
                 <div className="bg-white rounded shadow-sm border p-0">
                     {loading ? (
-                        <div className="text-center py-5 text-secondary">
-                            Đang tải...
-                        </div>
+                        <div className="text-center py-5 text-secondary">Đang tải...</div>
                     ) : notifications.length === 0 ? (
                         <div className="text-center py-5 text-muted">
                             Không có thông báo nào
@@ -193,25 +137,13 @@ const NotificationPage = () => {
                                     className="list-group-item d-flex align-items-start gap-3"
                                     style={{
                                         opacity: note.read ? 0.5 : 1,
-                                        background: note.read
-                                            ? "#f8f9fa"
-                                            : "#fff",
+                                        background: note.read ? "#f8f9fa" : "#fff",
                                         transition: "opacity 0.2s",
-                                        cursor: "pointer",
+                                        cursor: note.read ? "default" : "pointer",
                                     }}
-                                    onClick={() =>
-                                        handleNotificationClick(note)
-                                    }
-                                    tabIndex={0}
-                                    onKeyDown={(e) => {
-                                        if (
-                                            e.key === "Enter" ||
-                                            e.key === " "
-                                        ) {
-                                            handleNotificationClick(note);
-                                        }
+                                    onClick={() => {
+                                        if (!note.read) markAsRead(note._id);
                                     }}
-                                    aria-label={`Thông báo: ${note.message}`}
                                 >
                                     <div className="flex-grow-1">
                                         <div
@@ -226,15 +158,10 @@ const NotificationPage = () => {
                                         <div className="mt-2 d-flex gap-2 flex-wrap">
                                             {extractPostId(note.message) && (
                                                 <a
-                                                    href={`/postdetail/${extractPostId(
-                                                        note.message
-                                                    )}`}
+                                                    href={`/postdetail/${extractPostId(note.message)}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="btn btn-sm btn-outline-primary"
-                                                    onClick={(e) =>
-                                                        e.stopPropagation()
-                                                    }
                                                 >
                                                     Xem bài đăng
                                                 </a>
@@ -243,9 +170,6 @@ const NotificationPage = () => {
                                                 <a
                                                     href={`/residence-declaration/detail/${note.data.declarationId}`}
                                                     className="btn btn-sm btn-outline-primary"
-                                                    onClick={(e) =>
-                                                        e.stopPropagation()
-                                                    }
                                                 >
                                                     Xem hồ sơ
                                                 </a>
@@ -274,56 +198,6 @@ const NotificationPage = () => {
                     onPageSizeChange={handlePageSizeChange}
                 />
             </div>
-
-            {/* Notification Modal */}
-            {showModal && selectedNotification && (
-                <ReuseableModal
-                    show={showModal}
-                    onClose={closeModal}
-                    title="Chi tiết thông báo"
-                    body={
-                        <>
-                            <div className="mb-3">
-                                <strong>Nội dung:</strong>
-                                <p className="mt-2">
-                                    {selectedNotification?.message}
-                                </p>
-                            </div>
-
-                            <div className="mb-3">
-                                <strong>Thời gian:</strong>
-                                <p className="mt-2 text-muted">
-                                    {formatSmartDate(
-                                        selectedNotification?.createdAt
-                                    )}
-                                </p>
-                            </div>
-
-                            <div className="d-flex gap-2 flex-wrap">
-                                {selectedPostId && (
-                                    <a
-                                        href={`/postdetail/${selectedPostId}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="btn btn-primary"
-                                    >
-                                        Xem bài đăng
-                                    </a>
-                                )}
-
-                                {selectedDeclId && (
-                                    <a
-                                        href={`/residence-declaration/detail/${selectedDeclId}`}
-                                        className="btn btn-primary"
-                                    >
-                                        Xem hồ sơ
-                                    </a>
-                                )}
-                            </div>
-                        </>
-                    }
-                />
-            )}
 
             <Footer />
         </>

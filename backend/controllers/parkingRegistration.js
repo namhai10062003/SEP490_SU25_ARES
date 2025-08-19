@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import { cloudinary } from '../db/cloudinary.js';
 import Apartment from '../models/Apartment.js';
 import ParkingRegistration from '../models/ParkingRegistration.js';
@@ -24,9 +23,9 @@ const getParkingRegistrationAll = async (req, res) => {
       // ✅ Gán giá theo loại xe
       let price = '---';
       if (item.vehicleType?.toLowerCase() === 'ô tô') {
-        price = '800.000VNĐ / tháng';
+        price = '800.000đ / tháng';
       } else if (item.vehicleType?.toLowerCase() === 'xe máy') {
-        price = '80.000đVNĐ/ tháng';
+        price = '80.000đ / tháng';
       }
 
       return {
@@ -65,8 +64,8 @@ const getParkingRegistrations = async (req, res) => {
 
     const formatted = registrations.map(item => {
       let gia = '---';
-      if (item.vehicleType === 'ô tô') gia = '800.000VNĐ / tháng';
-      else if (item.vehicleType === 'xe máy') gia = '80.000VNĐ / tháng';
+      if (item.vehicleType === 'ô tô') gia = '800.000đ / tháng';
+      else if (item.vehicleType === 'xe máy') gia = '80.000đ / tháng';
 
       return {
         tênChủSởHữu: item.owner || 'Không rõ',
@@ -78,14 +77,8 @@ const getParkingRegistrations = async (req, res) => {
           ? item.registerDate.toISOString().split('T')[0]
           : '---',
         trạngThái: item.status || 'Chưa rõ',
-      
-        // ✅ Thêm ảnh trước / sau
-        ảnhTrước: item.documentFront || null,
-        ảnhSau: item.documentBack || null,
-      
         id: item._id
       };
-      
     });
 
     return res.status(200).json({
@@ -106,10 +99,7 @@ const getParkingRegistrations = async (req, res) => {
 const getParkingRegistrationDetail = async (req, res) => {
   try {
     const { id } = req.params;
-   // ✅ Kiểm tra id có tồn tại và hợp lệ
-   if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'ID đăng ký xe không hợp lệ' });
-  }
+
     const registration = await ParkingRegistration.findById(id);
 
     if (!registration) {
@@ -119,9 +109,9 @@ const getParkingRegistrationDetail = async (req, res) => {
     // 👉 Định dạng giá theo vehicleType
     let formattedPrice = '---';
     if (registration.vehicleType === 'ô tô') {
-      formattedPrice = '800.000VNĐ / tháng';
+      formattedPrice = '800.000đ / tháng';
     } else if (registration.vehicleType === 'xe máy') {
-      formattedPrice = '80.000VNĐ / tháng';
+      formattedPrice = '80.000đ / tháng';
     }
 
     const detail = {
@@ -401,126 +391,6 @@ const getUserParkingRegistrations = async (req, res) => {
     res.json({ data });
   } catch (err) {
     res.status(500).json({ error: err.message });
-  }
-};
-export const updateRejectedParking = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const {
-      apartmentId,
-      owner,
-      ownerPhone,
-      vehicleType,
-      licensePlate,
-      registeredCity,
-      registeredDistrict,
-      registerDate,
-      expireDate,
-      removeDocumentFront, // 🆕 flag xoá ảnh trước
-      removeDocumentBack   // 🆕 flag xoá ảnh sau
-    } = req.body;
-
-    const registration = await ParkingRegistration.findById(id);
-    if (!registration) return res.status(404).json({ message: 'Đăng ký không tồn tại.' });
-
-    if (registration.status !== 'rejected') {
-      return res.status(400).json({ message: 'Chỉ có thể chỉnh sửa đăng ký đã bị từ chối.' });
-    }
-// Nếu vẫn muốn normalize để đồng bộ format
-function normalizeDateString(dateStr) {
-  if (!dateStr) return null;
-  const [y, m, d] = dateStr.split("-").map(Number);
-  return new Date(y, m - 1, d);
-}
-
-const regDate = normalizeDateString(registerDate);
-const expDate = expireDate ? normalizeDateString(expireDate) : null;
-
-    // ✅ Check có thay đổi gì không
-    let hasChanges = false;
-    const fields = {
-      apartmentId,
-      owner,
-      ownerPhone,
-      vehicleType,
-      licensePlate,
-      registeredCity,
-      registeredDistrict,
-      registerDate: regDate,
-      expireDate: expDate
-    };
-    for (const key in fields) {
-      if (fields[key] != null && registration[key] != fields[key]) {
-        registration[key] = fields[key];
-        hasChanges = true;
-      }
-    }
-
-    // ✅ Upload / Xoá ảnh nếu có
-    const cleanedPlate = registration.licensePlate?.trim().replace(/\s+/g, '_') || 'unknown';
-    const plateFolder = `papers/${cleanedPlate}`;
-
-    // --- Mặt trước ---
-    if (req.files?.documentFront?.[0]) {
-      // Upload ảnh mới
-      const up = await cloudinary.uploader.upload(req.files.documentFront[0].path, {
-        folder: plateFolder,
-        public_id: '1',
-        overwrite: true
-      });
-      registration.documentFront = up.secure_url;
-      hasChanges = true;
-    } else if (removeDocumentFront === 'true') {
-      // Xoá ảnh
-      await cloudinary.uploader.destroy(`${plateFolder}/1`);
-      registration.documentFront = null;
-      hasChanges = true;
-    }
-
-    // --- Mặt sau ---
-    if (req.files?.documentBack?.[0]) {
-      const up = await cloudinary.uploader.upload(req.files.documentBack[0].path, {
-        folder: plateFolder,
-        public_id: '2',
-        overwrite: true
-      });
-      registration.documentBack = up.secure_url;
-      hasChanges = true;
-    } else if (removeDocumentBack === 'true') {
-      await cloudinary.uploader.destroy(`${plateFolder}/2`);
-      registration.documentBack = null;
-      hasChanges = true;
-    }
-
-    // ✅ Nếu có thay đổi, chuyển status sang pending
-    if (hasChanges) registration.status = 'pending';
-
-    const saved = await registration.save();
-
-    if (hasChanges) {
-      getIO().emit('staff:new-parking-request', {
-        message: '📢 Đăng ký gửi xe đã được chỉnh sửa và cần duyệt lại',
-        registration: {
-          id: saved._id,
-          apartmentCode: saved.apartmentCode,
-          owner: saved.owner,
-          vehicleType: saved.vehicleType,
-          licensePlate: saved.licensePlate,
-          createdAt: saved.createdAt
-        }
-      });
-    }
-
-    return res.status(200).json({
-      message: hasChanges
-        ? 'Cập nhật thành công, đăng ký đã chuyển sang pending.'
-        : 'Không có thay đổi, trạng thái vẫn giữ nguyên rejected.',
-      data: saved
-    });
-
-  } catch (err) {
-    console.error('❌ Lỗi khi cập nhật đăng ký:', err);
-    return res.status(500).json({ message: 'Lỗi server', error: err.message });
   }
 };
 

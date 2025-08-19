@@ -34,7 +34,7 @@ const RevenueManagement = () => {
     const [totalPages, setTotalPages] = useState(1);
 
     const formatDate = (d) => new Date(d).toLocaleDateString("vi-VN");
-    const formatPrice = (p) => new Intl.NumberFormat("vi-VN").format(p) + " VND";
+    const formatPrice = (p) => new Intl.NumberFormat("vi-VN").format(p) + " đ";
 
     useEffect(() => {
         const now = new Date();

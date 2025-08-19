@@ -8,7 +8,6 @@ import {
   getApartmentList,
   getPlazaList,
 } from "../../../service/postService.js";
-import { formatCurrency } from "../../../../utils/format.jsx";
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
     loaiHinh: "",
@@ -16,8 +15,8 @@ const RegistrationForm = () => {
     quanHuyen: "",
     diaChiCuThe: "",
     tieuDe: "",
-    toaPlaza: "",
-    soCanHo: "",
+    toaplaza: "",
+    socanho: "",
     moTaChiTiet: "",
     dienTich: "",
     gia: "",
@@ -43,7 +42,7 @@ const RegistrationForm = () => {
     tieuDe: 0,
     moTaChiTiet: 0,
   });
-
+  
   useEffect(() => {
     if (user && user.status === 0) {
       console.log("🚫 Tài khoản bị chặn đăng bài");
@@ -59,14 +58,14 @@ const RegistrationForm = () => {
       try {
         const response = await getApartmentList();
         console.log("📦 Full response:", response);
-
+  
         if (response?.data) {
           const apartments = Array.isArray(response.data)
             ? response.data
             : response.data.data;
-
+  
           console.log("✅ Danh sách căn hộ (trước sort):", apartments);
-
+  
           // ✅ Sắp xếp theo apartmentCode, xử lý khi thiếu
           const sortedApartments = [...apartments].sort((a, b) =>
             (a?.apartmentCode || "").localeCompare(
@@ -75,9 +74,9 @@ const RegistrationForm = () => {
               { numeric: true }
             )
           );
-
+  
           console.log("📑 Danh sách căn hộ (đã sort):", sortedApartments);
-
+  
           setApartmentOptions(sortedApartments);
         } else {
           console.warn("⚠️ Không có dữ liệu căn hộ trong response");
@@ -86,12 +85,12 @@ const RegistrationForm = () => {
         console.error("❌ Không thể lấy danh sách căn hộ:", error);
       }
     };
-
+  
     fetchApartments();
   }, []);
-
-
-
+  
+  
+  
 
   // ham de xu li get ra plazaNDate
   useEffect(() => {
@@ -122,7 +121,7 @@ const RegistrationForm = () => {
   // validate khi nhập
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
+  
     // Validate số điện thoại
     if (name === "thongTinNguoiDangBan") {
       if (!/^\d*$/.test(value)) return;
@@ -137,7 +136,7 @@ const RegistrationForm = () => {
       }
       return;
     }
-
+  
     // Giới hạn ký tự cho tiêu đề và mô tả + cập nhật đếm ký tự
     if (name === "tieuDe") {
       if (value.length > 100) return;
@@ -147,7 +146,7 @@ const RegistrationForm = () => {
       if (value.length > 1000) return;
       setCharCount((prev) => ({ ...prev, moTaChiTiet: value.length }));
     }
-
+  
     // Không cho nhập giá hoặc diện tích âm
     if (
       (name === "gia" || name === "dienTich") &&
@@ -156,20 +155,14 @@ const RegistrationForm = () => {
     ) {
       return;
     }
-
-    if (name === "gia") {
-      const raw = value.replace(/\D/g, ""); // bỏ ký tự không phải số
-      setFormData((prev) => ({ ...prev, gia: raw ? Number(raw) : "" }));
-      return;
-    }
-
+  
     // Loại hình căn hộ tự gán địa chỉ
     if (name === "loaiHinh") {
       if (value === "nha_can_ho") {
         setFormData((prev) => ({
           ...prev,
           [name]: value,
-          diaChiCuThe: "FPT City, Phường Ngũ Hành Sơn, Thành Phố Đà Nẵng",
+          diaChiCuThe: "FPT City",
         }));
       } else {
         setFormData((prev) => ({ ...prev, [name]: value, diaChiCuThe: "" }));
@@ -187,7 +180,7 @@ const RegistrationForm = () => {
       const selectedApartment = apartmentOptions.find(
         (apartment) => apartment.apartmentCode === formData.soCanHo
       );
-
+  
       if (selectedApartment) {
         setFormData((prev) => ({
           ...prev,
@@ -195,12 +188,12 @@ const RegistrationForm = () => {
           giayto: selectedApartment.legalDocuments || "",
           huongdat: selectedApartment.direction || "",
           tinhtrang: selectedApartment.furniture || "",
-          diaChiCuThe: "FPT City, Phường Ngũ Hành Sơn, Thành Phố Đà Nẵng",
+          diaChiCuThe: "FPT City",
         }));
       }
     }
   }, [formData.soCanHo, apartmentOptions]);
-
+  
   // hàm xử lí lấy sdt của user
   useEffect(() => {
     if (user?.phone && !formData.thongTinNguoiDangBan) {
@@ -255,34 +248,34 @@ const RegistrationForm = () => {
   const apartmentCode = selectedApartment?.apartmentCode || "";
   const handleSubmit = async () => {
     setIsSubmitting(true);
-
+  
     // Validate chung
-    if (!formData.loaiHinh) return showError("Vui lòng chọn loại hình dịch vụ");
-    if (!formData.diaChiCuThe) return showError("Vui lòng nhập địa chỉ");
-    if (!formData.tieuDe) return showError("Vui lòng nhập tiêu đề");
-    if (!formData.moTaChiTiet) return showError("Vui lòng nhập mô tả");
-    if (!formData.thongTinNguoiDangBan) return showError("Vui lòng nhập số điện thoại");
+if (!formData.loaiHinh) return showError("Vui lòng chọn loại hình dịch vụ");
+if (!formData.diaChiCuThe) return showError("Vui lòng nhập địa chỉ");
+if (!formData.tieuDe) return showError("Vui lòng nhập tiêu đề");
+if (!formData.moTaChiTiet) return showError("Vui lòng nhập mô tả");
+if (!formData.thongTinNguoiDangBan) return showError("Vui lòng nhập số điện thoại");
 
-    // Validate riêng cho từng loại trước
-    if (loaiBaiDang === "ban" || loaiBaiDang === "cho_thue") {
-      if (!formData.toaPlaza) return showError("Vui lòng nhập tòa Plaza");
-      if (!formData.soCanHo) return showError("Vui lòng nhập số căn hộ");
-      if (formData.dienTich === "" || formData.dienTich <= 0) return showError("Diện tích không hợp lệ");
-      if (formData.gia === "" || formData.gia <= 0) return showError("Vui lòng nhập giá hợp lệ");
-      if (!formData.giayto) return showError("Vui lòng nhập giấy tờ pháp lý");
-      if (!formData.tinhtrang) return showError("Vui lòng nhập tình trạng");
-      if (!formData.huongdat) return showError("Vui lòng nhập hướng đất");
-    }
+// Validate riêng cho từng loại trước
+if (loaiBaiDang === "ban" || loaiBaiDang === "cho_thue") {
+  if (!formData.toaPlaza) return showError("Vui lòng nhập tòa Plaza");
+  if (!formData.soCanHo) return showError("Vui lòng nhập số căn hộ");
+  if (formData.dienTich === "" || formData.dienTich <= 0) return showError("Diện tích không hợp lệ");
+  if (formData.gia === "" || formData.gia <= 0) return showError("Vui lòng nhập giá hợp lệ");
+  if (!formData.giayto) return showError("Vui lòng nhập giấy tờ pháp lý");
+  if (!formData.tinhtrang) return showError("Vui lòng nhập tình trạng");
+  if (!formData.huongdat) return showError("Vui lòng nhập hướng đất");
+}
 
-    if (loaiBaiDang === "dich_vu") {
-      if (formData.gia === "" || formData.gia <= 0) return showError("Giá không hợp lệ");
-    }
+if (loaiBaiDang === "dich_vu") {
+  if (formData.gia === "" || formData.gia <= 0) return showError("Giá không hợp lệ");
+}
 
-    // Kiểm tra ảnh sau khi đã check giá
-    if (formData.images.length === 0) return showError("Vui lòng upload ít nhất 1 ảnh");
+// Kiểm tra ảnh sau khi đã check giá
+if (formData.images.length === 0) return showError("Vui lòng upload ít nhất 1 ảnh");
 
-    // Kiểm tra gói đăng tin
-    if (!formData.postPackage) return showError("Vui lòng chọn gói đăng tin");
+// Kiểm tra gói đăng tin
+if (!formData.postPackage) return showError("Vui lòng chọn gói đăng tin");
     // Nếu qua hết validate thì submit
     try {
       const submitData = new FormData();
@@ -294,7 +287,7 @@ const RegistrationForm = () => {
       submitData.append("price", formData.gia);
       submitData.append("postPackage", formData.postPackage);
       submitData.append("phone", formData.thongTinNguoiDangBan);
-
+  
       if (loaiBaiDang === "ban" || loaiBaiDang === "cho_thue") {
         submitData.append("area", formData.dienTich);
         submitData.append("legalDocument", formData.giayto);
@@ -303,13 +296,13 @@ const RegistrationForm = () => {
         submitData.append("apartmentCode", formData.soCanHo);
         submitData.append("building", formData.toaPlaza);
       }
-
+  
       formData.images.forEach((image) => {
         submitData.append("images", image);
       });
-
+  
       const response = await createPost(submitData);
-
+  
       if (response.data.success) {
         toast.success("Đăng tin thành công!");
         setFormData({
@@ -341,23 +334,23 @@ const RegistrationForm = () => {
       setIsSubmitting(false);
     }
   };
-
+  
   // Hàm tiện ích để hiện toast và dừng submit
   function showError(message) {
     toast.error(message);
     setIsSubmitting(false);
     return false;
   }
-
-
-
+  
+  
+  
 
   // hàm xử lí lọc plaza vs căn hộ
   const selectedPlaza = plazaOptions.find(
     (plaza) => String(plaza._id) === String(formData.toaPlaza)
   );
-
-
+  
+  
   const selectedPlazaName = selectedPlaza?.name || "";
 
   console.log("🧱 Tòa plaza đã chọn (_id):", formData.toaPlaza);
@@ -395,8 +388,9 @@ const RegistrationForm = () => {
                   <h5 className="fw-bold mb-3">Chọn loại bài đăng</h5>
                   <ul className="list-group">
                     <li
-                      className={`list-group-item list-group-item-action ${loaiBaiDang === "ban" ? "active" : ""
-                        }`}
+                      className={`list-group-item list-group-item-action ${
+                        loaiBaiDang === "ban" ? "active" : ""
+                      }`}
                       style={{ cursor: "pointer" }}
                       onClick={() => {
                         setLoaiBaiDang("ban");
@@ -407,8 +401,9 @@ const RegistrationForm = () => {
                       Tin Bán
                     </li>
                     <li
-                      className={`list-group-item list-group-item-action ${loaiBaiDang === "cho_thue" ? "active" : ""
-                        }`}
+                      className={`list-group-item list-group-item-action ${
+                        loaiBaiDang === "cho_thue" ? "active" : ""
+                      }`}
                       style={{ cursor: "pointer" }}
                       onClick={() => {
                         setLoaiBaiDang("cho_thue");
@@ -419,8 +414,9 @@ const RegistrationForm = () => {
                       Tin Cho Thuê
                     </li>
                     <li
-                      className={`list-group-item list-group-item-action ${loaiBaiDang === "dich_vu" ? "active" : ""
-                        }`}
+                      className={`list-group-item list-group-item-action ${
+                        loaiBaiDang === "dich_vu" ? "active" : ""
+                      }`}
                       style={{ cursor: "pointer" }}
                       onClick={() => {
                         setLoaiBaiDang("dich_vu");
@@ -436,7 +432,7 @@ const RegistrationForm = () => {
               {/* Form Content */}
               <div className="col-12 col-md-9">
                 <div className="row g-3">
-                  <div className="col-12 col-md-6 mb-3">
+                  <div className="col-12 col-md-6">
                     <label className="form-label">
                       Dịch Vụ <span className="text-danger">*</span>
                     </label>
@@ -473,161 +469,163 @@ const RegistrationForm = () => {
                   </div>
                   {loaiHinhCon === "nha_can_ho" && (
                     <>
-                      <div className="row align-items-end">
-                        {/* TOA PLAZA */}
-                        <div className="col-md-6">
-                          <label className="form-label">
-                            Tòa plaza <span className="text-danger">*</span>
-                          </label>
-                          {!useCustomPlaza ? (
-                            <div className="d-flex align-items-center gap-2">
-                              <select
-                                name="toaPlaza"
-                                value={formData.toaPlaza || ""}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    toaPlaza: e.target.value,
-                                  }))
-                                }
-                                className="form-select flex-grow-1" // ❌ không dùng form-select-sm
-                                required
-                              >
-                                <option value="">Chọn tòa plaza</option>
-                                {Array.isArray(plazaOptions) &&
-                                  plazaOptions.map((plaza) => (
-                                    <option key={plaza._id} value={plaza._id}>
-                                      {plaza.name}
-                                    </option>
-                                  ))}
-                              </select>
-                              {/* <button
-                                type="button"
-                                className="btn btn-outline-secondary py-0 px-1" // ❌ không dùng btn-sm
-                                onClick={() => {
-                                  setUseCustomPlaza(true);
-                                  setUseCustomApartment(true);
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    toaPlaza: "",
-                                    soCanHo: "",
-                                  }));
-                                }}
-                              >
-                                Nhập mới
-                              </button> */}
-                            </div>
-                          ) : (
-                            <div className="d-flex align-items-center gap-2">
-                              <input
-                                type="text"
-                                className="form-control flex-grow-1" // ❌ không dùng form-control-sm
-                                placeholder="Nhập tên tòa plaza"
-                                value={formData.toaPlaza || ""}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    toaPlaza: e.target.value,
-                                  }))
-                                }
-                                required
-                              />
-                              {/* <button
-                                type="button"
-                                className="btn btn-outline-secondary py-0 px-1"
-                                onClick={() => {
-                                  setUseCustomPlaza(false);
-                                  setUseCustomApartment(false);
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    toaPlaza: "",
-                                    soCanHo: "",
-                                  }));
-                                }}
-                              >
-                                Chọn từ danh sách
-                              </button> */}
-                            </div>
-                          )}
-                        </div>
+                    <div className="row align-items-end mb-3">
+
+                    
+                      {/* TOA PLAZA */}
+                      <div className="col-md-6">
+  <label className="form-label">
+    Tòa plaza <span className="text-danger">*</span>
+  </label>
+  {!useCustomPlaza ? (
+    <div className="d-flex align-items-center gap-2">
+      <select
+        name="toaPlaza"
+        value={formData.toaPlaza || ""}
+        onChange={(e) =>
+          setFormData((prev) => ({
+            ...prev,
+            toaPlaza: e.target.value,
+          }))
+        }
+        className="form-select flex-grow-1" // ❌ không dùng form-select-sm
+        required
+      >
+        <option value="">Chọn tòa plaza</option>
+        {Array.isArray(plazaOptions) &&
+          plazaOptions.map((plaza) => (
+            <option key={plaza._id} value={plaza._id}>
+              {plaza.name}
+            </option>
+          ))}
+      </select>
+      <button
+        type="button"
+        className="btn btn-outline-secondary py-0 px-1" // ❌ không dùng btn-sm
+        onClick={() => {
+          setUseCustomPlaza(true);
+          setUseCustomApartment(true);
+          setFormData((prev) => ({
+            ...prev,
+            toaPlaza: "",
+            soCanHo: "",
+          }));
+        }}
+      >
+        Nhập mới
+      </button>
+    </div>
+  ) : (
+    <div className="d-flex align-items-center gap-2">
+      <input
+        type="text"
+        className="form-control flex-grow-1" // ❌ không dùng form-control-sm
+        placeholder="Nhập tên tòa plaza"
+        value={formData.toaPlaza || ""}
+        onChange={(e) =>
+          setFormData((prev) => ({
+            ...prev,
+            toaPlaza: e.target.value,
+          }))
+        }
+        required
+      />
+      <button
+        type="button"
+        className="btn btn-outline-secondary py-0 px-1"
+        onClick={() => {
+          setUseCustomPlaza(false);
+          setUseCustomApartment(false);
+          setFormData((prev) => ({
+            ...prev,
+            toaPlaza: "",
+            soCanHo: "",
+          }));
+        }}
+      >
+        Chọn từ danh sách
+      </button>
+    </div>
+  )}
+</div>
 
 
-                        {/* SO CAN HO */}
-                        <div className="col-md-6">
-                          <label className="form-label">
-                            Số căn hộ <span className="text-danger">*</span>
-                          </label>
-                          {!useCustomApartment ? (
-                            <div className="d-flex align-items-center gap-2">
-                              <select
-                                name="soCanHo"
-                                value={formData.soCanHo || ""}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    soCanHo: e.target.value,
-                                  }))
-                                }
-                                className="form-select flex-grow-1"
-                                required
-                              >
-                                <option value="">Chọn số căn hộ</option>
-                                {filteredApartments.length === 0 && (
-                                  <option disabled>Không có căn hộ phù hợp</option>
-                                )}
-                                {filteredApartments.map((apartment) => (
-                                  <option key={apartment._id} value={apartment.apartmentCode}>
-                                    {apartment.apartmentCode}
-                                  </option>
-                                ))}
-                              </select>
-                              {/* <button
-                                type="button"
-                                className="btn btn-outline-secondary py-0 px-2"
-
-                                onClick={() => {
-                                  setUseCustomApartment(true);
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    soCanHo: "",
-                                  }));
-                                }}
-                              >
-                                Nhập mới
-                              </button> */}
-                            </div>
-                          ) : (
-                            <div className="d-flex align-items-center gap-2">
-                              <input
-                                type="text"
-                                className="form-control flex-grow-1"
-                                placeholder="Nhập số căn hộ"
-                                value={formData.soCanHo || ""}
-                                onChange={(e) =>
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    soCanHo: e.target.value,
-                                  }))
-                                }
-                                required
-                              />
-                              {/* <button
-                                type="button"
-                                className="btn btn-outline-secondary py-0 px-2"
-
-                                onClick={() => {
-                                  setUseCustomApartment(false);
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    soCanHo: "",
-                                  }));
-                                }}
-                              >
-                                Chọn từ danh sách
-                              </button> */}
-                            </div>
-                          )}
-                        </div>
+                      {/* SO CAN HO */}
+                      <div className="col-md-6">
+  <label className="form-label">
+    Số căn hộ <span className="text-danger">*</span>
+  </label>
+  {!useCustomApartment ? (
+    <div className="d-flex align-items-center gap-2">
+      <select
+        name="soCanHo"
+        value={formData.soCanHo || ""}
+        onChange={(e) =>
+          setFormData((prev) => ({
+            ...prev, 
+            soCanHo: e.target.value,
+          }))
+        }
+        className="form-select flex-grow-1"
+        required
+      >
+        <option value="">Chọn số căn hộ</option>
+        {filteredApartments.length === 0 && (
+          <option disabled>Không có căn hộ phù hợp</option>
+        )}
+        {filteredApartments.map((apartment) => (
+            <option key={apartment._id} value={apartment.apartmentCode}>
+            {apartment.apartmentCode}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        className="btn btn-outline-secondary py-0 px-2"
+       
+        onClick={() => {
+          setUseCustomApartment(true);
+          setFormData((prev) => ({
+            ...prev,
+            soCanHo: "",
+          }));
+        }}
+      >
+        Nhập mới
+      </button>
+    </div>
+  ) : (
+    <div className="d-flex align-items-center gap-2">
+      <input
+        type="text"
+        className="form-control flex-grow-1"
+        placeholder="Nhập số căn hộ"
+        value={formData.soCanHo || ""}
+        onChange={(e) =>
+          setFormData((prev) => ({
+            ...prev,
+            soCanHo: e.target.value,
+          }))
+        }
+        required
+      />
+      <button
+        type="button"
+        className="btn btn-outline-secondary py-0 px-2"
+        
+        onClick={() => {
+          setUseCustomApartment(false);
+          setFormData((prev) => ({
+            ...prev,
+            soCanHo: "",
+          }));
+        }}
+      >
+        Chọn từ danh sách
+      </button>
+    </div>
+  )}
+</div>
 
                       </div>
                     </>
@@ -664,8 +662,8 @@ const RegistrationForm = () => {
                       required
                     />
                     <small style={{ color: charCount.tieuDe >= 100 ? "red" : "#555" }}>
-                      {charCount.tieuDe}/100
-                    </small>
+    {charCount.tieuDe}/100
+  </small>
                   </div>
                   <div className="col-12">
                     <label className="form-label">
@@ -680,9 +678,9 @@ const RegistrationForm = () => {
                       className="form-control"
                       required
                     />
-                    <small style={{ color: charCount.moTaChiTiet >= 1000 ? "red" : "#555" }}>
-                      {charCount.moTaChiTiet}/1000
-                    </small>
+                      <small style={{ color: charCount.moTaChiTiet >= 1000 ? "red" : "#555" }}>
+    {charCount.moTaChiTiet}/1000
+  </small>
                   </div>
                   {["ban", "cho_thue"].includes(loaiBaiDang) && (
                     <div className="col-12 col-md-6">
@@ -696,11 +694,10 @@ const RegistrationForm = () => {
                           name="dienTich"
                           value={formData.dienTich}
                           onChange={handleInputChange}
+                          placeholder="m²"
                           className="form-control"
-                          placeholder="Nhập diện tích"
                           required
                         />
-                        <span className="input-group-text">m²</span> {/* 👈 thêm đơn vị ở ngoài */}
                       </div>
                     </div>
                   )}
@@ -711,26 +708,14 @@ const RegistrationForm = () => {
                     <div className="input-group">
                       <span className="input-group-text">💰</span>
                       <input
-                        type="text"
+                        type="number"
                         name="gia"
-                        value={
-                          formData.gia
-                            ? new Intl.NumberFormat("vi-VN").format(formData.gia)
-                            : ""
-                        }
-                        onChange={(e) => {
-                          let raw = e.target.value.replace(/\D/g, ""); // chỉ lấy số
-                          if (raw.length > 12) raw = raw.slice(0, 12); // giới hạn 12 chữ số
-                          setFormData((prev) => ({
-                            ...prev,
-                            gia: raw ? Number(raw) : "",
-                          }));
-                        }}
-                        placeholder="Nhập giá"
+                        value={formData.gia}
+                        onChange={handleInputChange}
+                        placeholder="Thỏa thuận hoặc giá cụ thể"
                         className="form-control"
                         required
                       />
-                      <span className="input-group-text">VND</span>
                     </div>
                   </div>
                   {["ban", "cho_thue"].includes(loaiBaiDang) && (
@@ -794,8 +779,9 @@ const RegistrationForm = () => {
                         value={formData.thongTinNguoiDangBan}
                         onChange={handleInputChange}
                         placeholder="Số điện thoại"
-                        className={`form-control ${formErrors.thongTinNguoiDangBan ? "is-invalid" : ""
-                          }`}
+                        className={`form-control ${
+                          formErrors.thongTinNguoiDangBan ? "is-invalid" : ""
+                        }`}
                         maxLength={10}
                         required
                       />
@@ -873,9 +859,9 @@ const RegistrationForm = () => {
                           value: "685039e4f8f1552c6378a7a5",
                           title: (
                             <div>
-                              <div className="fw-bold fs-5 mb-1">VIP 1</div>
-                              <div className="text-secondary mb-1">Hiển thị 3 ngày trên Blog</div>
-                              <div className="fw-bold fs-6 text-danger">10.000 VND / tin</div>
+                              <div className="fw-bold">VIP 1</div>
+                              <div>Hiển thị Blog 3 ngày</div>
+                              <div>10.000đ/tin</div>
                             </div>
                           ),
                         },
@@ -884,9 +870,9 @@ const RegistrationForm = () => {
                           value: "685174b550c6fbcbc4efbe87",
                           title: (
                             <div>
-                              <div className="fw-bold fs-5 mb-1">VIP 2</div>
-                              <div className="text-secondary mb-1">Hiển thị 5 ngày trên Blog</div>
-                              <div className="fw-bold fs-6 text-danger">20.000 VND / tin</div>
+                              <div className="fw-bold">VIP 2</div>
+                              <div>Hiển thị Blog 5 ngày</div>
+                              <div>20.000đ/tin</div>
                             </div>
                           ),
                         },
@@ -894,19 +880,20 @@ const RegistrationForm = () => {
                           value: "685174db50c6fbcbc4efbe88",
                           title: (
                             <div>
-                              <div className="fw-bold fs-5 mb-1">VIP 3</div>
-                              <div className="text-secondary mb-1">Hiển thị 7 ngày trên Blog</div>
-                              <div className="fw-bold fs-6 text-danger">30.000 VND / tin</div>
+                              <div className="fw-bold">VIP 3</div>
+                              <div>Hiển thị Blog 7 ngày</div>
+                              <div>30.000đ/tin</div>
                             </div>
                           ),
                         },
                       ].map((option) => (
                         <div className="col-12 col-md-4" key={option.value}>
                           <div
-                            className={`card h-100 ${formData.postPackage === option.value
-                              ? "border-primary shadow"
-                              : ""
-                              }`}
+                            className={`card h-100 ${
+                              formData.postPackage === option.value
+                                ? "border-primary shadow"
+                                : ""
+                            }`}
                             style={{ cursor: "pointer" }}
                             onClick={() => handleGenderSelect(option.value)}
                           >

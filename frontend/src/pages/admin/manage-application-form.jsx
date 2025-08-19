@@ -18,7 +18,7 @@ const ManageApplicationForm = () => {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("Chờ duyệt");
+  const [filterStatus, setFilterStatus] = useState("");
   const [selectedApp, setSelectedApp] = useState(null);
   const [sortOrder, setSortOrder] = useState("newest");
   const [showModal, setShowModal] = useState(false);

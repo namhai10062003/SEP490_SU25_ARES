@@ -1,6 +1,6 @@
 // --- Currency ---
 export const formatPrice = (p) =>
-    new Intl.NumberFormat("vi-VN").format(p || 0) + " VND";
+    new Intl.NumberFormat("vi-VN").format(p || 0) + " đ";
 
 // --- Dates ---
 export const formatDate = (d) =>
@@ -14,37 +14,12 @@ export const toInputDate = (date) => {
     return `${y}-${m}-${d}`;
 };
 export const formatCurrency = (amount) => {
-    if (amount == null || isNaN(amount)) return "0 VND";
-    return Number(amount).toLocaleString("vi-VN") + " VND";
-  };  
+    if (isNaN(amount) || amount == null) return "0 ₫";
+    return Number(amount).toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+};
 
 export const formatSmartDate = (dateStr) => {
     if (!dateStr) return "";
-
-    const WEEKDAYS = [
-        "Chủ nhật",
-        "Thứ hai",
-        "Thứ ba",
-        "Thứ tư",
-        "Thứ năm",
-        "Thứ sáu",
-        "Thứ bảy"
-    ];
-
-    const pad = (n) => n.toString().padStart(2, "0");
-
-    const formatTime = (date) => {
-        let h = date.getHours();
-        let m = date.getMinutes();
-        let ampm = h >= 12 ? "pm" : "am";
-        h = h % 12;
-        h = h ? h : 12; // 0 => 12
-        return `${h}:${pad(m)}${ampm}`;
-    };
-
-    const formatDateNumber = (date) => {
-        return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`;
-    };
 
     const now = new Date();
     const target = new Date(dateStr);
@@ -57,50 +32,18 @@ export const formatSmartDate = (dateStr) => {
     const diffHour = Math.floor(diffMin / 60);
     if (diffHour < 24) return `${diffHour} giờ trước`;
 
-    // Get YMD for today, yesterday, target
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    // Fallback to hôm nay / hôm qua / date
+    const targetYMD = target.toISOString().split("T")[0];
+    const today = new Date();
+    const todayYMD = today.toISOString().split("T")[0];
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
+    const yesterdayYMD = yesterday.toISOString().split("T")[0];
 
-    const targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+    if (targetYMD === todayYMD) return "Hôm nay";
+    if (targetYMD === yesterdayYMD) return "Hôm qua";
 
-    // Hôm nay
-    if (targetDay.getTime() === today.getTime()) {
-        return `Hôm nay, vào lúc ${formatTime(target)}`;
-    }
-    // Hôm qua
-    if (targetDay.getTime() === yesterday.getTime()) {
-        return `Hôm qua, vào lúc ${formatTime(target)}`;
-    }
-
-    // Check if target is in the same week as today (Mon-Sun)
-    // Get ISO week number and year
-    const getWeekYear = (d) => {
-        // Copy date so don't modify original
-        const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-        // Set to nearest Thursday: current date + 4 - current day number
-        // Make Sunday's day number 7
-        const dayNum = date.getUTCDay() || 7;
-        date.setUTCDate(date.getUTCDate() + 4 - dayNum);
-        const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-        const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-        return { week: weekNo, year: date.getUTCFullYear() };
-    };
-
-    const todayWeek = getWeekYear(today);
-    const targetWeek = getWeekYear(targetDay);
-
-    // If in same week and not hôm nay/hôm qua
-    if (todayWeek.week === targetWeek.week && todayWeek.year === targetWeek.year) {
-        // Show thứ + date + time
-        const weekday = WEEKDAYS[targetDay.getDay()];
-        return `${weekday}, ${formatDateNumber(targetDay)}, vào lúc ${formatTime(target)}`;
-    }
-
-    // If in previous week, but is yesterday (e.g. today is Monday, target is Sunday)
-    // Already handled above, but double check for edge case
-    // Show date plus the time
-    return `${formatDateNumber(targetDay)}, vào lúc ${formatTime(target)}`;
+    return formatDate(target); // dd/mm/yyyy
 };
 
 

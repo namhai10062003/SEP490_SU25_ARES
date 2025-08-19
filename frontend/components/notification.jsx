@@ -5,15 +5,33 @@ import { toast } from "react-toastify";
 import { formatSmartDate } from "../utils/format";
 import { Link, useNavigate } from "react-router-dom";
 
+/**
+ * NotificationBell
+ * - No useRef (uses useId + getElementById for outside click)
+ * - Works with endpoints:
+ *   GET    /api/notifications/unread/:userId
+ *   PATCH  /api/notifications/:notificationId/read
+ *   PATCH  /api/notifications/:userId/read-all
+ */
 const NotificationBell = ({ user }) => {
     const [notifications, setNotifications] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
     const [selectedNotification, setSelectedNotification] = useState(null);
     const navigate = useNavigate();
 
+    // Stable unique id to scope outside-click without useRef
     const rootId = useId();
     const rootDomId = `nbell-${String(rootId).replace(/[^a-zA-Z0-9-_:.]/g, "")}`;
 
+    // Helpers
+    const extractPostId = (msg = "") => {
+        const match = msg.match(/bài đăng ([a-f0-9]{24})/i);
+        return match ? match[1] : null;
+    };
+    const extractDeclarationId = (msg = "") => {
+        const match = msg.match(/hồ sơ ([a-f0-9]{24})/i);
+        return match ? match[1] : null;
+    };
     const fmtTime = (d) => {
         try {
             return typeof formatSmartDate === "function"
@@ -24,13 +42,13 @@ const NotificationBell = ({ user }) => {
         }
     };
 
-    // Fetch recent notifications (10 noti)
+    // Fetch unread notifications
     const fetchNotifications = async () => {
         if (!user?._id) return;
         try {
             const token = localStorage.getItem("token");
             const res = await axios.get(
-                `${import.meta.env.VITE_API_URL}/api/notifications/recent/${user._id}`,
+                `${import.meta.env.VITE_API_URL}/api/notifications/unread/${user._id}`,
                 token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
             );
             setNotifications(Array.isArray(res.data) ? res.data : []);
@@ -50,7 +68,7 @@ const NotificationBell = ({ user }) => {
                 {},
                 token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
             );
-            setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+            setNotifications([]);
             toast.success("Đã đánh dấu tất cả thông báo là đã đọc");
             setShowDropdown(false);
         } catch (err) {
@@ -68,19 +86,20 @@ const NotificationBell = ({ user }) => {
                 {},
                 token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
             );
-            setNotifications((prev) => prev.map((n) => n._id === notificationId ? { ...n, read: true } : n));
+            setNotifications((prev) => prev.filter((n) => n._id !== notificationId));
         } catch (err) {
             console.error("❌ Mark one read failed:", err?.response?.data || err.message);
             toast.error("Không thể đánh dấu đã đọc");
         }
     };
 
+    // When user changes, refetch unread
     useEffect(() => {
         fetchNotifications();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?._id]);
 
-    // Close dropdown when clicking outside
+    // Close dropdown when clicking outside (without useRef)
     useEffect(() => {
         if (!showDropdown) return;
         const onDown = (e) => {
@@ -95,20 +114,35 @@ const NotificationBell = ({ user }) => {
     }, [showDropdown, rootDomId]);
 
     // Open modal for a single notification
-    const openNotification = async (note) => {
+    const openNotification = (note) => {
         setSelectedNotification(note);
         setShowDropdown(false);
-        if (!note.read) {
-            await markOneRead(note._id);
-        }
     };
 
-    const closeModal = () => {
+    // Close modal and mark selected as read
+    const closeModal = async () => {
+        if (selectedNotification?._id) {
+            await markOneRead(selectedNotification._id);
+        }
         setSelectedNotification(null);
     };
 
-    // Badge count = số unread
-    const unreadCount = notifications.filter((n) => !n.read).length;
+    // Navigate helpers (no preventDefault/stopPropagation)
+    const handleViewPost = () => {
+        const postId = extractPostId(selectedNotification?.message);
+        if (postId) {
+            navigate(`/postdetail/${postId}`);
+            // Mark read & close
+            closeModal();
+        }
+    };
+    const handleViewDeclaration = () => {
+        const id = selectedNotification?.data?.declarationId || extractDeclarationId(selectedNotification?.message);
+        if (id) {
+            navigate(`/residence-declaration/detail/${id}`);
+            closeModal();
+        }
+    };
 
     return (
         <div id={rootDomId} className="notification-bell-wrapper" style={{ position: "relative" }}>
@@ -122,12 +156,12 @@ const NotificationBell = ({ user }) => {
                 aria-label="Thông báo"
             >
                 <FiBell size={22} className="text-dark" />
-                {unreadCount > 0 && (
+                {notifications.length > 0 && (
                     <span
                         className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                         style={{ fontSize: "0.8rem", minWidth: 20, padding: "2px 6px" }}
                     >
-                        {unreadCount}
+                        {notifications.length}
                     </span>
                 )}
             </button>
@@ -156,12 +190,12 @@ const NotificationBell = ({ user }) => {
                         className="d-flex align-items-center justify-content-between px-3 py-2 border-bottom"
                         style={{ background: "#f8f9fa" }}
                     >
-                        <span className="fw-semibold">Thông báo</span>
+                        <span className="fw-semibold">Thông báo mới</span>
                         <button
                             type="button"
                             className="btn btn-sm btn-outline-secondary"
                             onClick={handleMarkAllRead}
-                            disabled={unreadCount === 0}
+                            disabled={notifications.length === 0}
                         >
                             Đánh dấu tất cả đã đọc
                         </button>
@@ -169,7 +203,7 @@ const NotificationBell = ({ user }) => {
 
                     <div style={{ maxHeight: 320, overflowY: "auto" }}>
                         {notifications.length === 0 ? (
-                            <div className="text-center text-muted py-4">Không có thông báo</div>
+                            <div className="text-center text-muted py-4">Không có thông báo mới</div>
                         ) : (
                             notifications.map((note) => (
                                 <button
@@ -182,7 +216,6 @@ const NotificationBell = ({ user }) => {
                                         border: "none",
                                         borderBottom: "1px solid #eee",
                                         transition: "background 0.15s",
-                                        opacity: note.read ? 0.6 : 1,
                                     }}
                                     onClick={() => openNotification(note)}
                                     onMouseEnter={(e) => (e.currentTarget.style.background = "#f8f9fa")}
@@ -220,6 +253,7 @@ const NotificationBell = ({ user }) => {
             {/* Notification Detail Modal */}
             {selectedNotification && (
                 <>
+                    {/* Backdrop */}
                     <div
                         className="modal-backdrop show"
                         style={{
@@ -234,6 +268,7 @@ const NotificationBell = ({ user }) => {
                         onClick={closeModal}
                     ></div>
 
+                    {/* Modal */}
                     <div
                         className="modal show"
                         tabIndex={-1}
@@ -254,13 +289,14 @@ const NotificationBell = ({ user }) => {
                         <div
                             className="modal-dialog modal-dialog-centered"
                             style={{ maxWidth: 500, width: "100%" }}
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => e.stopPropagation()} // allow clicking inside without closing
                         >
                             <div className="modal-content border-0 shadow">
                                 <div className="modal-header bg-light">
                                     <h5 className="modal-title mb-0">Chi tiết thông báo</h5>
                                     <button type="button" className="btn-close" onClick={closeModal}></button>
                                 </div>
+
                                 <div className="modal-body">
                                     <div style={{ whiteSpace: "normal", lineHeight: 1.6, fontSize: 16 }}>
                                         {selectedNotification.message}
@@ -269,10 +305,37 @@ const NotificationBell = ({ user }) => {
                                         {fmtTime(selectedNotification.createdAt)}
                                     </div>
                                 </div>
-                                <div className="modal-footer bg-light">
-                                    <button type="button" className="btn btn-outline-secondary btn-sm" onClick={closeModal}>
-                                        Đóng
-                                    </button>
+
+                                <div className="modal-footer bg-light d-flex flex-wrap justify-content-between gap-2">
+                                    <div>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-success btn-sm"
+                                            onClick={closeModal}
+                                        >
+                                            Đánh dấu đã đọc
+                                        </button>
+                                    </div>
+                                    <div className="d-flex gap-2">
+                                        {extractPostId(selectedNotification.message) && (
+                                            <button type="button" className="btn btn-primary btn-sm" onClick={handleViewPost}>
+                                                Xem bài đăng
+                                            </button>
+                                        )}
+                                        {selectedNotification?.data?.declarationId ||
+                                            extractDeclarationId(selectedNotification?.message) ? (
+                                            <button
+                                                type="button"
+                                                className="btn btn-primary btn-sm"
+                                                onClick={handleViewDeclaration}
+                                            >
+                                                Xem hồ sơ
+                                            </button>
+                                        ) : null}
+                                        <button type="button" className="btn btn-outline-secondary btn-sm" onClick={() => setSelectedNotification(null)}>
+                                            Đóng
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

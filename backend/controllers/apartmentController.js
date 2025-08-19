@@ -171,7 +171,7 @@ export const getUserApartment = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Lấy tất cả căn hộ mà user là Owner hoặc Renter
+    // ✅ Lấy tất cả căn hộ mà user là chủ hoặc người thuê
     const apartments = await Apartment.find({
       $or: [
         { isOwner: userId },
@@ -179,47 +179,13 @@ export const getUserApartment = async (req, res) => {
       ]
     })
       .populate('isOwner', 'name phone email')
-      .populate('isRenter', 'name phone email')
-      .lean(); // trả object plain để dễ thêm field mới
+      .populate('isRenter', 'name phone email');
 
     if (!apartments || apartments.length === 0) {
       return res.status(404).json({ error: "Không tìm thấy căn hộ của bạn" });
     }
 
-    // Lấy danh sách fees theo apartmentId
-    const apartmentIds = apartments.map(a => a._id);
-    const fees = await Fee.find({ apartmentId: { $in: apartmentIds } })
-      .select('apartmentId paymentStatus')
-      .lean();
-
-    // Map fee theo apartmentId
-    const feeMap = {};
-    fees.forEach(fee => {
-      feeMap[fee.apartmentId.toString()] = fee.paymentStatus;
-    });
-
-    // Thêm logic canPay và paymentStatus
-    const result = apartments.map(apartment => {
-      const isOwner = apartment.isOwner && apartment.isOwner._id.toString() === userId;
-      const isRenter = apartment.isRenter && apartment.isRenter._id.toString() === userId;
-
-      let canPay = false;
-
-      if (isRenter) {
-        canPay = true; // renter luôn thấy nút
-      } else if (isOwner && !apartment.isRenter) {
-        canPay = true; // owner chỉ thấy khi chưa có renter
-      }
-
-      return {
-        ...apartment,
-        paymentStatus: feeMap[apartment._id.toString()] || "unpaid",
-        canPay
-      };
-    });
-
-    res.json(result);
-
+    res.json(apartments); // ✅ Trả về danh sách căn hộ
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
