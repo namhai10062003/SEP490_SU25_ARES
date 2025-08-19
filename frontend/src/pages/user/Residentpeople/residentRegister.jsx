@@ -9,7 +9,7 @@ import { useAuth } from '../../../../context/authContext';
 const ResidentRegister = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
+  const [loading, setLoading] = useState(false);
   const [apartments, setApartments] = useState([]);
   const [previewFront, setPreviewFront] = useState(null);
   const [previewBack, setPreviewBack] = useState(null);
@@ -116,7 +116,7 @@ const ResidentRegister = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-
+    setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const body = new FormData();
@@ -135,6 +135,8 @@ const ResidentRegister = () => {
       setTimeout(() => navigate(-1), 2500);
     } catch (err) {
       toast.error(`❌ ${err.message}`);
+    }finally {
+      setLoading(false);
     }
   };
 
@@ -300,9 +302,20 @@ const ResidentRegister = () => {
 )}
               {/* Nút submit */}
               <div className="col-12">
-                <button type="submit" className="btn btn-primary btn-lg w-100 mt-3">
-                  Đăng ký
-                </button>
+              <button
+        type="submit"
+        className="btn btn-primary btn-lg w-100 mt-3 d-flex justify-content-center align-items-center"
+        disabled={loading} // không cho bấm khi đang loading
+      >
+        {loading && (
+          <span
+            className="spinner-border spinner-border-sm me-2"
+            role="status"
+            aria-hidden="true"
+          ></span>
+        )}
+        {loading ? "Đang đăng ký..." : "Đăng ký"}
+      </button>
               </div>
             </div>
           </form>

@@ -8,7 +8,7 @@ import { useAuth } from '../../../../context/authContext';
 const FormParkingRegistration = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
+  const [loading, setLoading] = useState(false);
   const [name, setName] = useState(null);
   const [apartments, setApartments] = useState([]);
 
@@ -117,7 +117,7 @@ const validateDates = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateDates()) return;
-
+    setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const submission = new FormData();
@@ -155,6 +155,8 @@ const validateDates = () => {
     } catch (err) {
       console.error(err);
       toast.error(err.message || 'Có lỗi xảy ra. Vui lòng thử lại.');
+    }finally {
+      setLoading(false);
     }
   };
 
@@ -312,9 +314,21 @@ const validateDates = () => {
 
             {/* Nút submit */}
             <div className="col-12 d-flex justify-content-center mt-4">
-              <button type="submit" className="btn btn-primary btn-lg px-5 fw-bold">
-                Đăng Ký
-              </button>
+            <button
+      type="submit"
+      className="btn btn-primary btn-lg px-5 fw-bold d-flex align-items-center justify-content-center"
+      onClick={handleSubmit}
+      disabled={loading} // disable khi loading
+    >
+      {loading && (
+        <span
+          className="spinner-border spinner-border-sm me-2"
+          role="status"
+          aria-hidden="true"
+        ></span>
+      )}
+      {loading ? "Đang đăng ký..." : "Đăng Ký"}
+    </button>
             </div>
           </form>
         </div>
