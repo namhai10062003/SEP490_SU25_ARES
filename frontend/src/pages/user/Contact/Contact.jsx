@@ -16,6 +16,7 @@ const Contact = () => {
 
   const [submitted, setSubmitted] = useState(false);
 
+  const [loading, setLoading] = useState(false);
   // ✅ Auto fill nếu user login
   useEffect(() => {
     if (user) {
@@ -43,6 +44,7 @@ const Contact = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const token = localStorage.getItem("token");
 
@@ -65,6 +67,8 @@ const Contact = () => {
     } catch (error) {
       console.error("❌ Error when sending contact:", error);
       alert("❌ Gửi thất bại! Vui lòng thử lại.");
+    }finally {
+      setLoading(false);
     }
   };
 
@@ -142,9 +146,20 @@ const Contact = () => {
               ></textarea>
             </div>
 
-            <button type="submit" className="btn btn-warning px-4 fw-bold">
-              Gửi yêu cầu
-            </button>
+            <button
+        type="submit"
+        className="btn btn-warning px-4 fw-bold d-flex justify-content-center align-items-center"
+        disabled={loading}
+      >
+        {loading && (
+          <span
+            className="spinner-border spinner-border-sm me-2"
+            role="status"
+            aria-hidden="true"
+          ></span>
+        )}
+        {loading ? "Đang gửi..." : "Gửi yêu cầu"}
+      </button>
           </form>
         </div>
       </section>

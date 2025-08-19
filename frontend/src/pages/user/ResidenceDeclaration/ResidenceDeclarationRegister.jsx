@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import Header from '../../../../components/header';
@@ -13,6 +13,7 @@ const ResidenceDeclarationRegister = () => {
   const [apartments, setApartments] = useState([]);
   const [previewDoc, setPreviewDoc] = useState(null);
 
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     apartmentId: '',
     fullName: '',
@@ -57,15 +58,29 @@ const ResidenceDeclarationRegister = () => {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     const file = files ? files[0] : null;
-
-    setForm((prev) => ({ ...prev, [name]: file || value }));
-
-    if (file && name === 'documentImage') {
-      const url = URL.createObjectURL(file);
-      setPreviewDoc(url);
+  
+    // Nếu là file, xử lý upload & preview
+    if (file) {
+      setForm((prev) => ({ ...prev, [name]: file }));
+  
+      if (name === "documentImage") {
+        const url = URL.createObjectURL(file);
+        setPreviewDoc(url);
+      }
+      return; // kết thúc hàm với file
+    }
+  
+    // Nếu là idNumber, chỉ cho nhập số và tối đa 12 chữ số
+    if (name === "idNumber") {
+      let numValue = value.replace(/\D/g, ""); // loại bỏ ký tự không phải số
+      if (numValue.length > 12) numValue = numValue.slice(0, 12); // giới hạn 12 số
+      setForm((prev) => ({ ...prev, [name]: numValue }));
+    } else {
+      // các input khác bình thường
+      setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
-
+  
   const validate = () => {
     if (!form.apartmentId) return toast.error('Chọn căn hộ');
     if (!form.fullName.trim()) return toast.error('Nhập họ tên');
@@ -84,7 +99,7 @@ const ResidenceDeclarationRegister = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-
+    setLoading(true);
     try {
       const token = localStorage.getItem('token');
       const body = new FormData();
@@ -103,13 +118,15 @@ const ResidenceDeclarationRegister = () => {
       setTimeout(() => navigate('/residence-declaration/list'), 2500);
     } catch (err) {
       toast.error(`❌ ${err.message}`);
+    }finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="bg-light min-vh-100">
       <Header user={user} name={user?.name} logout={logout} />
-      <ToastContainer />
+
 
       <div className="container py-5">
         <div className="bg-white rounded-4 shadow p-4 mx-auto" style={{ maxWidth: 800 }}>
@@ -217,13 +234,16 @@ const ResidenceDeclarationRegister = () => {
               <div className="col-md-6">
                 <label className="form-label">Số CCCD</label>
                 <input
-                  type="text"
-                  name="idNumber"
-                  value={form.idNumber}
-                  onChange={handleChange}
-                  className="form-control"
-                  placeholder="Nhập 12 số (nếu có)"
-                />
+  type="text"
+  name="idNumber"
+  value={form.idNumber}
+  onChange={handleChange}
+  className="form-control"
+  placeholder="Nhập 12 số"
+  pattern="\d{12}"   // chỉ đúng 12 chữ số
+  title="CCCD phải gồm đúng 12 số"
+/>
+
               </div>
               <div className="row g-3">
   {/* Ngày bắt đầu */}
@@ -275,11 +295,24 @@ const ResidenceDeclarationRegister = () => {
               </div>
 
               {/* Nút submit */}
-              <div className="col-12">
-                <button type="submit" className="btn btn-primary btn-lg w-100 mt-3">
-                  Đăng ký
-                </button>
-              </div>
+              <div className="col-12 d-flex justify-content-center">
+  <button
+    type="submit"
+    className="btn btn-primary btn-lg px-5 fw-bold d-flex align-items-center justify-content-center"
+    onClick={handleSubmit}
+    disabled={loading} // disable khi loading
+  >
+    {loading && (
+      <span
+        className="spinner-border spinner-border-sm me-2"
+        role="status"
+        aria-hidden="true"
+      ></span>
+    )}
+    {loading ? "Đang đăng ký..." : "Đăng Ký"}
+  </button>
+</div>
+
             </div>
           </form>
         </div>

@@ -7,6 +7,8 @@ import {
     getUnverifiedDeclarations,
     notifyUser,
     rejectDeclarationByStaff,
+    removeDeclarationImage,
+    updateDeclaration,
     verifyDeclarationByStaff
 } from '../controllers/residenceDeclarationController.js';
 
@@ -24,7 +26,11 @@ const router = express.Router();
 router.post('/create', verifyUser, uploadResidenceDocument, createDeclaration);
 // Lấy danh sách hồ sơ của chính user
 router.get('/my-declarations', verifyUser, getMyDeclarations);
-
+// update tạm trú tạm vắng 
+router.put('/:id', verifyUser, uploadResidenceDocument, updateDeclaration);
+//hàm remove ảnh
+// 🔹 Xóa ảnh ngay lập tức
+router.delete("/:id/remove-image", uploadResidenceDocument,removeDeclarationImage);
 /**
  * 📌 Lấy danh sách theo trạng thái (pending, verified, rejected)
  * - Staff mới có quyền xem tất cả

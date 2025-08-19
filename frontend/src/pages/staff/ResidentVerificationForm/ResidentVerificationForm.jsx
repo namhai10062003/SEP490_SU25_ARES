@@ -125,6 +125,7 @@ export default function ResidentVerificationForm() {
   // };
   const handleSearch = (e) => {
     e.preventDefault();
+    
     const keyword = query.trim().toLowerCase();
     if (!keyword) {
       setFilteredUsers(allUsers);
@@ -167,7 +168,7 @@ export default function ResidentVerificationForm() {
   // hàm sumit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+ 
     // ===== Validate từng trường =====
     if (!user) {
       toast.error("❌ Vui lòng chọn cư dân cần xác thực.");
@@ -214,7 +215,7 @@ if (!formData.documentImage || formData.documentImage.length === 0) {
   toast.error("❌ Vui lòng tải lên ít nhất 1 ảnh giấy tờ.");
   return;
 }
-  
+setLoading(true);
     // ===== Tạo FormData để gửi =====
     try {
       const data = new FormData();
@@ -260,6 +261,8 @@ if (!formData.documentImage || formData.documentImage.length === 0) {
     } catch (err) {
       console.error("Gửi thất bại:", err?.response || err);
       toast.error("❌ Gửi thất bại! Vui lòng kiểm tra lại.");
+    }finally {
+      setLoading(false);
     }
   };
   
@@ -432,21 +435,25 @@ if (!formData.documentImage || formData.documentImage.length === 0) {
 
               {/* Căn hộ */}
               <div className="col-md-6">
-                <label className="form-label">Căn hộ</label>
-                <Select
-                  options={apartmentOptions}
-                  value={apartmentOptions.find(opt => opt.value === formData.apartmentCode)}
-                  onChange={(selected) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      apartmentCode: selected ? selected.value : ""
-                    }))
-                  }
-                  placeholder="Nhập hoặc chọn căn hộ"
-                  styles={customStyles}
-                  isClearable
-                />
-              </div>
+  <label className="form-label">Căn hộ</label>
+  <Select
+    options={apartmentOptions}
+    value={apartmentOptions.find(opt => opt.value === formData.apartmentCode)}
+    onChange={(selected) =>
+      setFormData((prev) => ({
+        ...prev,
+        apartmentCode: selected ? selected.value : ""
+      }))
+    }
+    placeholder="Nhập hoặc chọn căn hộ"
+    isClearable
+    menuPortalTarget={document.body}
+    menuPosition="fixed"
+    menuPlacement="bottom"
+    styles={apartmentSelectStyles}
+  />
+</div>
+
 
               {/* Ngày hợp đồng */}
               {formData.documentType === "Hợp đồng cho thuê" && (
@@ -515,9 +522,12 @@ if (!formData.documentImage || formData.documentImage.length === 0) {
 
             {/* Footer */}
             <div className="d-flex justify-content-end mt-4">
-              <button type="submit" className="btn btn-success px-5">
-                Gửi xác thực
-              </button>
+            <button type="submit" className="btn btn-success px-5 d-flex align-items-center justify-content-center" disabled={loading}>
+  {loading && (
+    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+  )}
+  Gửi xác thực
+</button>
             </div>
           </form>
         </div>
@@ -529,5 +539,40 @@ if (!formData.documentImage || formData.documentImage.length === 0) {
         </div>
       </main>
     </div>
+    
   );
 }
+const apartmentSelectStyles = {
+  control: (provided, state) => ({
+    ...provided,
+    borderRadius: '0.5rem',
+    borderColor: state.isFocused ? '#0d6efd' : '#ced4da',
+    boxShadow: state.isFocused ? '0 0 0 0.2rem rgba(13, 110, 253, 0.25)' : 'none',
+    minHeight: '45px',
+    fontSize: '1rem',
+  }),
+  menu: (provided) => ({
+    ...provided,
+    backgroundColor: '#fff', // nền trắng đồng nhất
+    color: '#212529',         // chữ rõ
+    borderRadius: '0.5rem',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)', // shadow mềm mại
+    zIndex: 99999,
+    maxHeight: 250,
+  }),
+  menuPortal: (base) => ({ ...base, zIndex: 99999 }),
+  option: (provided, state) => ({
+    ...provided,
+    backgroundColor: state.isFocused ? '#e7f1ff' : '#fff',
+    color: '#212529',
+    cursor: 'pointer',
+  }),
+  placeholder: (provided) => ({
+    ...provided,
+    color: '#6c757d', // placeholder màu xám
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    color: '#212529',
+  }),
+};

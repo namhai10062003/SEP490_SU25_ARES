@@ -300,7 +300,139 @@ export const notifyUser = async (req, res) => {
       res.status(500).json({ message: "Lỗi server" });
     }
   };
-  
-  
+// hàm update tạm trú-tạm vắng 
+export const updateDeclaration = async (req, res) => {
+  try {
+    const { id } = req.params; 
+    const {
+      fullName,
+      gender,
+      dateOfBirth,
+      relationWithOwner,
+      nationality,
+      idNumber,
+      startDate,
+      endDate,
+      rejectReason
+    } = req.body;
 
-  
+    const declaration = await ResidenceDeclaration.findById(id);
+    if (!declaration) {
+      return res.status(404).json({ message: 'Không tìm thấy hồ sơ.' });
+    }
+
+    if (declaration.verifiedByStaff === "true") {
+      return res.status(400).json({ message: 'Hồ sơ đã được duyệt, không thể chỉnh sửa.' });
+    }
+
+    const userId = req.user?._id;
+    const apartment = await Apartment.findById(declaration.apartmentId);
+    const isOwnerMatch = apartment.isOwner && apartment.isOwner.equals(userId);
+    const isRenterMatch = apartment.isRenter && apartment.isRenter.equals(userId);
+    if (!isOwnerMatch && !isRenterMatch) {
+      return res.status(403).json({ message: 'Bạn không có quyền chỉnh sửa hồ sơ này.' });
+    }
+
+    let hasChange = false; // 🔹 flag kiểm tra thay đổi
+
+    // ✅ Upload ảnh mới và xóa ảnh cũ nếu có
+    if (req.file) {
+      hasChange = true;
+      if (declaration.documentImage) {
+        try {
+          const segments = declaration.documentImage.split('/');
+          const filename = segments[segments.length - 1].split('.')[0]; 
+          const folder = 'residence_declaration';
+          await cloudinary.uploader.destroy(`${folder}/${filename}`);
+        } catch (err) {
+          console.warn('Không xóa được ảnh cũ:', err.message);
+        }
+      }
+
+      const uploaded = await cloudinary.uploader.upload(req.file.path, { folder: 'residence_declaration' });
+      declaration.documentImage = uploaded.secure_url;
+    }
+
+    // ✅ Mã hóa CCCD nếu có thay đổi
+    if (idNumber && idNumber.trim() !== "" && idNumber.trim() !== safeDecrypt(declaration.idNumber)) {
+      if (!/^\d{12}$/.test(idNumber.trim())) {
+        return res.status(400).json({ message: 'Số CCCD không hợp lệ. Vui lòng nhập đúng 12 chữ số.' });
+      }
+      declaration.idNumber = encrypt(idNumber.trim());
+      hasChange = true;
+    }
+
+    // ✅ Cập nhật các trường nếu có thay đổi
+    if (fullName && fullName !== declaration.fullName) {
+      declaration.fullName = fullName;
+      hasChange = true;
+    }
+    if (gender && gender !== declaration.gender) {
+      declaration.gender = gender;
+      hasChange = true;
+    }
+    if (dateOfBirth && new Date(dateOfBirth).toISOString() !== declaration.dateOfBirth?.toISOString()) {
+      declaration.dateOfBirth = dateOfBirth;
+      hasChange = true;
+    }
+    if (relationWithOwner && relationWithOwner !== declaration.relationWithOwner) {
+      declaration.relationWithOwner = relationWithOwner;
+      hasChange = true;
+    }
+    if (nationality && nationality !== declaration.nationality) {
+      declaration.nationality = nationality;
+      hasChange = true;
+    }
+    if (startDate && new Date(startDate).toISOString() !== declaration.startDate?.toISOString()) {
+      declaration.startDate = startDate;
+      hasChange = true;
+    }
+    if (endDate && new Date(endDate).toISOString() !== declaration.endDate?.toISOString()) {
+      declaration.endDate = endDate;
+      hasChange = true;
+    }
+
+    // ✅ Nếu có thay đổi và hồ sơ đang từ chối, reset trạng thái
+    if (hasChange && declaration.verifiedByStaff === "false") {
+      declaration.verifiedByStaff = "pending";
+      declaration.rejectReason = rejectReason || null;
+      declaration.rejectedAt = null;
+    }
+
+    if (!hasChange) {
+      return res.status(400).json({ message: 'Bạn chưa thay đổi gì.' });
+    }
+
+    await declaration.save();
+
+    res.status(200).json({
+      message: 'Cập nhật hồ sơ thành công. Vui lòng đợi xác minh.',
+      data: { ...declaration.toObject(), idNumber: safeDecrypt(declaration.idNumber) }
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi server', error: err.message });
+  }
+};
+// hàm remove ảnh 
+export const removeDeclarationImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const declaration = await ResidenceDeclaration.findById(id);
+    if (!declaration) return res.status(404).json({ message: "Không tìm thấy hồ sơ." });
+    if (!declaration.documentImage) return res.status(400).json({ message: "Hồ sơ không có ảnh để xóa." });
+
+    // Trích public_id từ URL
+    const segments = declaration.documentImage.split('/');
+    const filename = segments[segments.length - 1].split('.')[0]; 
+    const folder = 'residence_declaration';
+    await cloudinary.uploader.destroy(`${folder}/${filename}`);
+
+    // Xóa ảnh nhưng bỏ qua validation
+    declaration.documentImage = undefined;
+    await declaration.save({ validateBeforeSave: false });
+
+    res.status(200).json({ message: "Xóa ảnh thành công." });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
