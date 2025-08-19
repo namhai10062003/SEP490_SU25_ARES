@@ -32,6 +32,7 @@ import {
   getAllPosts,
   getPostById,
 } from "../../../service/postService.js";
+import UserInfo from "../../../../components/user/userInfor.jsx";
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -61,7 +62,27 @@ const PostDetail = () => {
   const [showChat, setShowChat] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [userPostsCount, setUserPostsCount] = useState(0);
   const API_URL = import.meta.env.VITE_API_URL;
+  useEffect(() => {
+    if (post?.contactInfo?._id) {
+      console.log("📌 contactInfo có dữ liệu:", post.contactInfo);
+  
+      fetch(`${import.meta.env.VITE_API_URL}/api/posts/count/${post.contactInfo.userId || post.contactInfo._id}`)
+        .then((res) => res.json())
+        .then((data) => setUserPostsCount(data.count))
+        .catch((err) => console.error("Lỗi lấy số tin đăng:", err));
+    } else {
+      console.log("⚠️ contactInfo chưa có dữ liệu:", post?.contactInfo);
+    }
+  }, [post]); // ✅ chạy lại khi post thay đổi
+    // 👈 đổi lại: theo dõi toàn bộ post thay vì chỉ _id
+  
+  
+  
+  
+  
+
   useEffect(() => {
     const fetchContract = async () => {
       try {
@@ -384,54 +405,97 @@ const PostDetail = () => {
               </button>
             </div>
           </div>
-          {/* Mô tả */}
-          <div>
-            <h5 className="mb-3 d-flex align-items-center text-primary">
-              <FaInfoCircle className="me-2" /> Mô tả
-            </h5>
 
-            <div
-              className="bg-light rounded p-4 border"
-              style={{
-                fontSize: "1rem",
-                lineHeight: "1.8",
-                color: "#333",
-                borderColor: "#ddd",
-              }}
-            >
-              <ul style={{ margin: 0, paddingLeft: "0", listStyle: "none" }}>
-                {post.description
-                  ?.split(/\n+/) // tách dòng
-                  .map((line, index) => (
-                    <li
-                      key={index}
-                      style={{
-                        marginBottom: "12px",
-                        display: "flex",
-                        alignItems: "flex-start",
-                        gap: "8px",
-                      }}
-                    >
-                      <FaCheckCircle
+          <div className="col-md-8">
+            {/* Mô tả */}
+            <div>
+              <h5 className="mb-3 d-flex align-items-center text-primary">
+                <FaInfoCircle className="me-2" /> Mô tả
+              </h5>
+
+              <div
+                className="bg-light rounded p-4 border"
+                style={{
+                  fontSize: "1rem",
+                  lineHeight: "1.8",
+                  color: "#333",
+                  borderColor: "#ddd",
+                }}
+              >
+                <ul style={{ margin: 0, paddingLeft: "0", listStyle: "none" }}>
+                  {post.description
+                    ?.split(/\n+/)
+                    .map((line, index) => (
+                      <li
+                        key={index}
                         style={{
-                          color: "#0d6efd",
-                          marginTop: "4px",
-                          flexShrink: 0,
+                          marginBottom: "12px",
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "8px",
                         }}
-                      />
-                      <span
-                        dangerouslySetInnerHTML={{
-                          __html: line
-                            .replace(
-                              /^([^:]+):/,
-                              "<strong>$1:</strong>" // tô đậm phần tiêu đề trước dấu ":"
-                            )
-                            .trim(),
-                        }}
-                      />
-                    </li>
-                  ))}
-              </ul>
+                      >
+                        <FaCheckCircle
+                          style={{
+                            color: "#0d6efd",
+                            marginTop: "4px",
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span
+                          dangerouslySetInnerHTML={{
+                            __html: line
+                              .replace(
+                                /^([^:]+):/,
+                                "<strong>$1:</strong>"
+                              )
+                              .trim(),
+                          }}
+                        />
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="col-md-4">
+            {/* Bảng thông tin User */}
+            <div className="bg-white shadow rounded p-3 border">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h6 className="fw-bold text-primary m-0">Thông tin người đăng</h6>
+                <img
+                  src={post.contactInfo?.profileImage || "/default-avatar.png"}
+                  alt="avatar"
+                  className="rounded-circle border shadow-sm"
+                  style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                />
+              </div>
+
+              <table className="table table-sm">
+                <tbody>
+                  <tr>
+                    <th scope="row">Tên</th>
+                    <td>{post.contactInfo?.name || "Không có"}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Số điện thoại</th>
+                    <td>{post.contactInfo?.phone || "Không có"}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Địa chỉ</th>
+                    <td>{post.contactInfo?.address || "Không có"}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Số tin đăng</th>
+                    <td>
+                      <span className="badge bg-info text-dark">
+                        {userPostsCount}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
