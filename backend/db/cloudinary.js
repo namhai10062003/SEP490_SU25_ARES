@@ -59,7 +59,7 @@ const upload = multer({
             cb(new Error("Invalid file format. Only JPG, PNG, and GIF are allowed!"), false);
         }
     },
-    limits: { fileSize: 2 * 1024 * 1024 }, // Giới hạn file 2MB
+    limits: { fileSize: 5 * 1024 * 1024 }, // Giới hạn file 2MB
 });
 
 const upload2 = multer({
@@ -72,7 +72,7 @@ const upload2 = multer({
             cb(new Error("Invalid file format. Only JPG, PNG, and GIF are allowed!"), false);
         }
     },
-    limits: { fileSize: 2 * 1024 * 1024 }, // Giới hạn file 2MB
+    limits: { fileSize: 5 * 1024 * 1024 }, // Giới hạn file 2MB
 });
 
 

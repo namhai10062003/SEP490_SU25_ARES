@@ -39,6 +39,8 @@ const RegistrationForm = () => {
   const [isBlocked, setIsBlocked] = useState(false);
   const [useCustomPlaza, setUseCustomPlaza] = useState(false);
   const [useCustomApartment, setUseCustomApartment] = useState(false);
+  const [apartmentInfo, setApartmentInfo] = useState({});
+
   const [charCount, setCharCount] = useState({
     tieuDe: 0,
     moTaChiTiet: 0,
@@ -181,11 +183,15 @@ const RegistrationForm = () => {
 
   const [formErrors, setFormErrors] = useState({});
 
-  // hàm xử lí diện tích và mấy thông tin khác
-  useEffect(() => {
-    if (formData.soCanHo && apartmentOptions.length > 0) {
+ // useEffect xử lý diện tích và thông tin khác
+// useEffect xử lý diện tích và thông tin khác
+useEffect(() => {
+  if (formData.loaiHinh === "nha_can_ho") {
+    if (formData.apartmentCode && apartmentOptions.length > 0) {
       const selectedApartment = apartmentOptions.find(
-        (apartment) => apartment.apartmentCode === formData.soCanHo
+        (apartment) =>
+          apartment.apartmentCode.trim().toLowerCase() ===
+          formData.apartmentCode.trim().toLowerCase()
       );
 
       if (selectedApartment) {
@@ -195,11 +201,23 @@ const RegistrationForm = () => {
           giayto: selectedApartment.legalDocuments || "",
           huongdat: selectedApartment.direction || "",
           tinhtrang: selectedApartment.furniture || "",
-          diaChiCuThe: "FPT City, Phường Ngũ Hành Sơn, Thành Phố Đà Nẵng",
+          diaChiCuThe:
+            "FPT City, Phường Ngũ Hành Sơn, Thành Phố Đà Nẵng",
         }));
       }
     }
-  }, [formData.soCanHo, apartmentOptions]);
+  } else {
+    // 🔑 Nếu không phải căn hộ => clear dữ liệu autofill
+    setFormData((prev) => ({
+      ...prev,
+      dienTich: "",
+      giayto: "",
+      huongdat: "",
+      tinhtrang: "",
+      diaChiCuThe: "",
+    }));
+  }
+}, [formData.loaiHinh, formData.apartmentCode, apartmentOptions]);
 
   // hàm xử lí lấy sdt của user
   useEffect(() => {
@@ -214,23 +232,37 @@ const RegistrationForm = () => {
   useEffect(() => {
     console.log("👤 USER:", user);
   }, [user]);
-  const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    setFormData((prev) => ({
-      ...prev,
-      images: [...prev.images, ...files],
-    }));
-  };
+ // Hàm xử lý file chung
+const handleFiles = (files) => {
+  const validFiles = Array.from(files).filter((file) => {
+    if (!file.type.startsWith("image/")) {
+      alert(`❌ ${file.name} không phải là file ảnh!`);
+      return false;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert(`❌ ${file.name} vượt quá 5MB, vui lòng chọn ảnh khác!`);
+      return false;
+    }
+    return true;
+  });
 
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const files = Array.from(e.dataTransfer.files);
-    const imageFiles = files.filter((file) => file.type.startsWith("image/"));
-    setFormData((prev) => ({
-      ...prev,
-      images: [...prev.images, ...imageFiles],
-    }));
-  };
+  setFormData((prev) => ({
+    ...prev,
+    images: [...prev.images, ...validFiles],
+  }));
+};
+
+// Chọn ảnh bằng input
+const handleImageUpload = (e) => {
+  handleFiles(e.target.files);
+};
+
+// Kéo-thả ảnh
+const handleDrop = (e) => {
+  e.preventDefault();
+  handleFiles(e.dataTransfer.files);
+};
+
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -255,35 +287,83 @@ const RegistrationForm = () => {
   const apartmentCode = selectedApartment?.apartmentCode || "";
   const handleSubmit = async () => {
     setIsSubmitting(true);
+    if (!formData.loaiHinh)
+    return showError("Vui lòng chọn loại hình dịch vụ");
+// --- Validate chung ---
+if (formData.loaiHinh === "nha_can_ho") {
+  if (!formData.toaPlaza)
+    return showError("Vui lòng chọn tòa Plaza");
 
-    // Validate chung
-    if (!formData.loaiHinh) return showError("Vui lòng chọn loại hình dịch vụ");
-    if (!formData.diaChiCuThe) return showError("Vui lòng nhập địa chỉ");
-    if (!formData.tieuDe) return showError("Vui lòng nhập tiêu đề");
-    if (!formData.moTaChiTiet) return showError("Vui lòng nhập mô tả");
-    if (!formData.thongTinNguoiDangBan) return showError("Vui lòng nhập số điện thoại");
+  if (!formData.apartmentCode)
+    return showError("Vui lòng chọn căn hộ");
+    if (!formData.dienTich || Number(formData.dienTich) <= 0)
+    return showError("Vui lòng nhập diện tích hợp lệ");
+}
 
-    // Validate riêng cho từng loại trước
-    if (loaiBaiDang === "ban" || loaiBaiDang === "cho_thue") {
-      if (!formData.toaPlaza) return showError("Vui lòng nhập tòa Plaza");
-      if (!formData.soCanHo) return showError("Vui lòng nhập số căn hộ");
-      if (formData.dienTich === "" || formData.dienTich <= 0) return showError("Diện tích không hợp lệ");
-      if (formData.gia === "" || formData.gia <= 0) return showError("Vui lòng nhập giá hợp lệ");
-      if (!formData.giayto) return showError("Vui lòng nhập giấy tờ pháp lý");
-      if (!formData.tinhtrang) return showError("Vui lòng nhập tình trạng");
-      if (!formData.huongdat) return showError("Vui lòng nhập hướng đất");
-    }
+if (formData.loaiHinh === "nha_dat") {
+  if (!formData.diaChiCuThe)
+  return showError("Vui lòng nhập địa chỉ");
 
-    if (loaiBaiDang === "dich_vu") {
-      if (formData.gia === "" || formData.gia <= 0) return showError("Giá không hợp lệ");
-    }
+  if (!formData.tieuDe)
+  return showError("Vui lòng nhập tiêu đề");
 
-    // Kiểm tra ảnh sau khi đã check giá
-    if (formData.images.length === 0) return showError("Vui lòng upload ít nhất 1 ảnh");
+if (!formData.moTaChiTiet)
+  return showError("Vui lòng nhập mô tả chi tiết");
+  if (!formData.dienTich || Number(formData.dienTich) <= 0)
+  return showError("Vui lòng nhập diện tích hợp lệ");
+}
 
-    // Kiểm tra gói đăng tin
-    if (!formData.postPackage) return showError("Vui lòng chọn gói đăng tin");
-    // Nếu qua hết validate thì submit
+if (!formData.diaChiCuThe)
+return showError("Vui lòng nhập địa chỉ");
+if (!formData.tieuDe)
+  return showError("Vui lòng nhập tiêu đề");
+
+if (!formData.moTaChiTiet)
+  return showError("Vui lòng nhập mô tả chi tiết");
+
+if (!formData.thongTinNguoiDangBan)
+  return showError("Vui lòng nhập số điện thoại");
+   // validate số liệu
+
+
+ if (!formData.gia || Number(formData.gia) <= 0)
+   return showError("Vui lòng nhập giá hợp lệ");
+
+
+
+   
+  console.log("loaiDichVu:", formData.loaiDichVu);
+// --- Validate riêng theo loại ---
+if (["ban", "cho_thue"].includes(loaiBaiDang)) {
+  
+  // validate thuộc tính bắt buộc cho bán/cho thuê
+  if (!formData.giayto)
+  return showError("Vui lòng nhập giấy tờ pháp lý");
+
+if (!formData.tinhtrang)
+  return showError("Vui lòng nhập tình trạng");
+
+if (!formData.huongdat)
+  return showError("Vui lòng nhập hướng đất/căn hộ");
+    
+    
+}
+
+if (loaiBaiDang === "dich_vu") {
+  // dịch vụ chỉ cần check giá
+  if (!formData.gia || Number(formData.gia) <= 0)
+    return showError("Vui lòng nhập giá");
+
+}
+
+// --- Validate cuối cùng ---
+if (formData.images.length === 0)
+  return showError("Vui lòng upload ít nhất 1 ảnh");
+
+if (!formData.postPackage)
+  return showError("Vui lòng chọn gói đăng tin");
+
+    // Nếu qua hết validate thì submit được
     try {
       const submitData = new FormData();
       submitData.append("type", loaiBaiDang);
@@ -294,22 +374,24 @@ const RegistrationForm = () => {
       submitData.append("price", formData.gia);
       submitData.append("postPackage", formData.postPackage);
       submitData.append("phone", formData.thongTinNguoiDangBan);
-
+  
       if (loaiBaiDang === "ban" || loaiBaiDang === "cho_thue") {
         submitData.append("area", formData.dienTich);
         submitData.append("legalDocument", formData.giayto);
         submitData.append("interiorStatus", formData.tinhtrang);
         submitData.append("amenities", formData.huongdat);
-        submitData.append("apartmentCode", formData.soCanHo);
+        submitData.append("apartmentCode", formData.apartmentCode); // ✅ fix chỗ này
         submitData.append("building", formData.toaPlaza);
       }
-
+  
+      
       formData.images.forEach((image) => {
         submitData.append("images", image);
       });
+     
 
       const response = await createPost(submitData);
-
+  
       if (response.data.success) {
         toast.success("Đăng tin thành công!");
         setFormData({
@@ -321,7 +403,7 @@ const RegistrationForm = () => {
           moTaChiTiet: "",
           dienTich: "",
           toaPlaza: "",
-          soCanHo: "",
+          apartmentCode: "", // ✅ đổi soCanHo -> apartmentCode
           gia: "",
           trongTinViec: "",
           thongTinNguoiDangBan: "",
@@ -341,6 +423,7 @@ const RegistrationForm = () => {
       setIsSubmitting(false);
     }
   };
+  
 
   // Hàm tiện ích để hiện toast và dừng submit
   function showError(message) {
@@ -651,102 +734,105 @@ const filteredApartments = apartmentOptions.filter(
                     </small>
                   </div>
                   {["ban", "cho_thue"].includes(loaiBaiDang) && (
-                    <div className="col-12 col-md-6">
-                      <label className="form-label">
-                        Diện tích <span className="text-danger">*</span>
-                      </label>
-                      <div className="input-group">
-                        <span className="input-group-text">🏠</span>
-                        <input
-                          type="number"
-                          name="dienTich"
-                          value={formData.dienTich}
-                          onChange={handleInputChange}
-                          className="form-control"
-                          placeholder="Nhập diện tích"
-                          required
-                        />
-                        <span className="input-group-text">m²</span> {/* 👈 thêm đơn vị ở ngoài */}
-                      </div>
-                    </div>
-                  )}
-                  <div className="col-12 col-md-6">
-                    <label className="form-label">
-                      Giá <span className="text-danger">*</span>
-                    </label>
-                    <div className="input-group">
-                      <span className="input-group-text">💰</span>
-                      <input
-                        type="text"
-                        name="gia"
-                        value={
-                          formData.gia
-                            ? new Intl.NumberFormat("vi-VN").format(formData.gia)
-                            : ""
-                        }
-                        onChange={(e) => {
-                          let raw = e.target.value.replace(/\D/g, ""); // chỉ lấy số
-                          if (raw.length > 12) raw = raw.slice(0, 12); // giới hạn 12 chữ số
-                          setFormData((prev) => ({
-                            ...prev,
-                            gia: raw ? Number(raw) : "",
-                          }));
-                        }}
-                        placeholder="Nhập giá"
-                        className="form-control"
-                        required
-                      />
-                      <span className="input-group-text">VND</span>
-                    </div>
-                  </div>
-                  {["ban", "cho_thue"].includes(loaiBaiDang) && (
-                    <>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Giấy tờ pháp lý <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          name="giayto"
-                          value={formData.giayto}
-                          onChange={handleInputChange}
-                          placeholder="Giấy tờ đất, căn hộ..."
-                          className="form-control"
-                          required
-                        />
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Tình trạng nổi bật{" "}
-                          <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          name="tinhtrang"
-                          value={formData.tinhtrang}
-                          onChange={handleInputChange}
-                          placeholder="Nội thất..."
-                          className="form-control"
-                          required
-                        />
-                      </div>
-                      <div className="col-12 col-md-6">
-                        <label className="form-label">
-                          Hướng đất, căn hộ{" "}
-                          <span className="text-danger">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          name="huongdat"
-                          value={formData.huongdat}
-                          onChange={handleInputChange}
-                          placeholder="Hướng thuận lợi..."
-                          className="form-control"
-                          required
-                        />
-                      </div>
-                    </>
-                  )}
+  <div className="col-12 col-md-6">
+    <label className="form-label">
+      Diện tích <span className="text-danger">*</span>
+    </label>
+    <div className="input-group">
+      <span className="input-group-text">🏠</span>
+      <input
+        type="number"
+        name="dienTich"
+        value={formData.dienTich || apartmentInfo.dienTich || ""}
+        onChange={handleInputChange}
+        className="form-control"
+        placeholder="Nhập diện tích"
+        
+      />
+      <span className="input-group-text">m²</span>
+    </div>
+  </div>
+)}
+
+<div className="col-12 col-md-6">
+  <label className="form-label">
+    Giá <span className="text-danger">*</span>
+  </label>
+  <div className="input-group">
+    <span className="input-group-text">💰</span>
+    <input
+      type="text"
+      name="gia"
+      value={
+        formData.gia
+          ? new Intl.NumberFormat("vi-VN").format(formData.gia)
+          : ""
+      }
+      onChange={(e) => {
+        let raw = e.target.value.replace(/\D/g, ""); // chỉ lấy số
+        if (raw.length > 12) raw = raw.slice(0, 12); // giới hạn 12 chữ số
+        setFormData((prev) => ({
+          ...prev,
+          gia: raw ? Number(raw) : "",
+        }));
+      }}
+      placeholder="Nhập giá"
+      className="form-control"
+      required
+    />
+    <span className="input-group-text">VND</span>
+  </div>
+</div>
+
+{["ban", "cho_thue"].includes(loaiBaiDang) && (
+  <>
+    <div className="col-12 col-md-6">
+      <label className="form-label">
+        Giấy tờ pháp lý <span className="text-danger">*</span>
+      </label>
+      <input
+        type="text"
+        name="giayto"
+        value={formData.giayto || apartmentInfo.giayto || ""}
+        onChange={handleInputChange}
+        placeholder="Giấy tờ đất, căn hộ..."
+        className="form-control"
+        required
+      />
+    </div>
+
+    <div className="col-12 col-md-6">
+      <label className="form-label">
+        Tình trạng nổi bật <span className="text-danger">*</span>
+      </label>
+      <input
+        type="text"
+        name="tinhtrang"
+        value={formData.tinhtrang || apartmentInfo.tinhtrang || ""}
+        onChange={handleInputChange}
+        placeholder="Nội thất..."
+        className="form-control"
+        required
+      />
+    </div>
+
+    <div className="col-12 col-md-6">
+      <label className="form-label">
+        Hướng đất, căn hộ <span className="text-danger">*</span>
+      </label>
+      <input
+        type="text"
+        name="huongdat"
+        value={formData.huongdat || apartmentInfo.huongdat || ""}
+        onChange={handleInputChange}
+        placeholder="Hướng thuận lợi..."
+        className="form-control"
+        required
+      />
+    </div>
+  </>
+)}
+
                   <div className="col-12">
                     <label className="form-label">
                       Thông tin người đăng bán{" "}
@@ -774,61 +860,66 @@ const filteredApartments = apartmentOptions.filter(
                   </div>
 
                   <div className="col-12">
-                    <label className="form-label">
-                      Upload ảnh <span className="text-danger">*</span>
-                    </label>
-                    <div
-                      className="border border-2 border-primary rounded-3 p-4 text-center bg-light mb-3"
-                      style={{ cursor: "pointer" }}
-                      onDrop={handleDrop}
-                      onDragOver={handleDragOver}
-                      onClick={() =>
-                        document.getElementById("imageInput").click()
-                      }
-                    >
-                      <div className="fs-2 mb-2 text-primary">📤</div>
-                      <div className="fw-semibold">Upload Images</div>
-                      <div className="text-secondary small">
-                        Click để chọn nhiều ảnh
-                      </div>
-                      <input
-                        type="file"
-                        id="imageInput"
-                        multiple
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        style={{ display: "none" }}
-                      />
-                    </div>
-                    {formData.images.length > 0 && (
-                      <div className="row g-2">
-                        {formData.images.map((image, index) => (
-                          <div className="col-6 col-md-3" key={index}>
-                            <div className="position-relative">
-                              <img
-                                src={URL.createObjectURL(image)}
-                                alt={`Preview ${index + 1}`}
-                                className="img-thumbnail"
-                                style={{ height: 100, objectFit: "cover" }}
-                              />
-                              <button
-                                type="button"
-                                className="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle"
-                                onClick={() => removeImage(index)}
-                                style={{
-                                  width: 28,
-                                  height: 28,
-                                  lineHeight: "14px",
-                                }}
-                              >
-                                ×
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+  <label className="form-label">
+    Upload ảnh <span className="text-danger">*</span>
+  </label>
+  <div
+    className="border border-2 border-primary rounded-3 p-4 text-center bg-light mb-3"
+    style={{ cursor: "pointer" }}
+    onDrop={handleDrop}
+    onDragOver={handleDragOver}
+    onClick={() => document.getElementById("imageInput").click()}
+  >
+    <div className="fs-2 mb-2 text-primary">📤</div>
+    <div className="fw-semibold">Upload Images</div>
+    <div className="text-secondary small">
+      Click để chọn nhiều ảnh
+    </div>
+    <input
+      type="file"
+      id="imageInput"
+      multiple
+      accept="image/*"
+      onChange={handleImageUpload}
+      style={{ display: "none" }}
+    />
+  </div>
+
+  {/* ⚠️ Thêm lưu ý dung lượng ảnh */}
+  <div className="text-danger small mb-3">
+    ⚠️ Lưu ý: Mỗi ảnh không được vượt quá <strong>5MB</strong>.
+  </div>
+
+  {formData.images.length > 0 && (
+    <div className="row g-2">
+      {formData.images.map((image, index) => (
+        <div className="col-6 col-md-3" key={index}>
+          <div className="position-relative">
+            <img
+              src={URL.createObjectURL(image)}
+              alt={`Preview ${index + 1}`}
+              className="img-thumbnail"
+              style={{ height: 100, objectFit: "cover" }}
+            />
+            <button
+              type="button"
+              className="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle"
+              onClick={() => removeImage(index)}
+              style={{
+                width: 28,
+                height: 28,
+                lineHeight: "14px",
+              }}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
                   <div className="col-12">
                     <label className="form-label">
                       Chọn gói đăng tin <span className="text-danger">*</span>
