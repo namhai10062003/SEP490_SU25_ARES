@@ -1,12 +1,12 @@
+import mongoose from "mongoose";
 import { calcMaintenanceFee } from "../helpers/calculateMaitainceApartmentPrice.js";
+import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
+import { emitNotification } from "../helpers/socketHelper.js";
 import Apartment from '../models/Apartment.js';
-import User from '../models/User.js';
+import Fee from "../models/Fee.js";
 import Notification from '../models/Notification.js';
 import ResidentVerification from "../models/ResidentVerification.js";
-import { emitNotification } from "../helpers/socketHelper.js";
-import { sendEmailNotification, sendSMSNotification } from '../helpers/notificationHelper.js';
-import mongoose from "mongoose";
-import Fee from "../models/Fee.js";
+import User from '../models/User.js';
 // Thêm mới căn hộ
 export const createApartment = async (req, res) => {
   try {
@@ -32,17 +32,16 @@ export const createApartment = async (req, res) => {
 
 
 // Lấy tất cả căn hộ
-
-// GET /api/apartments?page=1&pageSize=10
-// controller
 export const getAllApartments = async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const pageSize = parseInt(req.query.pageSize) || 10;
+  const page = parseInt(req.query.page);
+  const pageSize = parseInt(req.query.pageSize);
   const status = req.query.status;
   const search = req.query.search?.trim() || "";
 
   try {
     let filter = {};
+
+    // filter theo status
     if (status === "active") {
       filter.deletedAt = null;
     } else if (status === "deleted") {
@@ -51,28 +50,39 @@ export const getAllApartments = async (req, res) => {
 
     // search by ownerName
     if (search) {
-      const regex = new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      const regex = new RegExp(
+        search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+        "i"
+      );
       filter.ownerName = { $regex: regex };
     }
 
     const total = await Apartment.countDocuments(filter);
-    const apartments = await Apartment.find(filter)
-      .skip((page - 1) * pageSize)
-      .limit(pageSize)
+
+    let query = Apartment.find(filter)
       .sort({ createdAt: -1 })
       .populate("isOwner", "name phone")
       .populate("isRenter", "name phone");
 
+    // nếu có phân trang thì mới skip + limit
+    if (page && pageSize) {
+      query = query.skip((page - 1) * pageSize).limit(pageSize);
+    }
+
+    const apartments = await query;
+
     res.json({
       data: apartments,
       total,
-      page,
-      totalPages: Math.ceil(total / pageSize),
+      page: page || 1,
+      totalPages: pageSize ? Math.ceil(total / pageSize) : 1,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 
 // Lấy 1 căn hộ theo ID
