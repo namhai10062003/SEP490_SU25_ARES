@@ -65,7 +65,25 @@ const calculateAndSaveFees = async (req, res) => {
     const parkingByApt = {};
     parkingRegs.forEach((p) => {
       const aptId = getAptIdFromParking(p);
-      const regMonth = monthKeyFromDate(p.registerDate);
+      const getParkingMonth = (date) => {
+        const d = new Date(date);
+        if (isNaN(d)) return null;
+      
+        let year = d.getFullYear();
+        let month = d.getMonth() + 1; // 1–12
+      
+        // Nếu đăng ký từ ngày 16 trở đi thì tính sang tháng sau
+        if (d.getDate() >= 16) {
+          month++;
+          if (month > 12) {
+            month = 1;
+            year++;
+          }
+        }
+      
+        return `${year}-${pad(month)}`; // YYYY-MM
+      };
+      const regMonth = getParkingMonth(p.registerDate);
       if (!aptId || !regMonth) return;
 
       if (!parkingByApt[aptId]) parkingByApt[aptId] = {};
