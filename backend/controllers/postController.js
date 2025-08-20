@@ -495,6 +495,37 @@ const normalizeValue = (val, key) => {
   // Chuyển thành string để tránh khác biệt kiểu (vd: 90 vs "90")
   return val.toString();
 };
+function cleanUpdateData(data) {
+  const cleaned = {};
+
+  for (const key in data) {
+    let val = data[key];
+
+    // Bỏ qua giá trị null/undefined/rỗng
+    if (val === undefined || val === null || val === "" || val === "undefined") {
+      continue;
+    }
+
+    // Nếu là số (area, price, ...) thì ép về Number
+    if (["area", "price"].includes(key)) {
+      if (!isNaN(val)) {
+        val = Number(val);
+      } else {
+        continue;
+      }
+    }
+
+    cleaned[key] = val;
+  }
+
+  // Nếu loại là dịch vụ thì xóa luôn diện tích
+  if (cleaned.type === "dich_vu") {
+    delete cleaned.area;
+  }
+
+  return cleaned;
+}
+
 export const updatePost = async (req, res) => {
   try {
     const postId = req.params.id;
@@ -544,11 +575,14 @@ export const updatePost = async (req, res) => {
     }
     const newImages = [...keepImages, ...uploadedImages];
 
-    // Gán ảnh mới vào updateData để gán sau
-    updateData.images = newImages;
+  // Gán ảnh mới vào updateData
+updateData.images = newImages;
 
-    // Gán các dữ liệu cập nhật (bao gồm cả images)
-    Object.assign(existingPost, updateData);
+// ✅ Làm sạch dữ liệu trước khi update
+const cleanedUpdateData = cleanUpdateData(updateData);
+
+// Gán dữ liệu sạch vào document
+Object.assign(existingPost, cleanedUpdateData);
 
     const editedData = {};
     for (const key in updateData) {

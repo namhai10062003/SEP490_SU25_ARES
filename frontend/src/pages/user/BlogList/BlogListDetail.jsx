@@ -32,7 +32,6 @@ import {
   getAllPosts,
   getPostById,
 } from "../../../service/postService.js";
-import UserInfo from "../../../../components/user/userInfor.jsx";
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -407,57 +406,88 @@ const PostDetail = () => {
           </div>
 
           <div className="col-md-8">
-            {/* Mô tả */}
-            <div>
-              <h5 className="mb-3 d-flex align-items-center text-primary">
-                <FaInfoCircle className="me-2" /> Mô tả
-              </h5>
+  {/* Mô tả */}
+  <div>
+    <h5 className="mb-3 d-flex align-items-center text-primary fw-bold">
+      <FaInfoCircle className="me-2" /> Mô tả
+    </h5>
 
-              <div
-                className="bg-light rounded p-4 border"
+    <div
+      className="bg-white rounded-4 shadow-sm border p-4"
+      style={{
+        fontSize: "1rem",
+        lineHeight: "1.7",
+        color: "#444",
+        borderColor: "#f0f0f0",
+      }}
+    >
+      <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+        {post.description
+          ?.split(/\n+/)
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map((line, index) => {
+            // Xác định loại dòng
+            const isSectionTitle =
+              line.startsWith("✨") || /THÔNG TIN/i.test(line);
+            const isBullet =
+              line.startsWith("•") || /^\d+\./.test(line); // • hoặc số thứ tự
+            const isNormal = !isSectionTitle && !isBullet;
+
+            return (
+              <li
+                key={index}
+                className={`d-flex align-items-start ${
+                  isSectionTitle
+                    ? "bg-primary bg-opacity-10 fw-bold text-primary"
+                    : "bg-light"
+                } p-3 mb-2 rounded-3 border`}
                 style={{
-                  fontSize: "1rem",
-                  lineHeight: "1.8",
-                  color: "#333",
-                  borderColor: "#ddd",
+                  gap: "12px",
+                  borderColor: "#eee",
+                  transition: "all 0.25s ease",
+                  cursor: "default",
                 }}
+                onMouseEnter={(e) =>
+                  !isSectionTitle &&
+                  (e.currentTarget.style.backgroundColor = "#f8faff")
+                }
+                onMouseLeave={(e) =>
+                  !isSectionTitle &&
+                  (e.currentTarget.style.backgroundColor = "#f8f9fa")
+                }
               >
-                <ul style={{ margin: 0, paddingLeft: "0", listStyle: "none" }}>
-                  {post.description
-                    ?.split(/\n+/)
-                    .map((line, index) => (
-                      <li
-                        key={index}
-                        style={{
-                          marginBottom: "12px",
-                          display: "flex",
-                          alignItems: "flex-start",
-                          gap: "8px",
-                        }}
-                      >
-                        <FaCheckCircle
-                          style={{
-                            color: "#0d6efd",
-                            marginTop: "4px",
-                            flexShrink: 0,
-                          }}
-                        />
-                        <span
-                          dangerouslySetInnerHTML={{
-                            __html: line
-                              .replace(
-                                /^([^:]+):/,
-                                "<strong>$1:</strong>"
-                              )
-                              .trim(),
-                          }}
-                        />
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            </div>
-          </div>
+                {/* Icon */}
+                {isSectionTitle ? (
+                  <span style={{ fontSize: "1.2rem" }}>✨</span>
+                ) : (
+                  <FaCheckCircle
+                    style={{
+                      color: "#0d6efd",
+                      marginTop: "4px",
+                      fontSize: "1.1rem",
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+
+                {/* Nội dung */}
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: line.replace(
+                      /^([^:]+):/,
+                      "<strong style='color:#0d6efd'>$1:</strong>"
+                    ),
+                  }}
+                />
+              </li>
+            );
+          })}
+      </ul>
+    </div>
+  </div>
+</div>
+
 
           <div className="col-md-4">
             {/* Bảng thông tin User */}

@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { Modal } from "react-bootstrap";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +13,6 @@ import {
   getPostsByUser,
   updatePost,
 } from "../../../service/postService.js";
-import { Modal, Button } from "react-bootstrap";
 
 const PAGE_SIZE = 5;
 const API_URL = import.meta.env.VITE_API_URL;
@@ -396,16 +396,15 @@ formData.append("paymentStatus", newPaymentStatus);
       : false
   );
 
-    // ==== Xử lý ảnh ====
-    if (editForm.oldImages && editForm.oldImages.length > 0) {
-      formData.append("oldImages", JSON.stringify(editForm.oldImages));
+  if (editForm.oldImages?.length > 0) {
+    formData.append("oldImages", JSON.stringify(editForm.oldImages));
+  }
+  
+  (editForm.newImages || []).forEach((file) => {
+    if (file instanceof File) {
+      formData.append("images", file);
     }
-
-    (editForm.newImages || [])
-      .filter((file) => file instanceof File)
-      .forEach((file) => {
-        formData.append("images", file);
-      });
+  });
 
     try {
       const totalImages = editForm.oldImages.length + editForm.newImages.length;
@@ -525,21 +524,30 @@ const handleNewImagesChange = (e) => {
   const files = Array.from(e.target.files).filter((file) => file instanceof File);
 
   // Lọc chỉ lấy file ảnh hợp lệ
-  const imageFiles = files.filter(
-    (file) =>
+  const imageFiles = files.filter((file) => {
+    const isImage =
       file.type.startsWith("image/") ||
-      /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.name)
-  );
+      /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.name);
 
-  if (imageFiles.length < files.length) {
-    toast.error("❌ Có file không phải ảnh (vd: .zip), hệ thống sẽ bỏ qua!");
-  }
+    if (!isImage) {
+      toast.error(`❌ ${file.name} không phải ảnh, hệ thống sẽ bỏ qua!`);
+      return false;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(`⚠️ ${file.name} vượt quá 5MB, không thể upload!`);
+      return false;
+    }
+
+    return true;
+  });
 
   setEditForm((prev) => ({
     ...prev,
     newImages: [...(prev.newImages || []), ...imageFiles],
   }));
 };
+
 
 
   return (
@@ -1287,12 +1295,18 @@ const handleNewImagesChange = (e) => {
 
                   {/* Upload ảnh mới */}
                   <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleNewImagesChange}
-                    className="form-control"
-                  />
+  type="file"
+  multiple
+  accept="image/*"
+  onChange={handleNewImagesChange}
+  className="form-control"
+/>
+
+{/* ⚠️ Thêm lưu ý dung lượng ảnh */}
+<small className="text-danger">
+  ⚠️ Mỗi ảnh không được vượt quá <strong>5MB</strong>.
+</small>
+
 
                   {/* Gói tin */}
                   <div className="card shadow-sm border-0">
