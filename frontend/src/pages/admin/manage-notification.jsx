@@ -36,6 +36,8 @@ const ManageNotifications = () => {
 
     const [showModal, setShowModal] = useState(false);
     const [users, setUsers] = useState([]);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
 
     const updateQuery = (newParams = {}) => {
         const updated = {
@@ -67,10 +69,16 @@ const ManageNotifications = () => {
         }
     };
     const handleDelete = async (id) => {
-        if (!window.confirm("Xác nhận xóa?")) return;
+        setDeleteId(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/api/notifications/${id}`);
+            await axios.delete(`${import.meta.env.VITE_API_URL}/api/notifications/${deleteId}`);
             toast.success("Đã xóa thông báo");
+            setShowDeleteModal(false);
+            setDeleteId(null);
             fetchNotifications();
         } catch (err) {
             toast.error("Xóa thất bại!");
@@ -164,7 +172,8 @@ const ManageNotifications = () => {
                             <th>Nội dung</th>
                             <th>Trạng thái</th>
                             <th>Thời gian</th>
-                            <th style={{ width: 80 }}></th>
+                            <th>Hành động</th>
+
                         </tr>
                     </thead>
                     <tbody>
@@ -188,7 +197,7 @@ const ManageNotifications = () => {
                                     </td>
                                     <td>{n.userId?.email || "—"}</td>
                                     <td>{n.userId?.phone ? formatPhoneNumber(n.userId.phone) : "—"}</td>
-                                    <td style={{ whiteSpace: "normal", maxWidth: 250 }}>{n.message}</td>
+                                    <td style={{ whiteSpace: "normal", maxWidth: 150 }}>{n.message}</td>
                                     <td>
                                         <span className={`badge ${n.read ? "bg-success" : "bg-warning text-dark"}`}>
                                             {n.read ? "Đã đọc" : "Chưa đọc"}
@@ -196,9 +205,11 @@ const ManageNotifications = () => {
                                     </td>
                                     <td>{formatSmartDate(n.createdAt)}</td>
                                     <td>
-                                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(n._id)}>
-                                            Xóa
-                                        </button>
+                                        <div className="d-flex justify-content-center">
+                                            <button className="btn btn-outline-danger" onClick={() => handleDelete(n._id)}>
+                                                Xóa
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))
@@ -260,7 +271,34 @@ const ManageNotifications = () => {
                         },
                     ]}
                 />
+            )}
 
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <ReusableModal
+                    show={showDeleteModal}
+                    onClose={() => {
+                        setShowDeleteModal(false);
+                        setDeleteId(null);
+                    }}
+                    title="Xác nhận xóa"
+                    body="Bạn có chắc chắn muốn xóa thông báo này không?"
+                    footerButtons={[
+                        {
+                            label: "Hủy",
+                            variant: "secondary",
+                            onClick: () => {
+                                setShowDeleteModal(false);
+                                setDeleteId(null);
+                            },
+                        },
+                        {
+                            label: "Xóa",
+                            variant: "danger",
+                            onClick: confirmDelete,
+                        },
+                    ]}
+                />
             )}
 
         </AdminDashboard>

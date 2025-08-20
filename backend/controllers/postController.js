@@ -79,13 +79,14 @@ export const createPost = async (req, res) => {
   }
 };
 // get ra xem all post
-
+// Lấy 5 post gần nhất
 export const getPost = async (req, res) => {
   try {
     const post = await Post.find()
       .populate('contactInfo', 'name email phone')
       .populate('postPackage', 'type price expireAt')
-      .sort({ createdAt: -1 }); // 👈 DESCENDING
+      .sort({ createdAt: -1 }) // 👈 DESCENDING
+      .limit(5);
     if (post.length === 0) {
       return res.status(404).json({
         message: "Post not found",
@@ -171,6 +172,39 @@ export const getAllPosts = async (req, res) => {
 
   } catch (error) {
     console.error("Lỗi lấy bài đăng:", error);
+    return res.status(500).json({
+      message: "Lỗi server",
+      success: false,
+      error: true
+    });
+  }
+};
+// Lấy tất cả bài đăng sắp hết hạn (còn 3 ngày hoặc ít hơn đến expiredDate)
+export const getAllPostsNearlyExpire = async (req, res) => {
+  try {
+    const now = new Date();
+    // 3 ngày tới (tính theo mili giây)
+    const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+
+    // Lấy các bài đăng có expiredDate trong khoảng từ bây giờ đến 3 ngày tới, và chưa hết hạn
+    const posts = await Post.find({
+      expiredDate: { $exists: true, $gte: now, $lte: threeDaysLater },
+      status: "approved", // chỉ lấy bài đã duyệt
+      paymentStatus: "paid" // chỉ lấy bài đã thanh toán
+    })
+      .populate("contactInfo", "name email phone")
+      .populate("postPackage", "type price expireAt")
+      .sort({ expiredDate: 1 });
+
+    return res.status(200).json({
+      message: "Danh sách bài đăng sắp hết hạn (còn 3 ngày hoặc ít hơn)",
+      success: true,
+      error: false,
+      data: posts,
+      total: posts.length
+    });
+  } catch (error) {
+    console.error("Lỗi lấy bài đăng sắp hết hạn:", error);
     return res.status(500).json({
       message: "Lỗi server",
       success: false,
@@ -575,21 +609,21 @@ export const updatePost = async (req, res) => {
     }
     const newImages = [...keepImages, ...uploadedImages];
 
-  // Gán ảnh mới vào updateData
-updateData.images = newImages;
+    // Gán ảnh mới vào updateData
+    updateData.images = newImages;
 
-// ✅ Làm sạch dữ liệu trước khi update
-const cleanedUpdateData = cleanUpdateData(updateData);
+    // ✅ Làm sạch dữ liệu trước khi update
+    const cleanedUpdateData = cleanUpdateData(updateData);
 
-// Gán dữ liệu sạch vào document
-Object.assign(existingPost, cleanedUpdateData);
+    // Gán dữ liệu sạch vào document
+    Object.assign(existingPost, cleanedUpdateData);
 
     const editedData = {};
     for (const key in updateData) {
       if (Object.prototype.hasOwnProperty.call(oldPostData, key)) {
         const oldVal = normalizeValue(oldPostData[key], key);
         const newVal = normalizeValue(updateData[key], key);
-    
+
         // Nếu cả 2 là mảng, so sánh từng phần tử
         if (Array.isArray(oldVal) && Array.isArray(newVal)) {
           const arraysEqual = oldVal.length === newVal.length &&
@@ -608,16 +642,16 @@ Object.assign(existingPost, cleanedUpdateData);
         }
       }
     }
-  
-      // Lưu lịch sử nếu có thay đổi
-      if (Object.keys(editedData).length > 0) {
-        await PostHistory.create({
-          postId,
-          editedData,
-          editedBy: userId,
-          editedAt: new Date(),
-        });
-      }
+
+    // Lưu lịch sử nếu có thay đổi
+    if (Object.keys(editedData).length > 0) {
+      await PostHistory.create({
+        postId,
+        editedData,
+        editedBy: userId,
+        editedAt: new Date(),
+      });
+    }
 
     // Nếu từ unpaid -> paid thì set ngày đăng
     if (
@@ -962,9 +996,9 @@ export const countPostsByUser = async (req, res) => {
     const count = await Post.countDocuments({ contactInfo: userId });
     res.json({ count });
   } catch (err) {
-    res.status(500).json({ 
-      message: "Lỗi khi đếm số bài đăng", 
-      error: err.message 
+    res.status(500).json({
+      message: "Lỗi khi đếm số bài đăng",
+      error: err.message
     });
   }
 };

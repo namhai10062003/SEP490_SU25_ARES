@@ -304,7 +304,8 @@ const verifyUser = async (req, res) => {
           address: user.address,
           phone: user.phone,
           dob: user.dob,
-          profileImage: user.profileImage
+          profileImage: user.profileImage,
+          status: user.status,
         },
       });
     }
@@ -332,11 +333,11 @@ const register = async (req, res) => {
         await User.deleteOne({ _id: existingUser._id });
       }
     }
- // 🔹 Kiểm tra SĐT đã tồn tại chưa và chưa bị xóa
- const existingPhone = await User.findOne({ phone, deletedAt: null });
- if (existingPhone) {
-   return res.status(400).json({ success: false, error: "Số điện thoại đã tồn tại!" });
- }
+    // 🔹 Kiểm tra SĐT đã tồn tại chưa và chưa bị xóa
+    const existingPhone = await User.findOne({ phone, deletedAt: null });
+    if (existingPhone) {
+      return res.status(400).json({ success: false, error: "Số điện thoại đã tồn tại!" });
+    }
     // Hash mật khẩu
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -590,13 +591,15 @@ const googleCallback = async (req, res) => {
     }
 
     const jwtToken = jwt.sign(
-      { _id: user._id, role: user.role, name: user.name, 
-        
+      {
+        _id: user._id, role: user.role, name: user.name,
+
         email: user.email,
         identityNumber: safeDecrypt(user.identityNumber), // ✅ giải mã trước khi trả
         address: user.address,
         phone: user.phone,
-        dob: user.dob },
+        dob: user.dob
+      },
       process.env.JWT_SECRET,
       { expiresIn: "10d" }
     );
@@ -604,13 +607,15 @@ const googleCallback = async (req, res) => {
     return res.status(200).json({
       success: true,
       token: jwtToken,
-      user: { _id: user._id, role: user.role, name: user.name, 
-        
+      user: {
+        _id: user._id, role: user.role, name: user.name,
+
         email: user.email,
         identityNumber: safeDecrypt(user.identityNumber), // ✅ giải mã trước khi trả
         address: user.address,
         phone: user.phone,
-        dob: user.dob  },
+        dob: user.dob
+      },
       isOnline: user.isOnline,
     });
   } catch (error) {

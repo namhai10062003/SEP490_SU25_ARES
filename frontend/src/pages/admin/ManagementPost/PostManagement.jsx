@@ -8,7 +8,7 @@ import SearchInput from "../../../../components/admin/searchInput.jsx";
 import StatusFilter from "../../../../components/admin/statusFilter.jsx";
 import LoadingModal from "../../../../components/loadingModal.jsx";
 import { formatSmartDate } from "../../../../utils/format.jsx";
-import { getAllPosts } from "../../../service/postService.js";
+import { getAllPosts, getLatestPosts, getNearlyExpiringPosts } from "../../../service/postService.js";
 import AdminDashboard from "../adminDashboard";
 
 const API_BASE = import.meta.env.VITE_API_URL;
@@ -25,6 +25,7 @@ const PostManagement = () => {
   // Side table data (not affected by filter/search/pagination)
   const [sidePosts, setSidePosts] = useState([]);
   const [loadingSide, setLoadingSide] = useState(false);
+  const [nearlyExpiringPosts, setNearlyExpiringPosts] = useState([]);
 
   // URL-based state
   const page = parseInt(searchParams.get("page")) || 1;
@@ -61,13 +62,26 @@ const PostManagement = () => {
   const fetchSidePosts = async () => {
     try {
       setLoadingSide(true);
-      // Fetch with large pageSize to get all posts (or at least enough for side tables)
-      const res = await getAllPosts(1, 1000, "all", "");
+      const res = await getLatestPosts();
       const data = res.data || {};
       setSidePosts(Array.isArray(data.data) ? data.data : []);
     } catch (err) {
       console.error("fetchSidePosts error:", err);
       setSidePosts([]);
+    } finally {
+      setLoadingSide(false);
+    }
+  };
+
+  const fetchNearlyExpiringPosts = async () => {
+    try {
+      setLoadingSide(true);
+      const res = await getNearlyExpiringPosts();
+      const data = res.data || {};
+      setNearlyExpiringPosts(Array.isArray(data.data) ? data.data : []);
+    } catch (err) {
+      console.error("fetchNearlyExpiringPosts error:", err);
+      setNearlyExpiringPosts([]);
     } finally {
       setLoadingSide(false);
     }
@@ -81,6 +95,7 @@ const PostManagement = () => {
   // fetch side posts only once on mount
   useEffect(() => {
     fetchSidePosts();
+    fetchNearlyExpiringPosts();
   }, []);
 
   // sync searchInput with searchTerm from URL
@@ -167,8 +182,6 @@ const PostManagement = () => {
     }
   };
 
-
-
   // helper functions
   const tagLabel = (type) => {
     switch (type) {
@@ -182,33 +195,6 @@ const PostManagement = () => {
         return `[${type}]`;
     }
   };
-
-  const expiringSoon = (dateStr) => {
-    if (!dateStr) return false;
-    const d = new Date(dateStr);
-    const now = new Date();
-    const diffDays = (d - now) / (1000 * 60 * 60 * 24);
-    return diffDays <= 7 && diffDays >= 0;
-  };
-
-  // helper function to get user name
-  const getUserName = (contactInfo) => {
-    if (!contactInfo) return "Không rõ";
-    if (typeof contactInfo === "string") return "Không rõ";
-    if (contactInfo.name) return contactInfo.name;
-    return "Không rõ";
-  };
-
-  // Latest posts (approved, unpaid) - for side table, use sidePosts
-  const latestPosts = sidePosts
-    .filter(p => p.status === "approved" && p.paymentStatus === "unpaid")
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 5);
-
-  // Expiring posts - for side table, use sidePosts
-  const expiringPosts = sidePosts
-    .filter(p => p.status === "approved" && !p.deletedAt && expiringSoon(p.expiredDate))
-    .slice(0, 3);
 
   return (
     <AdminDashboard>
@@ -319,10 +305,10 @@ const PostManagement = () => {
                 <div className="list-group list-group-flush">
                   {loadingSide ? (
                     <div className="list-group-item small">Đang tải...</div>
-                  ) : latestPosts.length === 0 ? (
+                  ) : sidePosts.length === 0 ? (
                     <div className="list-group-item small">Không có bài</div>
                   ) : (
-                    latestPosts.map((p) => (
+                    sidePosts.map((p) => (
                       <PostItemButton
                         key={p._id}
                         p={p}
@@ -343,10 +329,10 @@ const PostManagement = () => {
                 <div className="list-group list-group-flush">
                   {loadingSide ? (
                     <div className="list-group-item small">Đang tải...</div>
-                  ) : expiringPosts.length === 0 ? (
+                  ) : nearlyExpiringPosts.length === 0 ? (
                     <div className="list-group-item small">Không có bài</div>
                   ) : (
-                    expiringPosts.map((p) => (
+                    nearlyExpiringPosts.map((p) => (
                       <PostItemButton
                         key={p._id}
                         p={p}
@@ -404,34 +390,6 @@ const PostItemButton = ({ p, formatSmartDate, tagLabel, isSmall, onApprove, onRe
             <div className="text-truncate">📍 {p.location}</div>
           </div>
         </div>
-
-        {/* Action buttons for main table */}
-        {/* {onApprove && onReject && p.status === "pending" && (
-          <div className="ms-2 d-flex flex-column gap-1">
-            <button
-              className="btn btn-sm btn-outline-success"
-              style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onApprove(p._id);
-              }}
-              disabled={loading}
-            >
-              Duyệt
-            </button>
-            <button
-              className="btn btn-sm btn-outline-danger"
-              style={{ fontSize: "0.75rem", padding: "0.25rem 0.5rem" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onReject(p._id);
-              }}
-              disabled={loading}
-            >
-              Từ chối
-            </button>
-          </div>
-        )} */}
       </div>
 
       {/* Link overlay for navigation */}
