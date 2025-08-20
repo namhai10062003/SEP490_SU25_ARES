@@ -24,7 +24,9 @@ const parkingRegistrationSchema = new Schema({
 
   // Trường mới: giá cố định dựa theo loại xe
   price: { type: Number, required: true }, // sẽ được tự động set
-
+  // 🔴 Thêm lý do từ chối
+  rejectionReason: { type: String, default: null },
+  
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected', 'cancelled'], // ← thêm cancelled

@@ -318,7 +318,6 @@ const ParkingRegistrationList = () => {
       socket.off('updateRegistrationStatus');
     };
   }, [user]);
-
   const renderTable = (title, data) => (
     <div className="mb-5">
       <h3 className="fw-bold text-primary mb-3">{title}</h3>
@@ -339,7 +338,7 @@ const ParkingRegistrationList = () => {
           <tbody>
             {data.length > 0 ? (
               data.map((item, index) => (
-                <tr key={item.id || index}>
+                <tr key={item._id || item.id || index}>
                   <td>{item.tênChủSởHữu}</td>
                   <td>{item.loạiXe}</td>
                   <td>{item.biểnSốXe}</td>
@@ -347,9 +346,9 @@ const ParkingRegistrationList = () => {
                   <td>{item.giá}</td>
                   <td>{item.ngàyĐăngKý}</td>
                   <td>
-                    {item.trạngThái === 'approved' ? (
+                    {item.trạngThái === "approved" ? (
                       <span className="badge bg-success">Đã đăng ký</span>
-                    ) : item.trạngThái === 'rejected' ? (
+                    ) : item.trạngThái === "rejected" ? (
                       <span className="badge bg-danger">Đã bị từ chối</span>
                     ) : (
                       <span className="badge bg-warning text-dark">Đang đăng ký</span>
@@ -357,36 +356,43 @@ const ParkingRegistrationList = () => {
                   </td>
                   <td className="d-flex gap-2">
                     <Link
-                      to={`/parkinglot/detail-parkinglot/${item.id}`}
+                      to={`/parkinglot/detail-parkinglot/${item._id || item.id}`}
                       className="btn btn-success btn-sm"
                     >
                       Xem chi tiết
                     </Link>
 
-                    {(item.trạngThái === 'pending' || item.trạngThái === 'approved') && (
-                      <>
-                        {console.log("🧾 item:", item)} {/* Thêm dòng này để debug */}
+                    {(item.trạngThái === "pending" ||
+                      item.trạngThái === "approved") && (
                         <button
                           className="btn btn-outline-danger btn-sm d-flex align-items-center gap-1 shadow-sm px-3 py-1 rounded-pill"
-                          onClick={() => handleCancel(item._id || item.id)} // ✅ thông minh hơn
-                        // đang sai nếu _id không tồn tại
+                          onClick={() => handleCancel(item._id || item.id)}
                         >
                           <i className="bi bi-x-circle-fill"></i>
                           Huỷ
                         </button>
+                      )}
+
+                    {item.trạngThái === "rejected" && (
+                      <>
+                        <button
+                          className="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 shadow-sm px-3 py-1 rounded-pill"
+                          onClick={() => handleEdit(item)}
+                        >
+                          <i className="bi bi-pencil-square"></i>
+                          Chỉnh sửa
+                        </button>
+
+                        <button
+                          className="btn btn-outline-info btn-sm d-flex align-items-center gap-1 shadow-sm px-3 py-1 rounded-pill"
+                          onClick={() => setShowReason(item.lído)}
+                        >
+                          <i className="bi bi-info-circle-fill"></i>
+                          Xem lý do
+                        </button>
+
                       </>
                     )}
-                    {item.trạngThái === 'rejected' && (
-                      <button
-                        className="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 shadow-sm px-3 py-1 rounded-pill"
-                        onClick={() => handleEdit(item)}
-                      >
-                        <i className="bi bi-pencil-square"></i>
-                        Chỉnh sửa
-                      </button>
-                    )}
-
-
                   </td>
 
                 </tr>
@@ -403,6 +409,7 @@ const ParkingRegistrationList = () => {
       </div>
     </div>
   );
+
 
   return (
     <div className="bg-light min-vh-100">
@@ -593,7 +600,37 @@ const ParkingRegistrationList = () => {
               onSave={handleSaveEdit}   // ✅ chỉ gọi cha
             />
           </div>
+        {showReason && (
+          <div
+            className="modal fade show"
+            style={{ display: "block", background: "rgba(0,0,0,0.5)" }}
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content rounded-4 shadow">
+                <div className="modal-header">
+                  <h5 className="modal-title">Lý do từ chối</h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowReason(null)}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <p>{showReason || "Không có lý do"}</p>
+                </div>
+                <div className="modal-footer">
+                  <button className="btn btn-secondary" onClick={() => setShowReason(null)}>
+                    Đóng
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
+
+        <footer className="text-center mt-4 text-secondary small">
+          &copy; 2025 Bãi giữ xe
+        </footer>
       </div>
     </div>
   );

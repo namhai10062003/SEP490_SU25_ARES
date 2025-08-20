@@ -13,6 +13,21 @@ const ManageParkingLot = () => {
   // hàm thực hiện popup chi tiết 
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [selectedId, setSelectedId] = useState(null);
+  
+  const openRejectModal = (id) => {
+    setSelectedId(id);
+    setRejectReason("");
+    setShowRejectModal(true);
+  };
+  
+  const closeRejectModal = () => {
+    setShowRejectModal(false);
+    setRejectReason("");
+    setSelectedId(null);
+  };
 
   const handleRowClick = async (id) => {
     const token = localStorage.getItem('token');
@@ -114,50 +129,67 @@ const ManageParkingLot = () => {
     }
   };
 
-  const handleStatusChange = async (id, action) => {
+  const handleStatusChange = async (id, action, reason = null) => {
     const token = localStorage.getItem('token');
     if (role !== 'staff') {
       toast.error('🚫 Bạn không có quyền thực hiện hành động này.');
       return;
     }
-
+  
     const url = `${import.meta.env.VITE_API_URL}/api/parkinglot/${action}/${id}`;
     const method = 'PATCH';
     const status = action === 'approve' ? 'approved' : 'rejected';
-
+  
     try {
-      const res = await fetch(url, {
+      const options = {
         method,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-      });
-
+      };
+  
+      // 🆕 nếu reject thì gửi lý do từ modal
+      if (status === 'rejected') {
+        if (!reason || !reason.trim()) {
+          toast.error("❌ Bạn phải nhập lý do để từ chối.");
+          return;
+        }
+        options.body = JSON.stringify({ reason });
+      }
+  
+      const res = await fetch(url, options);
+  
       if (res.ok) {
         if (status === 'approved') {
           toast.success('✅ Phê duyệt yêu cầu gửi xe thành công');
         } else {
           toast('🚫 Đã từ chối yêu cầu gửi xe', {
-            style: {
-              backgroundColor: 'red',
-              color: 'white',
-            },
+            style: { backgroundColor: 'red', color: 'white' },
           });
         }
-
+  
         setParkingRequests((prevList) =>
           prevList.filter((item) => item._id !== id)
         );
-        socket.emit('parkingStatusUpdated', { id, status });
+  
+        socket.emit('parkingStatusUpdated', { id, status, reason });
       } else {
-        toast.error(status === 'approved' ? '❌ Phê duyệt thất bại' : '❌ Từ chối thất bại');
+        const errorData = await res.json();
+        toast.error(
+          errorData.message ||
+            (status === 'approved'
+              ? '❌ Phê duyệt thất bại'
+              : '❌ Từ chối thất bại')
+        );
       }
     } catch (err) {
       toast.error('❌ Có lỗi xảy ra, vui lòng thử lại sau');
       console.error('❌ Lỗi khi cập nhật trạng thái:', err);
     }
   };
+  
+  
 
   const formatDate = (dateStr) => {
     const date = new Date(dateStr);
@@ -224,16 +256,17 @@ const ManageParkingLot = () => {
                             >
                               Phê duyệt
                             </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleStatusChange(item._id, 'reject');
-                              }}
-                              className="btn btn-danger btn-sm"
-                            >
-                              Từ chối
-                            </button>
+                           <button
+  onClick={(e) => {
+    e.stopPropagation();
+    openRejectModal(item._id); // 🆕 mở modal thay vì gọi trực tiếp
+  }}
+  className="btn btn-danger btn-sm"
+>
+  Từ chối
+</button>
                           </div>
+                          
                         ) : (
                           <i>Chỉ xem</i>
                         )}
@@ -312,6 +345,48 @@ const ManageParkingLot = () => {
             </div>
           </div>
         )}
+    {showRejectModal && (
+  <div
+    className="modal fade show d-block"
+    tabIndex="-1"
+    style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+  >
+    <div className="modal-dialog">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">Nhập lý do từ chối</h5>
+          <button type="button" className="btn-close" onClick={closeRejectModal}></button>
+        </div>
+        <div className="modal-body">
+          <textarea
+            className="form-control"
+            placeholder="Nhập lý do..."
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+          />
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-secondary" onClick={closeRejectModal}>
+            Hủy
+          </button>
+          <button
+            className="btn btn-danger"
+            onClick={() => {
+              if (!rejectReason.trim()) {
+                toast.error("❌ Vui lòng nhập lý do từ chối");
+                return;
+              }
+              handleStatusChange(selectedId, "reject", rejectReason);
+              closeRejectModal();
+            }}
+          >
+            Xác nhận từ chối
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
       </main>
     </div>
   );
