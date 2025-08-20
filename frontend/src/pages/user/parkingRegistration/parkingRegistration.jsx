@@ -28,6 +28,7 @@ const ParkingRegistrationList = () => {
   // State quản lý modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [parkingLots, setParkingLots] = useState([]);
+  const [showReason, setShowReason] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -600,6 +601,7 @@ const ParkingRegistrationList = () => {
               onSave={handleSaveEdit}   // ✅ chỉ gọi cha
             />
           </div>
+        )}
         {showReason && (
           <div
             className="modal fade show"
@@ -627,10 +629,6 @@ const ParkingRegistrationList = () => {
             </div>
           </div>
         )}
-
-        <footer className="text-center mt-4 text-secondary small">
-          &copy; 2025 Bãi giữ xe
-        </footer>
       </div>
     </div>
   );
