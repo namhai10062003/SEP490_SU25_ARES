@@ -34,7 +34,7 @@ const CustomerPostManagement = () => {
     type: "",
     postPackage: "",
   });
-  const [originalPost, setOriginalPost] = useState(null); 
+  const [originalPost, setOriginalPost] = useState(null);
   const navigate = useNavigate();
 
   // Form state for editing
@@ -260,17 +260,17 @@ const CustomerPostManagement = () => {
   // Handle form input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-  
+
     if (name === "price" && value.length > 12) {
       return; // ❌ Không cho nhập quá 12 số
     }
-  
+
     setEditForm({
       ...editForm,
       [name]: value,
     });
   };
-  
+
   // Handle save edit
   const handleSaveEdit = async () => {
     // ==== Validate dữ liệu ====
@@ -355,56 +355,56 @@ const CustomerPostManagement = () => {
     // );
 
     const isChanged =
-  (editForm.title ?? "") !== (originalPost.title ?? "") ||
-  (editForm.description ?? "") !== (originalPost.description ?? "") ||
-  Number(editForm.area ?? 0) !== Number(originalPost.area ?? 0) ||
-  Number(editForm.price ?? 0) !== Number(originalPost.price ?? 0) ||
-  (editForm.legalDocument ?? "") !== (originalPost.legalDocument ?? "") ||
-  (editForm.interiorStatus ?? "") !== (originalPost.interiorStatus ?? "") ||
-  (editForm.amenities ?? "") !== (originalPost.amenities ?? "") ||
-  (editForm.location ?? "") !== (originalPost.location ?? "") ||
-  (editForm.property ?? "") !== (originalPost.property ?? "") ||
-  (editForm.postPackagename ?? "") !== (originalPost.postPackage ?? "") ||
-  JSON.stringify(editForm.oldImages ?? []) !== JSON.stringify(originalPost.images ?? []) ||
-  (editForm.newImages?.length ?? 0) > 0;
+      (editForm.title ?? "") !== (originalPost.title ?? "") ||
+      (editForm.description ?? "") !== (originalPost.description ?? "") ||
+      Number(editForm.area ?? 0) !== Number(originalPost.area ?? 0) ||
+      Number(editForm.price ?? 0) !== Number(originalPost.price ?? 0) ||
+      (editForm.legalDocument ?? "") !== (originalPost.legalDocument ?? "") ||
+      (editForm.interiorStatus ?? "") !== (originalPost.interiorStatus ?? "") ||
+      (editForm.amenities ?? "") !== (originalPost.amenities ?? "") ||
+      (editForm.location ?? "") !== (originalPost.location ?? "") ||
+      (editForm.property ?? "") !== (originalPost.property ?? "") ||
+      (editForm.postPackagename ?? "") !== (originalPost.postPackage ?? "") ||
+      JSON.stringify(editForm.oldImages ?? []) !== JSON.stringify(originalPost.images ?? []) ||
+      (editForm.newImages?.length ?? 0) > 0;
 
-let newStatus = originalPost.status;
-let newPaymentStatus = originalPost.paymentStatus;
+    let newStatus = originalPost.status;
+    let newPaymentStatus = originalPost.paymentStatus;
 
-if (isChanged) {
-  if (["approved", "rejected", "expired"].includes(originalPost.status)) {
-    newStatus = "pending";
-  }
+    if (isChanged) {
+      if (["approved", "rejected", "expired"].includes(originalPost.status)) {
+        newStatus = "pending";
+      }
 
-  if (newStatus === "pending") {
-    if (originalPost.status === "expired") {
-      newPaymentStatus = "unpaid";
-    } else {
-      newPaymentStatus = originalPost.paymentStatus; // giữ nguyên paid/unpaid
+      if (newStatus === "pending") {
+        if (originalPost.status === "expired") {
+          newPaymentStatus = "unpaid";
+        } else {
+          newPaymentStatus = originalPost.paymentStatus; // giữ nguyên paid/unpaid
+        }
+      }
     }
-  }
-}
 
-formData.append("status", newStatus);
-formData.append("paymentStatus", newPaymentStatus);
+    formData.append("status", newStatus);
+    formData.append("paymentStatus", newPaymentStatus);
 
-  console.log("🔍 Status hiện tại:", editForm.status);
-  console.log(
-    "🔍 Disabled?",
-    editForm.status 
-      ? editForm.status.toLowerCase().trim() !== "expired"
-      : false
-  );
+    console.log("🔍 Status hiện tại:", editForm.status);
+    console.log(
+      "🔍 Disabled?",
+      editForm.status
+        ? editForm.status.toLowerCase().trim() !== "expired"
+        : false
+    );
 
-  if (editForm.oldImages?.length > 0) {
-    formData.append("oldImages", JSON.stringify(editForm.oldImages));
-  }
-  
-  (editForm.newImages || []).forEach((file) => {
-    if (file instanceof File) {
-      formData.append("images", file);
+    if (editForm.oldImages?.length > 0) {
+      formData.append("oldImages", JSON.stringify(editForm.oldImages));
     }
-  });
+
+    (editForm.newImages || []).forEach((file) => {
+      if (file instanceof File) {
+        formData.append("images", file);
+      }
+    });
 
     try {
       const totalImages = editForm.oldImages.length + editForm.newImages.length;
@@ -423,7 +423,7 @@ formData.append("paymentStatus", newPaymentStatus);
       }
     } catch (error) {
       toast.error("Có lỗi xảy ra khi cập nhật bài đăng");
-    }finally {
+    } finally {
       setIsSaving(false);
     }
   };
@@ -482,71 +482,71 @@ formData.append("paymentStatus", newPaymentStatus);
     setEditingPost(null);
   };
   // hàm chỉnh sửa up ảnh
-// Xóa ảnh cũ
-const handleRemoveOldImage = async (imageUrl) => {
-  if (!editingPost || !editingPost._id) {
-    console.error("❌ Không tìm thấy postId khi xóa ảnh!");
-    return;
-  }
+  // Xóa ảnh cũ
+  const handleRemoveOldImage = async (imageUrl) => {
+    if (!editingPost || !editingPost._id) {
+      console.error("❌ Không tìm thấy postId khi xóa ảnh!");
+      return;
+    }
 
-  const postId = editingPost._id;
+    const postId = editingPost._id;
 
-  try {
-    console.log("🗑️ Gửi yêu cầu xóa ảnh:", { postId, imageUrl });
-    await axios.delete(`${API_URL}/api/posts/${postId}/images`, {
-      data: { imageUrl },
+    try {
+      console.log("🗑️ Gửi yêu cầu xóa ảnh:", { postId, imageUrl });
+      await axios.delete(`${API_URL}/api/posts/${postId}/images`, {
+        data: { imageUrl },
+      });
+
+      setEditForm((prev) => ({
+        ...prev,
+        oldImages: prev.oldImages.filter((img) => img !== imageUrl),
+      }));
+
+      toast.success("Ảnh đã được xóa!");
+    } catch (err) {
+      console.error("❌ Lỗi khi xóa ảnh:", err);
+      toast.error("Không thể xóa ảnh!");
+    }
+  };
+
+
+
+  // Xóa ảnh mới
+  const handleRemoveNewImage = (file) => {
+    setEditForm((prev) => ({
+      ...prev,
+      newImages: prev.newImages.filter((f) => f !== file),
+    }));
+  };
+
+  // Chọn ảnh mới
+  const handleNewImagesChange = (e) => {
+    const files = Array.from(e.target.files).filter((file) => file instanceof File);
+
+    // Lọc chỉ lấy file ảnh hợp lệ
+    const imageFiles = files.filter((file) => {
+      const isImage =
+        file.type.startsWith("image/") ||
+        /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.name);
+
+      if (!isImage) {
+        toast.error(`❌ ${file.name} không phải ảnh, hệ thống sẽ bỏ qua!`);
+        return false;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(`⚠️ ${file.name} vượt quá 5MB, không thể upload!`);
+        return false;
+      }
+
+      return true;
     });
 
     setEditForm((prev) => ({
       ...prev,
-      oldImages: prev.oldImages.filter((img) => img !== imageUrl),
+      newImages: [...(prev.newImages || []), ...imageFiles],
     }));
-
-    toast.success("Ảnh đã được xóa!");
-  } catch (err) {
-    console.error("❌ Lỗi khi xóa ảnh:", err);
-    toast.error("Không thể xóa ảnh!");
-  }
-};
-
-
-
-// Xóa ảnh mới
-const handleRemoveNewImage = (file) => {
-  setEditForm((prev) => ({
-    ...prev,
-    newImages: prev.newImages.filter((f) => f !== file),
-  }));
-};
-
-// Chọn ảnh mới
-const handleNewImagesChange = (e) => {
-  const files = Array.from(e.target.files).filter((file) => file instanceof File);
-
-  // Lọc chỉ lấy file ảnh hợp lệ
-  const imageFiles = files.filter((file) => {
-    const isImage =
-      file.type.startsWith("image/") ||
-      /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.name);
-
-    if (!isImage) {
-      toast.error(`❌ ${file.name} không phải ảnh, hệ thống sẽ bỏ qua!`);
-      return false;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error(`⚠️ ${file.name} vượt quá 5MB, không thể upload!`);
-      return false;
-    }
-
-    return true;
-  });
-
-  setEditForm((prev) => ({
-    ...prev,
-    newImages: [...(prev.newImages || []), ...imageFiles],
-  }));
-};
+  };
 
 
 
@@ -1096,34 +1096,57 @@ const handleNewImagesChange = (e) => {
                     <div className="card-body">
                       <h6 className="fw-bold text-secondary mb-3">Thông số</h6>
                       <div className="row g-3">
+                        {/* Diện tích */}
                         <div className="col-md-6">
-                          <label className="form-label">Diện tích (m²)</label>
-                          <input
-                            type="number"
-                            name="area"
-                            value={editForm.area}
-                            onChange={handleInputChange}
-                            className="form-control"
-                          />
+                          <label className="form-label">Diện tích</label>
+                          <div className="input-group">
+                            <input
+                              type="number"
+                              name="area"
+                              min={1} // ✅ không cho nhập số âm hoặc 0
+                              value={editForm.area}
+                              onChange={(e) => {
+                                const value = Number(e.target.value);
+                                if (value >= 1 || e.target.value === "") {
+                                  handleInputChange(e);
+                                }
+                              }}
+                              className="form-control"
+                              placeholder="Nhập diện tích"
+                            />
+                            <span className="input-group-text">m²</span>
+                          </div>
                         </div>
-                        <div className="col-md-6">
 
-  <label className="form-label">Giá (triệu VND)</label>
-  <input
-    type="text"
-    name="price"
-    value={editForm.price}
-    onChange={(e) => {
-      const value = e.target.value;
-      // ✅ Chỉ cho phép số và tối đa 12 chữ số
-      if (/^\d{0,12}$/.test(value)) {
-        handleInputChange(e);
-      }
-    }}
-    className="form-control"
-    placeholder="Nhập giá (tối đa 12 chữ số)"
-  />
-</div>
+                        {/* Giá */}
+                        <div className="col-md-6">
+                          <label className="form-label">Giá</label>
+                          <div className="input-group">
+                            <input
+                              type="text"
+                              name="price"
+                              value={
+                                editForm.price
+                                  ? Number(editForm.price).toLocaleString("vi-VN")
+                                  : ""
+                              }
+                              onChange={(e) => {
+                                const raw = e.target.value.replace(/\D/g, ""); // chỉ giữ số
+                                if (raw.length <= 12) {
+                                  const num = Number(raw);
+                                  if (num >= 1 || raw === "") {
+                                    handleInputChange({
+                                      target: { name: "price", value: raw },
+                                    });
+                                  }
+                                }
+                              }}
+                              className="form-control"
+                              placeholder="Nhập giá (tối đa 12 chữ số)"
+                            />
+                            <span className="input-group-text">VNĐ</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1175,100 +1198,100 @@ const handleNewImagesChange = (e) => {
                   )}
                   {/* Ảnh hiện tại */}
                   <>
-      {/* Ảnh cũ */}
-      <div className="d-flex flex-wrap gap-2 mb-3">
-  {editForm.oldImages && editForm.oldImages.length > 0 ? (
-    editForm.oldImages.map((img, idx) => (
-      <div
-        key={idx}
-        className="position-relative border rounded shadow-sm"
-        style={{ width: 100, height: 100 }}
-      >
-        <img
-          src={img}
-          alt=""
-          className="img-fluid rounded"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            cursor: "pointer",
-          }}
-          onClick={() => setPreview(img)}
-        />
+                    {/* Ảnh cũ */}
+                    <div className="d-flex flex-wrap gap-2 mb-3">
+                      {editForm.oldImages && editForm.oldImages.length > 0 ? (
+                        editForm.oldImages.map((img, idx) => (
+                          <div
+                            key={idx}
+                            className="position-relative border rounded shadow-sm"
+                            style={{ width: 100, height: 100 }}
+                          >
+                            <img
+                              src={img}
+                              alt=""
+                              className="img-fluid rounded"
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => setPreview(img)}
+                            />
 
-        <button
-          type="button"
-          onClick={() => {
-            handleRemoveOldImage(img); // ✅ truyền đúng postId
-          }}
-          className="btn btn-danger btn-sm position-absolute"
-          style={{
-            top: -6,
-            right: -6,
-            borderRadius: "50%",
-            padding: "2px 6px",
-            fontSize: 12,
-          }}
-        >
-          ✕
-        </button>
-      </div>
-    ))
-  ) : (
-    <p className="text-muted">Chưa có ảnh nào</p>
-  )}
-</div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleRemoveOldImage(img); // ✅ truyền đúng postId
+                              }}
+                              className="btn btn-danger btn-sm position-absolute"
+                              style={{
+                                top: -6,
+                                right: -6,
+                                borderRadius: "50%",
+                                padding: "2px 6px",
+                                fontSize: 12,
+                              }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-muted">Chưa có ảnh nào</p>
+                      )}
+                    </div>
 
 
 
-      {/* Ảnh mới */}
-      {editForm.newImages.length > 0 && (
-        <div className="d-flex flex-wrap gap-2 mb-3">
-          {editForm.newImages.map((file, idx) => (
-            <div key={idx} className="position-relative" style={{ width: 100, height: 100 }}>
-              <img
-                src={URL.createObjectURL(file)}
-                alt=""
-                className="img-fluid rounded"
-                style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer" }}
-                onClick={() => setPreview(URL.createObjectURL(file))}
-              />
-              <button
-                type="button"
-                onClick={() => handleRemoveNewImage(file)}
-                className="btn btn-danger btn-sm position-absolute"
-                style={{ top: 2, right: 2, padding: "0 6px", lineHeight: 1, borderRadius: "50%" }}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+                    {/* Ảnh mới */}
+                    {editForm.newImages.length > 0 && (
+                      <div className="d-flex flex-wrap gap-2 mb-3">
+                        {editForm.newImages.map((file, idx) => (
+                          <div key={idx} className="position-relative" style={{ width: 100, height: 100 }}>
+                            <img
+                              src={URL.createObjectURL(file)}
+                              alt=""
+                              className="img-fluid rounded"
+                              style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer" }}
+                              onClick={() => setPreview(URL.createObjectURL(file))}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveNewImage(file)}
+                              className="btn btn-danger btn-sm position-absolute"
+                              style={{ top: 2, right: 2, padding: "0 6px", lineHeight: 1, borderRadius: "50%" }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
-      {/* Lightbox xem ảnh */}
-      {preview && (
-        <div
-          onClick={() => setPreview(null)}
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: "rgba(0,0,0,0.8)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-            cursor: "pointer",
-          }}
-        >
-          <img src={preview} alt="" style={{ maxHeight: "90%", maxWidth: "90%" }} />
-        </div>
-      )}
-    </>
+                    {/* Lightbox xem ảnh */}
+                    {preview && (
+                      <div
+                        onClick={() => setPreview(null)}
+                        style={{
+                          position: "fixed",
+                          top: 0,
+                          left: 0,
+                          width: "100vw",
+                          height: "100vh",
+                          backgroundColor: "rgba(0,0,0,0.8)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          zIndex: 9999,
+                          cursor: "pointer",
+                        }}
+                      >
+                        <img src={preview} alt="" style={{ maxHeight: "90%", maxWidth: "90%" }} />
+                      </div>
+                    )}
+                  </>
                   {/* Ảnh mới upload (preview) */}
                   {/* {newImages.length > 0 && (
   <div className="d-flex flex-wrap gap-2 mb-3">
@@ -1295,17 +1318,17 @@ const handleNewImagesChange = (e) => {
 
                   {/* Upload ảnh mới */}
                   <input
-  type="file"
-  multiple
-  accept="image/*"
-  onChange={handleNewImagesChange}
-  className="form-control"
-/>
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleNewImagesChange}
+                    className="form-control"
+                  />
 
-{/* ⚠️ Thêm lưu ý dung lượng ảnh */}
-<small className="text-danger">
-  ⚠️ Mỗi ảnh không được vượt quá <strong>5MB</strong>.
-</small>
+                  {/* ⚠️ Thêm lưu ý dung lượng ảnh */}
+                  <small className="text-danger">
+                    ⚠️ Mỗi ảnh không được vượt quá <strong>5MB</strong>.
+                  </small>
 
 
                   {/* Gói tin */}
@@ -1345,25 +1368,25 @@ const handleNewImagesChange = (e) => {
                     Hủy
                   </button>
                   <button
-      className="btn btn-primary px-4 d-flex align-items-center gap-2"
-      onClick={handleSaveEdit}
-      disabled={isSaving}
-    >
-      {isSaving ? (
-        <>
-          <span
-            className="spinner-border spinner-border-sm"
-            role="status"
-            aria-hidden="true"
-          ></span>
-          Đang lưu...
-        </>
-      ) : (
-        <>
-          💾 Lưu thay đổi
-        </>
-      )}
-    </button>
+                    className="btn btn-primary px-4 d-flex align-items-center gap-2"
+                    onClick={handleSaveEdit}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm"
+                          role="status"
+                          aria-hidden="true"
+                        ></span>
+                        Đang lưu...
+                      </>
+                    ) : (
+                      <>
+                        💾 Lưu thay đổi
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
             </div>
