@@ -82,7 +82,7 @@ const getParkingRegistrations = async (req, res) => {
         // ✅ Thêm ảnh trước / sau
         ảnhTrước: item.documentFront || null,
         ảnhSau: item.documentBack || null,
-      
+        lído :item.rejectionReason,
         id: item._id
       };
       
@@ -352,6 +352,7 @@ const approveParkingRegistration = async (req, res) => {
 const rejectParkingRegistration = async (req, res) => {
   try {
     const { id } = req.params;
+    const { reason } = req.body; // 🆕 lấy lý do từ client
 
     const registration = await ParkingRegistration.findById(id);
     if (!registration) {
@@ -359,6 +360,7 @@ const rejectParkingRegistration = async (req, res) => {
     }
 
     registration.status = 'rejected';
+    registration.rejectionReason = reason || 'Không có lý do cụ thể';
     await registration.save();
 
     res.status(200).json({
