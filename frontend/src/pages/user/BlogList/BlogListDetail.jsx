@@ -32,6 +32,7 @@ import {
   getAllPosts,
   getPostById,
 } from "../../../service/postService.js";
+import UserInfo from "../../../../components/user/userInfor.jsx";
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -66,7 +67,7 @@ const PostDetail = () => {
   useEffect(() => {
     if (post?.contactInfo?._id) {
       console.log("📌 contactInfo có dữ liệu:", post.contactInfo);
-  
+
       fetch(`${import.meta.env.VITE_API_URL}/api/posts/count/${post.contactInfo.userId || post.contactInfo._id}`)
         .then((res) => res.json())
         .then((data) => setUserPostsCount(data.count))
@@ -75,12 +76,7 @@ const PostDetail = () => {
       console.log("⚠️ contactInfo chưa có dữ liệu:", post?.contactInfo);
     }
   }, [post]); // ✅ chạy lại khi post thay đổi
-    // 👈 đổi lại: theo dõi toàn bộ post thay vì chỉ _id
-  
-  
-  
-  
-  
+  // 👈 đổi lại: theo dõi toàn bộ post thay vì chỉ _id
 
   useEffect(() => {
     const fetchContract = async () => {
@@ -405,130 +401,94 @@ const PostDetail = () => {
             </div>
           </div>
 
-          <div className="col-md-8">
-  {/* Mô tả */}
-  <div>
-    <h5 className="mb-3 d-flex align-items-center text-primary fw-bold">
-      <FaInfoCircle className="me-2" /> Mô tả
-    </h5>
+          <div className="row">
+            {/* Cột Mô tả */}
+            <div className="col-md-8">
+              <div>
+                <h5 className="mb-3 d-flex align-items-center text-primary fw-bold">
+                  <FaInfoCircle className="me-2" /> Mô tả
+                </h5>
 
-    <div
-      className="bg-white rounded-4 shadow-sm border p-4"
-      style={{
-        fontSize: "1rem",
-        lineHeight: "1.7",
-        color: "#444",
-        borderColor: "#f0f0f0",
-      }}
-    >
-      <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
-        {post.description
-          ?.split(/\n+/)
-          .map((line) => line.trim())
-          .filter(Boolean)
-          .map((line, index) => {
-            // Xác định loại dòng
-            const isSectionTitle =
-              line.startsWith("✨") || /THÔNG TIN/i.test(line);
-            const isBullet =
-              line.startsWith("•") || /^\d+\./.test(line); // • hoặc số thứ tự
-            const isNormal = !isSectionTitle && !isBullet;
-
-            return (
-              <li
-                key={index}
-                className={`d-flex align-items-start ${
-                  isSectionTitle
-                    ? "bg-primary bg-opacity-10 fw-bold text-primary"
-                    : "bg-light"
-                } p-3 mb-2 rounded-3 border`}
-                style={{
-                  gap: "12px",
-                  borderColor: "#eee",
-                  transition: "all 0.25s ease",
-                  cursor: "default",
-                }}
-                onMouseEnter={(e) =>
-                  !isSectionTitle &&
-                  (e.currentTarget.style.backgroundColor = "#f8faff")
-                }
-                onMouseLeave={(e) =>
-                  !isSectionTitle &&
-                  (e.currentTarget.style.backgroundColor = "#f8f9fa")
-                }
-              >
-                {/* Icon */}
-                {isSectionTitle ? (
-                  <span style={{ fontSize: "1.2rem" }}>✨</span>
-                ) : (
-                  <FaCheckCircle
-                    style={{
-                      color: "#0d6efd",
-                      marginTop: "4px",
-                      fontSize: "1.1rem",
-                      flexShrink: 0,
-                    }}
-                  />
-                )}
-
-                {/* Nội dung */}
-                <span
-                  dangerouslySetInnerHTML={{
-                    __html: line.replace(
-                      /^([^:]+):/,
-                      "<strong style='color:#0d6efd'>$1:</strong>"
-                    ),
+                <div
+                  className="bg-white rounded-4 shadow-sm border p-4"
+                  style={{
+                    fontSize: "1rem",
+                    lineHeight: "1.7",
+                    color: "#444",
+                    borderColor: "#f0f0f0",
                   }}
-                />
-              </li>
-            );
-          })}
-      </ul>
-    </div>
-  </div>
-</div>
+                >
+                  <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+                    {post.description
+                      ?.split(/\n+/)
+                      .map((line) => line.trim())
+                      .filter(Boolean)
+                      .map((line, index) => {
+                        const isSectionTitle =
+                          line.startsWith("✨") || /THÔNG TIN/i.test(line);
+                        const isBullet = line.startsWith("•") || /^\d+\./.test(line);
+                        return (
+                          <li
+                            key={index}
+                            className={`d-flex align-items-start ${isSectionTitle
+                              ? "bg-primary bg-opacity-10 fw-bold text-primary"
+                              : "bg-light"
+                              } p-3 mb-2 rounded-3 border`}
+                            style={{
+                              gap: "12px",
+                              borderColor: "#eee",
+                              transition: "all 0.25s ease",
+                              cursor: "default",
+                            }}
+                            onMouseEnter={(e) =>
+                              !isSectionTitle &&
+                              (e.currentTarget.style.backgroundColor = "#f8faff")
+                            }
+                            onMouseLeave={(e) =>
+                              !isSectionTitle &&
+                              (e.currentTarget.style.backgroundColor = "#f8f9fa")
+                            }
+                          >
+                            {isSectionTitle ? (
+                              <span style={{ fontSize: "1.2rem" }}>✨</span>
+                            ) : (
+                              <FaCheckCircle
+                                style={{
+                                  color: "#0d6efd",
+                                  marginTop: "4px",
+                                  fontSize: "1.1rem",
+                                  flexShrink: 0,
+                                }}
+                              />
+                            )}
+                            <span
+                              dangerouslySetInnerHTML={{
+                                __html: line.replace(
+                                  /^([^:]+):/,
+                                  "<strong style='color:#0d6efd'>$1:</strong>"
+                                ),
+                              }}
+                            />
+                          </li>
+                        );
+                      })}
+                  </ul>
+                </div>
+              </div>
+            </div>
 
-
-          <div className="col-md-4">
-            {/* Bảng thông tin User */}
-            <div className="bg-white shadow rounded p-3 border">
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h6 className="fw-bold text-primary m-0">Thông tin người đăng</h6>
-                <img
-                  src={post.contactInfo?.profileImage || "/default-avatar.png"}
-                  alt="avatar"
-                  className="rounded-circle border shadow-sm"
-                  style={{ width: "50px", height: "50px", objectFit: "cover" }}
+            {/* Cột UserInfo */}
+            <div className="col-md-4">
+              <div className="bg-white shadow rounded p-3 border h-100">
+                <UserInfo
+                  user={post.contactInfo}
+                  postCount={userPostsCount}
+                  relatedCount={19}
+                  onOpenProfile={() => navigate(`/user/${post?.contactInfo?._id}`)}
                 />
               </div>
-
-              <table className="table table-sm">
-                <tbody>
-                  <tr>
-                    <th scope="row">Tên</th>
-                    <td>{post.contactInfo?.name || "Không có"}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Số điện thoại</th>
-                    <td>{post.contactInfo?.phone || "Không có"}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Địa chỉ</th>
-                    <td>{post.contactInfo?.address || "Không có"}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Số tin đăng</th>
-                    <td>
-                      <span className="badge bg-info text-dark">
-                        {userPostsCount}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
           </div>
-
         </div>
         {/* {user && post.contactInfo?.userId !== user._id && (
   <button
