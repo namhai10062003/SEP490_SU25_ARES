@@ -201,7 +201,7 @@ const ManageApplicationForm = () => {
   const filteredApps = applications
     .filter(app =>
       (searchTerm.trim() === "" ||
-        (app.fullName && app.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (app.name && app.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (app.email && app.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (app.phone && app.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (app.apartmentCode && app.apartmentCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -299,9 +299,9 @@ const ManageApplicationForm = () => {
                       <td>{(page - 1) * pageSize + idx + 1}</td>
                       <td>
                         {app.user && app.user._id ? (
-                          <Link to={`/admin-dashboard/manage-user/${app.user._id}`}>{app.fullName}</Link>
+                          <Link to={`/admin-dashboard/manage-user/${app.user._id}`}>{app.name}</Link>
                         ) : (
-                          app.fullName
+                          app.name
                         )}
                       </td>
                       <td>{app.email}</td>
@@ -321,53 +321,58 @@ const ManageApplicationForm = () => {
                       </td>
                       <td>{formatDate(app.createdAt)}</td>
                       <td>
-                        <div className="d-flex gap-2 flex-wrap">
-                          <button
-                            className="btn btn-sm btn-outline-info"
-                            onClick={() => handleView(app)}
-                          >
-                            Xem
-                          </button>
-                          {/* <button
-                            className="btn btn-sm btn-outline-primary"
-                            onClick={() => handleEdit(app)}
-                          >
-                            Sửa
-                          </button> */}
-                          {app.status === "Chờ duyệt" && (
-                            <>
-                              <button
-                                className="btn btn-sm btn-success me-2"
-                                onClick={() => handleApprove(app._id)}
-                                disabled={app.status === "Đang chỉnh sửa"}
-                              >
-                                Duyệt
-                              </button>
-                              <button
-                                className="btn btn-sm btn-danger"
-                                onClick={() => handleReject(app._id)}
-                                disabled={app.status === "Đang chỉnh sửa"}
-                              >
-                                Từ chối
-                              </button>
-
-                              {app.status === "Đang chỉnh sửa" && (
-                                <div className="alert alert-warning py-1 px-2 mt-2 mb-0">
-                                  ⚠ Nhân viên đang chỉnh sửa — bạn không thể duyệt/hủy lúc này
-                                </div>
-                              )}
-                            </>
-
-                          )}
-                          {app.status === "Đã duyệt" && (
+                        <div>
+                          <div className="d-flex flex-wrap gap-2">
                             <button
-                              className="btn btn-sm btn-warning"
-                              onClick={() => handleCancel(app._id)}
+                              className="btn btn-outline-info"
+                              onClick={() => handleView(app)}
                             >
-                              Huỷ
+                              Xem
                             </button>
+
+                            {/* <button
+      className="btn btn-outline-primary"
+      onClick={() => handleEdit(app)}
+    >
+      Sửa
+    </button> */}
+
+                            {app.status === "Chờ duyệt" && (
+                              <>
+                                <button
+                                  className="btn btn-success"
+                                  onClick={() => handleApprove(app._id)}
+                                  disabled={app.status === "Đang chỉnh sửa"}
+                                >
+                                  Duyệt
+                                </button>
+                                <button
+                                  className="btn btn-danger"
+                                  onClick={() => handleReject(app._id)}
+                                  disabled={app.status === "Đang chỉnh sửa"}
+                                >
+                                  Từ chối
+                                </button>
+                              </>
+                            )}
+
+                            {app.status === "Đã duyệt" && (
+                              <button
+                                className="btn btn-warning"
+                                onClick={() => handleCancel(app._id)}
+                              >
+                                Huỷ
+                              </button>
+                            )}
+                          </div>
+
+                          {app.status === "Đang chỉnh sửa" && (
+                            <div className="alert alert-warning py-1 px-2 mt-2 mb-0">
+                              ⚠ Nhân viên đang chỉnh sửa — bạn không thể duyệt/hủy lúc này
+                            </div>
                           )}
                         </div>
+
                       </td>
                     </tr>
                   ))
@@ -394,161 +399,152 @@ const ManageApplicationForm = () => {
 
         {/* Modal xem chi tiết đơn */}
         {showModal && selectedApp && (
-  <ReusableModal
-    show={showModal}
-    onClose={() => setShowModal(false)}
-    title="📑 Chi tiết đơn đăng ký"
-    size="xl"  // hoặc 'lg' nếu muốn vừa
-    fullscreen  // chiếm toàn màn hình, đẹp như form
-    body={
-      <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
-        
-        {/* Thông tin hợp đồng */}
-        <div className="card border-0 shadow-sm mb-4 rounded-3">
-          <div className="card-header bg-primary text-white fw-bold rounded-top-3">
-            📄 Thông tin hợp đồng
-          </div>
-          <ul className="list-group list-group-flush">
-            <li className="list-group-item">
-              <strong>Loại giấy tờ:</strong> {selectedApp.documentType}
-            </li>
-            <li className="list-group-item">
-              <strong>Thời hạn:</strong> {formatDate(selectedApp.contractStart)} - {formatDate(selectedApp.contractEnd)}
-            </li>
-            <li className="list-group-item">
-              <strong>Ngày gửi:</strong> {formatDate(selectedApp.createdAt)}
-            </li>
-            <li className="list-group-item">
-              <strong>Trạng thái:</strong>{" "}
-              <span
-                className={`badge px-3 py-2 rounded-pill shadow-sm ${
-                  selectedApp.status === "Chờ duyệt"
-                    ? "bg-warning text-dark"
-                    : selectedApp.status === "Đã từ chối"
-                    ? "bg-danger"
-                    : selectedApp.status === "Đã duyệt"
-                    ? "bg-success"
-                    : selectedApp.status === "Đã hủy bỏ"
-                    ? "bg-secondary"
-                    : "bg-light text-dark"
-                }`}
-              >
-                {selectedApp.status}
-              </span>
-            </li>
-          </ul>
+          <ReusableModal
+            show={showModal}
+            onClose={() => setShowModal(false)}
+            title="📑 Chi tiết đơn đăng ký"
+            size="xl"  // hoặc 'lg' nếu muốn vừa
+            fullscreen  // chiếm toàn màn hình, đẹp như form
+            body={
+              <div style={{ maxHeight: "70vh", overflowY: "auto" }}>
 
-          {documentImages.length > 0 && (
-            <div className="p-3">
-              <label className="fw-semibold mb-2 d-block">Ảnh hợp đồng:</label>
-              <div className="d-flex flex-wrap gap-3">
-                {documentImages.map((img, idx) => (
-                  <img
-                    key={idx}
-                    src={img}
-                    alt={`Hợp đồng ${idx + 1}`}
-                    className="rounded shadow-sm border"
-                    style={{
-                      maxHeight: 200,
-                      maxWidth: 300,
-                      objectFit: "cover",
-                    }}
-                  />
-                ))}
+                {/* Thông tin hợp đồng */}
+                <div className="card border-0 shadow-sm mb-4 rounded-3">
+                  <div className="card-header bg-primary text-white fw-bold rounded-top-3">
+                    📄 Thông tin hợp đồng
+                  </div>
+                  <ul className="list-group list-group-flush">
+                    <li className="list-group-item">
+                      <strong>Loại giấy tờ:</strong> {selectedApp.documentType}
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Thời hạn:</strong> {formatDate(selectedApp.contractStart)} - {formatDate(selectedApp.contractEnd)}
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Ngày gửi:</strong> {formatDate(selectedApp.createdAt)}
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Trạng thái:</strong>{" "}
+                      <span
+                        className={`badge px-3 py-2 rounded-pill shadow-sm ${selectedApp.status === "Chờ duyệt"
+                            ? "bg-warning text-dark"
+                            : selectedApp.status === "Đã từ chối"
+                              ? "bg-danger"
+                              : selectedApp.status === "Đã duyệt"
+                                ? "bg-success"
+                                : selectedApp.status === "Đã hủy bỏ"
+                                  ? "bg-secondary"
+                                  : "bg-light text-dark"
+                          }`}
+                      >
+                        {selectedApp.status}
+                      </span>
+                    </li>
+                  </ul>
+
+                  {documentImages.length > 0 && (
+                    <div className="p-3">
+                      <label className="fw-semibold mb-2 d-block">Ảnh hợp đồng:</label>
+                      <div className="d-flex flex-wrap gap-3">
+                        {documentImages.map((img, idx) => (
+                          <img
+                            key={idx}
+                            src={img}
+                            alt={`Hợp đồng ${idx + 1}`}
+                            className="rounded shadow-sm border"
+                            style={{
+                              maxHeight: 200,
+                              maxWidth: 300,
+                              objectFit: "cover",
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Người thuê */}
+                <div className="card border-0 shadow-sm mb-4 rounded-3">
+                  <div className="card-header bg-info text-white fw-bold rounded-top-3">
+                    👤 Người thuê
+                  </div>
+                  <ul className="list-group list-group-flush">
+                  {console.log("🔍 selectedApp =", selectedApp)}
+                    <li className="list-group-item">
+                      <strong>Họ tên:</strong>{" "}
+                      {selectedApp.resident?.name || selectedApp.name}
+                    </li>
+                    <li className="list-group-item">
+                      <strong>Email:</strong> {selectedApp.resident?.email || selectedApp.email}
+                    </li>
+                    <li className="list-group-item">
+                      <strong>SĐT:</strong>{" "}
+                      {formatPhoneNumber(selectedApp.resident?.phone || selectedApp.phone)}
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Thông tin căn hộ */}
+                <div className="card border-0 shadow-sm mb-4 rounded-3">
+                  <div className="card-header bg-secondary text-white fw-bold rounded-top-3">
+                    🏢 Thông tin căn hộ
+                  </div>
+                  <ul className="list-group list-group-flush">
+                    <li className="list-group-item"><strong>Mã căn hộ:</strong> {selectedApp.apartmentCode || selectedApp.apartment?.code || ""}</li>
+                    <li className="list-group-item"><strong>Tầng:</strong> {selectedApp.apartment?.floor}</li>
+                    <li className="list-group-item"><strong>Diện tích:</strong> {selectedApp.apartment?.area} m²</li>
+                    <li className="list-group-item"><strong>Nội thất:</strong> {selectedApp.apartment?.furniture}</li>
+                    <li className="list-group-item"><strong>Hướng:</strong> {selectedApp.apartment?.direction}</li>
+                    <li className="list-group-item"><strong>Trạng thái:</strong> {selectedApp.apartment?.status}</li>
+                  </ul>
+                </div>
+
+                {/* Các tháng chưa thanh toán */}
+                {selectedApp.unpaidFees && selectedApp.unpaidFees.length > 0 && (
+                  <div className="card border-0 shadow-sm mb-3 rounded-3">
+                    <div className="card-header bg-danger text-white fw-bold rounded-top-3">
+                      📅 Các tháng chưa thanh toán
+                    </div>
+                    <div className="table-responsive">
+                      <table className="table table-bordered table-hover align-middle mb-0">
+                        <thead className="table-light text-center">
+                          <tr>
+                            <th>Tháng</th>
+                            <th>Phí quản lý</th>
+                            <th>Phí nước</th>
+                            <th>Phí giữ xe</th>
+                            <th>Tổng</th>
+                            <th>Trạng thái</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedApp.unpaidFees.map((fee, index) => (
+                            <tr key={index}>
+                              <td className="text-center fw-semibold">{fee.month}</td>
+                              <td className="text-end">{formatPrice(fee.managementFee)}</td>
+                              <td className="text-end">{formatPrice(fee.waterFee)}</td>
+                              <td className="text-end">{formatPrice(fee.parkingFee)}</td>
+                              <td className="text-end fw-bold text-primary">{formatPrice(fee.total)}</td>
+                              <td className="text-center text-danger fw-semibold">{fee.status}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Người thuê */}
-        <div className="card border-0 shadow-sm mb-4 rounded-3">
-          <div className="card-header bg-info text-white fw-bold rounded-top-3">
-            👤 Người thuê
-          </div>
-          <ul className="list-group list-group-flush">
-            <li className="list-group-item">
-              <strong>Họ tên:</strong>{" "}
-              {selectedApp.user && selectedApp.user._id ? (
-                <Link
-                  to={`/admin-dashboard/manage-user/${selectedApp.user._id}`}
-                  className="text-decoration-none fw-semibold"
-                >
-                  {selectedApp.fullName}
-                </Link>
-              ) : (
-                selectedApp.fullName
-              )}
-            </li>
-            <li className="list-group-item">
-              <strong>Email:</strong> {selectedApp.resident?.email || selectedApp.email}
-            </li>
-            <li className="list-group-item">
-              <strong>SĐT:</strong>{" "}
-              {formatPhoneNumber(selectedApp.resident?.phone || selectedApp.phone)}
-            </li>
-          </ul>
-        </div>
-
-        {/* Thông tin căn hộ */}
-        <div className="card border-0 shadow-sm mb-4 rounded-3">
-          <div className="card-header bg-secondary text-white fw-bold rounded-top-3">
-            🏢 Thông tin căn hộ
-          </div>
-          <ul className="list-group list-group-flush">
-            <li className="list-group-item"><strong>Mã căn hộ:</strong> {selectedApp.apartmentCode || selectedApp.apartment?.code || ""}</li>
-            <li className="list-group-item"><strong>Tầng:</strong> {selectedApp.apartment?.floor}</li>
-            <li className="list-group-item"><strong>Diện tích:</strong> {selectedApp.apartment?.area} m²</li>
-            <li className="list-group-item"><strong>Nội thất:</strong> {selectedApp.apartment?.furniture}</li>
-            <li className="list-group-item"><strong>Hướng:</strong> {selectedApp.apartment?.direction}</li>
-            <li className="list-group-item"><strong>Trạng thái:</strong> {selectedApp.apartment?.status}</li>
-          </ul>
-        </div>
-
-        {/* Các tháng chưa thanh toán */}
-        {selectedApp.unpaidFees && selectedApp.unpaidFees.length > 0 && (
-          <div className="card border-0 shadow-sm mb-3 rounded-3">
-            <div className="card-header bg-danger text-white fw-bold rounded-top-3">
-              📅 Các tháng chưa thanh toán
-            </div>
-            <div className="table-responsive">
-              <table className="table table-bordered table-hover align-middle mb-0">
-                <thead className="table-light text-center">
-                  <tr>
-                    <th>Tháng</th>
-                    <th>Phí quản lý</th>
-                    <th>Phí nước</th>
-                    <th>Phí giữ xe</th>
-                    <th>Tổng</th>
-                    <th>Trạng thái</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {selectedApp.unpaidFees.map((fee, index) => (
-                    <tr key={index}>
-                      <td className="text-center fw-semibold">{fee.month}</td>
-                      <td className="text-end">{formatPrice(fee.managementFee)}</td>
-                      <td className="text-end">{formatPrice(fee.waterFee)}</td>
-                      <td className="text-end">{formatPrice(fee.parkingFee)}</td>
-                      <td className="text-end fw-bold text-primary">{formatPrice(fee.total)}</td>
-                      <td className="text-center text-danger fw-semibold">{fee.status}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+            }
+            footerButtons={[
+              {
+                label: "Đóng",
+                variant: "secondary",
+                onClick: () => setShowModal(false),
+              },
+            ]}
+          />
         )}
-      </div>
-    }
-    footerButtons={[
-      {
-        label: "Đóng",
-        variant: "secondary",
-        onClick: () => setShowModal(false),
-      },
-    ]}
-  />
-)}
 
 
         {/* {showEditModal && selectedApp && (
@@ -569,7 +565,7 @@ const ManageApplicationForm = () => {
                   {/* Các trường cơ bản */}
         {/* <div className="col-md-6">
                     <label>Họ tên</label>
-                    <input className="form-control" name="fullName" value={selectedApp.fullName || ""} onChange={updateSelectedApp} />
+                    <input className="form-control" name="name" value={selectedApp.name || ""} onChange={updateSelectedApp} />
                   </div>
                   <div className="col-md-6">
                     <label>Email</label>

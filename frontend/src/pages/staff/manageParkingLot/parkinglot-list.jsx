@@ -16,30 +16,30 @@ const ParkingLotList = () => {
   //ham tim kiem
   const [searchTerm, setSearchTerm] = useState('');
   const [searchDate, setSearchDate] = useState('');
-// doan loc 
+  // doan loc 
 
   const [selectedParking, setSelectedParking] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
-// hàm xem popup của paringlot
+  // hàm xem popup của paringlot
   const handleRowClick = async (id) => {
     const token = localStorage.getItem('token');
     if (!token) {
       toast.error('Không có token. Vui lòng đăng nhập lại.');
       return;
     }
-  
+
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/detail-parkinglot/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       const json = await res.json();
-      setSelectedParking(json.data); 
+      setSelectedParking(json.data);
       setShowDetailModal(true);
       console.log('Ảnh trước:', json.data.documentFront);
-console.log('Ảnh sau:', json.data.documentBack);
+      console.log('Ảnh sau:', json.data.documentBack);
     } catch (err) {
       toast.error(`Không lấy được chi tiết: ${err.message}`);
     }
@@ -51,7 +51,7 @@ console.log('Ảnh sau:', json.data.documentBack);
     } else {
       document.body.style.overflow = 'auto';
     }
-  
+
     return () => {
       document.body.style.overflow = 'auto';
     };
@@ -136,9 +136,9 @@ console.log('Ảnh sau:', json.data.documentBack);
     const matchStatus = statusFilter === 'all' || item.status === statusFilter;
 
     const matchDate =
-    !searchDate ||
-    new Date(item.registerDate).toISOString().slice(0, 10) === searchDate;
-  
+      !searchDate ||
+      new Date(item.registerDate).toISOString().slice(0, 10) === searchDate;
+
     return matchSearch && matchStatus && matchDate;
   });
   const totalPages = Math.ceil(filteredList.length / PAGE_SIZE);
@@ -154,7 +154,7 @@ console.log('Ảnh sau:', json.data.documentBack);
     <div className="d-flex min-vh-100 bg-light">
       <StaffNavbar />
       <main className="flex-grow-1 p-4">
-        
+
         <div className="bg-white rounded-4 shadow p-4 mb-4">
           <h2 className="fw-bold mb-3">Danh sách bãi đỗ xe</h2>
           <div className="mb-3">
@@ -163,36 +163,38 @@ console.log('Ảnh sau:', json.data.documentBack);
             <span><strong>Còn trống:</strong> {slotInfo.availableSlots}</span>
           </div>
           <div className="d-flex justify-content-between align-items-center mb-3">
-  <div>
-    <label className="me-2">Lọc theo trạng thái:</label>
-    <select
-      className="form-select d-inline-block w-auto"
-      value={statusFilter}
-      onChange={(e) => setStatusFilter(e.target.value)}
-    >
-      <option value="all">Tất cả</option>
-      <option value="approved">Đã phê duyệt</option>
-      <option value="rejected">Đã từ chối</option>
-    </select>
-  </div>
+            <div>
+              <label className="me-2">Lọc theo trạng thái:</label>
+              <select
+                className="form-select d-inline-block w-auto"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="all">Tất cả</option>
+                <option value="pending">Chờ duyệt</option>
+                <option value="approved">Đã phê duyệt</option>
+                <option value="rejected">Đã từ chối</option>
+                <option value="cancelled">Đã hủy</option>
+              </select>
+            </div>
 
-  <div className="d-flex gap-2 align-items-center">
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Tìm kiếm..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      style={{ minWidth: '200px' }}
-    />
-    <input
-      type="date"
-      className="form-control"
-      onChange={(e) => setSearchDate(e.target.value)}
-      style={{ minWidth: '160px' }}
-    />
-  </div>
-</div>
+            <div className="d-flex gap-2 align-items-center">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Tìm kiếm..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ minWidth: '200px' }}
+              />
+              <input
+                type="date"
+                className="form-control"
+                onChange={(e) => setSearchDate(e.target.value)}
+                style={{ minWidth: '160px' }}
+              />
+            </div>
+          </div>
 
           <div className="table-responsive">
             <table className="table table-bordered align-middle bg-white rounded-4 shadow">
@@ -210,9 +212,9 @@ console.log('Ảnh sau:', json.data.documentBack);
               <tbody>
                 {currentList.length > 0 ? (
                   currentList.map((item, idx) => (
-                    
-                    <tr key={item._id}   style={{ cursor: 'pointer' }}
-                    onClick={() => handleRowClick(item._id)}>
+
+                    <tr key={item._id} style={{ cursor: 'pointer' }}
+                      onClick={() => handleRowClick(item._id)}>
                       <td>{(page - 1) * PAGE_SIZE + idx + 1}</td>
                       <td>{item.apartmentCode}</td>
                       <td>{item.owner}</td>
@@ -220,18 +222,28 @@ console.log('Ảnh sau:', json.data.documentBack);
                       <td>{item.vehicleType}</td>
                       <td>{formatDate(item.registerDate)}</td>
                       <td>
-                        <span className={
-                          item.status === 'approved'
-                            ? 'badge bg-success'
-                            : item.status === 'rejected'
-                              ? 'badge bg-danger'
-                              : 'badge bg-secondary'
-                        }>
-                          {item.status === 'approved'
-                            ? 'Đã phê duyệt'
-                            : item.status === 'rejected'
-                              ? 'Đã từ chối'
-                              : item.status}
+                        <span
+                          className={
+                            item.status === "approved"
+                              ? "badge bg-success"
+                              : item.status === "rejected"
+                                ? "badge bg-danger"
+                                : item.status === "pending"
+                                  ? "badge bg-warning text-dark"
+                                  : item.status === "cancelled"
+                                    ? "badge bg-secondary"
+                                    : "badge bg-light text-dark"
+                          }
+                        >
+                          {item.status === "approved"
+                            ? "Đã phê duyệt"
+                            : item.status === "rejected"
+                              ? "Đã từ chối"
+                              : item.status === "pending"
+                                ? "Chờ duyệt"
+                                : item.status === "cancelled"
+                                  ? "Đã hủy"
+                                  : item.status}
                         </span>
                       </td>
                     </tr>
@@ -244,86 +256,101 @@ console.log('Ảnh sau:', json.data.documentBack);
               </tbody>
             </table>
             {showDetailModal && selectedParking && (
-  <div
-    className="modal fade show"
-    style={{ display: 'block', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-    tabIndex="-1"
-    role="dialog"
-  >
-    <div className="modal-dialog modal-dialog-centered" role="document">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title">Chi tiết bãi đỗ xe</h5>
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => setShowDetailModal(false)}
-          ></button>
-        </div>
-        <div className="modal-body">
-  <p><strong>Tên căn hộ:</strong> {selectedParking.tênCănHộ}</p>
-  <p><strong>Chủ sở hữu:</strong> {selectedParking.tênChủSởHữu}</p>
-  <p><strong>SĐT chủ sở hữu:</strong> {selectedParking.sđtChủSởHữu}</p>
-  <p><strong>Biển số xe:</strong> {selectedParking.biểnSốXe}</p>
-  <p><strong>Loại xe:</strong> {selectedParking.loạiXe}</p>
-  <p><strong>Giá:</strong> {selectedParking.giá}</p>
-  <p><strong>Ngày đăng ký:</strong> {formatDate(selectedParking.ngàyĐăngKý)}</p>
-  {/* <p><strong>Ngày hết hạn:</strong> {selectedParking.ngàyHếtHạn || '---'}</p> */}
-  <p><strong>Trạng thái:</strong>
-    <span className={
-      selectedParking.trạngThái === 'approved' ? 'badge bg-success ms-2'
-      : selectedParking.trạngThái === 'rejected' ? 'badge bg-danger ms-2'
-      : 'badge bg-secondary ms-2'
-    }>
-      {selectedParking.trạngThái === 'approved' ? 'Đã phê duyệt'
-        : selectedParking.trạngThái === 'rejected' ? 'Đã từ chối'
-        : selectedParking.trạngThái}
-    </span>
-  </p>
+              <div
+                className="modal fade show"
+                style={{ display: 'block', backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+                tabIndex="-1"
+                role="dialog"
+              >
+                <div className="modal-dialog modal-dialog-centered" role="document">
+                  <div className="modal-content">
+                    <div className="modal-header">
+                      <h5 className="modal-title">Chi tiết bãi đỗ xe</h5>
+                      <button
+                        type="button"
+                        className="btn-close"
+                        onClick={() => setShowDetailModal(false)}
+                      ></button>
+                    </div>
+                    <div className="modal-body">
+                      <p><strong>Tên căn hộ:</strong> {selectedParking.tênCănHộ}</p>
+                      <p><strong>Chủ sở hữu:</strong> {selectedParking.tênChủSởHữu}</p>
+                      <p><strong>SĐT chủ sở hữu:</strong> {selectedParking.sđtChủSởHữu}</p>
+                      <p><strong>Biển số xe:</strong> {selectedParking.biểnSốXe}</p>
+                      <p><strong>Loại xe:</strong> {selectedParking.loạiXe}</p>
+                      <p><strong>Giá:</strong> {selectedParking.giá}</p>
+                      <p><strong>Ngày đăng ký:</strong> {formatDate(selectedParking.ngàyĐăngKý)}</p>
+                      {/* <p><strong>Ngày hết hạn:</strong> {selectedParking.ngàyHếtHạn || '---'}</p> */}
+                      <p>
+                        <strong>Trạng thái:</strong>
+                        <span
+                          className={
+                            selectedParking.trạngThái === "approved"
+                              ? "badge bg-success ms-2"
+                              : selectedParking.trạngThái === "rejected"
+                                ? "badge bg-danger ms-2"
+                                : selectedParking.trạngThái === "pending"
+                                  ? "badge bg-warning text-dark ms-2"
+                                  : selectedParking.trạngThái === "cancelled"
+                                    ? "badge bg-dark ms-2"
+                                    : "badge bg-secondary ms-2"
+                          }
+                        >
+                          {selectedParking.trạngThái === "approved"
+                            ? "Đã phê duyệt"
+                            : selectedParking.trạngThái === "rejected"
+                              ? "Đã từ chối"
+                              : selectedParking.trạngThái === "pending"
+                                ? "Chờ duyệt"
+                                : selectedParking.trạngThái === "cancelled"
+                                  ? "Đã hủy"
+                                  : selectedParking.trạngThái}
+                        </span>
+                      </p>
 
-  {/* Hiển thị ảnh nếu có */}
-  {(selectedParking['ảnhTrước'] || selectedParking['ảnhSau']) && (
-  <div className="row row-cols-2 mt-3">
-    {selectedParking['ảnhTrước'] && (
-      <div className="col">
-        <strong>Ảnh trước:</strong>
-        <img
-          src={selectedParking['ảnhTrước']}
-          alt="Ảnh trước"
-          className="img-fluid rounded"
-        />
-      </div>
-    )}
-    {selectedParking['ảnhSau'] && (
-      <div className="col">
-        <strong>Ảnh sau:</strong>
-        <img
-          src={selectedParking['ảnhSau']}
-          alt="Ảnh sau"
-          className="img-fluid rounded"
-        />
-      </div>
-    )}
-  </div>
-)}
+                      {/* Hiển thị ảnh nếu có */}
+                      {(selectedParking['ảnhTrước'] || selectedParking['ảnhSau']) && (
+                        <div className="row row-cols-2 mt-3">
+                          {selectedParking['ảnhTrước'] && (
+                            <div className="col">
+                              <strong>Ảnh trước:</strong>
+                              <img
+                                src={selectedParking['ảnhTrước']}
+                                alt="Ảnh trước"
+                                className="img-fluid rounded"
+                              />
+                            </div>
+                          )}
+                          {selectedParking['ảnhSau'] && (
+                            <div className="col">
+                              <strong>Ảnh sau:</strong>
+                              <img
+                                src={selectedParking['ảnhSau']}
+                                alt="Ảnh sau"
+                                className="img-fluid rounded"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
 
 
 
-</div>
+                    </div>
 
-        <div className="modal-footer">
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => setShowDetailModal(false)}
-          >
-            Đóng
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+                    <div className="modal-footer">
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => setShowDetailModal(false)}
+                      >
+                        Đóng
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             {/* Pagination */}
             <div className="d-flex justify-content-center align-items-center mt-3">
               <button

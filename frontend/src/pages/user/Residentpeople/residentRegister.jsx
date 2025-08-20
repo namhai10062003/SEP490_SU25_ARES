@@ -31,25 +31,25 @@ const ResidentRegister = () => {
   // 🔄 Lấy căn hộ có liên quan đến user (isOwner / isRenter)
   useEffect(() => {
     if (!user?._id) return; // ⚠️ Tránh gọi khi chưa có user
-  
+
     (async () => {
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/apartments`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-  
+
         const data = await res.json();
         console.log('📦 API response:', data);
-  
+
         const apartmentsArray = data.data || [];
-  
+
         const filtered = apartmentsArray.filter(
           (apt) =>
             String(apt.isOwner?._id) === String(user._id) ||
             String(apt.isRenter?._id) === String(user._id)
         );
-  
+
         console.log("✅ Căn hộ của user:", filtered); // 👈 Log kết quả lọc
         console.log("👀 Check từng căn hộ:");
         apartmentsArray.forEach((apt) => {
@@ -67,7 +67,7 @@ const ResidentRegister = () => {
       }
     })();
   }, [user]);
-  
+
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -88,19 +88,19 @@ const ResidentRegister = () => {
     if (!form.gender) return toast.error('Chọn giới tính');
     if (!form.dateOfBirth) return toast.error('Chọn ngày sinh');
     if (!form.relationWithOwner.trim()) return toast.error('Nhập quan hệ với chủ hộ');
-  
+
     const age = getAge(form.dateOfBirth);
-  
+
     if (age >= 16) {
       if (!form.idNumber.trim()) return toast.error('Nhập số CCCD');
       if (!/^\d{12}$/.test(form.idNumber.trim())) return toast.error('CCCD phải gồm đúng 12 chữ số');
     } else {
       if (!form.documentFront) return toast.error('Vui lòng tải lên ảnh giấy khai sinh');
     }
-  
+
     return true;
   };
-  
+
   const getAge = (dob) => {
     if (!dob) return 0;
     const birthDate = new Date(dob);
@@ -112,7 +112,7 @@ const ResidentRegister = () => {
     }
     return age;
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
@@ -135,7 +135,7 @@ const ResidentRegister = () => {
       setTimeout(() => navigate(-1), 2500);
     } catch (err) {
       toast.error(`❌ ${err.message}`);
-    }finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -250,6 +250,9 @@ const ResidentRegister = () => {
                   value={form.idNumber}
                   onChange={handleChange}
                   className="form-control"
+                  maxLength={12}
+                  pattern="\d{12}"
+                  placeholder="Nhập 12 số"
                 />
               </div>
               {/* Ngày cấp */}
@@ -265,57 +268,57 @@ const ResidentRegister = () => {
               </div>
               {/* Ảnh giấy tờ */}
               <div className="col-md-6">
-  <label className="form-label">
-    {getAge(form.dateOfBirth) < 16 ? 'Ảnh giấy khai sinh *' : 'Mặt trước CCCD'}
-  </label>
-  <input
-    type="file"
-    name="documentFront"
-    accept="image/*"
-    onChange={handleChange}
-    className="form-control"
-    required={getAge(form.dateOfBirth) < 16} // bắt buộc nếu là giấy khai sinh
-  />
-  {previewFront && (
-    <img src={previewFront} alt="front" className="img-thumbnail mt-2" style={{ maxHeight: 180 }} />
-  )}
-</div>
-{getAge(form.dateOfBirth) >= 16 && (
-  <div className="col-md-6">
-    <label className="form-label">Mặt sau CCCD</label>
-    <input
-      type="file"
-      name="documentBack"
-      accept="image/*"
-      onChange={handleChange}
-      className="form-control"
-    />
-    {previewBack && (
-      <img
-        src={previewBack}
-        alt="back"
-        className="img-thumbnail mt-2"
-        style={{ maxHeight: 180 }}
-      />
-    )}
-  </div>
-)}
+                <label className="form-label">
+                  {getAge(form.dateOfBirth) < 16 ? 'Ảnh giấy khai sinh *' : 'Mặt trước CCCD'}
+                </label>
+                <input
+                  type="file"
+                  name="documentFront"
+                  accept="image/*"
+                  onChange={handleChange}
+                  className="form-control"
+                  required={getAge(form.dateOfBirth) < 16} // bắt buộc nếu là giấy khai sinh
+                />
+                {previewFront && (
+                  <img src={previewFront} alt="front" className="img-thumbnail mt-2" style={{ maxHeight: 180 }} />
+                )}
+              </div>
+              {getAge(form.dateOfBirth) >= 16 && (
+                <div className="col-md-6">
+                  <label className="form-label">Mặt sau CCCD</label>
+                  <input
+                    type="file"
+                    name="documentBack"
+                    accept="image/*"
+                    onChange={handleChange}
+                    className="form-control"
+                  />
+                  {previewBack && (
+                    <img
+                      src={previewBack}
+                      alt="back"
+                      className="img-thumbnail mt-2"
+                      style={{ maxHeight: 180 }}
+                    />
+                  )}
+                </div>
+              )}
               {/* Nút submit */}
               <div className="col-12">
-              <button
-        type="submit"
-        className="btn btn-primary btn-lg w-100 mt-3 d-flex justify-content-center align-items-center"
-        disabled={loading} // không cho bấm khi đang loading
-      >
-        {loading && (
-          <span
-            className="spinner-border spinner-border-sm me-2"
-            role="status"
-            aria-hidden="true"
-          ></span>
-        )}
-        {loading ? "Đang đăng ký..." : "Đăng ký"}
-      </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-lg w-100 mt-3 d-flex justify-content-center align-items-center"
+                  disabled={loading} // không cho bấm khi đang loading
+                >
+                  {loading && (
+                    <span
+                      className="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                  )}
+                  {loading ? "Đang đăng ký..." : "Đăng ký"}
+                </button>
               </div>
             </div>
           </form>
