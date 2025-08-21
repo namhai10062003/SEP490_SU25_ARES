@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Modal } from "react-bootstrap";
 import { toast } from "react-toastify";
 import StaffNavbar from "../../staff/staffNavbar"; // ✅ Thêm dòng này
-
 const ResidentVerifyList = () => {
   const [residents, setResidents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,8 +14,12 @@ const ResidentVerifyList = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
-
+  const [show, setShow] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const openImage = (img) => {
+    setSelectedImage(img);
+    setShow(true);
+  };
   const fetchResidents = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -114,12 +118,6 @@ const ResidentVerifyList = () => {
     } catch (err) {
       toast.error("❌ Có lỗi xảy ra khi từ chối");
     }
-  };
-
-
-
-  const openImage = (url) => {
-    if (url) window.open(url, "_blank", "noopener,noreferrer");
   };
 
 
@@ -254,42 +252,53 @@ const ResidentVerifyList = () => {
                     <td>{r.idNumber}</td>
                     <td>{r.issueDate ? new Date(r.issueDate).toLocaleDateString("vi-VN") : ""}</td>
                     <td>
-                      <div className="d-flex gap-2">
-                        {r.documentFront && (
-                          <img
-                            src={r.documentFront}
-                            alt="CCCD mặt trước"
-                            title="Mặt trước"
-                            style={{
-                              width: 60,
-                              height: 40,
-                              objectFit: "cover",
-                              cursor: "pointer",
-                              borderRadius: 4,
-                              border: "1px solid #ccc",
-                            }}
-                            onClick={() => openImage(r.documentFront)}
-                          />
-                        )}
-                        {r.documentBack && (
-                          <img
-                            src={r.documentBack}
-                            alt="CCCD mặt sau"
-                            title="Mặt sau"
-                            style={{
-                              width: 60,
-                              height: 40,
-                              objectFit: "cover",
-                              cursor: "pointer",
-                              borderRadius: 4,
-                              border: "1px solid #ccc",
-                            }}
-                            onClick={() => openImage(r.documentBack)}
-                          />
-                        )}
-                        {!r.documentFront && !r.documentBack && "---"}
-                      </div>
-                    </td>
+      <div className="d-flex gap-2">
+        {r.documentFront && (
+          <img
+            src={r.documentFront}
+            alt="CCCD mặt trước"
+            title="Mặt trước"
+            style={{
+              width: 60,
+              height: 40,
+              objectFit: "cover",
+              cursor: "pointer",
+              borderRadius: 4,
+              border: "1px solid #ccc",
+            }}
+            onClick={() => openImage(r.documentFront)}
+          />
+        )}
+        {r.documentBack && (
+          <img
+            src={r.documentBack}
+            alt="CCCD mặt sau"
+            title="Mặt sau"
+            style={{
+              width: 60,
+              height: 40,
+              objectFit: "cover",
+              cursor: "pointer",
+              borderRadius: 4,
+              border: "1px solid #ccc",
+            }}
+            onClick={() => openImage(r.documentBack)}
+          />
+        )}
+        {!r.documentFront && !r.documentBack && "---"}
+      </div>
+
+      {/* Popup xem ảnh */}
+      <Modal show={show} onHide={() => setShow(false)} centered size="lg">
+        <Modal.Body className="text-center">
+          <img
+            src={selectedImage}
+            alt="Preview"
+            style={{ maxWidth: "100%", maxHeight: "80vh" }}
+          />
+        </Modal.Body>
+      </Modal>
+    </td>
 
                     <td>
                       {r.verifiedByStaff === "pending" && (

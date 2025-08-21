@@ -21,6 +21,13 @@ const [cccdBackImage, setCccdBackImage] = useState(null);
 const [previewFront, setPreviewFront] = useState(null);
 const [previewBack, setPreviewBack] = useState(null);
 const [loading, setLoading] = useState(false);
+// Ảnh cũ từ DB (props user)
+const [oldFront, setOldFront] = useState("");
+const [oldBack, setOldBack] = useState("");
+ // state popup
+ const [showPopup, setShowPopup] = useState(false);
+ const [popupImg, setPopupImg] = useState("");
+
 //hàm cccd 
 const handleCccdFrontChange = (e) => {
   const file = e.target.files[0];
@@ -86,7 +93,12 @@ const handleCccdBackChange = (e) => {
         });
         setPreviewImage(userInfo.profileImage || null);
         setName(userInfo.name);
-  
+        if (userInfo) {
+          setOldFront(userInfo.cccdFrontImage || "");
+          setOldBack(userInfo.cccdBackImage || "");
+          console.log("Ảnh cũ mặt trước:", userInfo.cccdFrontImage);
+          console.log("Ảnh cũ mặt sau:", userInfo.cccdBackImage);
+        }
         // 🟡 Lấy yêu cầu cập nhật gần nhất
         const requestRes = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/profile-update/profile-update-requests?userId=${user._id}`,
@@ -349,31 +361,73 @@ const handleCccdBackChange = (e) => {
     title="CMND/CCCD phải gồm 12 chữ số"
   />
 </div>
-<div className="mb-3">
-  <label className="form-label">Ảnh CCCD mặt trước</label>
-  <input type="file" accept="image/*" className="form-control" onChange={handleCccdFrontChange} />
-  {previewFront && (
-    <img
-      src={previewFront}
-      alt="CCCD mặt trước"
-      className="img-thumbnail mt-2"
-      style={{ maxHeight: 150 }}
-    />
-  )}
-</div>
+<>
+      <div className="mb-3">
+        <label className="form-label">Ảnh CCCD mặt trước</label>
+        <input
+          type="file"
+          accept="image/*"
+          className="form-control"
+          onChange={handleCccdFrontChange}
+        />
+        {(previewFront || oldFront) && (
+          <img
+            src={previewFront || oldFront}
+            alt="CCCD mặt trước"
+            className="img-thumbnail mt-2"
+            style={{ maxHeight: 150, cursor: "pointer" }}
+            onClick={() => {
+              setPopupImg(previewFront || oldFront);
+              setShowPopup(true);
+            }}
+          />
+        )}
+      </div>
 
-<div className="mb-3">
-  <label className="form-label">Ảnh CCCD mặt sau</label>
-  <input type="file" accept="image/*" className="form-control" onChange={handleCccdBackChange} />
-  {previewBack && (
-    <img
-      src={previewBack}
-      alt="CCCD mặt sau"
-      className="img-thumbnail mt-2"
-      style={{ maxHeight: 150 }}
-    />
-  )}
-</div>
+      <div className="mb-3">
+        <label className="form-label">Ảnh CCCD mặt sau</label>
+        <input
+          type="file"
+          accept="image/*"
+          className="form-control"
+          onChange={handleCccdBackChange}
+        />
+        {(previewBack || oldBack) && (
+          <img
+            src={previewBack || oldBack}
+            alt="CCCD mặt sau"
+            className="img-thumbnail mt-2"
+            style={{ maxHeight: 150, cursor: "pointer" }}
+            onClick={() => {
+              setPopupImg(previewBack || oldBack);
+              setShowPopup(true);
+            }}
+          />
+        )}
+      </div>
+
+      {/* Popup */}
+      {showPopup && (
+        <div
+          className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+          style={{ background: "rgba(0,0,0,0.7)", zIndex: 1050 }}
+          onClick={() => setShowPopup(false)}
+        >
+          <img
+            src={popupImg}
+            alt="Preview"
+            style={{
+              maxHeight: "90%",
+              maxWidth: "90%",
+              borderRadius: 8,
+              boxShadow: "0 0 10px #000",
+            }}
+          />
+        </div>
+      )}
+    </>
+
+
 
             <div className="mb-3">
               <label className="form-label">Giới thiệu</label>
