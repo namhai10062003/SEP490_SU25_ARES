@@ -12,7 +12,7 @@ import { getPostById } from "../../../service/postService";
 
 const BookingForm = () => {
   const { postId } = useParams();
-  const { user } = useAuth();
+  const { user, logout } = useAuth(); 
   const [name, setName] = useState("");
   const navigate = useNavigate();
   const hasWarned = useRef(false);
@@ -211,14 +211,14 @@ for (let pair of formData.entries()) {
 
   if (!post) return <div className="text-center py-4">🔄 Đang tải dữ liệu...</div>;
   if (user._id === post.contactInfo?._id) {
-    const handleLogout = () => {
-      localStorage.clear();
-      window.location.href = "/login";
-    };
 
     return (
       <div className="bg-light min-vh-100">
-        <Header user={user} name={name} logout={handleLogout} />
+        <Header 
+      user={user} 
+      name={name} 
+      logout={logout}  // 👈 phải truyền xuống
+    />
         <div className="container py-5">
           <div className="card shadow-sm text-center p-4">
             <div className="text-danger fs-4 mb-3">

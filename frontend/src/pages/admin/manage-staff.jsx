@@ -1,10 +1,9 @@
 import { faEye, faEyeSlash, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import Swal from "sweetalert2";
 import Pagination from "../../../components/Pagination.jsx";
 import ReusableModal from "../../../components/ReusableModal.jsx";
 import SearchInput from "../../../components/admin/searchInput.jsx";
@@ -38,7 +37,13 @@ const ManageStaff = () => {
   const page = Number(searchParams.get("page")) || 1;
   const limit = Number(searchParams.get("pageSize")) || 10;
   const filterStatus = searchParams.get("status") || "";
-
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // riêng cho xóa
+  const [staffToDelete, setStaffToDelete] = useState(null);
+  
+  const openDeleteModal = (id) => {
+    setStaffToDelete(id);
+    setShowDeleteModal(true);
+  };
   // axios instance with token
   const getAxios = () => {
     const token = localStorage.getItem("token");
@@ -179,31 +184,25 @@ const ManageStaff = () => {
     }
   };
   // hàm xóa staff
-  const handleDeleteStaff = async (id) => {
-    const result = await Swal.fire({
-      title: "Bạn có chắc?",
-      text: "Hành động này sẽ xóa staff vĩnh viễn!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy",
-    });
 
-    if (!result.isConfirmed) return;
-
+  const handleDeleteStaff = async () => {
     try {
-      await axios.delete(`${import.meta.env.VITE_API_URL}/api/staff/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/staff/${staffToDelete}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
       toast.success("✅ Xóa staff thành công!");
+      setShowDeleteModal(false);
+      setStaffToDelete(null);
       fetchStaff();
     } catch (err) {
       console.error(err);
       toast.error("❌ Lỗi khi xóa staff!");
     }
   };
+
   // search handlers
   const triggerSearch = () => {
     updateQuery({ email: (searchInput || "").trim(), page: 1 });
@@ -370,13 +369,16 @@ const ManageStaff = () => {
                           </button>
 
                           {/* Nút Xóa */}
-                          <button
-                            className="btn btn-sm btn-danger"
-                            style={{ minWidth: 85 }}
-                            onClick={() => handleDeleteStaff(staff._id)}
-                          >
-                            Xóa
-                          </button>
+                          
+      {/* nút xoá staff */}
+      <button
+        className="btn btn-sm btn-danger"
+        style={{ minWidth: 85 }}
+        onClick={() => openDeleteModal(staff._id)}
+      >
+        Xóa
+      </button>
+    
                         </div>
                       </td>
                     </tr>
@@ -405,7 +407,28 @@ const ManageStaff = () => {
             size="md"
           />
         )}
+        {showDeleteModal && (
+  <ReusableModal
+    show={showDeleteModal}
+    onClose={() => setShowDeleteModal(false)}
+    title="Bạn có chắc?"
+    body={<p>Hành động này sẽ xóa staff vĩnh viễn!</p>}
+    footerButtons={[
+      {
+        label: "Hủy",
+        variant: "secondary",
+        onClick: () => setShowDeleteModal(false),
+      },
+      {
+        label: "Xóa",
+        variant: "danger",
+        onClick: handleDeleteStaff,
+      },
+    ]}
+  />
+)}
       </div>
+  
     </AdminDashboard>
   );
 };

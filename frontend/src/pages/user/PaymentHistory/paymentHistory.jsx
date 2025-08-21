@@ -4,8 +4,6 @@ import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";
 import React, { useEffect, useState } from "react";
 import Header from "../../../../components/header.jsx";
 import { useAuth } from "../../../../context/authContext.jsx"; // import useAuth
-import h1 from "../../../../public/logo_2.png";
-import h2 from "../../../../public/mb.jpg";
 export default function PaymentHistoryTable() {
   const { user, logout } = useAuth(); // lấy user và logout từ context
   const [history, setHistory] = useState([]);
@@ -89,7 +87,7 @@ export default function PaymentHistoryTable() {
                 <td>
                   <div className="d-flex align-items-center">
                     <img
-                      src={h1}
+                      src="/images/logo_2.png"
                       alt="icon"
                       style={{
                         width: "28px",
@@ -118,7 +116,7 @@ export default function PaymentHistoryTable() {
                 <td>
                   <div className="d-flex align-items-center">
                     <img
-                      src={h2}
+                      src="/images/mb.jpg"
                       alt="account"
                       style={{
                         width: "28px",

@@ -102,28 +102,29 @@ const RegistrationForm = () => {
   useEffect(() => {
     const fetchPlazas = async () => {
       const token = localStorage.getItem("token"); // đảm bảo lấy được
-
+  
       if (!token) return console.warn("⚠️ Token chưa có");
-
+  
       try {
-        const response = await axios.get("http://localhost:4000/api/plaza", {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/plaza`, {
           headers: {
             Authorization: `Bearer ${token}`, // gửi token kèm header
           },
         });
-
-        console.log("📦 Dữ liệu plaza từ server:", response.data);
-
-        if (response?.data?.data) {
-          setPlazaOptions(response.data.data);
+  
+        console.log("📦 Dữ liệu plaza từ server:", res.data);
+  
+        if (res?.data?.data) {
+          setPlazaOptions(res.data.data);
         }
       } catch (error) {
         console.error("❌ Không thể lấy danh sách plaza:", error);
       }
     };
-
+  
     fetchPlazas();
   }, []);
+  
   //
   useEffect(() => {
     setName(user?.name || null);
