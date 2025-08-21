@@ -1,5 +1,6 @@
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
+import axios from "axios";
 import DOMPurify from "dompurify";
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
@@ -9,8 +10,7 @@ import Header from "../../../../components/header.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
 import {
   createPost,
-  getApartmentList,
-  getPlazaList,
+  getApartmentList
 } from "../../../service/postService.js";
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -106,7 +106,12 @@ const RegistrationForm = () => {
       if (!token) return console.warn("⚠️ Token chưa có");
 
       try {
-        const response = await getPlazaList(token);
+        const response = await axios.get("http://localhost:4000/api/plaza", {
+          headers: {
+            Authorization: `Bearer ${token}`, // gửi token kèm header
+          },
+        });
+
         console.log("📦 Dữ liệu plaza từ server:", response.data);
 
         if (response?.data?.data) {
@@ -438,18 +443,19 @@ if (!formData.postPackage)
 
 
 
-  // 1️⃣ tìm tòa plaza đang chọn dựa vào _id trong formData
+// lấy tòa đã chọn
 const selectedPlaza = plazaOptions.find(
   (plaza) => String(plaza._id) === String(formData.toaPlaza)
 );
 
-// 2️⃣ lấy ra tên plaza (building name) để so sánh với danh sách căn hộ
 const selectedPlazaName = selectedPlaza?.name || "";
 
-// 3️⃣ lọc danh sách căn hộ theo plaza
 const filteredApartments = apartmentOptions.filter(
-  (apartment) => apartment.building === selectedPlazaName
+  (apartment) => selectedPlazaName.includes(apartment.building)
 );
+
+console.log("✅ filteredApartments:", filteredApartments);
+
 
   const apartmentSelectStyles = {
     control: (provided) => ({
@@ -723,59 +729,80 @@ const filteredApartments = apartmentOptions.filter(
   <label className="form-label">
     Mô tả chi tiết <span className="text-danger">*</span>
   </label>
-
-  {/* CKEditor trong box có chiều cao cố định + scroll */}
   <div 
     className="border rounded p-2 bg-white"
-    style={{ maxHeight: "300px", overflowY: "auto" }}
+    style={{ maxHeight: "300px", overflowY: "auto" }} // cố định chiều cao + scroll
   >
-    <CKEditor
-      editor={ClassicEditor}
-      data={formData.moTaChiTiet}
-      onChange={(event, editor) => {
-        const data = editor.getData();
+  <CKEditor
+  editor={ClassicEditor}
+  data={formData.moTaChiTiet}
+  config={{
+    placeholder: "Nhập mô tả chi tiết...",
+  }}
+  onReady={(editor) => {
+    // Set min/max height + scroll
+    editor.editing.view.change((writer) => {
+      const root = editor.editing.view.document.getRoot();
+      const editable = editor.ui.view.editable.element;
+    
+      // Thêm class bootstrap bằng writer (view)
+      writer.addClass("p-2", root);
+      writer.addClass("border", root);
+      writer.addClass("rounded", root);
+    
+      // Set style trực tiếp vào DOM element -> mới có thanh cuộn
+      editable.style.minHeight = "250px";
+      editable.style.maxHeight = "400px";
+      editable.style.overflowY = "auto";   // cuộn dọc
+      editable.style.overflowX = "hidden"; // ẩn cuộn ngang
+    });
+    
+    
 
-        // Lấy text thuần để đếm ký tự
-        const plainText = data.replace(/<[^>]*>/g, "");
+    // Hàm xử lý count + update state
+    const updateCharCount = () => {
+      const data = editor.getData();
+      const plainText = data.replace(/<[^>]*>/g, "");
+      const clean = DOMPurify.sanitize(data);
 
-        if (plainText.length <= 1000) {
-          const clean = DOMPurify.sanitize(data);
+      setFormData((prev) => ({ ...prev, moTaChiTiet: clean }));
+      setCharCount((prev) => ({
+        ...prev,
+        moTaChiTiet: plainText.length,
+      }));
+    };
 
-          setFormData((prev) => ({ ...prev, moTaChiTiet: clean }));
-          setCharCount((prev) => ({
-            ...prev,
-            moTaChiTiet: plainText.length,
-          }));
-        }
-      }}
-    />
-  </div>
+    // Lắng nghe tất cả thay đổi trong model (bao gồm nhập, xóa, paste, cut, undo, redo)
+    editor.model.document.on("change:data", updateCharCount);
+  }}
+/>
+</div>
+{/* Đếm ký tự */}
+<small
+  className={
+    charCount.moTaChiTiet >= 1000 ? "text-danger fw-bold" : "text-muted"
+  }
+>
+  {charCount.moTaChiTiet}/1000{" "}
+  {charCount.moTaChiTiet >= 1000 && "🚫 Đã đạt giới hạn ký tự"}
+</small>
 
-  {/* Đếm ký tự */}
-  <small
-    style={{
-      color: charCount.moTaChiTiet >= 1000 ? "red" : "#555",
-    }}
-  >
-    {charCount.moTaChiTiet}/1000
-  </small>
 
- {/* Preview */}
+{/* Preview */}
 <div className="mt-3">
   <label className="form-label">Xem trước mô tả chi tiết</label>
   <div
     className="border rounded p-3 bg-light"
-    style={{
-      whiteSpace: "pre-wrap", // giữ xuống dòng từ CKEditor
-      wordBreak: "break-word", // tự ngắt khi text quá dài
-    }}
+    style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
     dangerouslySetInnerHTML={{
       __html: DOMPurify.sanitize(formData.moTaChiTiet),
     }}
   />
 </div>
-
 </div>
+
+
+
 
                   {["ban", "cho_thue"].includes(loaiBaiDang) && (
   <div className="col-12 col-md-6">
