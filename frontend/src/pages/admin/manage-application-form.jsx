@@ -299,9 +299,9 @@ const ManageApplicationForm = () => {
                       <td>{(page - 1) * pageSize + idx + 1}</td>
                       <td>
                         {app.user && app.user._id ? (
-                          <Link to={`/admin-dashboard/manage-user/${app.user._id}`}>{app.name}</Link>
+                          <Link to={`/admin-dashboard/manage-user/${app.user._id}`}>{app.user.name || app.fullName}</Link>
                         ) : (
-                          app.name
+                          app.fullName
                         )}
                       </td>
                       <td>{app.email}</td>
@@ -427,14 +427,14 @@ const ManageApplicationForm = () => {
                       <strong>Trạng thái:</strong>{" "}
                       <span
                         className={`badge px-3 py-2 rounded-pill shadow-sm ${selectedApp.status === "Chờ duyệt"
-                            ? "bg-warning text-dark"
-                            : selectedApp.status === "Đã từ chối"
-                              ? "bg-danger"
-                              : selectedApp.status === "Đã duyệt"
-                                ? "bg-success"
-                                : selectedApp.status === "Đã hủy bỏ"
-                                  ? "bg-secondary"
-                                  : "bg-light text-dark"
+                          ? "bg-warning text-dark"
+                          : selectedApp.status === "Đã từ chối"
+                            ? "bg-danger"
+                            : selectedApp.status === "Đã duyệt"
+                              ? "bg-success"
+                              : selectedApp.status === "Đã hủy bỏ"
+                                ? "bg-secondary"
+                                : "bg-light text-dark"
                           }`}
                       >
                         {selectedApp.status}
@@ -470,7 +470,7 @@ const ManageApplicationForm = () => {
                     👤 Người thuê
                   </div>
                   <ul className="list-group list-group-flush">
-                  {console.log("🔍 selectedApp =", selectedApp)}
+                    {console.log("🔍 selectedApp =", selectedApp)}
                     <li className="list-group-item">
                       <strong>Họ tên:</strong>{" "}
                       {selectedApp.resident?.name || selectedApp.name}

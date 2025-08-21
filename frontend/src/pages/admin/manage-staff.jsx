@@ -57,10 +57,10 @@ const ManageStaff = () => {
     const params = new URLSearchParams(
       Object.fromEntries(searchParams.entries())
     );
-  
+
     // chỉ áp dụng cho filter (không liên quan tới update staff)
     const filterKeys = ["search", "email", "status", "page", "limit"];
-  
+
     filterKeys.forEach((k) => {
       if (Object.prototype.hasOwnProperty.call(next, k)) {
         const v = next[k];
@@ -68,10 +68,10 @@ const ManageStaff = () => {
         else params.set(k, String(v));
       }
     });
-  
+
     setSearchParams(params, { replace: true });
   };
-  
+
 
   // fetch staff using URL params
   const fetchStaff = useCallback(async () => {
@@ -184,6 +184,7 @@ const ManageStaff = () => {
     }
   };
   // hàm xóa staff
+
   const handleDeleteStaff = async () => {
     try {
       await axios.delete(
@@ -239,27 +240,27 @@ const ManageStaff = () => {
       </div>
 
       <div className="form-group mb-0">
-  <label>Mật khẩu</label>
-  <div className="input-group">
-    <input
-      type={showPassword ? "text" : "password"}
-      className="form-control"
-      name="password"
-      value={form.password}
-      onChange={handleChange}
-      required={!isUpdate}
-      disabled={isUpdate} // 🚀 khóa lại khi đang update
-    />
-    <button
-      type="button"
-      className="btn btn-outline-secondary"
-      onClick={() => setShowPassword(!showPassword)}
-      disabled={isUpdate} // 🚀 nút ẩn/hiện cũng khóa luôn
-    >
-      <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-    </button>
-  </div>
-</div>
+        <label>Mật khẩu</label>
+        <div className="input-group">
+          <input
+            type={showPassword ? "text" : "password"}
+            className="form-control"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            required={!isUpdate}
+            disabled={isUpdate} // 🚀 khóa lại khi đang update
+          />
+          <button
+            type="button"
+            className="btn btn-outline-secondary"
+            onClick={() => setShowPassword(!showPassword)}
+            disabled={isUpdate} // 🚀 nút ẩn/hiện cũng khóa luôn
+          >
+            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+          </button>
+        </div>
+      </div>
 
     </>
   );
@@ -338,9 +339,8 @@ const ManageStaff = () => {
                       <td>{staff.email}</td>
                       <td>
                         <span
-                          className={`badge ${
-                            staff.status === 1 ? "bg-success" : "bg-secondary"
-                          }`}
+                          className={`badge ${staff.status === 1 ? "bg-success" : "bg-secondary"
+                            }`}
                         >
                           {staff.status === 1 ? "Active" : "Blocked"}
                         </span>
@@ -358,11 +358,10 @@ const ManageStaff = () => {
 
                           {/* Nút Block / Active */}
                           <button
-                            className={`btn btn-sm ${
-                              staff.status === 1
+                            className={`btn btn-sm ${staff.status === 1
                                 ? "btn-outline-warning"
                                 : "btn-outline-success"
-                            }`}
+                              }`}
                             style={{ minWidth: 85 }}
                             onClick={() => handleToggleStatus(staff)}
                           >
@@ -405,6 +404,7 @@ const ManageStaff = () => {
             body={renderModalBody()}
             footerButtons={modalButtons}
             onClose={() => setShowModal(false)}
+            size="md"
           />
         )}
         {showDeleteModal && (
