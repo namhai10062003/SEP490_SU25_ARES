@@ -179,3 +179,22 @@ export const deletePostById = async (postId) => {
     });
 };
 
+export const getLatestPosts = async () => {
+    const token = localStorage.getItem("token");
+    return axios.get(`${API_BASE}/posts/get-post`, {
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
+};
+
+export const getNearlyExpiringPosts = async () => {
+    const token = localStorage.getItem("token");
+    return axios.get(`${API_BASE}/posts/get-nearly-expire-post`, {
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+    });
+};
