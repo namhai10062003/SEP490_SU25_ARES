@@ -340,6 +340,7 @@ const ManageStaff = () => {
                         body={renderModalBody()}
                         footerButtons={modalButtons}
                         onClose={() => setShowModal(false)}
+                        size="md"
                     />
                 )}
             </div>

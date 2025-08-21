@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import AdminDashboard from "./adminDashboard.jsx";
 import axios from "axios";
 import Pagination from "../../../components/Pagination";
-import { formatSmartDate, formatPhoneNumber } from "../../../utils/format.jsx";
+import { formatDateWithTime, formatPhoneNumber } from "../../../utils/format.jsx";
 import { toast } from "react-toastify";
 import { useSearchParams } from "react-router-dom";
 import ReusableModal from "../../../components/ReusableModal.jsx";
@@ -203,7 +203,7 @@ const ManageNotifications = () => {
                                             {n.read ? "Đã đọc" : "Chưa đọc"}
                                         </span>
                                     </td>
-                                    <td>{formatSmartDate(n.createdAt)}</td>
+                                    <td>{formatDateWithTime(n.createdAt)}</td>
                                     <td>
                                         <div className="d-flex justify-content-center">
                                             <button className="btn btn-outline-danger" onClick={() => handleDelete(n._id)}>
@@ -283,6 +283,7 @@ const ManageNotifications = () => {
                     }}
                     title="Xác nhận xóa"
                     body="Bạn có chắc chắn muốn xóa thông báo này không?"
+                    size="md"
                     footerButtons={[
                         {
                             label: "Hủy",

@@ -7,8 +7,28 @@ const ReusableModal = ({
   title,
   body,
   footerButtons = [],
+  size = "lg", // Accepts "sm", "md", "lg", "xl", or custom Bootstrap modal size
 }) => {
   if (!show) return null;
+
+  // Map size prop to Bootstrap modal-dialog class
+  let sizeClass = "";
+  switch (size) {
+    case "sm":
+      sizeClass = "modal-sm";
+      break;
+    case "md":
+      sizeClass = ""; // default, no extra class
+      break;
+    case "lg":
+      sizeClass = "modal-lg";
+      break;
+    case "xl":
+      sizeClass = "modal-xl";
+      break;
+    default:
+      sizeClass = size; // allow custom class if provided
+  }
 
   return ReactDOM.createPortal(
     <>
@@ -21,8 +41,7 @@ const ReusableModal = ({
         style={{ display: "block" }}
         tabIndex="-1"
       >
-        <div className="modal-dialog modal-dialog-centered modal-lg">
-
+        <div className={`modal-dialog modal-dialog-centered ${sizeClass}`}>
           <div className="modal-content position-relative">
             {/* Close button */}
             <button
