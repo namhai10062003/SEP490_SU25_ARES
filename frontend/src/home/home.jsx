@@ -39,16 +39,16 @@ const CountUpOnView = ({ end, duration = 2000 }) => {
   return <span ref={ref}>{count}</span>;
 };
 
-const apartments = [
-  { id: 1, beds: 2, title: "Modern Living Room", description: "Spacious and bright with natural light", imgSrc: "https://storage.googleapis.com/a1aa/image/eb17a6f0-03ac-4788-da98-14157d345540.jpg" },
-  { id: 2, beds: 3, title: "Cozy Kitchen", description: "Equipped with modern appliances", imgSrc: "https://storage.googleapis.com/a1aa/image/a259e0d3-c5cd-434c-c572-a06f04e9a10d.jpg" },
-  { id: 3, beds: 1, title: "Elegant Dining", description: "Perfect for family meals", imgSrc: "https://storage.googleapis.com/a1aa/image/50db75ab-f590-4028-1032-6d830ec5ba54.jpg" },
-  { id: 4, beds: 2, title: "Comfortable Bedroom", description: "Relaxing and spacious", imgSrc: "https://storage.googleapis.com/a1aa/image/e3b41882-d7a6-4875-4c9d-7f199f55a15f.jpg" },
-  { id: 5, beds: 1, title: "Sunny Balcony", description: "Great for morning coffee", imgSrc: "https://storage.googleapis.com/a1aa/image/a671ed03-7bea-40ef-8b7a-e7a4a98b42dd.jpg" },
-  { id: 6, beds: 1, title: "Sunny Balcony", description: "Great for morning coffee", imgSrc: "https://storage.googleapis.com/a1aa/image/a671ed03-7bea-40ef-8b7a-e7a4a98b42dd.jpg" },
-  { id: 7, beds: 1, title: "Sunny Balcony", description: "Great for morning coffee", imgSrc: "https://storage.googleapis.com/a1aa/image/a671ed03-7bea-40ef-8b7a-e7a4a98b42dd.jpg" },
-  { id: 8, beds: 1, title: "Sunny Balcony", description: "Great for morning coffee", imgSrc: "https://storage.googleapis.com/a1aa/image/a671ed03-7bea-40ef-8b7a-e7a4a98b42dd.jpg" },
-];
+// const apartments = [
+//   { id: 1, beds: 2, title: "Modern Living Room", description: "Spacious and bright with natural light", imgSrc: "https://storage.googleapis.com/a1aa/image/eb17a6f0-03ac-4788-da98-14157d345540.jpg" },
+//   { id: 2, beds: 3, title: "Cozy Kitchen", description: "Equipped with modern appliances", imgSrc: "https://storage.googleapis.com/a1aa/image/a259e0d3-c5cd-434c-c572-a06f04e9a10d.jpg" },
+//   { id: 3, beds: 1, title: "Elegant Dining", description: "Perfect for family meals", imgSrc: "https://storage.googleapis.com/a1aa/image/50db75ab-f590-4028-1032-6d830ec5ba54.jpg" },
+//   { id: 4, beds: 2, title: "Comfortable Bedroom", description: "Relaxing and spacious", imgSrc: "https://storage.googleapis.com/a1aa/image/e3b41882-d7a6-4875-4c9d-7f199f55a15f.jpg" },
+//   { id: 5, beds: 1, title: "Sunny Balcony", description: "Great for morning coffee", imgSrc: "https://storage.googleapis.com/a1aa/image/a671ed03-7bea-40ef-8b7a-e7a4a98b42dd.jpg" },
+//   { id: 6, beds: 1, title: "Sunny Balcony", description: "Great for morning coffee", imgSrc: "https://storage.googleapis.com/a1aa/image/a671ed03-7bea-40ef-8b7a-e7a4a98b42dd.jpg" },
+//   { id: 7, beds: 1, title: "Sunny Balcony", description: "Great for morning coffee", imgSrc: "https://storage.googleapis.com/a1aa/image/a671ed03-7bea-40ef-8b7a-e7a4a98b42dd.jpg" },
+//   { id: 8, beds: 1, title: "Sunny Balcony", description: "Great for morning coffee", imgSrc: "https://storage.googleapis.com/a1aa/image/a671ed03-7bea-40ef-8b7a-e7a4a98b42dd.jpg" },
+// ];
 
 const plazas = [
   {
@@ -171,6 +171,8 @@ const Home = () => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const navigate = useNavigate();
 
+  const [plazas, setPlazas] = useState([]);
+
   const [showModal, setShowModal] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [postStats, setPostStats] = useState(null);
@@ -186,6 +188,12 @@ const Home = () => {
     };
 
     fetchPostStats();
+  }, []);
+
+  useEffect(() => {
+    axios.get(`${import.meta.env.VITE_API_URL}/api/plaza`)
+      .then(res => setPlazas(res.data.data))
+      .catch(err => console.error(err));
   }, []);
 
   useEffect(() => {
@@ -331,70 +339,63 @@ const Home = () => {
 
       {/* STATISTICS */}
       <section className="container py-5">
-      <div className="row g-4 justify-content-center">
+        <div className="row g-4 justify-content-center">
 
-<div className="col-12 col-md-4">
-  <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-    <div className="fs-4 fw-bold text-dark mb-3" style={{ color: "#222" }}>
-      Tin đăng bán
-    </div>
-    <div className="display-3 fw-bold text-warning">
-      <CountUp end={postStats?.data?.forSale ?? 0} duration={2} />
-    </div>
-  </div>
-</div>
+          <div className="col-12 col-md-4">
+            <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
+              <div className="fs-4 fw-bold text-dark mb-3" style={{ color: "#222" }}>
+                Tin đăng bán
+              </div>
+              <div className="display-3 fw-bold text-warning">
+                <CountUp end={postStats?.data?.forSale ?? 0} duration={2} />
+              </div>
+            </div>
+          </div>
 
-<div className="col-12 col-md-4">
-  <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-    <div className="fs-4 fw-bold text-dark mb-3" style={{ color: "#222" }}>
-      Tin cho thuê
-    </div>
-    <div className="display-3 fw-bold text-warning">
-      <CountUp end={postStats?.data?.forRent ?? 0} duration={2} />
-    </div>
-  </div>
-</div>
+          <div className="col-12 col-md-4">
+            <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
+              <div className="fs-4 fw-bold text-dark mb-3" style={{ color: "#222" }}>
+                Tin cho thuê
+              </div>
+              <div className="display-3 fw-bold text-warning">
+                <CountUp end={postStats?.data?.forRent ?? 0} duration={2} />
+              </div>
+            </div>
+          </div>
 
-<div className="col-12 col-md-4">
-  <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-    <div className="fs-4 fw-bold text-dark mb-3" style={{ color: "#222" }}>
-      Tin dịch vụ
-    </div>
-    <div className="display-3 fw-bold text-warning">
-      <CountUp end={postStats?.data?.saleAndRent ?? 0} duration={2} />
-    </div>
-  </div>
-</div>
-
-</div>
-
-</section>
-
-
+          <div className="col-12 col-md-4">
+            <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
+              <div className="fs-4 fw-bold text-dark mb-3" style={{ color: "#222" }}>
+                Tin dịch vụ
+              </div>
+              <div className="display-3 fw-bold text-warning">
+                <CountUp end={postStats?.data?.saleAndRent ?? 0} duration={2} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* PROJECTS */}
       {/* PLAZAS - DỰ ÁN NỔI BẬT */}
       <section className="container py-5">
         <h2 className="fw-bold text-uppercase mb-4 text-center">Dự án nổi bật</h2>
         <div className="row g-4">
-          {plazas.map((p, i) => (
-            <div className="col-12 col-sm-6 col-lg-4" key={i}>
+          {plazas.map((p) => (
+            <div className="col-12 col-sm-6 col-lg-4" key={p._id}>
               <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
-                <img
-                  src={p.img}
-                  className="card-img-top"
-                  alt={p.name}
-                  style={{ height: 220, objectFit: "cover" }}
-                />
+                <div className="ratio ratio-16x9">
+                  <img src={p.img} className="rounded-top" alt={p.name} style={{ objectFit: "cover" }} />
+                </div>
                 <div className="card-body bg-white">
                   <h5 className="card-title fw-bold text-dark">{p.name}</h5>
                   <p className="text-muted mb-2">
-                    <i className="fa fa-map-marker-alt me-2 text-warning"></i>{p.address}
+                    <i className="fa fa-map-marker-alt me-2 text-warning"></i>{p.location}
                   </p>
                   <div className="d-flex justify-content-center">
                     <button
                       className="btn btn-outline-warning btn-sm"
-                      onClick={() => setSelectedPlaza(p)}
+                      onClick={() => navigate(`/plaza/${p._id}`)}
                     >
                       Chi tiết
                     </button>
@@ -404,45 +405,7 @@ const Home = () => {
             </div>
           ))}
         </div>
-
-        {selectedPlaza && (
-          <div className="modal fade show d-block" tabIndex="-1" style={{ background: "rgba(0,0,0,0.5)" }}>
-            <div className="modal-dialog modal-lg modal-dialog-centered">
-              <div className="modal-content p-3 rounded-4 shadow">
-                <div className="modal-header">
-                  <h5 className="modal-title">{selectedPlaza.name}</h5>
-                  <button type="button" className="btn-close" onClick={() => setSelectedPlaza(null)}></button>
-                </div>
-                <div className="modal-body">
-                  <img src={selectedPlaza.img} alt={selectedPlaza.name} className="img-fluid rounded mb-3" />
-                  <p><strong>Địa chỉ:</strong> {selectedPlaza.address}</p>
-                  <p><strong>Chủ đầu tư:</strong> {selectedPlaza.info.investor}</p>
-                  <p><strong>Vị trí:</strong> {selectedPlaza.info.location}</p>
-                  <div className="row">
-                    <div className="col-md-6">
-                      <p><strong>Tổng vốn đầu tư:</strong> {selectedPlaza.info.totalCapital}</p>
-                      <p><strong>Quy mô:</strong> {selectedPlaza.info.scale}</p>
-                      <p><strong>Loại hình phát triển:</strong> {selectedPlaza.info.type}</p>
-                      <p><strong>Số tầng:</strong> {selectedPlaza.info.floors}</p>
-                    </div>
-                    <div className="col-md-6">
-                      <p><strong>Tổng thầu:</strong> {selectedPlaza.info.contractor}</p>
-                      <p><strong>Tổng diện tích sàn:</strong> {selectedPlaza.info.totalArea}</p>
-                      <p><strong>Mật độ xây dựng:</strong> {selectedPlaza.info.constructionDensity}</p>
-                      <p><strong>Tiến độ:</strong> {selectedPlaza.info.completion}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <button className="btn btn-secondary" onClick={() => setSelectedPlaza(null)}>Đóng</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
       </section>
-
 
       {/* FEATURED APARTMENTS */}
       {/* FEATURED APARTMENTS */}

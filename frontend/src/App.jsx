@@ -89,6 +89,7 @@ import Register from "./pages/user/register.jsx";
 import ResetPassword from "./pages/user/resetpassword";
 import UserRevenue from "./pages/user/revenuer/UserRevenue.jsx";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
+import PlazaDetail from "./pages/user/Plaza/PlazaDetail.jsx";
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
 function ProtectedRoute({ element, allowedRoles }) {
@@ -163,6 +164,7 @@ function AppRoutes() {
         <Route path="/cancel-payment/:orderCode" element={<PaymentCancel />} />
         <Route path="/payment-history" element={<PaymentHistoryTable />} />
         <Route path="/notifications" element={< NotificationPage />} />
+        <Route path="/plaza/:id" element={< PlazaDetail />} />
         {/* Admin */}
         <Route path="/admin-dashboard" element={<ProtectedRoute element={<DashboardHome />} allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/posts" element={<ProtectedRoute element={<PostManagement />} allowedRoles={["admin"]} />} />

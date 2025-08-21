@@ -38,10 +38,12 @@ import {
   getRevenueSummary,
 } from "../controllers/adminDashboardController.js";
 
+// import verifyUser from "../middleware/authMiddleware.js"; 
+
 const router = express.Router();
 
 // ----------- 📊 Tổng số ----------- //
-router.get("/stats/UsersList", countCustomers);
+router.get("/stats/UsersList" ,countCustomers);
 router.get("/stats/StaffsList", countStaffs);
 router.get("/stats/ApartmentsList", countApartments);
 router.get("/stats/PostsList", countPosts);
