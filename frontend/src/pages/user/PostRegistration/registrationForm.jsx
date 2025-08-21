@@ -1,3 +1,6 @@
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import DOMPurify from "dompurify";
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import { toast } from "react-toastify";
@@ -717,22 +720,63 @@ const filteredApartments = apartmentOptions.filter(
                     </small>
                   </div>
                   <div className="col-12">
-                    <label className="form-label">
-                      Mô tả chi tiết <span className="text-danger">*</span>
-                    </label>
-                    <textarea
-                      name="moTaChiTiet"
-                      value={formData.moTaChiTiet}
-                      onChange={handleInputChange}
-                      placeholder="Mô tả chi tiết về bất động sản..."
-                      rows="4"
-                      className="form-control"
-                      required
-                    />
-                    <small style={{ color: charCount.moTaChiTiet >= 1000 ? "red" : "#555" }}>
-                      {charCount.moTaChiTiet}/1000
-                    </small>
-                  </div>
+  <label className="form-label">
+    Mô tả chi tiết <span className="text-danger">*</span>
+  </label>
+
+  {/* CKEditor trong box có chiều cao cố định + scroll */}
+  <div 
+    className="border rounded p-2 bg-white"
+    style={{ maxHeight: "300px", overflowY: "auto" }}
+  >
+    <CKEditor
+      editor={ClassicEditor}
+      data={formData.moTaChiTiet}
+      onChange={(event, editor) => {
+        const data = editor.getData();
+
+        // Lấy text thuần để đếm ký tự
+        const plainText = data.replace(/<[^>]*>/g, "");
+
+        if (plainText.length <= 1000) {
+          const clean = DOMPurify.sanitize(data);
+
+          setFormData((prev) => ({ ...prev, moTaChiTiet: clean }));
+          setCharCount((prev) => ({
+            ...prev,
+            moTaChiTiet: plainText.length,
+          }));
+        }
+      }}
+    />
+  </div>
+
+  {/* Đếm ký tự */}
+  <small
+    style={{
+      color: charCount.moTaChiTiet >= 1000 ? "red" : "#555",
+    }}
+  >
+    {charCount.moTaChiTiet}/1000
+  </small>
+
+ {/* Preview */}
+<div className="mt-3">
+  <label className="form-label">Xem trước mô tả chi tiết</label>
+  <div
+    className="border rounded p-3 bg-light"
+    style={{
+      whiteSpace: "pre-wrap", // giữ xuống dòng từ CKEditor
+      wordBreak: "break-word", // tự ngắt khi text quá dài
+    }}
+    dangerouslySetInnerHTML={{
+      __html: DOMPurify.sanitize(formData.moTaChiTiet),
+    }}
+  />
+</div>
+
+</div>
+
                   {["ban", "cho_thue"].includes(loaiBaiDang) && (
   <div className="col-12 col-md-6">
     <label className="form-label">

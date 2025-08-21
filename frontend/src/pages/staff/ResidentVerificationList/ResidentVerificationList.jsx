@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { Modal } from "react-bootstrap";
 import StaffNavbar from "../staffNavbar";
-
 const USERS_PER_PAGE = 20;
 
 export default function ResidentVerificationList() {
@@ -11,7 +11,7 @@ export default function ResidentVerificationList() {
   const [page, setPage] = useState(1);
   const [searchDate, setSearchDate] = useState("");
 
-
+  const [show, setShow] = useState(false);
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -129,24 +129,31 @@ export default function ResidentVerificationList() {
                     </td>
 
                     <td className="p-2">
-                      {user.contractImage ? (
-                        <a
-                          href={user.contractImage}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="d-inline-block m-2"
-                        >
-                          <img
-                            src={user.contractImage}
-                            alt="contract"
-                            className="rounded shadow-sm"
-                            style={{ width: 60 }}
-                          />
-                        </a>
-                      ) : (
-                        <span className="text-muted ms-2">Không có</span>
-                      )}
-                    </td>
+      {user.contractImage ? (
+        <>
+          <img
+            src={user.contractImage}
+            alt="Hợp đồng"
+            className="rounded shadow-sm"
+            style={{ width: 60, cursor: "pointer", border: "1px solid #ccc" }}
+            onClick={() => setShow(true)}
+          />
+
+          {/* Modal xem ảnh */}
+          <Modal show={show} onHide={() => setShow(false)} centered size="lg">
+            <Modal.Body className="text-center">
+              <img
+                src={user.contractImage}
+                alt="Hợp đồng"
+                style={{ maxWidth: "100%", maxHeight: "80vh" }}
+              />
+            </Modal.Body>
+          </Modal>
+        </>
+      ) : (
+        <span className="text-muted ms-2">Không có</span>
+      )}
+    </td>
 
                     <td>
                       {user.approvedAt

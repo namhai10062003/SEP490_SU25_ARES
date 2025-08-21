@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../../components/header";
 import { useAuth } from "../../../../context/authContext";
-
 const ResidenceDeclarationList = () => {
   const { user, logout } = useAuth();
   const [declarations, setDeclarations] = useState([]);
@@ -12,6 +11,8 @@ const ResidenceDeclarationList = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const fileInputRef = useRef(null); 
   const [saving, setSaving] = useState(false); 
+  const [show, setShow] = useState(false);
+
   // 🔹 State modal
   const [showModal, setShowModal] = useState(false);
 const [removingImage, setRemovingImage] = useState(false); //
@@ -273,17 +274,31 @@ if (editForm.idNumber && !/^\d{12}$/.test(editForm.idNumber.trim())) {
                         : "—"}
                     </td>
                     <td>
-                      {d.documentImage && (
-                        <a
-                          href={d.documentImage}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-sm btn-outline-primary"
-                        >
-                          Xem ảnh
-                        </a>
-                      )}
-                    </td>
+      {d.documentImage ? (
+        <>
+          <Button
+            variant="outline-primary"
+            size="sm"
+            onClick={() => setShow(true)}
+          >
+            Xem ảnh
+          </Button>
+
+          {/* Popup ảnh */}
+          <Modal show={show} onHide={() => setShow(false)} centered size="lg">
+            <Modal.Body className="text-center">
+              <img
+                src={d.documentImage}
+                alt="Giấy tờ"
+                style={{ maxWidth: "100%", maxHeight: "80vh" }}
+              />
+            </Modal.Body>
+          </Modal>
+        </>
+      ) : (
+        <span className="text-muted">Không có</span>
+      )}
+    </td>
                     <td>
                       {d.verifiedByStaff === "true" ? (
                         <span className="badge bg-success">✅ Đã duyệt</span>
