@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
+import zaloLogo from "../../src/pages/images/zalo-logo.png";
 
 function maskPhone(phone) {
   if (!phone) return "Không có";
@@ -8,7 +9,7 @@ function maskPhone(phone) {
 }
 
 export default function UserInfo({
-  user,
+  user = {},
   postCount = 0,
   relatedCount = 0,
   onOpenProfile = () => { },
@@ -26,88 +27,267 @@ export default function UserInfo({
   const avatar = user.profileImage || user.picture || "/default-avatar.png";
 
   return (
-    <div className="w-full">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow overflow-hidden">
+    <div
+      className="container d-flex justify-content-center"
+      style={{
+        minHeight: 420,
+        padding: "32px 0"
+      }}
+    >
+      <div
+        className="bg-white"
+        style={{
+          background: "linear-gradient(90deg, #1ec6b6 0%, #0e9488 100%)",
+          width: 340,
+          minWidth: 300,
+          borderColor: "#20c997",
+          borderWidth: 1,
+          borderStyle: "solid",
+          borderRadius: 16,
+          overflow: "hidden",
+          boxShadow: "0 4px 24px 0 rgba(0,0,0,0.08)",
+          padding: "2px"
+        }}
+      >
         {/* Header */}
-        <div className="px-4 py-3 bg-teal-700 text-white text-center">
-          <p className="text-sm font-semibold">Môi giới chuyên nghiệp</p>
+        <div
+          style={{
+            textAlign: "end",
+            padding: "20px 10px"
+          }}
+        >
+          <span
+            style={{
+              color: "#fff",
+              fontWeight: 600,
+              fontSize: 16,
+              letterSpacing: 0.5
+            }}
+          >
+            Môi giới chuyên nghiệp
+          </span>
         </div>
-  
-        {/* Body */}
-        <div className="p-4">
+
+        <div 
+          className="bg-white"
+          style={{
+            width: "100%",
+            minWidth: 300,
+            borderColor: "#20c997",
+            borderWidth: 2,
+            borderStyle: "solid",
+            borderRadius: 12,
+            boxShadow: "0 4px 24px 0 rgba(0,0,0,0.08)",
+            overflow: "visible",
+            paddingBottom: 18,
+          }}
+        >
           {/* Avatar */}
-          <div className="flex flex-col items-center">
-            <div className="w-20 h-20 rounded-full overflow-hidden ring-2 ring-white shadow">
-              <img
-                src={avatar}
-                alt={user.name || "avatar"}
-                className="w-full h-full object-cover"
-                width={80}
-                height={80}
-              />
+          <div
+            className="d-flex align-items-center"
+            style={{ position: "relative", marginTop: "-32px", padding: "0 20px" }}
+          >
+            <div 
+              style={{
+                overflow: "hidden",
+                position: "relative"
+              }}
+            >
+              <div
+                style={{
+                  width: 96,
+                  height: 96,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  border: "2px solid #fff",
+                  background: "#f8f9fa",
+                  position: "relative",
+                  flexShrink: 0
+                }}
+              >
+                <img
+                  src={avatar}
+                  alt={avatar || "avatar"}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover"
+                  }}
+                  width={96}
+                  height={96}
+                />
+                {/* Badge */}
+                <span
+                  style={{
+                    position: "absolute",
+                    bottom: 4,
+                    right: 4,
+                    background: "#fff",
+                    borderRadius: "50%",
+                    border: "1.5px solid #ffc107",
+                    padding: 2,
+                    boxShadow: "0 0 0 2px #fff"
+                  }}
+                >
+                </span>
+              </div>
+              <div
+                style={{
+                  position:"absolute",
+                  right: 0,
+                  bottom: 2,
+                }}
+              >
+                {/* SVG icon */}
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="#ffc107">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 6v6l4 2" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
+              </div>
             </div>
-            <p className="mt-2 font-semibold text-slate-800">{user.name || "Không có"}</p>
-            <p className="text-xs text-slate-500">{user.jobTitle || "Người bán"}</p>
+            <div style={{ height: 96, marginLeft: 16, textAlign: "left", display:"flex", flexDirection:"column", justifyContent:"end" }}>
+              <div
+                style={{
+                  fontWeight: 700,
+                  fontSize: 20,
+                  color: "#212529"
+                }}
+              >
+                {user.name || "Name"}
+              </div>
+              <div
+                style={{
+                  fontSize: 13,
+                  color: "#6c757d"
+                }}
+              >
+                {user.jobTitle || "Batdongsan"}
+              </div>
+            </div>
           </div>
-  
+
           {/* Stats */}
-          <div className="mt-4 grid grid-cols-2 rounded-xl border border-slate-200 divide-x divide-slate-200 bg-slate-50">
-            <div className="p-3 text-center">
-              <p className="text-xs text-slate-500">Tham gia</p>
-              <p className="text-lg font-bold text-slate-800">
-                {joinYears}
-                <span className="text-sm ml-1">năm</span>
-              </p>
+          <div
+            className="row"
+            style={{
+              margin: "24px 0 0 0",
+              borderRadius: 12,
+              overflow: "hidden",
+              padding: 5
+            }}
+          >
+            <div className="col-6 text-center" style={{ padding: 12, borderRight: "1px solid #e9ecef" }}>
+              <div style={{ fontSize: 12, color: "#6c757d", marginBottom: 2 }}>Tham gia Batdongsan</div>
+              <div style={{ fontWeight: 800, fontSize: 28, color: "#212529", lineHeight: 1 }}>{joinYears}</div>
+              <span style={{ fontSize: 12, color: "#6c757d" }}>năm</span>
             </div>
-            <div className="p-3 text-center">
-              <p className="text-xs text-slate-500">Tin đăng</p>
-              <p className="text-lg font-bold text-slate-800">{postCount}</p>
+            <div className="col-6 text-center" style={{ padding: 12 }}>
+              <div style={{ fontSize: 12, color: "#6c757d", marginBottom: 2 }}>Tin đăng đang có</div>
+              <div style={{ fontWeight: 800, fontSize: 28, color: "#212529", lineHeight: 1 }}>{postCount}</div>
             </div>
           </div>
-  
-          {/* Tip box */}
-          {relatedCount > 0 && (
-            <div className="mt-4 flex gap-2 items-start rounded-xl bg-amber-50 p-3 text-amber-900">
-              <span className="text-xl">💡</span>
-              <p className="text-sm leading-5">
-                Có {relatedCount} tin đất nền dự án cùng FPT City Đà Nẵng
-              </p>
-            </div>
-          )}
-  
+
+          {/* Tip box luôn hiển thị */}
+          <div
+            className="d-flex align-items-center"
+            style={{
+              margin: "20px 16px 0 16px",
+              borderRadius: 12,
+              background: "#fff8e1",
+              border: "1px solid #ffe082",
+              padding: "10px 12px",
+              fontWeight: 600,
+              fontSize: 14
+            }}
+          >
+            <span style={{ fontSize: 20, marginRight: 8 }}>💡</span>
+            <span>
+              Có {relatedCount} tin đất nền dự án cùng dự án FPT City Đà Nẵng
+            </span>
+          </div>
+
           {/* Xem trang cá nhân */}
-          <button
-            type="button"
-            onClick={onOpenProfile}
-            className="mt-4 w-full flex items-center justify-between rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          {/* <a
+            href="#"
+            onClick={e => { e.preventDefault(); onOpenProfile(); }}
+            style={{
+              margin: "20px 16px 0 16px",
+              width: "calc(100% - 32px)",
+              borderRadius: 12,
+              fontWeight: 500,
+              fontSize: 16,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "10px 18px",
+              color: "#495057",
+              textDecoration: "none",
+              background: "#fff",
+              transition: "background 0.2s"
+            }}
+            onMouseOver={e => e.currentTarget.style.background = "#f8f9fa"}
+            onMouseOut={e => e.currentTarget.style.background = "#fff"}
           >
             <span>Xem trang cá nhân</span>
-            <span aria-hidden>›</span>
-          </button>
-  
+            <span aria-hidden style={{ marginLeft: 10, fontSize: 20, fontWeight: 700 }}>&#8250;</span>
+          </a> */}
+
           {/* Actions */}
-          <div className="mt-3 space-y-3">
+          <div style={{ margin: "18px 16px 0 16px" }}>
             <a
               href={phone ? `https://zalo.me/${phone}` : "#"}
               target="_blank"
               rel="noreferrer"
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm hover:bg-slate-50"
+              className="btn btn-outline-secondary d-flex align-items-center justify-content-center"
+              style={{
+                width: "100%",
+                borderRadius: 12,
+                fontWeight: 500,
+                fontSize: 16,
+                marginBottom: 12,
+                gap: 8,
+                padding: "10px 0"
+              }}
             >
-              <img src="/zalo-icon.svg" alt="" className="w-5 h-5" />
+              <img src={zaloLogo} alt="zalo_logo" style={{ width: 26, height: 26, marginRight: 8 }} />
               Chat qua Zalo
             </a>
-  
+
             <button
               type="button"
               onClick={() => setShowPhone((v) => !v)}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
+              className="btn"
+              style={{
+                width: "100%",
+                borderRadius: 12,
+                background: "#20c997",
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: 18,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                padding: "12px 0",
+                boxShadow: "0 2px 8px 0 rgba(32,201,151,0.08)"
+              }}
             >
-              📞 {showPhone && phone ? phone : `${maskedPhone} · Hiện số`}
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24" style={{ marginRight: 8 }}>
+                <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.24 1.01l-2.2 2.2z" fill="#fff" />
+              </svg>
+              <span>
+                {showPhone && phone
+                  ? <span>{phone}</span>
+                  : <span>
+                    <span style={{ letterSpacing: 2 }}>{maskedPhone}</span>
+                    <span style={{ fontWeight: 400, fontSize: 13, opacity: 0.85, marginLeft: 6 }}>· Hiện số</span>
+                  </span>
+                }
+              </span>
             </button>
           </div>
         </div>
       </div>
     </div>
   );
-  
 }

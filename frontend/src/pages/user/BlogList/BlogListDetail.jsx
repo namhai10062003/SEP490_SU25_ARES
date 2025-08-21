@@ -340,7 +340,7 @@ const PostDetail = () => {
                 <span><strong>Gói:</strong> {post.postPackage?.type || "Standard"}</span>
               </div>
 
-              <div className="d-flex align-items-center mt-2">
+              {/* <div className="d-flex align-items-center mt-2">
                 <i className="bi bi-person-fill text-primary me-2 fs-5"></i>
                 <span><strong>Người liên hệ:</strong> {post.contactInfo.name || "Không có"}</span>
               </div>
@@ -348,7 +348,7 @@ const PostDetail = () => {
               <div className="d-flex align-items-center mt-2">
                 <i className="bi bi-telephone-fill text-success me-2 fs-5"></i>
                 <span><strong>SĐT:</strong> {post.contactInfo.phone || "Không có"}</span>
-              </div>
+              </div> */}
             </div>
 
             {/* Nút hành động */}
@@ -479,7 +479,7 @@ const PostDetail = () => {
 
             {/* Cột UserInfo */}
             <div className="col-md-4">
-              <div className="bg-white shadow rounded p-3 border h-100">
+              <div className="rounded-2xl p-3">
                 <UserInfo
                   user={post.contactInfo}
                   postCount={userPostsCount}
