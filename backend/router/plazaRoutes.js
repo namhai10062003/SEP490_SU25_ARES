@@ -1,13 +1,13 @@
 import express from "express";
-import { getPlazas, getPlazaById } from "../controllers/plazaController.js";
-import verifysUser from "../middleware/authMiddleware.js";
+import { getPlazaById, getPlazas } from "../controllers/plazaController.js";
+import { optionalAuth } from "../middleware/optionalAuth.js";
 
 const router = express.Router();
 
 // Lấy tất cả Plaza
-router.get("/", getPlazas);
+router.get("/", optionalAuth,getPlazas);
 
 // Lấy chi tiết 1 Plaza theo id
-router.get("/:id", getPlazaById);
+router.get("/:id", optionalAuth,getPlazaById);
 
 export default router;

@@ -50,110 +50,110 @@ const CountUpOnView = ({ end, duration = 2000 }) => {
 //   { id: 8, beds: 1, title: "Sunny Balcony", description: "Great for morning coffee", imgSrc: "https://storage.googleapis.com/a1aa/image/a671ed03-7bea-40ef-8b7a-e7a4a98b42dd.jpg" },
 // ];
 
-const plazas = [
-  {
-    name: "Plaza 1",
-    address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
-    img: "https://chungcufptplaza.com/watermarks/900x450x1/upload/product/z60043682176611910475ee051c7749d09453e87cd4973-1730865005.jpg",
-    info: {
-      investor: "Công ty Cổ phần Đô thị FPT Đà Nẵng",
-      totalCapital: "750 tỷ",
-      scale: "600 căn",
-      type: "Căn hộ chung cư",
-      location: "Đường Võ Chí Công, Khu Đô thị công nghệ FPT Đà Nẵng",
-      floors: 15,
-      contractor: "Công ty TNHH Tập đoàn XD Delta",
-      totalArea: "71.796m²",
-      constructionDensity: "49,83%",
-      completion: "Đã bàn giao năm 2021"
-    }
-  },
-  {
-    name: "Plaza 2",
-    address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
-    img: "https://hoanggiaminh.com/uploads/images/FPT%20PLAZA%202%20(2).png",
-    info: {
-      investor: "Công ty Cổ phần FPT City",
-      totalCapital: "920 tỷ",
-      scale: "800 căn",
-      type: "Căn hộ cao cấp",
-      location: "Nguyễn Văn Tạo, FPT City",
-      floors: 18,
-      contractor: "Tập đoàn Hòa Bình",
-      totalArea: "85.000m²",
-      constructionDensity: "52%",
-      completion: "Dự kiến hoàn thành Q4/2025"
-    }
-  },
-  {
-    name: "Plaza 3",
-    address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
-    img: "https://fptplaza3.fptcity.vn/wp-content/uploads/2024/05/nen-sang-min.png",
-    info: {
-      investor: "Tập đoàn Bất Động Sản Ares",
-      totalCapital: "1.100 tỷ",
-      scale: "900 căn",
-      type: "Chung cư cao tầng + Shophouse",
-      location: "Trục Võ Chí Công, sát sông Cổ Cò",
-      floors: 20,
-      contractor: "Coteccons",
-      totalArea: "90.000m²",
-      constructionDensity: "48%",
-      completion: "Khởi công 2024 – hoàn thiện 2026"
-    }
-  },
-  {
-    name: "Plaza 4",
-    address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
-    img: "https://phungbds.cdn.vccloud.vn/wp-content/uploads/2022/06/fpt-city-plaza-4-1240x672.jpeg",
-    info: {
-      investor: "Công ty Cổ phần Đầu tư An Gia",
-      totalCapital: "680 tỷ",
-      scale: "500 căn",
-      type: "Căn hộ dịch vụ & nghỉ dưỡng",
-      location: "FPT Plaza Zone 4, ven hồ sinh thái",
-      floors: 12,
-      contractor: "Delta Group",
-      totalArea: "55.000m²",
-      constructionDensity: "42%",
-      completion: "Đã hoàn thành 2023"
-    }
-  },
-  {
-    name: "Plaza 5",
-    address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
-    img: "https://chungcuhanoixanh.net/wp-content/uploads/2017/01/toan-canh-imperial-plaza.jpg",
-    info: {
-      investor: "SunLand Đà Nẵng",
-      totalCapital: "820 tỷ",
-      scale: "720 căn",
-      type: "Căn hộ thông minh (Smart Home)",
-      location: "Cạnh làng đại học FPT",
-      floors: 17,
-      contractor: "Tập đoàn Phúc Khang",
-      totalArea: "68.000m²",
-      constructionDensity: "47%",
-      completion: "Dự kiến bàn giao đầu 2025"
-    }
-  },
-  {
-    name: "Plaza 6",
-    address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
-    img: "https://thangmaygiadinh.edu.vn/images/bai_toan_chung_cu_moi_va_nha_tap_the_cu_1.jpg",
-    info: {
-      investor: "Tập đoàn Hưng Thịnh",
-      totalCapital: "990 tỷ",
-      scale: "850 căn",
-      type: "Chung cư cao cấp + căn hộ studio",
-      location: "Kế bên cầu Cổ Cò, FPT City",
-      floors: 19,
-      contractor: "Ricons",
-      totalArea: "78.500m²",
-      constructionDensity: "51%",
-      completion: "Đang xây dựng, bàn giao Q3/2025"
-    }
-  },
-];
+// const plazas = [
+//   {
+//     name: "Plaza 1",
+//     address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
+//     img: "https://chungcufptplaza.com/watermarks/900x450x1/upload/product/z60043682176611910475ee051c7749d09453e87cd4973-1730865005.jpg",
+//     info: {
+//       investor: "Công ty Cổ phần Đô thị FPT Đà Nẵng",
+//       totalCapital: "750 tỷ",
+//       scale: "600 căn",
+//       type: "Căn hộ chung cư",
+//       location: "Đường Võ Chí Công, Khu Đô thị công nghệ FPT Đà Nẵng",
+//       floors: 15,
+//       contractor: "Công ty TNHH Tập đoàn XD Delta",
+//       totalArea: "71.796m²",
+//       constructionDensity: "49,83%",
+//       completion: "Đã bàn giao năm 2021"
+//     }
+//   },
+//   {
+//     name: "Plaza 2",
+//     address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
+//     img: "https://hoanggiaminh.com/uploads/images/FPT%20PLAZA%202%20(2).png",
+//     info: {
+//       investor: "Công ty Cổ phần FPT City",
+//       totalCapital: "920 tỷ",
+//       scale: "800 căn",
+//       type: "Căn hộ cao cấp",
+//       location: "Nguyễn Văn Tạo, FPT City",
+//       floors: 18,
+//       contractor: "Tập đoàn Hòa Bình",
+//       totalArea: "85.000m²",
+//       constructionDensity: "52%",
+//       completion: "Dự kiến hoàn thành Q4/2025"
+//     }
+//   },
+//   {
+//     name: "Plaza 3",
+//     address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
+//     img: "https://fptplaza3.fptcity.vn/wp-content/uploads/2024/05/nen-sang-min.png",
+//     info: {
+//       investor: "Tập đoàn Bất Động Sản Ares",
+//       totalCapital: "1.100 tỷ",
+//       scale: "900 căn",
+//       type: "Chung cư cao tầng + Shophouse",
+//       location: "Trục Võ Chí Công, sát sông Cổ Cò",
+//       floors: 20,
+//       contractor: "Coteccons",
+//       totalArea: "90.000m²",
+//       constructionDensity: "48%",
+//       completion: "Khởi công 2024 – hoàn thiện 2026"
+//     }
+//   },
+//   {
+//     name: "Plaza 4",
+//     address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
+//     img: "https://phungbds.cdn.vccloud.vn/wp-content/uploads/2022/06/fpt-city-plaza-4-1240x672.jpeg",
+//     info: {
+//       investor: "Công ty Cổ phần Đầu tư An Gia",
+//       totalCapital: "680 tỷ",
+//       scale: "500 căn",
+//       type: "Căn hộ dịch vụ & nghỉ dưỡng",
+//       location: "FPT Plaza Zone 4, ven hồ sinh thái",
+//       floors: 12,
+//       contractor: "Delta Group",
+//       totalArea: "55.000m²",
+//       constructionDensity: "42%",
+//       completion: "Đã hoàn thành 2023"
+//     }
+//   },
+//   {
+//     name: "Plaza 5",
+//     address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
+//     img: "https://chungcuhanoixanh.net/wp-content/uploads/2017/01/toan-canh-imperial-plaza.jpg",
+//     info: {
+//       investor: "SunLand Đà Nẵng",
+//       totalCapital: "820 tỷ",
+//       scale: "720 căn",
+//       type: "Căn hộ thông minh (Smart Home)",
+//       location: "Cạnh làng đại học FPT",
+//       floors: 17,
+//       contractor: "Tập đoàn Phúc Khang",
+//       totalArea: "68.000m²",
+//       constructionDensity: "47%",
+//       completion: "Dự kiến bàn giao đầu 2025"
+//     }
+//   },
+//   {
+//     name: "Plaza 6",
+//     address: "FPT City, P. Ngũ Hành Sơn, Tp. Đà Nẵng",
+//     img: "https://thangmaygiadinh.edu.vn/images/bai_toan_chung_cu_moi_va_nha_tap_the_cu_1.jpg",
+//     info: {
+//       investor: "Tập đoàn Hưng Thịnh",
+//       totalCapital: "990 tỷ",
+//       scale: "850 căn",
+//       type: "Chung cư cao cấp + căn hộ studio",
+//       location: "Kế bên cầu Cổ Cò, FPT City",
+//       floors: 19,
+//       contractor: "Ricons",
+//       totalArea: "78.500m²",
+//       constructionDensity: "51%",
+//       completion: "Đang xây dựng, bàn giao Q3/2025"
+//     }
+//   },
+// ];
 
 const Home = () => {
   const { user, logout } = useAuth();
