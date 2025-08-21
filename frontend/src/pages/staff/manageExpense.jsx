@@ -95,7 +95,15 @@ const Expenses = () => {
     const fetchExpenses = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(`${API_URL}/api/expenses`);
+            const token = localStorage.getItem("token"); // Lấy token từ localStorage
+if (!token) return console.error("Token không tồn tại!");
+
+const res = await axios.get(`${API_URL}/api/expenses`, {
+  headers: {
+    Authorization: `Bearer ${token}` // Thêm token vào header
+  }
+});
+
             setExpenses(res.data);
         } catch (err) {
             toast.error("Lỗi tải dữ liệu chi phí!");
@@ -104,8 +112,15 @@ const Expenses = () => {
     };
 
     const fetchApartmentFees = async () => {
+        const token = localStorage.getItem("token");
+if (!token) return toast.error("Token không tồn tại!");
+
         try {
-            const res = await axios.get(`${API_URL}/api/fees`);
+            const res = await axios.get(`${API_URL}/api/fees`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
             setApartmentFees(res.data.data || []);
         } catch (err) {
             console.error("Lỗi khi lấy dữ liệu chi phí căn hộ:", err);
@@ -123,7 +138,16 @@ const Expenses = () => {
                     label: 'Có',
                     onClick: async () => {
                         try {
-                            await axios.delete(`${API_URL}/api/expenses/${id}`);
+                            const token = localStorage.getItem("token"); // Lấy token từ localStorage
+                            if (!token) return console.error("Token không tồn tại!");
+                            
+                            await axios.delete(`${API_URL}/api/expenses/${id}`, {
+                              headers: {
+                                Authorization: `Bearer ${token}`,
+                                "Content-Type": "application/json" // thêm nếu backend cần
+                              }
+                            });
+                            
                             toast.success("🗑️ Đã xóa chi phí!");
                             fetchExpenses(); // Refresh lại danh sách
                         } catch (err) {
@@ -169,11 +193,24 @@ const Expenses = () => {
         }
 
         try {
-            await axios.post(`${API_URL}/api/expenses`, {
+            const token = localStorage.getItem("token"); // Lấy token từ localStorage
+            if (!token) return console.error("Token không tồn tại!");
+            
+            await axios.post(
+              `${API_URL}/api/expenses`,
+              {
                 type: Number(addType),
                 label: addLabel,
                 price: Number(addPrice),
-            });
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json" // đảm bảo backend hiểu JSON
+                }
+              }
+            );
+            
             toast.success("Thêm chi phí thành công!");
             setAddType("");
             setAddLabel("");
@@ -307,8 +344,19 @@ const Expenses = () => {
                 <button
                     className="btn btn-outline-warning mb-3"
                     onClick={async () => {
+                        const token = localStorage.getItem("token");
+if (!token) return toast.error("Token không tồn tại!");
                         try {
-                            await axios.post(`${API_URL}/api/fees/calculate`);
+                            await axios.post(
+                                `${API_URL}/api/fees/calculate`,
+                                {}, // body rỗng (nếu API không yêu cầu data)
+                                {
+                                  headers: {
+                                    Authorization: `Bearer ${token}`,
+                                    "Content-Type": "application/json",
+                                  },
+                                }
+                              );
                             toast.success("Đã tính lại phí!");
                             fetchApartmentFees();
                         } catch (err) {

@@ -64,8 +64,14 @@ export default function ResidentVerificationForm() {
   useEffect(() => {
     const fetchAllUsers = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/users?limit=1000`);
+        const token = localStorage.getItem("token"); // Lấy token từ localStorage
 
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/users?limit=1000`, {
+          headers: {
+            Authorization: `Bearer ${token}` // Thêm token vào header
+          }
+        });
+        
         let users = [];
 
         if (Array.isArray(res.data)) {
@@ -238,11 +244,19 @@ setLoading(true);
         data.append("contractEnd", endDate.toISOString());
       }
       
-      await axios.post(
+      const token = localStorage.getItem("token"); // Lấy token từ localStorage
+
+      const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/resident-verifications/verification`,
         data,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}` // Thêm token
+          }
+        }
       );
+      
   
       toast.success("✅ Gửi yêu cầu xác thực thành công!");
   

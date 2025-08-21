@@ -1,10 +1,10 @@
 import express from 'express';
-import { checkUserDependencies, blockUserFromPosting, changePassword, deleteUser, getUserById, getUserProfileById, getUsers, getUsersDepartment, unBlockUserFromPosting, updateProfile, blockUserAccount, unblockUserAccount } from '../controllers/userController.js';
+import { blockUserAccount, blockUserFromPosting, changePassword, checkUserDependencies, deleteUser, getUserById, getUserProfileById, getUsers, getUsersDepartment, unBlockUserFromPosting, unblockUserAccount, updateProfile } from '../controllers/userController.js';
 import verifysUser from "../middleware/authMiddleware.js";
 import { uploadProfileAndCCCD } from "../middleware/uploadProfileImage.js";
 const router = express.Router();
 
-router.get('/', getUsers);
+router.get('/',getUsers);
 router.get('/get-user-apartment', getUsersDepartment);
 router.get('/:id', getUserById);
 router.patch('/block/:id', verifysUser, blockUserFromPosting);

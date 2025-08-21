@@ -111,7 +111,20 @@ const ManageApplicationForm = () => {
 
   const confirmCancel = async () => {
     try {
-      await axios.patch(`${import.meta.env.VITE_API_URL}/api/resident-verifications/${selectedId}/cancel`);
+      const token = localStorage.getItem("token"); // Lấy token từ localStorage
+      if (!token) return console.error("Token không tồn tại!");
+      
+      await axios.patch(
+        `${import.meta.env.VITE_API_URL}/api/resident-verifications/${selectedId}/cancel`,
+        {}, // Nếu không gửi body, vẫn cần {} để axios nhận config là đối số thứ 3
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json" // thêm nếu backend cần
+          }
+        }
+      );
+      
       await fetchApplications();
       toast.success("Đã huỷ đơn và gỡ hợp đồng khỏi căn hộ!");
       setShowCancelModal(false);
@@ -128,7 +141,18 @@ const ManageApplicationForm = () => {
   const fetchApplications = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/resident-verifications`);
+      const token = localStorage.getItem("token"); // Lấy token từ localStorage
+      if (!token) return console.error("Token không tồn tại!");
+      
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/resident-verifications`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}` // Thêm token
+          }
+        }
+      );
+      
       setApplications(res.data);
     } catch (err) {
       setApplications([]);
@@ -139,9 +163,18 @@ const ManageApplicationForm = () => {
 
   const handleView = async (app) => {
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/resident-verifications/${app._id}`
-      );
+      const token = localStorage.getItem("token"); // Lấy token từ localStorage
+if (!token) return console.error("Token không tồn tại!");
+
+const res = await axios.get(
+  `${import.meta.env.VITE_API_URL}/api/resident-verifications/${app._id}`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}` // Thêm token vào header
+    }
+  }
+);
+
 
       // Lưu toàn bộ dữ liệu vào state (bao gồm unpaidFees)
       setSelectedApp(res.data.data);
@@ -161,7 +194,20 @@ const ManageApplicationForm = () => {
 
   const confirmApprove = async () => {
     try {
-      await axios.patch(`${import.meta.env.VITE_API_URL}/api/resident-verifications/${selectedId}/approve`);
+      const token = localStorage.getItem("token"); // Lấy token từ localStorage
+if (!token) return console.error("Token không tồn tại!");
+
+await axios.patch(
+  `${import.meta.env.VITE_API_URL}/api/resident-verifications/${selectedId}/approve`,
+  {}, // Nếu không gửi body, vẫn cần {} để axios nhận config là đối số thứ 3
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json" // thêm nếu backend cần
+    }
+  }
+);
+
       fetchApplications();
       toast.success("✅ Đã duyệt đơn thành công!");
       setShowApproveModal(false);
@@ -179,15 +225,20 @@ const ManageApplicationForm = () => {
 
   const confirmReject = async () => {
     try {
+      const token = localStorage.getItem("token"); // Lấy token từ localStorage
+      if (!token) return console.error("Token không tồn tại!");
+      
       await axios.patch(
         `${import.meta.env.VITE_API_URL}/api/resident-verifications/${selectedId}/reject`,
         { reason: rejectReason },
         {
           headers: {
             "Content-Type": "application/json",
-          },
+            Authorization: `Bearer ${token}` // Thêm token
+          }
         }
       );
+      
       await fetchApplications();
       toast.success("Đã từ chối đơn!");
       setShowRejectModal(false);

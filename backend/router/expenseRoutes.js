@@ -1,18 +1,18 @@
 import express from "express";
 import {
-    getExpenses,
     createExpense,
-    updateExpense,
     deleteExpense,
-    getUserManagementExpenses
+    getExpenses,
+    getUserManagementExpenses,
+    updateExpense
 } from "../controllers/expenseController.js";
-
+import verifyUser from "../middleware/authMiddleware.js";
 const router = express.Router();
 
-router.get("/", getExpenses);
-router.post("/", createExpense);
-router.put("/:type", updateExpense);
-router.delete("/:id", deleteExpense); // ← đổi lại đúng với controller
+router.get("/", verifyUser,getExpenses);
+router.post("/", verifyUser,createExpense);
+router.put("/:type", verifyUser,updateExpense);
+router.delete("/:id", verifyUser,deleteExpense); // ← đổi lại đúng với controller
 
 // 🚀 API mới: Lấy chi phí theo user
 router.get("/user/:userId", getUserManagementExpenses);

@@ -85,23 +85,36 @@ const createStaff = async (req, res) => {
 };
 
 // Cập nhật staff
+
 const updateStaff = async (req, res) => {
     try {
-        const { name, password } = req.body;
-        const update = {};
-        if (name) update.name = name;
-        if (password) update.password = password; // Nên hash password ở production!
-        const staff = await User.findOneAndUpdate(
-            { _id: req.params.id, role: "staff" },
-            { $set: update },
-            { new: true }
-        );
-        if (!staff) return res.status(404).json({ error: "Staff not found" });
-        res.json(staff);
+      const { name, password } = req.body;
+      const update = {};
+  
+      if (name) update.name = name;
+  
+      if (password) {
+        // Hash password trước khi update
+        const salt = await bcrypt.genSalt(10);
+        update.password = await bcrypt.hash(password, salt);
+      }
+  
+      const staff = await User.findOneAndUpdate(
+        { _id: req.params.id, role: "staff" },
+        { $set: update },
+        { new: true }
+      ).select("-password"); // Ẩn password trong response
+  
+      if (!staff) {
+        return res.status(404).json({ error: "Staff not found" });
+      }
+  
+      res.json(staff);
     } catch (err) {
-        res.status(500).json({ error: "Server error" });
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
     }
-};
+  };
 
 // Đổi trạng thái staff (active/block)
 const changeStaffStatus = async (req, res) => {
@@ -136,3 +149,4 @@ export {
     changeStaffStatus, createStaff, deleteStaff, getAllStaff,
     getStaffById, updateStaff
 };
+

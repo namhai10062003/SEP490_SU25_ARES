@@ -46,7 +46,7 @@ router.get("/fee/:userId/:apartmentId/:month", async (req, res) => {
     }
   });
   // PATCH - Chuyển trạng thái gửi xe sang "cancelled"
-  router.patch('/cancel/:id', async (req, res) => {
+  router.patch('/cancel/:id', verifyUser ,async (req, res) => {
     try {
       const registration = await ParkingRegistration.findById(req.params.id);
   

@@ -87,7 +87,14 @@ const fetchApartments = async () => {
   const fetchApplications = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_URL}/api/resident-verifications`);
+      const token = localStorage.getItem("token"); // Lấy token từ localStorage
+
+const res = await axios.get(`${API_URL}/api/resident-verifications`, {
+  headers: {
+    Authorization: `Bearer ${token}` // Thêm token
+  }
+});
+
       // Sắp xếp mới nhất lên đầu
       const sorted = (res.data || []).sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
@@ -107,15 +114,29 @@ const fetchApartments = async () => {
   }, []);
   const handleCloseModal = async () => {
     try {
-      await axios.patch(`${API_URL}/api/resident-verifications/${editData._id}/status`, {
-        status: "Chờ duyệt"
-      });
+      const token = localStorage.getItem("token");
+      console.log("Token gửi đi:", token);
+      if (!token) return console.error("Token không tồn tại!");
+  
+      await axios.patch(
+        `${API_URL}/api/resident-verifications/${editData._id}/status`,
+        { status: "Chờ duyệt" },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+  
       fetchApplications();
     } catch (err) {
-      console.error("Lỗi revert trạng thái:", err);
+      console.error("Lỗi revert trạng thái:", err.response || err);
     }
+  
     setShowEditModal(false);
   };
+  
   
   
   // Huỷ xác minh
@@ -128,7 +149,18 @@ const fetchApartments = async () => {
           label: 'Đồng ý',
           onClick: async () => {
             try {
-              await axios.patch(`${API_URL}/api/resident-verifications/${id}/cancel-staff`);
+              const token = localStorage.getItem("token"); // Lấy token từ localStorage
+
+              await axios.patch(
+                `${API_URL}/api/resident-verifications/${id}/cancel-staff`,
+                {}, // Nếu không gửi body, vẫn cần truyền {} để axios nhận config là đối số thứ 3
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}` // Thêm token
+                  }
+                }
+              );
+              
               toast.success('✅ Huỷ yêu cầu thành công!');
               fetchApplications();
             } catch (err) {
@@ -163,9 +195,20 @@ const fetchApartments = async () => {
     setOriginalStatus(app.status); // Lưu trạng thái gốc
   
     try {
-      await axios.patch(`${API_URL}/api/resident-verifications/${app._id}/status`, {
-        status: "Đang chỉnh sửa"
-      });
+      const token = localStorage.getItem("token"); // Lấy token từ localStorage
+if (!token) return console.error("Token không tồn tại!");
+
+await axios.patch(
+  `${API_URL}/api/resident-verifications/${app._id}/status`,
+  { status: "Đang chỉnh sửa" },
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    }
+  }
+);
+
       fetchApplications(); // Refresh danh sách
     } catch (err) {
       console.error("Lỗi đổi trạng thái sang Đang chỉnh sửa:", err);
@@ -198,11 +241,20 @@ const fetchApartments = async () => {
       // Thêm ảnh mới nếu có
       files.forEach((file) => formData.append("documentImage", file));
   
-      await axios.put(
-        `${API_URL}/api/resident-verifications/${editData._id}`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const token = localStorage.getItem("token"); // Lấy token từ localStorage
+if (!token) return console.error("Token không tồn tại!");
+
+await axios.put(
+  `${API_URL}/api/resident-verifications/${editData._id}`,
+  formData,
+  {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      Authorization: `Bearer ${token}` // Thêm token
+    }
+  }
+);
+
   
       toast.success("Cập nhật thành công");
       

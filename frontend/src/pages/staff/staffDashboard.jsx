@@ -42,16 +42,36 @@ const StaffDashboard = () => {
      }
    }, [location, navigate]);
 
+
+   const headers = {
+     Authorization: `Bearer ${token}`,
+   };
   useEffect(() => {
     const fetchAllStats = async () => {
       try {
-        const [parkingRes, feesRes, residentsRes, verifsRes, revenueRes] = await Promise.all([
-          axios.get(`${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/count-by-status`),
-          axios.get(`${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/fees/paid`),
-          axios.get(`${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/residents/status`),
-          axios.get(`${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/statistics`),
-          axios.get(`${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/revenue/monthly`)
-        ]);
+        const [parkingRes, feesRes, residentsRes, verifsRes, revenueRes] =
+  await Promise.all([
+    axios.get(
+      `${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/count-by-status`,
+      { headers }
+    ),
+    axios.get(
+      `${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/fees/paid`,
+      { headers }
+    ),
+    axios.get(
+      `${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/residents/status`,
+      { headers }
+    ),
+    axios.get(
+      `${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/statistics`,
+      { headers }
+    ),
+    axios.get(
+      `${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/revenue/monthly`,
+      { headers }
+    ),
+  ]);
 
         // ✅ Lấy đúng data từ res.data.data
         const parkingData = parkingRes.data|| {};

@@ -15,9 +15,17 @@ export default function ResidentVerificationList() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/resident-verifications/get-user-apartment`
-      );
+      const token = localStorage.getItem("token"); // Lấy token từ localStorage
+
+const res = await axios.get(
+  `${import.meta.env.VITE_API_URL}/api/resident-verifications/get-user-apartment`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}` // Thêm token vào header
+    }
+  }
+);
+
       setUsers(res.data?.data || []);
       console.log("✅ Dữ liệu từ API:", res.data);
       setError(null);

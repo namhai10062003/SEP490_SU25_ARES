@@ -11,22 +11,22 @@ import {
   searchUser,
   submitVerification, updateResidentVerification, updateResidentVerificationStatus
 } from "../controllers/residentVerificationController.js";
-
 import { upload2 } from '../db/cloudinary.js';
-
+import verifysUser from "../middleware/authMiddleware.js";
+import isStaff from "../middleware/isStaff.js";
 const router = express.Router();
 
 router.get("/search-user", searchUser);
 router.get("/apartments", getApartments);
-router.post("/verification", upload2.array("documentImage", 5), submitVerification);
-router.get("/", getAllResidentVerifications);
-router.get("/get-user-apartment", getUserWithApartment);
+router.post("/verification",isStaff ,upload2.array("documentImage", 5), submitVerification);
+router.get("/", verifysUser,getAllResidentVerifications);
+router.get("/get-user-apartment", isStaff,getUserWithApartment);
 
-router.get("/:id", getResidentVerificationById);
-router.patch("/:id/approve", approveResidentVerification);
-router.patch("/:id/reject", rejectResidentVerification);
-router.patch("/:id/cancel", cancelResidentVerification);
-router.patch("/:id/cancel-staff", cancelPendingVerification);
-router.patch('/:id/status', updateResidentVerificationStatus);
-router.put('/:id', upload2.array("documentImage", 5), updateResidentVerification);
+router.get("/:id", verifysUser,getResidentVerificationById);
+router.patch("/:id/approve", verifysUser,approveResidentVerification);
+router.patch("/:id/reject", verifysUser,rejectResidentVerification);
+router.patch("/:id/cancel", verifysUser,cancelResidentVerification);
+router.patch("/:id/cancel-staff", isStaff,cancelPendingVerification);
+router.patch('/:id/status', isStaff,updateResidentVerificationStatus);
+router.put('/:id',isStaff,upload2.array("documentImage", 5), updateResidentVerification);
 export default router;
