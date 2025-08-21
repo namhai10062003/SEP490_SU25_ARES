@@ -1,4 +1,7 @@
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
 import axios from "axios";
+import DOMPurify from "dompurify";
 import React, { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 import { confirmAlert } from "react-confirm-alert";
@@ -494,8 +497,12 @@ const CustomerPostManagement = () => {
     try {
       console.log("🗑️ Gửi yêu cầu xóa ảnh:", { postId, imageUrl });
       await axios.delete(`${API_URL}/api/posts/${postId}/images`, {
-        data: { imageUrl },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // lấy token từ localStorage
+        },
+        data: { imageUrl }, // body request
       });
+      
 
       setEditForm((prev) => ({
         ...prev,
@@ -1039,16 +1046,35 @@ const CustomerPostManagement = () => {
                           />
                         </div>
                         <div className="col-12">
-                          <label className="form-label">Mô tả</label>
-                          <textarea
-                            name="description"
-                            value={editForm.description}
-                            onChange={handleInputChange}
-                            className="form-control"
-                            rows="3"
-                          />
+  <label className="form-label">Mô tả</label>
+  <div 
+    className="border rounded p-2 bg-white"
+    style={{ maxHeight: "300px", overflowY: "auto" }} // cố định chiều cao + scroll
+  >
+    <CKEditor
+      editor={ClassicEditor}
+      data={editForm.description}
+      onChange={(event, editor) => {
+        const data = editor.getData();
+        setEditForm((prev) => ({ ...prev, description: data }));
+      }}
+    />
+  </div>
+
+  {/* Preview */}
+<div className="mt-3">
+  <label className="form-label">Xem trước mô tả</label>
+  <div
+    className="border rounded p-3 bg-light"
+    dangerouslySetInnerHTML={{
+      __html: DOMPurify.sanitize(editForm.description),
+    }}
+  />
+</div>
+
+</div>
+
                         </div>
-                      </div>
                     </div>
                   </div>
 

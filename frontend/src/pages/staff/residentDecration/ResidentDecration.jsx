@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { Modal } from "react-bootstrap";
 import { FiBell } from "react-icons/fi";
 import { toast } from "react-toastify";
 import StaffNavbar from "../../staff/staffNavbar";
@@ -12,6 +13,19 @@ const ResidenceDeclarationVerifyList = () => {
   const [dobFilter, setDobFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  const handleOpenImage = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setShowModal(true);
+  };
+
+  const handleClose = () => {
+    setShowModal(false);
+    setSelectedImage(null);
+  };
+
   const itemsPerPage = 10;
 
    // Hàm fetch data
@@ -267,24 +281,37 @@ const ResidenceDeclarationVerifyList = () => {
                         : "---"}
                     </td>
                     <td>
-                      {r.documentImage ? (
-                        <img
-                          src={r.documentImage}
-                          alt="Giấy tạm trú / tạm vắng"
-                          style={{
-                            width: 60,
-                            height: 40,
-                            objectFit: "cover",
-                            cursor: "pointer",
-                            borderRadius: 4,
-                            border: "1px solid #ccc",
-                          }}
-                          onClick={() => openImage(r.documentImage)}
-                        />
-                      ) : (
-                        "---"
-                      )}
-                    </td>
+      {r.documentImage ? (
+        <>
+          <img
+            src={r.documentImage}
+            alt="Giấy tạm trú / tạm vắng"
+            style={{
+              width: 60,
+              height: 40,
+              objectFit: "cover",
+              cursor: "pointer",
+              borderRadius: 4,
+              border: "1px solid #ccc",
+            }}
+            onClick={() => handleOpenImage(r.documentImage)}
+          />
+
+          {/* Modal xem ảnh */}
+          <Modal show={showModal} onHide={handleClose} centered size="lg">
+            <Modal.Body className="text-center">
+              <img
+                src={selectedImage}
+                alt="Preview"
+                style={{ maxWidth: "100%", maxHeight: "80vh" }}
+              />
+            </Modal.Body>
+          </Modal>
+        </>
+      ) : (
+        "---"
+      )}
+    </td>
                     <td>
   {r.verifiedByStaff === "pending" && (
     <>
