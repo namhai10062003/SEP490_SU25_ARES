@@ -6,23 +6,13 @@ import { toast } from "react-toastify";
 import AdminDashboard from "./adminDashboard.jsx";
 import StatusFilter from "../../../components/admin/statusFilter.jsx";
 import Pagination from "../../../components/Pagination.jsx";
-import { getStatusLabel } from "../../../utils/format.jsx";
+import { getStatusLabel, formatDate } from "../../../utils/format.jsx";
 import SearchInput from "../../../components/admin/searchInput.jsx";
 import LoadingModal from "../../../components/loadingModal.jsx";
 import { Link } from "react-router-dom";
 const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
-const paymentStatusMap = {
-    unpaid: "Chưa thanh toán",
-    paid: "Đã thanh toán",
-    failed: "Thanh toán thất bại",
-};
-
-const paymentStatusColor = {
-    paid: "bg-success",
-    unpaid: "bg-warning text-dark",
-    failed: "bg-danger",
-};
+// Use shared getStatusLabel for payment status as well
 
 const ManageContract = () => {
     const navigate = useNavigate();
@@ -210,20 +200,24 @@ const ManageContract = () => {
                                                         )}
                                                     </td>
                                                     <td>
-                                                        <Link
-                                                            to={`/admin-dashboard/manage-user/${c.userId._id}`}
-                                                        >
-                                                            {c.landlordId?.fullName || c.landlordId?.name || c.landlordId?.email || "N/A"}
-                                                        </Link>
+                                                        {c.landlordId ? (
+                                                            <Link
+                                                                to={`/admin-dashboard/manage-user/${c.landlordId._id}`}
+                                                            >
+                                                                {c.landlordId.fullName || c.landlordId.name || c.landlordId.email || "N/A"}
+                                                            </Link>
+                                                        ) : (
+                                                            "N/A"
+                                                        )}
                                                     </td>
                                                     <td>
                                                         {c.postSnapshot?.apartmentCode || "-"}
                                                     </td>
                                                     <td>
-                                                        {c.startDate ? new Date(c.startDate).toLocaleDateString() : ""}
+                                                        {formatDate(c.startDate)}
                                                     </td>
                                                     <td>
-                                                        {c.endDate ? new Date(c.endDate).toLocaleDateString() : ""}
+                                                        {formatDate(c.endDate)}
                                                     </td>
                                                     <td>
                                                         <span
@@ -238,21 +232,22 @@ const ManageContract = () => {
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <span
-                                                            className={
-                                                                "badge " +
-                                                                (paymentStatusColor[c.paymentStatus]
-                                                                    ? paymentStatusColor[c.paymentStatus]
-                                                                    : "bg-light text-dark")
-                                                            }
-                                                        >
-                                                            {paymentStatusMap[c.paymentStatus] || c.paymentStatus}
-                                                        </span>
+                                                        {(() => {
+                                                            const payObj = getStatusLabel(c.paymentStatus);
+                                                            return (
+                                                                <span
+                                                                    className={
+                                                                        "badge " +
+                                                                        (payObj.color ? `bg-${payObj.color}` : "bg-light text-dark")
+                                                                    }
+                                                                >
+                                                                    {payObj.label}
+                                                                </span>
+                                                            );
+                                                        })()}
                                                     </td>
                                                     <td>
-                                                        {c.createdAt
-                                                            ? new Date(c.createdAt).toLocaleString()
-                                                            : ""}
+                                                        {formatDate(c.createdAt)}
                                                     </td>
                                                     <td>
                                                         <button

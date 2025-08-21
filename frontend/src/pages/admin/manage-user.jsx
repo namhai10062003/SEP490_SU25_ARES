@@ -246,6 +246,7 @@ const ManageUsers = () => {
                         setUserToBlock(null);
                         setConfirmBlockReason("");
                     }}
+                    size="md"
                     title={userToBlock?.status === 2 ? "Mở khoá tài khoản" : "Khoá hoàn toàn tài khoản"}
                     body={
                         <div>

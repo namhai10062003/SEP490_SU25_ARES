@@ -3,6 +3,17 @@ export const formatPrice = (p) =>
     new Intl.NumberFormat("vi-VN").format(p || 0) + " VND";
 
 // --- Dates ---
+export const formatDateWithTime = (d) => {
+    if (!d) return "";
+    const date = new Date(d);
+    const dateStr = date.toLocaleDateString("vi-VN");
+    const pad = (n) => n.toString().padStart(2, "0");
+    const h = pad(date.getHours());
+    const m = pad(date.getMinutes());
+    const s = pad(date.getSeconds());
+    return `${dateStr}, ${h}:${m}:${s}`;
+};
+
 export const formatDate = (d) =>
     d ? new Date(d).toLocaleDateString("vi-VN") : "";
 
@@ -16,7 +27,7 @@ export const toInputDate = (date) => {
 export const formatCurrency = (amount) => {
     if (amount == null || isNaN(amount)) return "0 VND";
     return Number(amount).toLocaleString("vi-VN") + " VND";
-  };  
+};
 
 export const formatSmartDate = (dateStr) => {
     if (!dateStr) return "";
