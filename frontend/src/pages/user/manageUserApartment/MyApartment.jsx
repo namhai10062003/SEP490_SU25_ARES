@@ -1,11 +1,11 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import BillPopup from "../../../../components/BillPopup.jsx";
 import Header from "../../../../components/header";
+import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
 import { createFeePayment } from "../../../service/feePayment.js";
-import BillPopup from "../../../../components/BillPopup.jsx";
-
 const MyApartment = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ const MyApartment = () => {
     const currentMonth = selectedMonth;
     const formattedMonth = `${currentMonth.slice(5, 7)}/${currentMonth.slice(0, 4)}`;
     const encodedMonth = encodeURIComponent(formattedMonth);
-
+    setLoading(true);
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/apartments/my-apartment/${user._id}`);
       const data = Array.isArray(res.data) ? res.data : [res.data];
@@ -44,6 +44,7 @@ const MyApartment = () => {
   };
 
   const fetchExpenses = async (apartment, encodedMonth, currentMonth) => {
+    setLoading(true);
     try {
       const [feeRes, parkingFeeRes, waterRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_URL}/api/fees/detail/${apartment._id}/${currentMonth}`),
@@ -83,6 +84,8 @@ const MyApartment = () => {
       }));
     } catch (err) {
       console.error("❌ Lỗi fetch chi phí:", err);
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -100,6 +103,7 @@ const MyApartment = () => {
   };
 
   const handleShowBill = async (apartmentId) => {
+    setLoading(true);
     try {
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/fees/detail/${apartmentId}/${selectedMonth}`
@@ -110,17 +114,12 @@ const MyApartment = () => {
     } catch (err) {
       console.error("❌ Lỗi lấy hóa đơn:", err);
       alert("Không thể lấy hóa đơn");
+    }finally{
+      setLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <>
-        <Header user={user} name={user?.name} logout={logout} />
-        <div className="text-center py-5">Đang tải dữ liệu căn hộ...</div>
-      </>
-    );
-  }
+  if (loading) return <LoadingModal/>
 
   const filteredApartments = apartments.filter((apartment) => {
     const roleText = String(apartment?.isRenter?._id) === user._id
@@ -229,6 +228,7 @@ const MyApartment = () => {
         )}
 
       </div>
+      {loading && <LoadingModal />}
     </div>
   );
 };

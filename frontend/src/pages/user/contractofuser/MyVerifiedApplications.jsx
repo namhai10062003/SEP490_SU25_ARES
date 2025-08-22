@@ -2,8 +2,8 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../../../components/header";
+import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
-
 const MyVerifiedApplications = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ const MyVerifiedApplications = () => {
         navigate("/login");
         return;
       }
-
+      setLoading(true);
       try {
         // Lấy thông tin hồ sơ user
         const profileRes = await axios.get(
@@ -271,6 +271,7 @@ const MyVerifiedApplications = () => {
           </div>
         </div>
       )}
+      {loading && <LoadingModal />}
     </div>
   );
 };

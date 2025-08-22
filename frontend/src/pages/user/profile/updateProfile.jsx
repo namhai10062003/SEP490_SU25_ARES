@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Header from "../../../../components/header";
+import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
-
 const UpdateProfileForm = () => {
   const { user, logout } = useAuth();
   const [name, setName] = useState(null);
@@ -66,6 +66,7 @@ const handleCccdBackChange = (e) => {
   // Lấy dữ liệu user để fill vào form
   useEffect(() => {
     const fetchUserProfile = async () => {
+      setLoading(true);
       try {
         console.log("🔍 Fetching profile for user:", user?._id);
   
@@ -116,6 +117,8 @@ const handleCccdBackChange = (e) => {
   
       } catch (error) {
         console.error("❌ Lỗi khi load thông tin:", error);
+      }finally{
+        setLoading(false);
       }
     };
   
@@ -488,6 +491,7 @@ const handleCccdBackChange = (e) => {
           &copy; 2025 Hồ sơ người dùng
         </footer>
       </div>
+      {loading && <LoadingModal />}
     </div>
   );
 };

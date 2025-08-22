@@ -3,7 +3,8 @@ import "datatables.net-bs5";
 import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";
 import React, { useEffect, useState } from "react";
 import Header from "../../../../components/header.jsx";
-import { useAuth } from "../../../../context/authContext.jsx"; // import useAuth
+import LoadingModal from "../../../../components/loadingModal.jsx"; // import useAuth
+import { useAuth } from "../../../../context/authContext.jsx";
 export default function PaymentHistoryTable() {
   const { user, logout } = useAuth(); // lấy user và logout từ context
   const [history, setHistory] = useState([]);
@@ -16,6 +17,7 @@ export default function PaymentHistoryTable() {
     if (!userId || !token) return;
 
     const fetchHistory = async () => {
+      setLoading(true);
       try {
         const res = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/payment-history/history/${userId}`,
@@ -36,7 +38,7 @@ export default function PaymentHistoryTable() {
     fetchHistory();
   }, [userId, token]);
 
-  if (loading) return <p className="text-center mt-5">Loading...</p>;
+  if (loading) return <LoadingModal/>
 
   return (
     <>
@@ -148,6 +150,7 @@ export default function PaymentHistoryTable() {
       </div>
     </div>
   </div>
+  {loading && <LoadingModal />}
 </div>
 
     </>

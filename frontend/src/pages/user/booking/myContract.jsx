@@ -5,8 +5,8 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../../components/header";
+import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
-
 const MyContracts = () => {
   const { user, loading } = useAuth();
   const [contracts, setContracts] = useState([]);
@@ -16,6 +16,7 @@ const MyContracts = () => {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [paidStatus, setPaidStatus] = useState({});
+  const [isloading, setLoading] = useState(false);
   const [editForm, setEditForm] = useState({
     startDate: "",
     endDate: "",
@@ -62,6 +63,7 @@ const addDays = (date, days) => {
   // }, [editForm.startDate, editingContract]);
   //fix lấy trạng thaias 
   useEffect(() => {
+    setLoading(true)
     contracts.forEach(contract => {
       fetch(`${import.meta.env.VITE_API_URL}/api/contracts/posts/${contract.postId}/has-paid-contract`)
         .then(res => {
@@ -79,6 +81,7 @@ const addDays = (date, days) => {
         .catch(err => {
           console.error(`Lỗi fetch trạng thái paid của postId ${contract.postId}:`, err);
         });
+        setLoading(false);
     });
   }, [contracts]);
   
@@ -108,6 +111,7 @@ const addDays = (date, days) => {
   }, [location.search, navigate]);
   // xử lý hợp đồng
   const fetchContracts = async () => {
+    setLoading(true);
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contracts/me`, {
@@ -116,6 +120,8 @@ const addDays = (date, days) => {
       setContracts(res.data.data);
     } catch {
       toast.error("❌ Lỗi khi tải hợp đồng");
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -569,6 +575,7 @@ const addDays = (date, days) => {
           </div>
         )}
       </div>
+      {isloading && <LoadingModal />}
     </div>
   );
   

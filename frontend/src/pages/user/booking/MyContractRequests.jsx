@@ -2,13 +2,14 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import Spinner from "react-bootstrap/Spinner";
-import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import ReusableModal from "../../../../components/ReusableModal";
 import SignaturePopup from "../../../../components/SignaturePopup";
 import ContractForm from "../../../../components/contractForm";
 import Header from "../../../../components/header";
+import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
 const MyContractRequests = () => {
   const { user, loading } = useAuth();
@@ -24,11 +25,13 @@ const [showConfirmForm, setShowConfirmForm] = useState(false);
 const [showSignatureA, setShowSignatureA] = useState(false);
 const [signaturePartyAUrl, setSignaturePartyAUrl] = useState(contractToApprove?.signaturePartyAUrl || "");
 const [loadingApprove, setLoadingApprove] = useState(false);
-
+const [isloading, setLoading] = useState(false);
+const [deleteId, setDeleteId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRequests = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem("token");
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/contracts/landlord`, {
@@ -45,6 +48,8 @@ const [loadingApprove, setLoadingApprove] = useState(false);
         console.log("✅ Hợp đồng để duyệt:", sortedData[0]);
       } catch (err) {
         toast.error("❌ Lỗi khi tải yêu cầu hợp đồng");
+      }finally{
+        setLoading(false);
       }
     };
   
@@ -76,6 +81,7 @@ const [loadingApprove, setLoadingApprove] = useState(false);
     if (!rejectReason.trim()) {
       return toast.warn("⚠️ Vui lòng nhập lý do từ chối");
     }
+    setLoading(true);
     try {
       await axios.put(`${import.meta.env.VITE_API_URL}/api/contracts/${rejectPopup.contractId}/reject`, {
         reason: rejectReason,
@@ -89,35 +95,28 @@ const [loadingApprove, setLoadingApprove] = useState(false);
       setRejectPopup({ show: false, contractId: null });
     } catch {
       toast.error("❌ Lỗi khi từ chối");
+    }finally{
+      setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    confirmAlert({
-      title: 'Xác nhận xoá hợp đồng',
-      message: 'Bạn muốn xóa hợp đồng này?',
-      buttons: [
-        {
-          label: '🗑️ Xoá',
-          onClick: async () => {
-            try {
-              await axios.delete(`${import.meta.env.VITE_API_URL}/api/contracts/${id}`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-              });
-              toast.success("🗑️ Đã xóa");
-              setRequests(prev => prev.filter(c => c._id !== id));
-            } catch {
-              toast.error("❌ Không thể xóa");
-            }
-          }
-        },
-        {
-          label: 'Huỷ',
-          onClick: () => {} // Không làm gì nếu huỷ
-        }
-      ]
+  // Hàm xoá
+const handleDelete = async () => {
+  if (!deleteId) return;
+  setLoading(true);
+  try {
+    await axios.delete(`${import.meta.env.VITE_API_URL}/api/contracts/${deleteId}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
     });
-  };
+    toast.success("🗑️ Đã xóa");
+    setRequests(prev => prev.filter(c => c._id !== deleteId));
+  } catch {
+    toast.error("❌ Không thể xóa");
+  } finally {
+    setLoading(false);
+    setDeleteId(null);
+  }
+};
   
 
   const filteredRequests = requests.filter((c) => {
@@ -169,7 +168,7 @@ const [loadingApprove, setLoadingApprove] = useState(false);
   }, [contractToApprove]);
   
 
-  if (loading) return <p>🔄 Đang tải...</p>;
+  if (loading) return <LoadingModal />;
 
   return (
     <div className="bg-light min-vh-100">
@@ -359,12 +358,34 @@ const [loadingApprove, setLoadingApprove] = useState(false);
                           </>
                         )}
   
-                        <button
-                          className="btn btn-outline-danger fw-bold"
-                          onClick={() => handleDelete(contract._id)}
-                        >
-                          XÓA
-                        </button>
+    <button
+    className="btn btn-outline-danger fw-bold"
+    onClick={() => setDeleteId(contract._id)}
+  >
+    XÓA
+  </button>
+
+  <ReusableModal
+  show={!!deleteId}
+  title="Xác nhận xoá hợp đồng"
+  body={<p>Bạn có chắc muốn xóa hợp đồng này?</p>}
+  onClose={() => setDeleteId(null)}
+  footerButtons={[
+    {
+      label: "Huỷ",
+      variant: "secondary",
+      onClick: () => setDeleteId(null),
+      disabled: isloading,
+    },
+    {
+      label: isloading ? "Đang xoá..." : "🗑️ Xoá",
+      variant: "danger",
+      onClick: () => handleDelete(deleteId),
+      disabled: isloading,
+    },
+  ]}
+/>
+
                       </div>
                     </div>
                   </div>
@@ -534,7 +555,7 @@ const [loadingApprove, setLoadingApprove] = useState(false);
   )}
 </Button>
 
-
+{loadingApprove && <LoadingModal />}
   </Modal.Footer>
 </Modal>
 
@@ -553,7 +574,7 @@ const [loadingApprove, setLoadingApprove] = useState(false);
 
   </div>
 )}
-
+{isloading && <LoadingModal />}
     </div>
   );
   

@@ -9,6 +9,7 @@ import "react-confirm-alert/src/react-confirm-alert.css";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../../components/header.jsx";
+import LoadingModal from "../../../../components/loadingModal.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
 import {
   createPayment,
@@ -16,7 +17,6 @@ import {
   getPostsByUser,
   updatePost,
 } from "../../../service/postService.js";
-
 const PAGE_SIZE = 5;
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -215,7 +215,7 @@ const CustomerPostManagement = () => {
       toast.error("Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn.");
       return;
     }
-
+      setLoading(true);
     try {
       await axios.put(
         `${import.meta.env.VITE_API_URL}/api/posts/${post._id}/start-editing`,
@@ -230,6 +230,8 @@ const CustomerPostManagement = () => {
       console.error("Lỗi khi bật isEditing:", err);
       toast.error("Có lỗi khi bật chế độ chỉnh sửa, vui lòng thử lại.");
       return;
+    }finally{
+      setLoading(false);
     }
 
     // Lấy images từ post
@@ -332,7 +334,7 @@ const CustomerPostManagement = () => {
       toast.error("Vui lòng chọn gói đăng tin");
       return;
     }
-
+    setLoading(true);
     // ==== Tạo formData để gửi lên server ====
     const formData = new FormData();
 
@@ -427,6 +429,7 @@ const CustomerPostManagement = () => {
     } catch (error) {
       toast.error("Có lỗi xảy ra khi cập nhật bài đăng");
     } finally {
+      setLoading(false);
       setIsSaving(false);
     }
   };
@@ -465,14 +468,7 @@ const CustomerPostManagement = () => {
   // const totalPages = Math.ceil(posts.length / PAGE_SIZE);
   // const paginatedPosts = posts.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  if (authLoading || loading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center py-5">
-        <div className="spinner-border text-primary me-2"></div>
-        <span>Đang tải dữ liệu...</span>
-      </div>
-    );
-  }
+  if (authLoading || loading) return <LoadingModal/>
   const handleCancelEdit = async () => {
     if (editingPost) {
       try {
@@ -1419,6 +1415,7 @@ const CustomerPostManagement = () => {
           </div>
         )}
       </div>
+      {loading && <LoadingModal />}
     </div>
   );
 };
