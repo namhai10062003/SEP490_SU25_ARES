@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from '../../../../components/header';
+import LoadingModal from '../../../../components/loadingModal';
 import { useAuth } from '../../../../context/authContext';
-
 const FormParkingRegistration = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -32,6 +32,7 @@ const FormParkingRegistration = () => {
   useEffect(() => {
     setName(user?.name || null);
     (async () => {
+      setLoading(true);
       try {
         const r = await fetch(`${import.meta.env.VITE_API_URL}/api/apartments`);
         const data = await r.json();
@@ -50,6 +51,8 @@ const FormParkingRegistration = () => {
       } catch (err) {
         console.error(err);
         toast.error('❌ Lỗi khi lấy dữ liệu căn hộ');
+      }finally{
+        setLoading(false);
       }
     })();
   }, [user]);
@@ -336,6 +339,9 @@ const validateDates = () => {
           © 2025 Bãi giữ xe
         </footer>
       </div>
+      
+      {/* Loading modal */}
+      {loading && <LoadingModal show={loading} />}
     </div>
   );
 };

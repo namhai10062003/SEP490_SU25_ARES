@@ -2,19 +2,19 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "./navbar";
 import NotificationBell from "./notification";
-
+import { useAuth } from "/context/AuthContext";
 const HEADER_HEIGHT = 64; // px, adjust if your header is taller/shorter
 
-const Header = ({ user, name, logout }) => {
+const Header = () => {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const profileDropdownRef = useRef();
   const navigate = useNavigate();
-
+  const { user, logout } = useAuth();
   // Hàm xử lý logout
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
+  // const handleLogout = () => {
+  //   logout();
+  //   navigate("/login");
+  // };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -177,7 +177,7 @@ const Header = ({ user, name, logout }) => {
 
                 {/* 👇 Logout */}
                 <button
-                  onClick={handleLogout}
+                  onClick={logout}
                   className="btn btn-outline-warning ms-2"
                 >
                   Log out

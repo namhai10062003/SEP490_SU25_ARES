@@ -1,15 +1,14 @@
-import { useEffect, useState, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { FaEye } from "react-icons/fa";
 import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
+import { FaEye } from "react-icons/fa";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import AdminDashboard from "./adminDashboard.jsx";
-import StatusFilter from "../../../components/admin/statusFilter.jsx";
 import Pagination from "../../../components/Pagination.jsx";
 import { getStatusLabel, formatDate } from "../../../utils/format.jsx";
 import SearchInput from "../../../components/admin/searchInput.jsx";
+import StatusFilter from "../../../components/admin/statusFilter.jsx";
 import LoadingModal from "../../../components/loadingModal.jsx";
-import { Link } from "react-router-dom";
+import AdminDashboard from "./adminDashboard.jsx";
 const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
 // Use shared getStatusLabel for payment status as well
@@ -214,10 +213,11 @@ const ManageContract = () => {
                                                         {c.postSnapshot?.apartmentCode || "-"}
                                                     </td>
                                                     <td>
-                                                        {formatDate(c.startDate)}
+
+                                                        {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ""}
                                                     </td>
                                                     <td>
-                                                        {formatDate(c.endDate)}
+                                                        {c.paymentDate ? new Date(c.paymentDate).toLocaleDateString() : ""}
                                                     </td>
                                                     <td>
                                                         <span

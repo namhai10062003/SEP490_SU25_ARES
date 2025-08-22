@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import React, { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 import {
@@ -18,6 +19,8 @@ import "react-toastify/dist/ReactToastify.css";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import Header from "../../../../components/header.jsx";
+import LoadingModal from "../../../../components/loadingModal.jsx";
+import UserInfo from "../../../../components/user/userInfor.jsx";
 import { useChat } from "../../../../context/ChatContext.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
 import {
@@ -32,7 +35,6 @@ import {
   getAllPosts,
   getPostById,
 } from "../../../service/postService.js";
-import UserInfo from "../../../../components/user/userInfor.jsx";
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -65,9 +67,10 @@ const PostDetail = () => {
   const [userPostsCount, setUserPostsCount] = useState(0);
   const API_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
+    setLoading(true);
     if (post?.contactInfo?._id) {
       console.log("📌 contactInfo có dữ liệu:", post.contactInfo);
-
+      
       fetch(`${import.meta.env.VITE_API_URL}/api/posts/count/${post.contactInfo.userId || post.contactInfo._id}`)
         .then((res) => res.json())
         .then((data) => setUserPostsCount(data.count))
@@ -75,11 +78,13 @@ const PostDetail = () => {
     } else {
       console.log("⚠️ contactInfo chưa có dữ liệu:", post?.contactInfo);
     }
+    setLoading(false);
   }, [post]); // ✅ chạy lại khi post thay đổi
   // 👈 đổi lại: theo dõi toàn bộ post thay vì chỉ _id
 
   useEffect(() => {
     const fetchContract = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem("token"); // lấy token
         const res = await fetch(`${API_URL}/api/contracts/by-post/${post._id}`, {
@@ -101,6 +106,8 @@ const PostDetail = () => {
         }
       } catch (err) {
         console.error("Không lấy được hợp đồng:", err);
+      }finally{
+        setLoading(false);
       }
     };
 
@@ -109,6 +116,7 @@ const PostDetail = () => {
 
   // hàm thực hiện chat vs người bài đăng 
   useEffect(() => {
+
     if (post?.contactInfo?.userId) {
       if (user && user._id !== post.contactInfo.userId) {
         setReceiver({
@@ -140,6 +148,7 @@ const PostDetail = () => {
   // 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const [postRes, commentsRes, likedRes, countRes] = await Promise.all([
           getPostById(id),
@@ -237,8 +246,7 @@ const PostDetail = () => {
       );
     }
   };
-
-  if (loading) return <div className="text-center py-5">🔄 Đang tải dữ liệu…</div>;
+  if (loading) return <LoadingModal />;
   if (err) return <div className="text-danger text-center py-5">{err}</div>;
 
   const thumbSliderSettings = {
@@ -404,79 +412,82 @@ const PostDetail = () => {
           <div className="row">
             {/* Cột Mô tả */}
             <div className="col-md-8">
-              <div>
-                <h5 className="mb-3 d-flex align-items-center text-primary fw-bold">
-                  <FaInfoCircle className="me-2" /> Mô tả
-                </h5>
+  <div>
+    <h5 className="mb-3 d-flex align-items-center text-primary fw-bold">
+      <FaInfoCircle className="me-2" /> Mô tả
+    </h5>
 
-                <div
-                  className="bg-white rounded-4 shadow-sm border p-4"
+    <div
+      className="bg-white rounded-4 shadow-sm border p-4"
+      style={{
+        fontSize: "1rem",
+        lineHeight: "1.7",
+        color: "#444",
+        borderColor: "#f0f0f0",
+      }}
+    >
+      <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+        {post.description &&
+          DOMPurify.sanitize(post.description, { ALLOWED_TAGS: [] }) // ❌ bỏ hết tag HTML, chỉ giữ text
+            .split(/\n+/) // tách theo xuống dòng
+            .map((line) => line.trim())
+            .filter(Boolean)
+            .map((line, index) => {
+              const isSectionTitle =
+                line.startsWith("✨") || /THÔNG TIN/i.test(line);
+              const isBullet = line.startsWith("•") || /^\d+\./.test(line);
+
+              return (
+                <li
+                  key={index}
+                  className={`d-flex align-items-start ${
+                    isSectionTitle
+                      ? "bg-primary bg-opacity-10 fw-bold text-primary"
+                      : "bg-light"
+                  } p-3 mb-2 rounded-3 border`}
                   style={{
-                    fontSize: "1rem",
-                    lineHeight: "1.7",
-                    color: "#444",
-                    borderColor: "#f0f0f0",
+                    gap: "12px",
+                    borderColor: "#eee",
+                    transition: "all 0.25s ease",
+                    cursor: "default",
                   }}
+                  onMouseEnter={(e) =>
+                    !isSectionTitle &&
+                    (e.currentTarget.style.backgroundColor = "#f8faff")
+                  }
+                  onMouseLeave={(e) =>
+                    !isSectionTitle &&
+                    (e.currentTarget.style.backgroundColor = "#f8f9fa")
+                  }
                 >
-                  <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
-                    {post.description
-                      ?.split(/\n+/)
-                      .map((line) => line.trim())
-                      .filter(Boolean)
-                      .map((line, index) => {
-                        const isSectionTitle =
-                          line.startsWith("✨") || /THÔNG TIN/i.test(line);
-                        const isBullet = line.startsWith("•") || /^\d+\./.test(line);
-                        return (
-                          <li
-                            key={index}
-                            className={`d-flex align-items-start ${isSectionTitle
-                              ? "bg-primary bg-opacity-10 fw-bold text-primary"
-                              : "bg-light"
-                              } p-3 mb-2 rounded-3 border`}
-                            style={{
-                              gap: "12px",
-                              borderColor: "#eee",
-                              transition: "all 0.25s ease",
-                              cursor: "default",
-                            }}
-                            onMouseEnter={(e) =>
-                              !isSectionTitle &&
-                              (e.currentTarget.style.backgroundColor = "#f8faff")
-                            }
-                            onMouseLeave={(e) =>
-                              !isSectionTitle &&
-                              (e.currentTarget.style.backgroundColor = "#f8f9fa")
-                            }
-                          >
-                            {isSectionTitle ? (
-                              <span style={{ fontSize: "1.2rem" }}>✨</span>
-                            ) : (
-                              <FaCheckCircle
-                                style={{
-                                  color: "#0d6efd",
-                                  marginTop: "4px",
-                                  fontSize: "1.1rem",
-                                  flexShrink: 0,
-                                }}
-                              />
-                            )}
-                            <span
-                              dangerouslySetInnerHTML={{
-                                __html: line.replace(
-                                  /^([^:]+):/,
-                                  "<strong style='color:#0d6efd'>$1:</strong>"
-                                ),
-                              }}
-                            />
-                          </li>
-                        );
-                      })}
-                  </ul>
-                </div>
-              </div>
-            </div>
+                  {isSectionTitle ? (
+                    <span style={{ fontSize: "1.2rem" }}>✨</span>
+                  ) : (
+                    <FaCheckCircle
+                      style={{
+                        color: "#0d6efd",
+                        marginTop: "4px",
+                        fontSize: "1.1rem",
+                        flexShrink: 0,
+                      }}
+                    />
+                  )}
 
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: line.replace(
+                        /^([^:]+):/,
+                        "<strong style='color:#0d6efd'>$1:</strong>"
+                      ),
+                    }}
+                  />
+                </li>
+              );
+            })}
+      </ul>
+    </div>
+  </div>
+</div>
             {/* Cột UserInfo */}
             <div className="col-md-4">
               <div className="rounded-2xl p-3">
@@ -606,6 +617,7 @@ const PostDetail = () => {
             </div>
           </div>
         )}
+                   
       </div>
 
       {/* Zoom Modal */}
@@ -708,6 +720,8 @@ const PostDetail = () => {
           </button>
         </Modal.Footer>
       </Modal>
+       {/* ✅ Loading toàn màn hình */}
+{loading && <LoadingModal />}
     </>
   );
 };

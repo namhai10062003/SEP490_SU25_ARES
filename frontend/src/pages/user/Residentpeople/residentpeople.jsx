@@ -2,7 +2,9 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from "react-toastify";
+import ReusableModal from '../../../../components/ReusableModal';
 import Header from '../../../../components/header';
+import LoadingModal from '../../../../components/loadingModal';
 import { useAuth } from '../../../../context/authContext';
 import UpdateResidentModal from './UpdateResidentModal';
 const ResidentList = () => {
@@ -15,10 +17,12 @@ const ResidentList = () => {
   const [filterGender, setFilterGender] = useState('all');
   const [filterRelation, setFilterRelation] = useState('all');
   const [editingResident, setEditingResident] = useState(null);
+  const [loading, setLoadingModal] = useState(false);
   // const [residents, setResidents] = useState([]); 
   const API_URL = import.meta.env.VITE_API_URL; 
  // Gọi khi component mount hoặc user thay đổi
  const fetchMyResidents = async () => {
+  setLoadingModal(true);
   try {
     const token = localStorage.getItem('token');
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/residents/me/residents`, {
@@ -34,6 +38,8 @@ const ResidentList = () => {
     setData(result); // cập nhật state
   } catch (err) {
     console.error('❌ Lỗi khi lấy dữ liệu:', err);
+  }finally {
+    setLoadingModal(false); // tắt loading
   }
 };
 
@@ -46,6 +52,7 @@ useEffect(() => {
 // Gọi sau khi update resident
 // handleUpdateResident quyết định trạng thái dựa trên dữ liệu gửi lên
 const handleUpdateResident = async (residentId, formData, originalResident) => {
+  setLoadingModal(true); // bật loading
   try {
     const token = localStorage.getItem("token");
 
@@ -67,8 +74,10 @@ const handleUpdateResident = async (residentId, formData, originalResident) => {
       if (newVal !== oldVal) changedFields.push({ key, oldVal, newVal });
     }
 
-    if (formData.get("removeFront") === "true") changedFields.push({ key: "removeFront", oldVal: false, newVal: true });
-    if (formData.get("removeBack") === "true") changedFields.push({ key: "removeBack", oldVal: false, newVal: true });
+    if (formData.get("removeFront") === "true")
+      changedFields.push({ key: "removeFront", oldVal: false, newVal: true });
+    if (formData.get("removeBack") === "true")
+      changedFields.push({ key: "removeBack", oldVal: false, newVal: true });
 
     const hasChanges = changedFields.length > 0;
     console.log("🔍 Kiểm tra thay đổi trong handleUpdateResident:", { hasChanges, changedFields });
@@ -79,7 +88,8 @@ const handleUpdateResident = async (residentId, formData, originalResident) => {
       console.log("⏳ Có thay đổi → set trạng thái PENDING");
     } else {
       formData.set("verifiedByStaff", originalResident.verifiedByStaff || "false");
-      if (originalResident.rejectReason) formData.set("rejectReason", originalResident.rejectReason);
+      if (originalResident.rejectReason)
+        formData.set("rejectReason", originalResident.rejectReason);
       console.log("⚠️ Không thay đổi → giữ nguyên trạng thái", {
         verifiedByStaff: formData.get("verifiedByStaff"),
         rejectReason: formData.get("rejectReason"),
@@ -102,19 +112,23 @@ const handleUpdateResident = async (residentId, formData, originalResident) => {
       }
     );
     console.log("🌐 Response từ API sau PUT:", response.data);
+
     setEditingResident(null);
-// Fetch lại residents
-const residents = await fetchMyResidents();
-console.log("📄 Danh sách resident sau update:", residents);
-toast.success("✅ Chỉnh sửa nhân khẩu thành công", { autoClose: 3000 });
-} catch (err) {
-console.error("❌ Lỗi update resident:", err.response?.data || err.message);
-toast.error(
-  err.response?.data?.message || "❌ Lỗi update nhân khẩu.",
-  { autoClose: 3000 }
-);
-}
+
+    // Fetch lại residents
+    await fetchMyResidents();
+
+    toast.success("✅ Chỉnh sửa nhân khẩu thành công", { autoClose: 3000 });
+  } catch (err) {
+    console.error("❌ Lỗi update resident:", err.response?.data || err.message);
+    toast.error(err.response?.data?.message || "❌ Lỗi update nhân khẩu.", {
+      autoClose: 3000,
+    });
+  } finally {
+    setLoadingModal(false); // tắt loading dù thành công hay lỗi
+  }
 };
+
 
 
 
@@ -138,6 +152,7 @@ toast.error(
     }
 
     return (
+      
       <div className="bg-white rounded-4 shadow p-4 mb-4" key={apt.apartmentId}>
         <div className="row mb-3">
           <div className="col-md-3 mb-2">
@@ -358,42 +373,36 @@ toast.error(
       <footer className="text-center py-4 text-secondary small">
         &copy; 2025 Quản lý nhân khẩu
       </footer>
+     
+      <ReusableModal
+  show={!!modalReason}
+  title="Lý do từ chối"
+  onClose={() => setModalReason(null)}
+  body={
+    <div className="text-center">
+      <p>
+        <strong>{modalReason?.name}</strong> đã bị từ chối với lý do:
+      </p>
+      <p className="text-danger fw-bold">{modalReason?.reason}</p>
+    </div>
+  }
+  footerButtons={[
+    {
+      label: "Đóng",
+      variant: "secondary",
+      onClick: () => setModalReason(null),
+    },
+  ]}
+/>
 
-      {modalReason && (
-        <div
-          className="modal fade show"
-          style={{ display: "block", background: "rgba(0,0,0,0.3)" }}
-          tabIndex={-1}
-          onClick={() => setModalReason(null)}
-        >
-          <div className="modal-dialog modal-dialog-centered" onClick={e => e.stopPropagation()}>
-            <div className="modal-content rounded-4 text-center">
-              <div className="modal-header">
-                <h5 className="modal-title">Lý do từ chối</h5>
-                <button type="button" className="btn-close" onClick={() => setModalReason(null)} />
-              </div>
-              <div className="modal-body">
-                <p>
-                  <strong>{modalReason.name}</strong> đã bị từ chối với lý do:
-                </p>
-                <p className="text-danger fw-bold">{modalReason.reason}</p>
-              </div>
-              <div className="modal-footer justify-content-center">
-                <button className="btn btn-secondary" onClick={() => setModalReason(null)}>
-                  Đóng
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
      <UpdateResidentModal
   show={!!editingResident}
   resident={editingResident}
   onClose={() => setEditingResident(null)}
   onUpdate={handleUpdateResident} // gửi resident object + FormData
 />
-
+{/* ✅ Loading toàn màn hình */}
+{loading && <LoadingModal />}
     </div>
   );
 };

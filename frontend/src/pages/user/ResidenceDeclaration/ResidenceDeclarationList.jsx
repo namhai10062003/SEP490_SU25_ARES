@@ -3,6 +3,7 @@ import { Button, Form, Modal, Spinner } from "react-bootstrap"; // dùng react-b
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../../components/header";
+import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
 const ResidenceDeclarationList = () => {
   const { user, logout } = useAuth();
@@ -12,7 +13,7 @@ const ResidenceDeclarationList = () => {
   const fileInputRef = useRef(null); 
   const [saving, setSaving] = useState(false); 
   const [show, setShow] = useState(false);
-
+  const [loading, setLoadingModal] = useState(false);
   // 🔹 State modal
   const [showModal, setShowModal] = useState(false);
 const [removingImage, setRemovingImage] = useState(false); //
@@ -30,6 +31,7 @@ const [removingImage, setRemovingImage] = useState(false); //
   });
 
   const fetchDeclarations = async () => {
+    setLoadingModal(true);
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(
@@ -42,6 +44,8 @@ const [removingImage, setRemovingImage] = useState(false); //
       setDeclarations(data.data || []);
     } catch (err) {
       toast.error(`❌ ${err.message}`);
+    }finally{
+      setLoadingModal(false);
     }
   };
 
@@ -133,7 +137,7 @@ if (editForm.idNumber && !/^\d{12}$/.test(editForm.idNumber.trim())) {
       toast.info("⚠️ Bạn chưa thay đổi gì.");
       return;
     }
-  
+    setLoadingModal(true);
     try {
       const token = localStorage.getItem("token");
       const formData = new FormData();
@@ -170,6 +174,8 @@ if (editForm.idNumber && !/^\d{12}$/.test(editForm.idNumber.trim())) {
       fetchDeclarations(); // reload danh sách
     } catch (err) {
       toast.error(`❌ ${err.message}`);
+    }finally{
+      setLoadingModal(false);
     }
   };
   
@@ -361,6 +367,8 @@ if (editForm.idNumber && !/^\d{12}$/.test(editForm.idNumber.trim())) {
                 ))}
             </tbody>
           </table>
+          {/* ✅ Loading toàn màn hình */}
+{loading && <LoadingModal />}
         </div>
 
         <Modal show={showModal} onHide={() => setShowModal(false)} centered size="lg">
@@ -583,7 +591,8 @@ if (editForm.idNumber && !/^\d{12}$/.test(editForm.idNumber.trim())) {
     </Button>
   </Modal.Footer>
 </Modal>
-
+{/* ✅ Loading toàn màn hình */}
+{loading && <LoadingModal />}
       </div>
     </div>
   );

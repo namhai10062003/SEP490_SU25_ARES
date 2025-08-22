@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import Select from "react-select";
 import { toast } from "react-toastify";
+import LoadingModal from "../../../../components/loadingModal";
 import StaffNavbar from "../staffNavbar";
 export default function ResidentVerificationForm() {
   const [formData, setFormData] = useState({
@@ -63,6 +64,7 @@ export default function ResidentVerificationForm() {
   // list ra all users
   useEffect(() => {
     const fetchAllUsers = async () => {
+      setLoading(true);
       try {
         const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/users?limit=1000`);
 
@@ -87,6 +89,7 @@ export default function ResidentVerificationForm() {
       } catch (err) {
         console.error("❌ Lỗi khi gọi API lấy tất cả người dùng:", err.message);
       }
+      setLoading(false);
     };
 
     fetchAllUsers();
@@ -125,23 +128,31 @@ export default function ResidentVerificationForm() {
   // };
   const handleSearch = (e) => {
     e.preventDefault();
-    
-    const keyword = query.trim().toLowerCase();
-    if (!keyword) {
-      setFilteredUsers(allUsers);
-      return;
+    setLoading(true);
+  
+    try {
+      const keyword = query.trim().toLowerCase();
+  
+      if (!keyword) {
+        setFilteredUsers(allUsers);
+        return;
+      }
+  
+      const filtered = allUsers.filter(
+        (u) =>
+          (u.name?.toLowerCase().includes(keyword) ||
+            u.email?.toLowerCase().includes(keyword) ||
+            u.phone?.includes(keyword)) &&
+          u.role !== "admin" &&
+          u.role !== "staff"
+      );
+  
+      setFilteredUsers(filtered);
+    } finally {
+      setLoading(false); // luôn chạy, dù return hay lỗi
     }
-
-    const filtered = allUsers.filter((u) =>
-      (u.name?.toLowerCase().includes(keyword) ||
-        u.email?.toLowerCase().includes(keyword) ||
-        u.phone?.includes(keyword)) &&
-      u.role !== "admin" &&
-      u.role !== "staff"
-    );
-
-    setFilteredUsers(filtered);
   };
+  
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
@@ -168,7 +179,7 @@ export default function ResidentVerificationForm() {
   // hàm sumit form
   const handleSubmit = async (e) => {
     e.preventDefault();
- 
+
     // ===== Validate từng trường =====
     if (!user) {
       toast.error("❌ Vui lòng chọn cư dân cần xác thực.");
@@ -215,7 +226,8 @@ if (!formData.documentImage || formData.documentImage.length === 0) {
   toast.error("❌ Vui lòng tải lên ít nhất 1 ảnh giấy tờ.");
   return;
 }
-setLoading(true);
+ // ===== Bật loading khi bắt đầu gửi =====
+ setLoading(true);
     // ===== Tạo FormData để gửi =====
     try {
       const data = new FormData();
@@ -262,7 +274,7 @@ setLoading(true);
       console.error("Gửi thất bại:", err?.response || err);
       toast.error("❌ Gửi thất bại! Vui lòng kiểm tra lại.");
     }finally {
-      setLoading(false);
+      setLoading(false); // 🔥 luôn tắt loading ở đây
     }
   };
   
@@ -521,20 +533,26 @@ setLoading(true);
             </div>
 
             {/* Footer */}
-            <div className="d-flex justify-content-end mt-4">
-            <button type="submit" className="btn btn-success px-5 d-flex align-items-center justify-content-center" disabled={loading}>
-  {loading && (
-    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-  )}
-  Gửi xác thực
-</button>
-            </div>
+            {/* Footer */}
+  <div className="d-flex justify-content-end mt-4 gap-2">
+    <button
+      type="submit"
+      className="btn btn-success px-5 d-flex align-items-center justify-content-center"
+      disabled={loading} // disable khi đang loading
+    >
+      Gửi xác thực
+    </button>
+  </div>
+
+ 
           </form>
         </div>
       </div>
     </div>
   </div>
 )}
+ {/* Modal loading toàn màn hình */}
+ {loading && <LoadingModal />}
 
         </div>
       </main>

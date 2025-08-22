@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Form, Modal, Spinner } from "react-bootstrap";
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
+import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from '../../../../context/authContext';
 const EditVehicleModal = ({ show, onClose, vehicleData,selectedItem, onSave }) => {
     const [formData, setFormData] = useState({
@@ -29,6 +30,7 @@ const EditVehicleModal = ({ show, onClose, vehicleData,selectedItem, onSave }) =
     // Gọi API lấy danh sách căn hộ
     useEffect(() => {
       const fetchApartments = async () => {
+        setLoading(true);
         try {
           const res = await axios.get(
             `${import.meta.env.VITE_API_URL}/api/apartments`
@@ -53,7 +55,10 @@ const EditVehicleModal = ({ show, onClose, vehicleData,selectedItem, onSave }) =
         } catch (error) {
           console.error("❌ Lỗi khi load apartments:", error);
           toast.error("❌ Lỗi khi lấy dữ liệu căn hộ");
+        }finally {
+          setLoading(false);
         }
+        
       };
   
       if (user?._id) {
@@ -206,6 +211,7 @@ const EditVehicleModal = ({ show, onClose, vehicleData,selectedItem, onSave }) =
 
   
   return (
+    
     <Modal show={show} onHide={onClose} centered size="lg">
     <Modal.Header closeButton className="bg-primary text-white">
       <Modal.Title>✏️ Chỉnh sửa thông tin xe</Modal.Title>
@@ -364,33 +370,35 @@ const EditVehicleModal = ({ show, onClose, vehicleData,selectedItem, onSave }) =
   </div>
 )}
           </div>
+       
         </div>
       </Form>
     </Modal.Body>
-  
+    {loading && <LoadingModal show={loading} />}
     <Modal.Footer className="bg-light">
-      <Button variant="secondary" onClick={onClose}>
-        Đóng
-      </Button>
-      <Button variant="primary" onClick={handleSave} disabled={loading}>
-        {loading ? (
-          <>
-            <Spinner
-              as="span"
-              animation="border"
-              size="sm"
-              role="status"
-              aria-hidden="true"
-            />{" "}
-            Đang lưu...
-          </>
-        ) : (
-          "Lưu thay đổi"
-        )}
-      </Button>
-    </Modal.Footer>
+    <Button variant="secondary" onClick={onClose} disabled={loading}>
+      Đóng
+    </Button>
+    <Button variant="primary" onClick={handleSave} disabled={loading}>
+      {loading ? (
+        <>
+          <Spinner
+            as="span"
+            animation="border"
+            size="sm"
+            role="status"
+            aria-hidden="true"
+          />{" "}
+          Đang lưu...
+        </>
+      ) : (
+        "Lưu thay đổi"
+      )}
+    </Button>
+  </Modal.Footer>
+  {loading && <LoadingModal show={loading} />}
   </Modal>
-  
+ 
   );
 };
 
