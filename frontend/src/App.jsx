@@ -29,7 +29,7 @@ import PostManagement from "./pages/admin/ManagementPost/PostManagement.jsx";
 import AdminContactPage from "./pages/admin/contactPage/adminContactPage.jsx";
 import AdminContractDetail from './pages/admin/contractDetail.jsx';
 import ManageApartment from "./pages/admin/manage-apartment.jsx";
-import ManageApplicationForm from "./pages/admin/manage-application-form.jsx";
+import ManageResidentVerification from "./pages/admin/manage-resident-verification.jsx";
 import ManageContract from "./pages/admin/manage-contract.jsx";
 import ManageNotifications from "./pages/admin/manage-notification.jsx";
 import ManageStaff from "./pages/admin/manage-staff.jsx";
@@ -171,7 +171,7 @@ function AppRoutes() {
         <Route path="/admin-dashboard/manage-user" element={<ProtectedRoute element={<ManageUser />} allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/manage-staff" element={<ProtectedRoute element={<ManageStaff />} allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/manage-apartment" element={<ProtectedRoute element={<ManageApartment />} allowedRoles={["admin"]} />} />
-        <Route path="/admin-dashboard/manage-resident-verification" element={<ProtectedRoute element={<ManageApplicationForm />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/manage-resident-verification" element={<ProtectedRoute element={<ManageResidentVerification />} allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/resident-verify-admin" element={<ProtectedRoute element={<AdminResidentApproval />} allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/report" element={<ProtectedRoute element={<AdminReportPage />} allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/revenue/post" element={<ProtectedRoute element={<AdminRevenuePost />} allowedRoles={["admin"]} />} />

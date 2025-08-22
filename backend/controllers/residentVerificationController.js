@@ -84,14 +84,71 @@ export const submitVerification = async (req, res) => {
 //     res.status(500).json({ error: "Server error" });
 //   }
 // };
+
+//get ALl residentVerification for admin
 const getAllResidentVerifications = async (req, res) => {
   try {
-    const forms = await ResidentVerification.find()
+    // Lấy các query params
+    const {
+      search = "",
+      status = "",
+      sort = "newest",
+      page = 1,
+      pageSize = 10,
+    } = req.query;
+
+    // Xây dựng filter object
+    const filter = {};
+
+    // Search theo tên, email, phone, apartmentCode, documentType
+    if (search && search.trim() !== "") {
+      const searchRegex = new RegExp(search.trim(), "i");
+      filter.$or = [
+        { fullName: searchRegex },
+        { email: searchRegex },
+        { phone: searchRegex },
+        { apartmentCode: searchRegex },
+        { documentType: searchRegex },
+      ];
+    }
+
+    // Filter theo status
+    if (status && status !== "") {
+      filter.status = status;
+    }
+
+    // Sắp xếp
+    let sortObj = {};
+    if (sort === "newest") {
+      sortObj = { createdAt: -1 };
+    } else if (sort === "oldest") {
+      sortObj = { createdAt: 1 };
+    }
+
+    // Pagination
+    const pageNum = Math.max(1, parseInt(page));
+    const pageSizeNum = Math.max(1, parseInt(pageSize));
+    const skip = (pageNum - 1) * pageSizeNum;
+
+    // Đếm tổng số bản ghi (cho FE biết tổng số trang)
+    const total = await ResidentVerification.countDocuments(filter);
+
+    // Query chính
+    const forms = await ResidentVerification.find(filter)
+      .sort(sortObj)
+      .skip(skip)
+      .limit(pageSizeNum)
       .populate('staff', 'name email')
-      .populate('user', '_id name email') // 👈 Bao gồm cả _id (userId)
+      .populate('user', '_id name email')
       .populate('apartment', 'apartmentCode name');
 
-    res.status(200).json(forms);
+    res.status(200).json({
+      data: forms,
+      total,
+      page: pageNum,
+      pageSize: pageSizeNum,
+      totalPages: Math.ceil(total / pageSizeNum) || 1,
+    });
   } catch (err) {
     console.error("❌ Lỗi trong getAllResidentVerifications:", err.message);
     res.status(500).json({ error: "Server error" });

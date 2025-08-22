@@ -2,25 +2,30 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+
 import Pagination from "../../../components/Pagination.jsx";
 import ReusableModal from "../../../components/ReusableModal.jsx";
 import StatusFilter from "../../../components/admin/statusFilter.jsx";
 import LoadingModal from "../../../components/loadingModal.jsx";
 import { formatDate, formatPhoneNumber, formatPrice } from "../../../utils/format.jsx";
 import AdminDashboard from "./adminDashboard.jsx";
+import SearchInput from "../../../components/admin/searchInput.jsx";
 
-const ManageApplicationForm = () => {
+const ManageResidentVerification = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialPage = Number(searchParams.get("page")) || 1;
   const initialPageSize = Number(searchParams.get("pageSize")) || 10;
+  const initialSearch = searchParams.get("search") || "";
+  const initialStatus = searchParams.get("status");
+  const initialSort = searchParams.get("sort");
 
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("Chờ duyệt");
+  const [searchTerm, setSearchTerm] = useState(initialSearch); // committed search
+  const [searchInput, setSearchInput] = useState(initialSearch); // local input
+  const [filterStatus, setFilterStatus] = useState(initialStatus ?? "Chờ duyệt");
   const [selectedApp, setSelectedApp] = useState(null);
-  const [sortOrder, setSortOrder] = useState("newest");
+  const [sortOrder, setSortOrder] = useState(initialSort ?? "newest");
   const [showModal, setShowModal] = useState(false);
   const [page, setPage] = useState(initialPage);
   const [pageSize, setPageSize] = useState(initialPageSize);
@@ -33,6 +38,7 @@ const ManageApplicationForm = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
 
+  // Update query helper
   const updateQuery = (newParams = {}) => {
     const updated = {
       ...Object.fromEntries(searchParams.entries()),
@@ -43,6 +49,22 @@ const ManageApplicationForm = () => {
     );
     setSearchParams(updated);
   };
+
+  // Keep state in sync with search params
+  useEffect(() => {
+    const urlSearch = searchParams.get("search") || "";
+    setSearchTerm(urlSearch);
+    setSearchInput(urlSearch);
+    setFilterStatus(searchParams.get("status") ?? "");
+    setSortOrder(searchParams.get("sort") ?? "");
+    setPage(Number(searchParams.get("page")) || 1);
+    setPageSize(Number(searchParams.get("pageSize")) || 10);
+    // fetchApplications will be called below
+  }, [searchParams]);
+
+  useEffect(() => {
+    fetchApplications();
+  }, [searchParams]);
 
   useEffect(() => {
     if (selectedApp) {
@@ -121,15 +143,12 @@ const ManageApplicationForm = () => {
     }
   };
 
-  useEffect(() => {
-    fetchApplications();
-  }, []);
-
   const fetchApplications = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/resident-verifications`);
-      setApplications(res.data);
+      // Always set as array, regardless of API response
+      setApplications(Array.isArray(res.data) ? res.data : (res.data?.data || []));
     } catch (err) {
       setApplications([]);
     } finally {
@@ -207,12 +226,14 @@ const ManageApplicationForm = () => {
         (app.apartmentCode && app.apartmentCode.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (app.documentType && app.documentType.toLowerCase().includes(searchTerm.toLowerCase()))
       ) &&
-      (filterStatus === "" || String(app.status) === filterStatus)
+      (filterStatus === undefined || filterStatus === "" || String(app.status) === filterStatus)
     )
     .sort((a, b) => {
       const dateA = new Date(a.createdAt);
       const dateB = new Date(b.createdAt);
-      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+      if (!sortOrder || sortOrder === "newest") return dateB - dateA;
+      if (sortOrder === "oldest") return dateA - dateB;
+      return 0;
     });
 
 
@@ -239,28 +260,40 @@ const ManageApplicationForm = () => {
         <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
           <h2 className="fw-bold mb-0">Quản lý đơn xác nhận cư dân</h2>
           <div className="d-flex gap-2">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Tìm kiếm theo tên hoặc căn hộ..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: 220 }}
+            <SearchInput
+              value={searchInput}
+              onChange={setSearchInput}
+              onSearch={() => {
+                updateQuery({ search: (searchInput || "").trim(), page: 1 });
+              }}
+              onClear={() => {
+                setSearchInput("");
+                updateQuery({ search: "", page: 1 });
+              }}
+              placeholder="Tìm kiếm theo email,..."
+              width={220}
             />
             <select
               className="form-select w-auto"
               style={{ maxWidth: 180 }}
               value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value)}
+              onChange={(e) => {
+                setSortOrder(e.target.value);
+                updateQuery({ sort: e.target.value, page: 1 });
+              }}
             >
+
               <option value="newest">Mới nhất</option>
               <option value="oldest">Cũ nhất</option>
             </select>
-
             <StatusFilter
               value={filterStatus}
-              onChange={setFilterStatus}
+              onChange={(val) => {
+                setFilterStatus(val);
+                updateQuery({ status: val, page: 1 });
+              }}
               type="form"
+              allowEmpty
             />
           </div>
         </div>
@@ -658,6 +691,7 @@ const ManageApplicationForm = () => {
             show={showCancelModal}
             onClose={() => setShowCancelModal(false)}
             title="Xác nhận huỷ đơn"
+            size="md"
             body={
               <p>Bạn có chắc muốn huỷ đơn đã duyệt này không?</p>
             }
@@ -704,6 +738,7 @@ const ManageApplicationForm = () => {
             show={showRejectModal}
             onClose={() => setShowRejectModal(false)}
             title="Xác nhận từ chối đơn"
+            size="md"
             body={
               <div className="mb-3">
                 <label>Lý do từ chối:</label>
@@ -736,4 +771,4 @@ const ManageApplicationForm = () => {
   );
 };
 
-export default ManageApplicationForm;
+export default ManageResidentVerification;

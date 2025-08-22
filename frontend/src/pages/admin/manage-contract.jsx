@@ -1,10 +1,9 @@
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
-import { FaEye } from "react-icons/fa";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Pagination from "../../../components/Pagination.jsx";
-import { getStatusLabel, formatDate } from "../../../utils/format.jsx";
+import { getStatusLabel, formatDate, formatDateWithTime } from "../../../utils/format.jsx";
 import SearchInput from "../../../components/admin/searchInput.jsx";
 import StatusFilter from "../../../components/admin/statusFilter.jsx";
 import LoadingModal from "../../../components/loadingModal.jsx";
@@ -167,10 +166,9 @@ const ManageContract = () => {
                                         <th>Chủ nhà</th>
                                         <th>Mã căn hộ</th>
                                         <th>Ngày bắt đầu</th>
-                                        <th>Ngày kết thúc</th>
                                         <th>Trạng thái</th>
+                                        <th>Ngày thanh toán</th>
                                         <th>Thanh toán</th>
-                                        <th>Ngày tạo</th>
                                         <th>Hành động</th>
                                     </tr>
                                 </thead>
@@ -213,11 +211,7 @@ const ManageContract = () => {
                                                         {c.postSnapshot?.apartmentCode || "-"}
                                                     </td>
                                                     <td>
-
-                                                        {c.createdAt ? new Date(c.createdAt).toLocaleDateString() : ""}
-                                                    </td>
-                                                    <td>
-                                                        {c.paymentDate ? new Date(c.paymentDate).toLocaleDateString() : ""}
+                                                        {formatDate(c.createdAt)}
                                                     </td>
                                                     <td>
                                                         <span
@@ -230,6 +224,9 @@ const ManageContract = () => {
                                                         >
                                                             {statusObj.label}
                                                         </span>
+                                                    </td>
+                                                    <td>
+                                                        {formatDateWithTime(c.paymentDate) ? formatDateWithTime(c.paymentDate) : "Chưa thanh toán"}
                                                     </td>
                                                     <td>
                                                         {(() => {
@@ -246,16 +243,15 @@ const ManageContract = () => {
                                                             );
                                                         })()}
                                                     </td>
-                                                    <td>
-                                                        {formatDate(c.createdAt)}
-                                                    </td>
+
                                                     <td>
                                                         <button
                                                             className="btn btn-sm btn-outline-primary"
                                                             title="Xem chi tiết"
                                                             onClick={() => navigate(`/admin-dashboard/manage-contract/${c._id}`)}
                                                         >
-                                                            <FaEye />
+                                                            Xem chi tiết
+
                                                         </button>
                                                     </td>
                                                 </tr>
