@@ -415,7 +415,7 @@ export default function DashboardHome() {
               <div className="card shadow-sm border-0 h-100">
                 <div className="card-body">
                   <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h6 className="mb-0">📩 Liên hệ mới nhất</h6>
+                    <h6 className="mb-0">📩 Liên hệ mới nhất cần trả lời</h6>
                     <Link to="/admin-dashboard/contact" className="small">Xem tất cả</Link>
                   </div>
                   {recentContacts && recentContacts.length > 0 ? (

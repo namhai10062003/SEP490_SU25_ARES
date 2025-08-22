@@ -39,7 +39,7 @@ const ManageStaff = () => {
   const filterStatus = searchParams.get("status") || "";
   const [showDeleteModal, setShowDeleteModal] = useState(false); // riêng cho xóa
   const [staffToDelete, setStaffToDelete] = useState(null);
-  
+
   const openDeleteModal = (id) => {
     setStaffToDelete(id);
     setShowDeleteModal(true);
@@ -359,8 +359,8 @@ const ManageStaff = () => {
                           {/* Nút Block / Active */}
                           <button
                             className={`btn btn-sm ${staff.status === 1
-                                ? "btn-outline-warning"
-                                : "btn-outline-success"
+                              ? "btn-outline-warning"
+                              : "btn-outline-success"
                               }`}
                             style={{ minWidth: 85 }}
                             onClick={() => handleToggleStatus(staff)}
@@ -369,16 +369,16 @@ const ManageStaff = () => {
                           </button>
 
                           {/* Nút Xóa */}
-                          
-      {/* nút xoá staff */}
-      <button
-        className="btn btn-sm btn-danger"
-        style={{ minWidth: 85 }}
-        onClick={() => openDeleteModal(staff._id)}
-      >
-        Xóa
-      </button>
-    
+
+                          {/* nút xoá staff */}
+                          <button
+                            className="btn btn-sm btn-danger"
+                            style={{ minWidth: 85 }}
+                            onClick={() => openDeleteModal(staff._id)}
+                          >
+                            Xóa
+                          </button>
+
                         </div>
                       </td>
                     </tr>
@@ -408,27 +408,27 @@ const ManageStaff = () => {
           />
         )}
         {showDeleteModal && (
-  <ReusableModal
-    show={showDeleteModal}
-    onClose={() => setShowDeleteModal(false)}
-    title="Bạn có chắc?"
-    body={<p>Hành động này sẽ xóa staff vĩnh viễn!</p>}
-    footerButtons={[
-      {
-        label: "Hủy",
-        variant: "secondary",
-        onClick: () => setShowDeleteModal(false),
-      },
-      {
-        label: "Xóa",
-        variant: "danger",
-        onClick: handleDeleteStaff,
-      },
-    ]}
-  />
-)}
+          <ReusableModal
+            show={showDeleteModal}
+            onClose={() => setShowDeleteModal(false)}
+            title="Bạn có chắc?"
+            body={<p>Hành động này sẽ xóa staff vĩnh viễn!</p>}
+            footerButtons={[
+              {
+                label: "Hủy",
+                variant: "secondary",
+                onClick: () => setShowDeleteModal(false),
+              },
+              {
+                label: "Xóa",
+                variant: "danger",
+                onClick: handleDeleteStaff,
+              },
+            ]}
+          />
+        )}
       </div>
-  
+
     </AdminDashboard>
   );
 };
