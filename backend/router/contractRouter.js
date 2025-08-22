@@ -54,7 +54,10 @@ router.get("/paid", getAllPaidContracts);
 // Lấy hợp đồng của landlord
 router.get("/landlord", verifysUser, async (req, res) => {
   try {
-    const contracts = await Contract.find({ landlordId: req.user._id })
+    const contracts = await Contract.find({
+      landlordId: req.user._id,
+      deletedAt: null, // ⬅️ chỉ lấy hợp đồng chưa xoá
+    })
       .populate("postId")
       .populate("userId")
       .sort({ createdAt: -1 });

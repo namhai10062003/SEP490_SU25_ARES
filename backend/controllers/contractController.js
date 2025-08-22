@@ -127,6 +127,7 @@ export const getMyContracts = async (req, res) => {
     const userId = req.user.id;
     const contracts = await Contract.find({
       $or: [{ userId: userId }, { landlordId: userId }],
+      deletedAt: null,
     }).sort({ createdAt: -1 });
 
     const now = new Date();

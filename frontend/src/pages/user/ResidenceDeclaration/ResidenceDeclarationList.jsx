@@ -16,6 +16,7 @@ const ResidenceDeclarationList = () => {
   const [loading, setLoadingModal] = useState(false);
   // 🔹 State modal
   const [showModal, setShowModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 const [removingImage, setRemovingImage] = useState(false); //
   const [selectedDeclaration, setSelectedDeclaration] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -280,31 +281,36 @@ if (editForm.idNumber && !/^\d{12}$/.test(editForm.idNumber.trim())) {
                         : "—"}
                     </td>
                     <td>
-      {d.documentImage ? (
-        <>
-          <Button
-            variant="outline-primary"
-            size="sm"
-            onClick={() => setShow(true)}
-          >
-            Xem ảnh
-          </Button>
+    {d.documentImage ? (
+      <>
+        <Button
+          variant="outline-primary"
+          size="sm"
+          onClick={() => {
+            setSelectedImage(d.documentImage); // lưu ảnh đang chọn
+            setShow(true);                     // mở modal
+          }}
+        >
+          Xem ảnh
+        </Button>
+      </>
+    ) : (
+      <span className="text-muted">Không có</span>
+    )}
 
-          {/* Popup ảnh */}
-          <Modal show={show} onHide={() => setShow(false)} centered size="lg">
-            <Modal.Body className="text-center">
-              <img
-                src={d.documentImage}
-                alt="Giấy tờ"
-                style={{ maxWidth: "100%", maxHeight: "80vh" }}
-              />
-            </Modal.Body>
-          </Modal>
-        </>
-      ) : (
-        <span className="text-muted">Không có</span>
-      )}
-    </td>
+    {/* Modal để ngoài map, chỉ có 1 cái */}
+    <Modal show={show} onHide={() => setShow(false)} centered size="lg">
+      <Modal.Body className="text-center">
+        {selectedImage && (
+          <img
+            src={selectedImage}
+            alt="Giấy tờ"
+            style={{ maxWidth: "100%", maxHeight: "80vh" }}
+          />
+        )}
+      </Modal.Body>
+    </Modal>
+  </td>
                     <td>
                       {d.verifiedByStaff === "true" ? (
                         <span className="badge bg-success">✅ Đã duyệt</span>
