@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../../components/header";
+import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext.jsx";
 const API_ME_URL = `${import.meta.env.VITE_API_URL}/api/contracts/me`;
 const API_WITHDRAWAL = `${import.meta.env.VITE_API_URL}/api/withdrawals`;
@@ -117,6 +118,7 @@ const UserRevenue = () => {
 
   useEffect(() => {
     const fetchAvailableWithdrawInfo = async () => {
+      setLoading(true);
       try {
         const res = await axios.get(`${API_WITHDRAWAL}/available`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -125,6 +127,8 @@ const UserRevenue = () => {
         setWithdrawnAmount(Number(res.data?.withdrawnAmount) || 0);
       } catch (error) {
         console.error("❌ Lỗi khi lấy thông tin rút tiền:", error);
+      }finally{
+        setLoading(false);
       }
     };
     fetchAvailableWithdrawInfo();
@@ -136,6 +140,7 @@ const UserRevenue = () => {
     }
   }, [user]);
   const fetchWithdrawHistory = async (token) => {
+    setLoading(true);
     try {
       const res = await axios.get(`${API_WITHDRAWAL}/me`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -143,10 +148,13 @@ const UserRevenue = () => {
       setWithdrawHistory(res.data.data || []);
     } catch (err) {
       console.error("❌ Không thể tải lịch sử rút tiền:", err);
+    }finally{
+      setLoading(false);
     }
   };
 
   const fetchContracts = async (token) => {
+    setLoading(true);
     try {
       const res = await axios.get(API_ME_URL, {
         headers: { Authorization: `Bearer ${token}` },
@@ -250,7 +258,7 @@ const UserRevenue = () => {
       toast.error("❌ Số tiền rút không hợp lệ hoặc vượt quá giới hạn.");
       return;
     }
-
+    setLoading(true);
     try {
       const token = localStorage.getItem("token");
       await axios.post(API_WITHDRAWAL, { ...withdrawForm, amount }, {
@@ -274,6 +282,8 @@ const UserRevenue = () => {
       const errorMessage =
         err?.response?.data?.message || "❌ Có lỗi xảy ra. Vui lòng thử lại.";
       toast.error(errorMessage);
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -600,6 +610,7 @@ const UserRevenue = () => {
             </div>
           </>
         )}
+        {loading && <LoadingModal />}
       </div>
     </>
   );

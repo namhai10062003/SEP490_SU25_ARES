@@ -2,14 +2,14 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../../../components/header";
+import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
-
 const Profile = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [userData, setUserData] = useState(null);
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem("token");
@@ -17,7 +17,7 @@ const Profile = () => {
         navigate("/login");
         return;
       }
-
+      setLoading(true);
       try {
         const res = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/users/profile/${user._id}`,
@@ -33,6 +33,8 @@ const Profile = () => {
       } catch (err) {
         console.error("❌ Lỗi lấy thông tin người dùng:", err);
         navigate("/login");
+      }finally{
+        setLoading(false);
       }
     };
 
@@ -122,6 +124,7 @@ console.log(userData);
           &copy; 2025 Hồ sơ người dùng
         </footer>
       </div>
+      {loading && <LoadingModal />}
     </div>
   );
 };

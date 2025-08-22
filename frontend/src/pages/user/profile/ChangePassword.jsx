@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Header from "../../../../components/header";
+import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
-
 const ChangePassword = () => {
   const { user, logout } = useAuth();
   const [oldPassword, setOldPassword] = useState("");
@@ -12,7 +12,7 @@ const ChangePassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
   
@@ -25,7 +25,7 @@ const ChangePassword = () => {
       toast.error("❌ Mật khẩu xác nhận không khớp.");
       return;
     }
-  
+  setLoading(true);
     try {
       await axios.patch(
         `${import.meta.env.VITE_API_URL}/api/users/changepassword`,
@@ -38,13 +38,15 @@ const ChangePassword = () => {
         }
       );
   
-      toast.success("✅ Đổi mật khẩu thành công!");
+      // toast.success("✅ Đổi mật khẩu thành công!");
       setTimeout(() => {
         navigate("/profile");
       }, 1500);
     } catch (err) {
       console.error("Lỗi:", err);
       toast.error(err?.response?.data?.message || "❌ Đổi mật khẩu thất bại!");
+    }finally{
+      setLoading(false);
     }
   };
   
@@ -110,6 +112,7 @@ const ChangePassword = () => {
           &copy; 2025 Đổi mật khẩu
         </footer>
       </div>
+      {loading && <LoadingModal />}
     </div>
   );
 };

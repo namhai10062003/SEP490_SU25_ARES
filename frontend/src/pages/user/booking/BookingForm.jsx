@@ -1,15 +1,14 @@
 import axios from "axios";
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Modal } from "react-bootstrap";
-import Spinner from "react-bootstrap/Spinner";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import SignaturePopup from "../../../../components/SignaturePopup";
 import ContractForm from "../../../../components/contractForm";
 import Header from "../../../../components/header";
+import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
 import { getPostById } from "../../../service/postService";
-
 const BookingForm = () => {
   const { postId } = useParams();
   const { user, logout } = useAuth(); 
@@ -36,6 +35,7 @@ const BookingForm = () => {
     console.log("🌀 useEffect chạy với postId:", postId); // Kiểm tra postId có tồn tại không
   
     const fetchPost = async () => {
+      setLoading(true);
       try {
         const res = await getPostById(postId);
         console.log("✅ Dữ liệu trả về từ API:", res.data);
@@ -43,6 +43,8 @@ const BookingForm = () => {
         
       } catch (err) {
         console.error("❌ Lỗi khi gọi API:", err);
+      }finally{
+        setLoading(false);
       }
     };
   
@@ -146,7 +148,6 @@ post.type === "cho_thue"
       contractTerms,
       status: "pending",
     };
-
     try {
       // 1. Gửi API tạo hợp đồng
       setLoading(true); 
@@ -209,7 +210,7 @@ for (let pair of formData.entries()) {
     }
   };
 
-  if (!post) return <div className="text-center py-4">🔄 Đang tải dữ liệu...</div>;
+  if (!post) return <LoadingModal />;
   if (user._id === post.contactInfo?._id) {
 
     return (
@@ -342,6 +343,7 @@ for (let pair of formData.entries()) {
             </div>
           </form>
         </div>
+        
       </div>
 
       {/* Modal xem trước hợp đồng */}
@@ -377,15 +379,26 @@ for (let pair of formData.entries()) {
           <Button variant="secondary" onClick={() => setShowPreview(false)}>
             Hủy
           </Button>
-          <Button variant="primary" onClick={confirmBooking} disabled={loading}>
-      {loading ? (
-        <>
-          <Spinner size="sm" /> Đang gửi...
-        </>
-      ) : (
-        "Xác nhận gửi yêu cầu"
-      )}
-    </Button>
+          {loading && <LoadingModal />}
+
+          <Button
+  variant="primary"
+  onClick={async () => {
+    setLoading(true); // bật loading
+    try {
+      await confirmBooking(); // thực hiện hành động async
+    } catch (err) {
+      console.error(err);
+      toast.error("Gửi yêu cầu thất bại!");
+    } finally {
+      setLoading(false); // tắt loading
+    }
+  }}
+  disabled={loading} // disable khi loading
+>
+  Xác nhận gửi yêu cầu
+</Button>
+{loading && <LoadingModal />}
         </Modal.Footer>
       </Modal>
 
@@ -401,6 +414,7 @@ for (let pair of formData.entries()) {
           side="B"
         />
       )}
+      {loading && <LoadingModal />}
     </div>
   );
 };

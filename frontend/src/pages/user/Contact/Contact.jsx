@@ -4,8 +4,8 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Footer from "../../../../components/footer";
 import Header from "../../../../components/header";
+import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
-
 const Contact = () => {
   const { user, logout } = useAuth();
   const [formData, setFormData] = useState({
@@ -202,7 +202,9 @@ const Contact = () => {
           </div>
         </div>
       </section>
+      {loading && <LoadingModal />}
       <Footer />
+      
     </div>
   );
 };
