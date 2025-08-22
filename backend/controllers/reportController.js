@@ -3,6 +3,26 @@ import Report from "../models/Report.js";
 
 // controllers/reportController.js
 
+export const getRecentPendingReport = async (req, res) => {
+  try {
+    const reports = await Report.find({ status: "pending" })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("post")
+      .populate("user");
+    return res.status(200).json({
+      success: true,
+      data: reports,
+    });
+  } catch (err) {
+    console.error("Lỗi khi lấy dữ liệu report gần nhất:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Đã xảy ra lỗi khi lấy báo cáo chờ xử lý.",
+    });
+  }
+};
+
 export const createReport = async (req, res) => {
   try {
     /* ====== DEBUG tiện kiểm tra ====== */

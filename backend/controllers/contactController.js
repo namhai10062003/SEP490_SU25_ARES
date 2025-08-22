@@ -2,6 +2,18 @@
 
 import Contact from "../models/Contact.js";
 
+export const getRecentPendingContact = async (req, res) => {
+  try {
+    const contacts = await Contact.find({ status: "pending", isDeleted: false })
+      .sort({ createdAt: -1 })
+      .limit(5);
+    res.status(200).json({ message: "Lấy 5 liên hệ pending mới nhất thành công", data: contacts });
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy liên hệ pending mới nhất:", err);
+    res.status(500).json({ error: "Lỗi khi lấy liên hệ pending mới nhất" });
+  }
+};
+
 export const createContact = async (req, res) => {
   try {
     const contactData = {
@@ -21,72 +33,72 @@ export const createContact = async (req, res) => {
 
 
 export const getAllContacts = async (req, res) => {
-    try {
-      const { status } = req.query;
-      let query = {};
-  
-      // Nếu có filter trạng thái
-      if (status === "reviewed") {
-        query.status = "reviewed";
-        query.isDeleted = false;
-      } else if (status === "pending") {
-        query.status = "pending";
-        query.isDeleted = false;
-      } else if (status === "archived") {
-        query.isDeleted = true;
-      } // else: không filter gì => lấy tất cả (kể cả đã xoá)
-      
-  
-      const contacts = await Contact.find(query).sort({ createdAt: -1 });
-      res.status(200).json({ message: "Lấy danh sách liên hệ thành công", data: contacts });
-    } catch (err) {
-      console.error("❌ Lỗi khi lấy dữ liệu liên hệ:", err);
-      res.status(500).json({ error: "Lỗi khi lấy dữ liệu liên hệ" });
-    }
-  };
+  try {
+    const { status } = req.query;
+    let query = {};
 
-  export const deleteContact = async (req, res) => {
-    try {
-      const id = req.params.id;
-  
-      // ✅ Soft delete bằng cách đánh dấu isDeleted = true
-      const contact = await Contact.findByIdAndUpdate(
-        id,
-        { isDeleted: true },
-        { new: true }
-      );
-  
-      if (!contact) {
-        return res.status(404).json({ message: "Không tìm thấy liên hệ" });
-      }
-  
-      res.json({ message: "Đã xoá liên hệ (soft delete)" });
-    } catch (err) {
-      console.error("❌ Lỗi khi xoá liên hệ:", err);
-      res.status(500).json({ error: "Lỗi khi xoá liên hệ" });
+    // Nếu có filter trạng thái
+    if (status === "reviewed") {
+      query.status = "reviewed";
+      query.isDeleted = false;
+    } else if (status === "pending") {
+      query.status = "pending";
+      query.isDeleted = false;
+    } else if (status === "archived") {
+      query.isDeleted = true;
+    } // else: không filter gì => lấy tất cả (kể cả đã xoá)
+
+
+    const contacts = await Contact.find(query).sort({ createdAt: -1 });
+    res.status(200).json({ message: "Lấy danh sách liên hệ thành công", data: contacts });
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy dữ liệu liên hệ:", err);
+    res.status(500).json({ error: "Lỗi khi lấy dữ liệu liên hệ" });
+  }
+};
+
+export const deleteContact = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    // ✅ Soft delete bằng cách đánh dấu isDeleted = true
+    const contact = await Contact.findByIdAndUpdate(
+      id,
+      { isDeleted: true },
+      { new: true }
+    );
+
+    if (!contact) {
+      return res.status(404).json({ message: "Không tìm thấy liên hệ" });
     }
-  };
-  
+
+    res.json({ message: "Đã xoá liên hệ (soft delete)" });
+  } catch (err) {
+    console.error("❌ Lỗi khi xoá liên hệ:", err);
+    res.status(500).json({ error: "Lỗi khi xoá liên hệ" });
+  }
+};
+
 
 export const updateContactStatus = async (req, res) => {
-    try {
-      const id = req.params.id;
-      const { status } = req.body;
-  
-      if (!["pending", "reviewed"].includes(status)) {
-        return res.status(400).json({ error: "Trạng thái không hợp lệ" });
-      }
-  
-      const contact = await Contact.findByIdAndUpdate(id, { status }, { new: true });
-      if (!contact) return res.status(404).json({ error: "Không tìm thấy liên hệ" });
-  
-      res.json({ message: "Đã cập nhật trạng thái", contact });
-    } catch (err) {
-      res.status(500).json({ error: "Lỗi khi cập nhật trạng thái" });
+  try {
+    const id = req.params.id;
+    const { status } = req.body;
+
+    if (!["pending", "reviewed"].includes(status)) {
+      return res.status(400).json({ error: "Trạng thái không hợp lệ" });
     }
-  };
-  
-  
+
+    const contact = await Contact.findByIdAndUpdate(id, { status }, { new: true });
+    if (!contact) return res.status(404).json({ error: "Không tìm thấy liên hệ" });
+
+    res.json({ message: "Đã cập nhật trạng thái", contact });
+  } catch (err) {
+    res.status(500).json({ error: "Lỗi khi cập nhật trạng thái" });
+  }
+};
+
+
 // ✅ Admin xem tất cả liên hệ (có thể lọc theo userId hoặc status)
 export const adminGetContacts = async (req, res) => {
   try {

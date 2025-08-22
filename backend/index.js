@@ -34,6 +34,7 @@ import userRouter from "./router/user.js";
 import waterRoutes from "./router/waterRoutes.js";
 import withdrawalRouter from "./router/withdrawalRouter.js";
 import { initSocket } from "./socket.js";
+import reportRoutes from "./router/reportRoutes.js";
 
 dotenv.config();
 
@@ -101,9 +102,9 @@ app.use("/api/expenses", expenseRoutes);
 app.use("/api/interaction", interationRouter);
 app.use("/api/messages", messageRoutes);
 app.use("/api/contracts", contractRouter);
-app.use("/api/water", waterRoutes); 
-app.use("/api/fees", feeRoutes); 
-app.use("/api/plaza", plazaRoutes); 
+app.use("/api/water", waterRoutes);
+app.use("/api/fees", feeRoutes);
+app.use("/api/plaza", plazaRoutes);
 app.use("/api/withdrawals", withdrawalRouter);
 app.use("/api/contact", contactRoutes);
 app.use("/api/revenue", revenueRoutes);
@@ -112,6 +113,8 @@ app.use("/api/profile-update", profileUpdateRoutes);
 app.use("/api/residence-declaration", ResidenceDeclaration);
 app.use("/api/ai", aiChatRoutes);
 app.use("/api/payment-history", paymentAllRoutes);
+app.use("/api/report", reportRoutes);
+
 
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {
@@ -124,7 +127,7 @@ io.on("connection", (socket) => {
     console.log("📩 Message:", payload);
     io.emit("message", payload);
   });
-// video calll 
+  // video calll 
   // --- 📞 VIDEO CALL LOGIC ---
   socket.on("call-user", ({ to, offer, from }) => {
     console.log(`📞 ${from} is calling ${to}`);
