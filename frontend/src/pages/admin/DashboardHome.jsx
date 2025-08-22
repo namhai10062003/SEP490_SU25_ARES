@@ -217,10 +217,10 @@ export default function DashboardHome() {
           fetch(`${API_URL}/api/admin-dashboard/get-all-withdraw-requests`).then(
             (res) => res.json()
           ),
-          fetch(`${API_URL}/api/admin-dashboard/get-all-reports`).then((res) =>
+          fetch(`${API_URL}/api/report/get-recent-pending-reports`).then((res) =>
             res.json()
           ),
-          fetch(`${API_URL}/api/admin-dashboard/get-all-contacts`).then((res) =>
+          fetch(`${API_URL}/api/contact/get-recent-pending-contacts`).then((res) =>
             res.json()
           ),
           fetch(`${API_URL}/api/admin-dashboard/get-all-profiles`).then((res) =>
@@ -393,7 +393,7 @@ export default function DashboardHome() {
               <div className="card shadow-sm border-0 h-100">
                 <div className="card-body">
                   <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h6 className="mb-0">📝 Báo cáo mới nhất</h6>
+                    <h6 className="mb-0">📝 Báo cáo cần duyệt</h6>
                     <Link to="/admin-dashboard/report" className="small">Xem tất cả</Link>
                   </div>
                   {recentReports && recentReports.length > 0 ? (
@@ -484,7 +484,7 @@ export default function DashboardHome() {
           <div className="col-12 col-md-6">
             <div className="card shadow-sm border-0 h-100">
               <div className="card-body">
-                <h6 className="mb-3 text-center">✅ Xác nhận cư dân theo ngày (Tháng {selectedMonth})</h6>
+                <h6 className="mb-3 text-center">✅ Xác nhận cư dân mới theo ngày (Tháng {selectedMonth})</h6>
                 {residentVerificationChartData ? <Bar data={residentVerificationChartData} /> : <div className="text-muted text-center">Đang tải...</div>}
               </div>
             </div>

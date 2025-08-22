@@ -403,7 +403,7 @@ const ManageApplicationForm = () => {
             show={showModal}
             onClose={() => setShowModal(false)}
             title="📑 Chi tiết đơn đăng ký"
-            size="xl"  // hoặc 'lg' nếu muốn vừa
+            size="lg"  // hoặc 'lg' nếu muốn vừa 
             fullscreen  // chiếm toàn màn hình, đẹp như form
             body={
               <div style={{ maxHeight: "70vh", overflowY: "auto" }}>

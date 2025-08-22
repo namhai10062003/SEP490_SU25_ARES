@@ -236,6 +236,7 @@ const NotificationPage = () => {
                     show={showModal}
                     onClose={closeModal}
                     title="Chi tiết thông báo"
+                    size="md"
                     body={
                         <>
                             <div className="mb-3">

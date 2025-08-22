@@ -209,7 +209,8 @@ const PostManagement = () => {
           {/* Search Input */}
           <div className="col-md-4">
             <SearchInput
-              placeholder="Tìm kiếm..."
+              placeholder="Tìm kiếm theo tựa bài đăng..."
+
               value={searchInput}
               onChange={setSearchInput}
               onSearch={handleSearchTrigger}

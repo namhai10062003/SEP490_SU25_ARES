@@ -7,7 +7,7 @@ const ReusableModal = ({
   title,
   body,
   footerButtons = [],
-  size = "lg", // Accepts "sm", "md", "lg", "xl", or custom Bootstrap modal size
+  size = "sm", // Accepts "sm", "md", "lg", "xl", or custom Bootstrap modal size
 }) => {
   if (!show) return null;
 

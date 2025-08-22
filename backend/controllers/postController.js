@@ -132,14 +132,14 @@ export const getAllPosts = async (req, res) => {
       }
     }
 
-    // Tìm kiếm theo tiêu đề, vị trí, loại bài, tên người liên hệ
+
     if (search && search.trim() !== "") {
       const searchRegex = new RegExp(search.trim(), "i");
 
       query.$or = [
-        { title: searchRegex },
-        { location: searchRegex },
-        { type: searchRegex }
+        { title: searchRegex },      // Tìm trong tiêu đề bài đăng
+        { location: searchRegex },   // Tìm trong vị trí
+        { type: searchRegex }        // Tìm trong loại bài đăng
         // NOTE: Tìm theo `contactInfo.name` cần aggregate, để đơn giản ta sẽ populate và lọc ở FE
       ];
     }
