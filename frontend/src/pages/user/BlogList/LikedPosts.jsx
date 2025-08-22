@@ -2,8 +2,8 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../../../components/header.jsx";
+import LoadingModal from "../../../../components/loadingModal.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
-
 const PAGE_SIZE = 5;
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -219,6 +219,8 @@ const LikedPosts = () => {
           </div>
         )}
       </div>
+      {/* ✅ Loading toàn màn hình */}
+{loading && <LoadingModal />}
     </div>
   );
 };

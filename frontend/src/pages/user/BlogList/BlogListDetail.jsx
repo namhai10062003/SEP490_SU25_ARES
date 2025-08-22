@@ -19,6 +19,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "slick-carousel/slick/slick-theme.css";
 import "slick-carousel/slick/slick.css";
 import Header from "../../../../components/header.jsx";
+import LoadingModal from "../../../../components/loadingModal.jsx";
 import UserInfo from "../../../../components/user/userInfor.jsx";
 import { useChat } from "../../../../context/ChatContext.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
@@ -66,9 +67,10 @@ const PostDetail = () => {
   const [userPostsCount, setUserPostsCount] = useState(0);
   const API_URL = import.meta.env.VITE_API_URL;
   useEffect(() => {
+    setLoading(true);
     if (post?.contactInfo?._id) {
       console.log("📌 contactInfo có dữ liệu:", post.contactInfo);
-
+      
       fetch(`${import.meta.env.VITE_API_URL}/api/posts/count/${post.contactInfo.userId || post.contactInfo._id}`)
         .then((res) => res.json())
         .then((data) => setUserPostsCount(data.count))
@@ -76,11 +78,13 @@ const PostDetail = () => {
     } else {
       console.log("⚠️ contactInfo chưa có dữ liệu:", post?.contactInfo);
     }
+    setLoading(false);
   }, [post]); // ✅ chạy lại khi post thay đổi
   // 👈 đổi lại: theo dõi toàn bộ post thay vì chỉ _id
 
   useEffect(() => {
     const fetchContract = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem("token"); // lấy token
         const res = await fetch(`${API_URL}/api/contracts/by-post/${post._id}`, {
@@ -102,6 +106,8 @@ const PostDetail = () => {
         }
       } catch (err) {
         console.error("Không lấy được hợp đồng:", err);
+      }finally{
+        setLoading(false);
       }
     };
 
@@ -110,6 +116,7 @@ const PostDetail = () => {
 
   // hàm thực hiện chat vs người bài đăng 
   useEffect(() => {
+
     if (post?.contactInfo?.userId) {
       if (user && user._id !== post.contactInfo.userId) {
         setReceiver({
@@ -141,6 +148,7 @@ const PostDetail = () => {
   // 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const [postRes, commentsRes, likedRes, countRes] = await Promise.all([
           getPostById(id),
@@ -238,8 +246,7 @@ const PostDetail = () => {
       );
     }
   };
-
-  if (loading) return <div className="text-center py-5">🔄 Đang tải dữ liệu…</div>;
+  if (loading) return <LoadingModal />;
   if (err) return <div className="text-danger text-center py-5">{err}</div>;
 
   const thumbSliderSettings = {
@@ -610,6 +617,7 @@ const PostDetail = () => {
             </div>
           </div>
         )}
+                   
       </div>
 
       {/* Zoom Modal */}
@@ -712,6 +720,8 @@ const PostDetail = () => {
           </button>
         </Modal.Footer>
       </Modal>
+       {/* ✅ Loading toàn màn hình */}
+{loading && <LoadingModal />}
     </>
   );
 };

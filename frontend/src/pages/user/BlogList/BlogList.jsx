@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import Footer from "../../../../components/footer";
 import Header from "../../../../components/header";
+import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
 import { getPostApproved } from "../../../service/postService";
 const BlogList = () => {
@@ -148,13 +149,13 @@ const BlogList = () => {
     }
   };
 
-  if (authLoading || isLoading) {
-    return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <div className="spinner-border text-primary" role="status"></div>
-      </div>
-    );
-  }
+  // if (authLoading || isLoading) {
+  //   return (
+  //     <div className="d-flex justify-content-center align-items-center vh-100">
+  //       <div className="spinner-border text-primary" role="status"></div>
+  //     </div>
+  //   );
+  // }
 
   if (error) {
     return (
@@ -482,8 +483,11 @@ const BlogList = () => {
             </div>
           </div>
         </div>
+              {/* ✅ Loading toàn màn hình */}
+{isLoading && <LoadingModal />}
       </div >
       <Footer />
+
     </div >
   );
 };

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
+import LoadingModal from '../../../../components/loadingModal';
 import StaffNavbar from '../staffNavbar';
-
 const PAGE_SIZE = 10;
 
 const ParkingLotList = () => {
@@ -20,6 +20,7 @@ const ParkingLotList = () => {
 
   const [selectedParking, setSelectedParking] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   // hàm xem popup của paringlot
   const handleRowClick = async (id) => {
     const token = localStorage.getItem('token');
@@ -27,7 +28,7 @@ const ParkingLotList = () => {
       toast.error('Không có token. Vui lòng đăng nhập lại.');
       return;
     }
-
+    setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/detail-parkinglot/${id}`, {
         headers: {
@@ -43,6 +44,7 @@ const ParkingLotList = () => {
     } catch (err) {
       toast.error(`Không lấy được chi tiết: ${err.message}`);
     }
+    setLoading(false);
   };
   //ham xu li xem detail
   useEffect(() => {
@@ -75,6 +77,7 @@ const ParkingLotList = () => {
   }, []);
 
   const fetchParkingList = async (token) => {
+    setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/parkinglotall`, {
         headers: {
@@ -102,9 +105,11 @@ const ParkingLotList = () => {
     } catch (err) {
       toast.error(`Lỗi tải dữ liệu: ${err.message}`);
     }
+    setLoading(false);
   };
 
   const fetchSlotInfo = async (token) => {
+    setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/parkinglot/available-slots`, {
         headers: {
@@ -118,6 +123,7 @@ const ParkingLotList = () => {
     } catch (err) {
       toast.error(`Không lấy được thông tin chỗ trống: ${err.message}`);
     }
+    setLoading(false);
   };
 
   const formatDate = (dateStr) => {
@@ -374,6 +380,8 @@ const ParkingLotList = () => {
           </div>
         </div>
       </main>
+      {/* Modal loading */}
+{loading && <LoadingModal />}
     </div>
   );
 };

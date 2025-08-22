@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Modal } from "react-bootstrap";
 import { FiBell } from "react-icons/fi";
 import { toast } from "react-toastify";
+import ReusableModal from "../../../../components/ReusableModal";
+import LoadingModal from "../../../../components/loadingModal";
 import StaffNavbar from "../../staff/staffNavbar";
 const ResidenceDeclarationVerifyList = () => {
   const [declarations, setDeclarations] = useState([]);
@@ -118,7 +120,7 @@ const ResidenceDeclarationVerifyList = () => {
 
       if (res.ok) {
         toast.success("✅ Xác minh thành công");
-        setDeclarations((prev) => prev.filter((r) => r._id !== confirmId));
+        await fetchDeclarations();
       } else {
         toast.error("❌ Thao tác thất bại");
       }
@@ -151,7 +153,7 @@ const ResidenceDeclarationVerifyList = () => {
       if (res.ok) {
         toast.success("🚫 Đã từ chối hồ sơ");
 
-        setDeclarations((prev) => prev.filter((r) => r._id !== rejectId));
+        await fetchDeclarations();
 
         setRejectId(null);
         setRejectReason("");
@@ -312,7 +314,8 @@ const ResidenceDeclarationVerifyList = () => {
         "---"
       )}
     </td>
-                    <td>
+                   {/* Cột hành động */}
+<td>
   {r.verifiedByStaff === "pending" && (
     <>
       <button
@@ -330,30 +333,29 @@ const ResidenceDeclarationVerifyList = () => {
     </>
   )}
 
-  {/* Nút Báo cho user - hiển thị nếu pending hoặc approved */}
   {(r.verifiedByStaff === "pending" || r.verifiedByStaff === "true") &&
-  r.showNotifyButton && (
-    <button
-      className="btn btn-warning d-flex align-items-center gap-2 px-3 py-1 rounded-pill shadow-sm"
-      onClick={() => handleNotifyUser(r._id)}
-      style={{
-        fontWeight: "500",
-        fontSize: "0.9rem",
-        transition: "all 0.2s ease",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = "#ffca2c";
-        e.currentTarget.style.transform = "scale(1.05)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = "#ffc107";
-        e.currentTarget.style.transform = "scale(1)";
-      }}
-    >
-      <FiBell size={16} />
-      Báo cho người dùng
-    </button>
-  )}
+    r.showNotifyButton && (
+      <button
+        className="btn btn-warning d-flex align-items-center gap-2 px-3 py-1 rounded-pill shadow-sm"
+        onClick={() => handleNotifyUser(r._id)}
+        style={{
+          fontWeight: "500",
+          fontSize: "0.9rem",
+          transition: "all 0.2s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#ffca2c";
+          e.currentTarget.style.transform = "scale(1.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#ffc107";
+          e.currentTarget.style.transform = "scale(1)";
+        }}
+      >
+        <FiBell size={16} />
+        Báo cho người dùng
+      </button>
+    )}
 
   {r.verifiedByStaff === "true" && (
     <span className="text-success fw-bold">Đã xác minh</span>
@@ -363,14 +365,11 @@ const ResidenceDeclarationVerifyList = () => {
     <div>
       <span className="text-danger fw-bold">Đã từ chối</span>
       {r.rejectReason && (
-        <div className="text-muted small mt-1">
-          Lý do: {r.rejectReason}
-        </div>
+        <div className="text-muted small mt-1">Lý do: {r.rejectReason}</div>
       )}
     </div>
   )}
 </td>
-
 
                   </tr>
                 ))}
@@ -379,94 +378,77 @@ const ResidenceDeclarationVerifyList = () => {
           </div>
         )}
 
-        {/* Modal xác minh */}
-        {confirmId && (
-          <div
-            className="modal fade show"
-            style={{ display: "block", background: "rgba(30,41,59,0.5)" }}
-            tabIndex={-1}
-            onClick={() => setConfirmId(null)}
-          >
-            <div
-              className="modal-dialog modal-dialog-centered"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="modal-content rounded-4">
-                <div className="modal-header">
-                  <h5 className="modal-title">Xác minh hồ sơ</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => setConfirmId(null)}
-                  />
-                </div>
-                <div className="modal-body">
-                  <p>Bạn có chắc chắn muốn xác minh hồ sơ này?</p>
-                </div>
-                <div className="modal-footer">
-                  <button className="btn btn-success" onClick={handleVerify}>
-                    Xác minh
-                  </button>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => setConfirmId(null)}
-                  >
-                    Huỷ
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+       {/* Modal xác minh */}
+<ReusableModal
+  show={!!confirmId}
+  title="Xác minh hồ sơ"
+  onClose={() => setConfirmId(null)}
+  body={<p>Bạn có chắc chắn muốn xác minh hồ sơ này?</p>}
+  footerButtons={[
+    {
+      label: "Xác minh",
+      variant: "success",
+      onClick: async () => {
+        setLoading(true);
+        await handleVerify(confirmId); // resident hoặc residentDeclaration
+        setLoading(false);
+        setConfirmId(null);
+      },
+    },
+    {
+      label: "Huỷ",
+      variant: "secondary",
+      onClick: () => setConfirmId(null),
+    },
+  ]}
+/>
 
-        {/* Modal từ chối */}
-        {rejectId && (
-          <div
-            className="modal fade show"
-            style={{ display: "block", background: "rgba(30,41,59,0.5)" }}
-            tabIndex={-1}
-            onClick={() => setRejectId(null)}
-          >
-            <div
-              className="modal-dialog modal-dialog-centered"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="modal-content rounded-4">
-                <div className="modal-header">
-                  <h5 className="modal-title">Lý do từ chối</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => setRejectId(null)}
-                  />
-                </div>
-                <div className="modal-body">
-                  <textarea
-                    rows="4"
-                    className="form-control"
-                    placeholder="Nhập lý do từ chối..."
-                    value={rejectReason}
-                    onChange={(e) => setRejectReason(e.target.value)}
-                  />
-                </div>
-                <div className="modal-footer">
-                  <button className="btn btn-danger" onClick={handleReject}>
-                    Gửi từ chối
-                  </button>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => {
-                      setRejectId(null);
-                      setRejectReason("");
-                    }}
-                  >
-                    Huỷ
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+{/* Modal từ chối */}
+<ReusableModal
+  show={!!rejectId}
+  title="Lý do từ chối"
+  onClose={() => {
+    setRejectId(null);
+    setRejectReason("");
+  }}
+  body={
+    <textarea
+      rows={4}
+      className="form-control"
+      placeholder="Nhập lý do từ chối..."
+      value={rejectReason}
+      onChange={(e) => setRejectReason(e.target.value)}
+    />
+  }
+  footerButtons={[
+    {
+      label: "Gửi từ chối",
+      variant: "danger",
+      onClick: async () => {
+        if (!rejectReason.trim()) {
+          toast.error("❌ Vui lòng nhập lý do từ chối");
+          return;
+        }
+        setLoading(true);
+        await handleReject(rejectId, rejectReason); // resident hoặc residentDeclaration
+        setLoading(false);
+        setRejectId(null);
+        setRejectReason("");
+      },
+    },
+    {
+      label: "Huỷ",
+      variant: "secondary",
+      onClick: () => {
+        setRejectId(null);
+        setRejectReason("");
+      },
+    },
+  ]}
+/>
+
+{/* Loading */}
+{loading && <LoadingModal />}
 
         {/* Pagination */}
         <div className="d-flex justify-content-center mt-4 gap-2 flex-wrap">

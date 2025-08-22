@@ -7,6 +7,7 @@ import Select from "react-select";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Header from "../../../../components/header.jsx";
+import LoadingModal from '../../../../components/loadingModal';
 import { useAuth } from "../../../../context/authContext.jsx";
 import {
   createPost,
@@ -43,7 +44,7 @@ const RegistrationForm = () => {
   const [useCustomPlaza, setUseCustomPlaza] = useState(false);
   const [useCustomApartment, setUseCustomApartment] = useState(false);
   const [apartmentInfo, setApartmentInfo] = useState({});
-
+  const [loadingLoaiBaiDang, setLoadingLoaiBaiDang] = useState(false);
   const [charCount, setCharCount] = useState({
     tieuDe: 0,
     moTaChiTiet: 0,
@@ -61,6 +62,7 @@ const RegistrationForm = () => {
   // hàm để xử lí lấy căn hộ ra á
   useEffect(() => {
     const fetchApartments = async () => {
+      setIsSubmitting(true);
       try {
         const response = await getApartmentList();
         console.log("📦 Full response:", response);
@@ -90,6 +92,7 @@ const RegistrationForm = () => {
       } catch (error) {
         console.error("❌ Không thể lấy danh sách căn hộ:", error);
       }
+      setIsSubmitting(false);
     };
 
     fetchApartments();
@@ -494,48 +497,70 @@ console.log("✅ filteredApartments:", filteredApartments);
             <div className="row">
               {/* Sidebar */}
               <div className="col-12 col-md-3 mb-4">
-                <div className="bg-light rounded-3 p-3 shadow-sm">
-                  <h5 className="fw-bold mb-3">Chọn loại bài đăng</h5>
-                  <ul className="list-group">
-                    <li
-                      className={`list-group-item list-group-item-action ${loaiBaiDang === "ban" ? "active" : ""
-                        }`}
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        setLoaiBaiDang("ban");
-                        setLoaiHinhCon("");
-                        setFormData((prev) => ({ ...prev, loaiHinh: "" }));
-                      }}
-                    >
-                      Tin Bán
-                    </li>
-                    <li
-                      className={`list-group-item list-group-item-action ${loaiBaiDang === "cho_thue" ? "active" : ""
-                        }`}
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        setLoaiBaiDang("cho_thue");
-                        setLoaiHinhCon("");
-                        setFormData((prev) => ({ ...prev, loaiHinh: "" }));
-                      }}
-                    >
-                      Tin Cho Thuê
-                    </li>
-                    <li
-                      className={`list-group-item list-group-item-action ${loaiBaiDang === "dich_vu" ? "active" : ""
-                        }`}
-                      style={{ cursor: "pointer" }}
-                      onClick={() => {
-                        setLoaiBaiDang("dich_vu");
-                        setLoaiHinhCon("");
-                        setFormData((prev) => ({ ...prev, loaiHinh: "" }));
-                      }}
-                    >
-                      Tin Dịch Vụ
-                    </li>
-                  </ul>
-                </div>
-              </div>
+  <div className="bg-light rounded-3 p-3 shadow-sm">
+    <h5 className="fw-bold mb-3">Chọn loại bài đăng</h5>
+    <ul className="list-group">
+      <li
+        className={`list-group-item list-group-item-action ${loaiBaiDang === "ban" ? "active" : ""}`}
+        style={{ cursor: "pointer" }}
+        onClick={async () => {
+          setLoadingLoaiBaiDang(true); // bật loading toàn màn hình
+          try {
+            // giả sử có call API hoặc xử lý nặng
+            await new Promise((resolve) => setTimeout(resolve, 600));
+            setLoaiBaiDang("ban");
+            setLoaiHinhCon("");
+            setFormData((prev) => ({ ...prev, loaiHinh: "" }));
+          } finally {
+            setLoadingLoaiBaiDang(false); // tắt loading
+          }
+        }}
+      >
+        Tin Bán
+      </li>
+
+      <li
+        className={`list-group-item list-group-item-action ${loaiBaiDang === "cho_thue" ? "active" : ""}`}
+        style={{ cursor: "pointer" }}
+        onClick={async () => {
+          setLoadingLoaiBaiDang(true);
+          try {
+            await new Promise((resolve) => setTimeout(resolve, 600));
+            setLoaiBaiDang("cho_thue");
+            setLoaiHinhCon("");
+            setFormData((prev) => ({ ...prev, loaiHinh: "" }));
+          } finally {
+            setLoadingLoaiBaiDang(false);
+          }
+        }}
+      >
+        Tin Cho Thuê
+      </li>
+
+      <li
+        className={`list-group-item list-group-item-action ${loaiBaiDang === "dich_vu" ? "active" : ""}`}
+        style={{ cursor: "pointer" }}
+        onClick={async () => {
+          setLoadingLoaiBaiDang(true);
+          try {
+            await new Promise((resolve) => setTimeout(resolve, 600));
+            setLoaiBaiDang("dich_vu");
+            setLoaiHinhCon("");
+            setFormData((prev) => ({ ...prev, loaiHinh: "" }));
+          } finally {
+            setLoadingLoaiBaiDang(false);
+          }
+        }}
+      >
+        Tin Dịch Vụ
+      </li>
+    </ul>
+  </div>
+</div>
+
+{/* ✅ Loading toàn màn hình */}
+{loadingLoaiBaiDang && <LoadingModal />}
+
               {/* Form Content */}
               <div className="col-12 col-md-9">
                 <div className="row g-3">
@@ -1051,22 +1076,30 @@ console.log("✅ filteredApartments:", filteredApartments);
                     </div>
                   </div>
                   <div className="col-12 mt-4">
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      disabled={isSubmitting}
-                      className="btn btn-primary btn-lg w-100 fw-bold"
-                    >
-                      {isSubmitting ? (
-                        <span>
-                          <span className="spinner-border spinner-border-sm me-2"></span>
-                          Đang xử lý...
-                        </span>
-                      ) : (
-                        "Đăng tin"
-                      )}
-                    </button>
-                  </div>
+  <button
+    type="button"
+    onClick={async () => {
+      setIsSubmitting(true);   // bật loading
+      try {
+        await handleSubmit();  // gọi API / logic đăng tin
+        // ✅ nếu cần toast success ở đây
+      } catch (error) {
+        console.error(error);
+        // ❌ toast error ở đây
+      } finally {
+        setIsSubmitting(false); // tắt loading
+      }
+    }}
+    disabled={isSubmitting}
+    className="btn btn-primary btn-lg w-100 fw-bold"
+  >
+    Đăng tin
+  </button>
+</div>
+
+{/* ✅ Loading toàn màn hình */}
+{isSubmitting && <LoadingModal />}
+
                 </div>
               </div>
             </div>
