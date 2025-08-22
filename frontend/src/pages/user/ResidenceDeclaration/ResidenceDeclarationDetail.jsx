@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Header from '../../../../components/header';
+import LoadingModal from '../../../../components/loadingModal';
 import { useAuth } from '../../../../context/authContext';
-
 const ResidenceDeclarationDetail = () => {
   const { id } = useParams();
   const { user, logout } = useAuth();
@@ -14,6 +14,7 @@ const ResidenceDeclarationDetail = () => {
     setName(user?.name || null);
 
     const fetchDeclarationDetail = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/residence-declaration/${id}`, {
@@ -37,14 +38,7 @@ const ResidenceDeclarationDetail = () => {
     fetchDeclarationDetail();
   }, [id, user]);
 
-  if (loading)
-    return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <div className="spinner-border text-primary me-2"></div>
-        <span>Đang tải dữ liệu...</span>
-      </div>
-    );
-  if (!declaration)
+  if (!declaration &&!loading)
     return (
       <div className="text-center py-5 text-danger">
         Không tìm thấy hồ sơ tạm trú/tạm vắng.
@@ -56,6 +50,13 @@ const ResidenceDeclarationDetail = () => {
       <Header user={user} name={name} logout={logout} />
 
       <div className="container py-5">
+  {!declaration && !loading ? (
+    <div className="text-center py-5 text-danger">
+      Không tìm thấy hồ sơ tạm trú/tạm vắng.
+    </div>
+  ) : (
+    <>
+      {declaration && (
         <div className="bg-white rounded-4 shadow p-4 mx-auto" style={{ maxWidth: 900 }}>
           <h2 className="fw-bold mb-4 text-center border-start border-4 border-primary ps-3">
             Chi tiết hồ sơ tạm trú / tạm vắng
@@ -119,7 +120,6 @@ const ResidenceDeclarationDetail = () => {
               </ul>
             </div>
 
-            {/* Ảnh giấy tờ */}
             <div className="col-md-6">
               <h5 className="fw-bold mb-3">Ảnh giấy tạm trú / tạm vắng</h5>
               {declaration.documentImage && (
@@ -137,10 +137,13 @@ const ResidenceDeclarationDetail = () => {
             ← Quay lại danh sách hồ sơ
           </Link>
         </div>
-        <footer className="text-center mt-4 text-secondary small">
-          © 2025 Hồ sơ tạm trú / tạm vắng
-        </footer>
-      </div>
+      )}
+    </>
+  )}
+
+  {/* Loading toàn màn hình */}
+  {loading && <LoadingModal show={loading} text="Đang tải dữ liệu nhân khẩu..." />}
+</div>
     </div>
   );
 };

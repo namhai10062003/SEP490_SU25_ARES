@@ -1,12 +1,13 @@
 import axios from "axios";
 import React, { useEffect, useState } from 'react';
-import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css'; // CSS mặc định
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import io from 'socket.io-client';
+import ReusableModal from "../../../../components/ReusableModal";
 import Header from '../../../../components/header';
+import LoadingModal from '../../../../components/loadingModal';
 import { useAuth } from '../../../../context/authContext';
 import EditVehicleModal from "./updateParkingRegistationModal";
 const socket = io(`${import.meta.env.VITE_API_URL}`); // địa chỉ backend socket
@@ -29,7 +30,7 @@ const ParkingRegistrationList = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [parkingLots, setParkingLots] = useState([]);
   const [showReason, setShowReason] = useState(null);
-
+  const [cancelModal, setCancelModal] = useState({ show: false, id: null });
   const API_URL = import.meta.env.VITE_API_URL;
 
   /// Khi bấm "Sửa"
@@ -178,62 +179,54 @@ const ParkingRegistrationList = () => {
   };
 
   // hàm hủy khi mà người dùng không muốn đăng ký nữa 
-  const handleCancel = (id) => {
-    confirmAlert({
-      title: 'Xác nhận huỷ đơn',
-      message: 'Bạn chắc chắn muốn huỷ đơn đăng ký gửi xe này?',
-      buttons: [
-        {
-          label: 'Có, huỷ ngay',
-          onClick: () => doCancel(id),
-        },
-        {
-          label: 'Không',
-          onClick: () => { },
-        },
-      ],
-    });
-  };
+ // Mở modal xác nhận huỷ
+ const handleCancel = (id) => {
+  setCancelModal({ show: true, id });
+};
 
-  const doCancel = async (id) => {
-    if (!id) {
-      console.error("❌ Không có ID để huỷ");
-      toast.error("Không tìm thấy đơn để huỷ.");
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/cancel/${id}`, {
-        method: 'PATCH',
+// Thực hiện huỷ
+const doCancel = async (id) => {
+  if (!id) {
+    console.error("❌ Không có ID để huỷ");
+    toast.error("Không tìm thấy đơn để huỷ.");
+    return;
+  }
+  setLoading(true);
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/parkinglot/cancel/${id}`,
+      {
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.message || 'Không thể huỷ đơn');
       }
+    );
 
-      // ✅ Xoá item khỏi danh sách hiển thị
-      setCarRegistrations(prev => prev.filter(p => `${p._id || p.id}` !== `${id}`));
-      setBikeRegistrations(prev => prev.filter(p => `${p._id || p.id}` !== `${id}`));
-
-      toast.success('✅ Đã huỷ đơn đăng ký gửi xe thành công.');
-    } catch (err) {
-      console.error('❌ Lỗi huỷ đơn:', err);
-      toast.error(`🚫 ${err.message}`);
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.message || "Không thể huỷ đơn");
     }
-  };
 
+    // Xoá item khỏi danh sách hiển thị
+    setCarRegistrations((prev) =>
+      prev.filter((p) => `${p._id || p.id}` !== `${id}`)
+    );
+    setBikeRegistrations((prev) =>
+      prev.filter((p) => `${p._id || p.id}` !== `${id}`)
+    );
 
-
-
-
-
-
+    toast.success("✅ Đã huỷ đơn đăng ký gửi xe thành công.");
+  } catch (err) {
+    console.error("❌ Lỗi huỷ đơn:", err);
+    toast.error(`🚫 ${err.message}`);
+  } finally {
+    setLoading(false); // ẩn loading  
+    setCancelModal({ show: false, id: null });
+  }
+};
 
   // Lấy quyền đăng ký
   useEffect(() => {
@@ -276,8 +269,9 @@ const ParkingRegistrationList = () => {
     setName(user?.name || null);
 
     const fetchData = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
+        
         const token = localStorage.getItem('token');
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/parkinglot`, {
           method: 'GET',
@@ -602,34 +596,50 @@ const ParkingRegistrationList = () => {
             />
           </div>
         )}
-        {showReason && (
-          <div
-            className="modal fade show"
-            style={{ display: "block", background: "rgba(0,0,0,0.5)" }}
-          >
-            <div className="modal-dialog modal-dialog-centered">
-              <div className="modal-content rounded-4 shadow">
-                <div className="modal-header">
-                  <h5 className="modal-title">Lý do từ chối</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => setShowReason(null)}
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <p>{showReason || "Không có lý do"}</p>
-                </div>
-                <div className="modal-footer">
-                  <button className="btn btn-secondary" onClick={() => setShowReason(null)}>
-                    Đóng
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+       {showReason && (
+  <>
+    <ReusableModal
+      show={!!showReason}             // true nếu có lý do
+      onClose={() => setShowReason(null)}
+      title="Lý do từ chối"
+      body={<p>{showReason || "Không có lý do"}</p>}
+      footerButtons={[
+        {
+          label: "Đóng",
+          variant: "secondary",
+          onClick: () => setShowReason(null),
+        },
+      ]}
+    />
+    {loading && <LoadingModal show={loading} />}
+  </>
+)}
+
+
+
       </div>
+       {/* Modal xác nhận huỷ */}
+       <ReusableModal
+        show={cancelModal.show}
+        onClose={() => setCancelModal({ show: false, id: null })}
+        title="Xác nhận huỷ đơn"
+        body="Bạn chắc chắn muốn huỷ đơn đăng ký gửi xe này?"
+        footerButtons={[
+          {
+            label: "Có, huỷ ngay",
+            variant: "danger",
+            onClick: () => doCancel(cancelModal.id),
+          },
+          {
+            label: "Không",
+            variant: "secondary",
+            onClick: () => setCancelModal({ show: false, id: null }),
+          },
+        ]}
+      />
+      
+      {/* Loading modal */}
+      {loading && <LoadingModal show={loading} />}
     </div>
   );
 };

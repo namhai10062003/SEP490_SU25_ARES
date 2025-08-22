@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 import Header from '../../../../components/header';
+import LoadingModal from '../../../../components/loadingModal';
 import { useAuth } from '../../../../context/authContext';
 
 const ResidentRegister = () => {
@@ -33,6 +33,7 @@ const ResidentRegister = () => {
     if (!user?._id) return; // ⚠️ Tránh gọi khi chưa có user
 
     (async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/apartments`, {
@@ -64,6 +65,8 @@ const ResidentRegister = () => {
       } catch (err) {
         console.error('❌ Không lấy được danh sách căn hộ:', err);
         toast.error('❌ Không lấy được danh sách căn hộ');
+      }finally{
+        setLoading(false);
       }
     })();
   }, [user]);
@@ -327,6 +330,7 @@ const ResidentRegister = () => {
           © 2025 Quản lý nhân khẩu
         </footer>
       </div>
+      {loading && <LoadingModal />}
     </div>
   );
 };

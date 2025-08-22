@@ -1,9 +1,10 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ReusableModal from '../../../components/ReusableModal';
+import LoadingModal from "../../../components/loadingModal";
 import StaffNavbar from "./staffNavbar";
 const API_URL = import.meta.env.VITE_API_URL || "https://api.ares.io.vn";
 
@@ -27,7 +28,15 @@ const Expenses = () => {
     const [filterStatus, setFilterStatus] = useState("all");
     const [priceError, setPriceError] = useState('');
     const rowsPerPage = 10;
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [selectedId, setSelectedId] = useState(null);
+    const [loadingModal, setLoadingModal] = useState(false);
+   
 
+    const openDeleteModal = (id) => {
+        setSelectedId(id);
+        setShowDeleteModal(true);
+      };
     const formattedFilterMonth = filterMonth
         ? (() => {
             const [year, month] = filterMonth.split("-");
@@ -94,6 +103,7 @@ const Expenses = () => {
 
     const fetchExpenses = async () => {
         setLoading(true);
+        setLoadingModal(true);
         try {
             const res = await axios.get(`${API_URL}/api/expenses`);
             setExpenses(res.data);
@@ -101,6 +111,7 @@ const Expenses = () => {
             toast.error("Lỗi tải dữ liệu chi phí!");
         }
         setLoading(false);
+        setLoadingModal(false);
     };
 
     const fetchApartmentFees = async () => {
@@ -114,77 +125,86 @@ const Expenses = () => {
         setLoadingFees(false);
     };
 
-    const handleDelete = async (id) => {
-        confirmAlert({
-            title: 'Xác nhận xoá chi phí',
-            message: 'Bạn có chắc muốn xóa loại chi phí này?',
-            buttons: [
-                {
-                    label: 'Có',
-                    onClick: async () => {
-                        try {
-                            await axios.delete(`${API_URL}/api/expenses/${id}`);
-                            toast.success("🗑️ Đã xóa chi phí!");
-                            fetchExpenses(); // Refresh lại danh sách
-                        } catch (err) {
-                            toast.error("❌ Xóa thất bại!");
-                        }
-                    }
-                },
-                {
-                    label: 'Không',
-                    onClick: () => { /* Không làm gì nếu hủy */ }
-                }
-            ]
-        });
-    };
+    const handleDelete = async () => {
+        if (!selectedId) return;
+      
+        try {
+          setLoadingModal(true); // bật loading
+          await axios.delete(`${API_URL}/api/expenses/${selectedId}`);
+          toast.success("🗑️ Đã xóa chi phí!");
+          fetchExpenses();
+        } catch (err) {
+          toast.error("❌ Xóa thất bại!");
+        } finally {
+          setLoadingModal(false); // tắt loading
+          setShowDeleteModal(false); // đóng modal confirm
+          setSelectedId(null);
+        }
+      };
 
+      const handleRecalculateFees = async () => {
+        try {
+          setLoadingModal(true); // 👉 bật modal loading
+          await axios.post(`${API_URL}/api/fees/calculate`);
+          toast.success("✅ Đã tính lại phí!");
+          fetchApartmentFees();
+        } catch (err) {
+          toast.error("❌ Lỗi khi tính lại phí!");
+        } finally {
+          setLoadingModal(false); // 👉 tắt modal loading
+        }
+      };
 
-    const handleAdd = async (e) => {
+      const handleAdd = async (e) => {
         e.preventDefault();
-
+      
         // Reset lỗi trước khi validate
         setPriceError("");
-
-        // Validate từng trường riêng
+      
+        // Validate
         if (!addType) {
-            toast.warn("Vui lòng chọn loại chi phí!");
-            return;
+          toast.warn("Vui lòng chọn loại chi phí!");
+          return;
         }
-
+      
         if (!addLabel) {
-            toast.warn("Vui lòng nhập tên tòa nhà!");
-            return;
+          toast.warn("Vui lòng nhập tên tòa nhà!");
+          return;
         }
-
+      
         if (!addPrice) {
-            toast.warn("Vui lòng nhập giá chi phí!");
-            return;
+          toast.warn("Vui lòng nhập giá chi phí!");
+          return;
         }
-
+      
         if (Number(addPrice) <= 0) {
-            setPriceError("Giá phải lớn hơn 0");
-            toast.warn("Giá phải lớn hơn 0!");
-            return;
+          setPriceError("Giá phải lớn hơn 0");
+          toast.warn("Giá phải lớn hơn 0!");
+          return;
         }
-
+      
         try {
-            await axios.post(`${API_URL}/api/expenses`, {
-                type: Number(addType),
-                label: addLabel,
-                price: Number(addPrice),
-            });
-            toast.success("Thêm chi phí thành công!");
-            setAddType("");
-            setAddLabel("");
-            setAddPrice("");
-            setPriceError(""); // Reset lỗi sau khi thành công
-            fetchExpenses();
+          setLoadingModal(true); // 👉 bật loading
+      
+          await axios.post(`${API_URL}/api/expenses`, {
+            type: Number(addType),
+            label: addLabel,
+            price: Number(addPrice),
+          });
+      
+          toast.success("Thêm chi phí thành công!");
+          setAddType("");
+          setAddLabel("");
+          setAddPrice("");
+          setPriceError(""); // Reset lỗi sau khi thành công
+          fetchExpenses();
         } catch (err) {
-            const msg = err?.response?.data?.error || "Thêm chi phí thất bại!";
-            toast.error(msg);
+          const msg = err?.response?.data?.error || "Thêm chi phí thất bại!";
+          toast.error(msg);
+        } finally {
+          setLoadingModal(false); // 👉 tắt loading
         }
-    };
+      };
 
 
 
@@ -276,24 +296,23 @@ const Expenses = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {items.map((exp) => (
-                                            <tr key={exp._id}>
-                                                <td>{TYPE_LABELS[exp.type] || `Loại ${exp.type}`}</td>
-                                                <td className="text-end text-primary fw-bold">
-                                                    {exp.price.toLocaleString()}{" "}
-                                                    {exp.type === 1 ? "VND/m²" : "VND/tháng"}
-                                                </td>
-                                                <td className="text-center">
-                                                    <button
-                                                        className="btn btn-danger btn-sm"
-                                                        onClick={() => handleDelete(exp._id)}
-                                                    >
-                                                        Xóa
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
+  {items.map((exp) => (
+    <tr key={exp._id}>
+      <td>{TYPE_LABELS[exp.type] || `Loại ${exp.type}`}</td>
+      <td className="text-end text-primary fw-bold">
+        {exp.price.toLocaleString()} {exp.type === 1 ? "VND/m²" : "VND/tháng"}
+      </td>
+      <td className="text-center">
+        <button
+          className="btn btn-danger btn-sm"
+          onClick={() => openDeleteModal(exp._id)}
+        >
+          Xóa
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
                                 </table>
                             </div>
                         ))}
@@ -305,19 +324,12 @@ const Expenses = () => {
                 </p>
 
                 <button
-                    className="btn btn-outline-warning mb-3"
-                    onClick={async () => {
-                        try {
-                            await axios.post(`${API_URL}/api/fees/calculate`);
-                            toast.success("Đã tính lại phí!");
-                            fetchApartmentFees();
-                        } catch (err) {
-                            toast.error("Lỗi khi tính lại phí!");
-                        }
-                    }}
-                >
-                    Tính lại phí tổng hợp
-                </button>
+  className="btn btn-outline-warning mb-3"
+  onClick={handleRecalculateFees}
+>
+  Tính lại phí tổng hợp
+</button>
+
 
                 <hr className="my-4" />
 
@@ -454,6 +466,30 @@ const Expenses = () => {
                         </>
                     )}
                 </div>
+                {/* Modal xác nhận xóa */}
+{/* Modal xác nhận xóa */}
+<ReusableModal
+  show={showDeleteModal}
+  title="Xác nhận xoá chi phí"
+  onClose={() => setShowDeleteModal(false)}
+  body="Bạn có chắc muốn xoá loại chi phí này?"
+  footerButtons={[
+    {
+      label: "Hủy",
+      variant: "secondary",
+      onClick: () => setShowDeleteModal(false),
+    },
+    {
+      label: "Xóa",
+      variant: "danger",
+      onClick: handleDelete,
+    },
+  ]}
+/>
+
+
+{/* Modal loading */}
+{loadingModal && <LoadingModal />}
             </main>
         </div>
     );

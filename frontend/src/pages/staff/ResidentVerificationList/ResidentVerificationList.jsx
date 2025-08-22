@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
+import LoadingModal from "../../../../components/loadingModal";
 import StaffNavbar from "../staffNavbar";
 const USERS_PER_PAGE = 20;
 
@@ -91,110 +92,107 @@ export default function ResidentVerificationList() {
 
 
 
-        {loading ? (
-          <div className="text-center py-5">
-            <div className="spinner-border text-primary mb-3" />
-            <div>Đang tải dữ liệu...</div>
-          </div>
-        ) : error ? (
-          <div className="alert alert-danger text-center">{error}</div>
-        ) : (
-          <div className="table-responsive">
-            <table className="table table-bordered bg-white rounded-4 shadow-sm align-middle">
-              <thead className="table-primary">
-                <tr>
-                  <th>STT</th>
-                  <th>Họ và Tên</th>
-                  <th>Email</th>
-                  <th>Mã Căn Hộ</th>
-                  <th>Vai Trò</th>
-                  <th>Hình Hợp Đồng</th>
-                  <th>Ngày Duyệt</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentUsers.map((user, index) => (
-                  <tr key={`${user.email}-${index}`}>
-                    <td>{indexOfFirst + index + 1}</td>
-                    <td>{user.name || "N/A"}</td>
-                    <td>{user.email || "N/A"}</td>
-                    <td>{user.apartmentCode || "N/A"}</td>
-                    <td>
-                      <span
-                        className={`badge text-light ${user.role === "Chủ hộ" ? "bg-primary" : "bg-success"
-                          }`}
-                      >
-                        {user.role}
-                      </span>
-                    </td>
+        {loading && <LoadingModal />}
 
-                    <td className="p-2">
-      {user.contractImage ? (
-        <>
-          <img
-            src={user.contractImage}
-            alt="Hợp đồng"
-            className="rounded shadow-sm"
-            style={{ width: 60, cursor: "pointer", border: "1px solid #ccc" }}
-            onClick={() => setShow(true)}
-          />
+{!loading && error && (
+  <div className="alert alert-danger text-center">{error}</div>
+)}
 
-          {/* Modal xem ảnh */}
-          <Modal show={show} onHide={() => setShow(false)} centered size="lg">
-            <Modal.Body className="text-center">
-              <img
-                src={user.contractImage}
-                alt="Hợp đồng"
-                style={{ maxWidth: "100%", maxHeight: "80vh" }}
-              />
-            </Modal.Body>
-          </Modal>
-        </>
-      ) : (
-        <span className="text-muted ms-2">Không có</span>
-      )}
-    </td>
-
-                    <td>
-                      {user.approvedAt
-                        ? new Date(user.approvedAt).toLocaleDateString("vi-VN")
-                        : <span className="text-muted">-</span>}
-                    </td>
-
-
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Pagination */}
-            <div className="d-flex justify-content-center align-items-center mt-3">
-              <button
-                className="btn btn-outline-secondary me-2"
-                onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                disabled={page <= 1}
+{!loading && !error && (
+  <div className="table-responsive">
+    <table className="table table-bordered bg-white rounded-4 shadow-sm align-middle">
+      <thead className="table-primary">
+        <tr>
+          <th>STT</th>
+          <th>Họ và Tên</th>
+          <th>Email</th>
+          <th>Mã Căn Hộ</th>
+          <th>Vai Trò</th>
+          <th>Hình Hợp Đồng</th>
+          <th>Ngày Duyệt</th>
+        </tr>
+      </thead>
+      <tbody>
+        {currentUsers.map((user, index) => (
+          <tr key={`${user.email}-${index}`}>
+            <td>{indexOfFirst + index + 1}</td>
+            <td>{user.name || "N/A"}</td>
+            <td>{user.email || "N/A"}</td>
+            <td>{user.apartmentCode || "N/A"}</td>
+            <td>
+              <span
+                className={`badge text-light ${user.role === "Chủ hộ" ? "bg-primary" : "bg-success"}`}
               >
-                &lt; Trước
-              </button>
-              <span className="mx-2">
-                Trang {page} / {totalPages || 1}
+                {user.role}
               </span>
-              <button
-                className="btn btn-outline-secondary ms-2"
-                onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={page >= totalPages}
-              >
-                Tiếp &gt;
-              </button>
-            </div>
+            </td>
 
-            {users.length === 0 && (
-              <div className="text-center py-5 text-secondary">
-                Không có dữ liệu cư dân.
-              </div>
-            )}
-          </div>
-        )}
+            <td className="p-2">
+              {user.contractImage ? (
+                <>
+                  <img
+                    src={user.contractImage}
+                    alt="Hợp đồng"
+                    className="rounded shadow-sm"
+                    style={{ width: 60, cursor: "pointer", border: "1px solid #ccc" }}
+                    onClick={() => setShow(true)}
+                  />
+
+                  {/* Modal xem ảnh */}
+                  <Modal show={show} onHide={() => setShow(false)} centered size="lg">
+                    <Modal.Body className="text-center">
+                      <img
+                        src={user.contractImage}
+                        alt="Hợp đồng"
+                        style={{ maxWidth: "100%", maxHeight: "80vh" }}
+                      />
+                    </Modal.Body>
+                  </Modal>
+                </>
+              ) : (
+                <span className="text-muted ms-2">Không có</span>
+              )}
+            </td>
+
+            <td>
+              {user.approvedAt
+                ? new Date(user.approvedAt).toLocaleDateString("vi-VN")
+                : <span className="text-muted">-</span>}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    {/* Pagination */}
+    <div className="d-flex justify-content-center align-items-center mt-3">
+      <button
+        className="btn btn-outline-secondary me-2"
+        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+        disabled={page <= 1}
+      >
+        &lt; Trước
+      </button>
+      <span className="mx-2">
+        Trang {page} / {totalPages || 1}
+      </span>
+      <button
+        className="btn btn-outline-secondary ms-2"
+        onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+        disabled={page >= totalPages}
+      >
+        Tiếp &gt;
+      </button>
+    </div>
+
+    {users.length === 0 && (
+      <div className="text-center py-5 text-secondary">
+        Không có dữ liệu cư dân.
+      </div>
+    )}
+  </div>
+)}
+
       </main>
     </div>
   );

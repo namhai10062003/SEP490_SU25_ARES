@@ -1,9 +1,10 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Button, Form, Modal, Table } from "react-bootstrap";
-import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
 import { toast } from "react-toastify";
+import ReusableModal from "../../../../components/ReusableModal";
+import LoadingModal from "../../../../components/loadingModal";
 import StaffNavbar from "../staffNavbar";
 const ResidentVerificationHistory = () => {
   const [applications, setApplications] = useState([]);
@@ -18,6 +19,7 @@ const [statusFilter, setStatusFilter] = useState("all");
 const [currentPage, setCurrentPage] = useState(1);
 const [itemsPerPage, setItemsPerPage] = useState(10);
 const [originalStatus, setOriginalStatus] = useState("");
+const [cancelId, setCancelId] = useState(null);
 
 // Hàm xóa bộ lọc
 const clearFilters = () => {
@@ -119,33 +121,33 @@ const fetchApartments = async () => {
   
   
   // Huỷ xác minh
-  const handleCancel = async (id) => {
-    confirmAlert({
-      title: 'Xác nhận huỷ yêu cầu',
-      message: 'Bạn có chắc muốn huỷ yêu cầu này?',
-      buttons: [
-        {
-          label: 'Đồng ý',
-          onClick: async () => {
-            try {
-              await axios.patch(`${API_URL}/api/resident-verifications/${id}/cancel-staff`);
-              toast.success('✅ Huỷ yêu cầu thành công!');
-              fetchApplications();
-            } catch (err) {
-              console.error(err);
-              toast.error('❌ Huỷ thất bại!');
-            }
-          }
-        },
-        {
-          label: 'Hủy',
-          onClick: () => {
-            // Không làm gì khi người dùng bấm "Hủy"
-          }
-        }
-      ]
-    });
-  };
+  // const handleCancel = async (id) => {
+  //   confirmAlert({
+  //     title: 'Xác nhận huỷ yêu cầu',
+  //     message: 'Bạn có chắc muốn huỷ yêu cầu này?',
+  //     buttons: [
+  //       {
+  //         label: 'Đồng ý',
+  //         onClick: async () => {
+  //           try {
+  //             await axios.patch(`${API_URL}/api/resident-verifications/${id}/cancel-staff`);
+  //             toast.success('✅ Huỷ yêu cầu thành công!');
+  //             fetchApplications();
+  //           } catch (err) {
+  //             console.error(err);
+  //             toast.error('❌ Huỷ thất bại!');
+  //           }
+  //         }
+  //       },
+  //       {
+  //         label: 'Hủy',
+  //         onClick: () => {
+  //           // Không làm gì khi người dùng bấm "Hủy"
+  //         }
+  //       }
+  //     ]
+  //   });
+  // };
 
   // Mở modal sửa
   // Khi mở modal sửa => gọi API apartments
@@ -227,335 +229,379 @@ const fetchApartments = async () => {
       <main className="flex-grow-1 p-4">
         <h2 className="fw-bold mb-4">Lịch sử xác minh cư dân</h2>
 
-        {loading ? (
-          <div className="text-center py-5">
-            <div className="spinner-border text-primary mb-3" />
-            <div>Đang tải dữ liệu...</div>
-          </div>
-        ) : (
-          <div className="table-responsive">
-            <div className="d-flex justify-content-end align-items-center gap-2 mb-3">
-  {/* Search */}
-  <Form.Control
-    style={{ width: "300px" }}
-    type="text"
-    placeholder="Tìm kiếm theo tên hoặc căn hộ"
-    value={searchTerm}
-    onChange={(e) => {
-      setSearchTerm(e.target.value);
-      setCurrentPage(1); // reset về page 1 khi search
-    }}
-  />
+        {loading && <LoadingModal />}
 
-  {/* Filter */}
-  <Form.Select
-    style={{ width: "200px" }}
-    value={statusFilter}
-    onChange={(e) => {
-      setStatusFilter(e.target.value);
-      setCurrentPage(1);
-    }}
-  >
-    <option value="all">Tất cả trạng thái</option>
-    <option value="Chờ duyệt">Chờ duyệt</option>
-    <option value="Đã duyệt">Đã duyệt</option>
-    <option value="Đã từ chối">Đã từ chối</option>
-    <option value="Đã hủy bỏ">Đã huỷ bỏ</option>
-  </Form.Select>
+{!loading && (
+  <div className="table-responsive">
+    <div className="d-flex justify-content-end align-items-center gap-2 mb-3">
+      {/* Search */}
+      <Form.Control
+        style={{ width: "300px" }}
+        type="text"
+        placeholder="Tìm kiếm theo tên hoặc căn hộ"
+        value={searchTerm}
+        onChange={(e) => {
+          setSearchTerm(e.target.value);
+          setCurrentPage(1);
+        }}
+      />
 
-  {/* Số lượng hiển thị */}
-  {/* <Form.Select
-    style={{ width: "120px" }}
-    value={itemsPerPage}
-    onChange={(e) => {
-      setItemsPerPage(Number(e.target.value));
-      setCurrentPage(1);
-    }}
-  >
-    <option value={5}>5</option>
-    <option value={10}>10</option>
-    <option value={20}>20</option>
-  </Form.Select> */}
-  {/* Nút xóa bộ lọc */}
-  <Button
-    variant="outline-secondary"
-    onClick={() => {
-      setSearchTerm("");
-      setStatusFilter("all");
-      setItemsPerPage(10); // hoặc giữ nguyên tùy bạn
-      setCurrentPage(1);
-    }}
-  >
-    Xóa bộ lọc
-  </Button>
-</div>
+      {/* Filter */}
+      <Form.Select
+        style={{ width: "200px" }}
+        value={statusFilter}
+        onChange={(e) => {
+          setStatusFilter(e.target.value);
+          setCurrentPage(1);
+        }}
+      >
+        <option value="all">Tất cả trạng thái</option>
+        <option value="Chờ duyệt">Chờ duyệt</option>
+        <option value="Đã duyệt">Đã duyệt</option>
+        <option value="Đã từ chối">Đã từ chối</option>
+        <option value="Đã hủy bỏ">Đã huỷ bỏ</option>
+      </Form.Select>
 
-            <Table striped bordered hover className="bg-white rounded-3 shadow-sm">
-              <thead className="table-primary">
-                <tr>
-                  <th>STT</th>
-                  <th>Tên</th>
-                  <th>Email</th>
-                  <th>Số điện thoại</th>
-                  <th>Mã căn hộ</th>
-                  <th>Loại giấy tờ</th>
-                  <th>Trạng thái</th>
-                  <th>Ngày gửi</th>
-                  <th>Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-  {paginatedApps.map((app, index) => (
-    <tr key={app._id}>
-      <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-      <td>{app.fullName || "N/A"}</td>
-      <td>{app.email || "N/A"}</td>
-      <td>{app.phone || "N/A"}</td>
-      <td>{app.apartmentCode || "N/A"}</td>
-      <td>{app.documentType || "-"}</td>
-      <td>
-      <span
-  className={`badge ${
-    app.status === "Đã duyệt"
-      ? "bg-success"
-      : app.status === "Chờ duyệt"
-      ? "bg-warning text-dark"
-      : app.status === "Đã từ chối"
-      ? "bg-danger"
-      : app.status === "Đã huỷ bỏ"
-      ? "bg-secondary text-dark"
-      : "bg-secondary"
-  }`}
->
-  {app.status === "Chờ duyệt"
-    ? "Chờ duyệt"
-    : app.status === "Đã duyệt"
-    ? "Đã duyệt"
-    : app.status === "Đã từ chối"
-    ? "Từ chối"
-    : app.status === "Đã huỷ bỏ"
-    ? "Đã huỷ bỏ"
-    : app.status}
-</span>
+      {/* Nút xóa bộ lọc */}
+      <Button
+        variant="outline-secondary"
+        onClick={() => {
+          setSearchTerm("");
+          setStatusFilter("all");
+          setItemsPerPage(10);
+          setCurrentPage(1);
+        }}
+      >
+        Xóa bộ lọc
+      </Button>
+    </div>
 
-      </td>
-      <td>
-        {app.createdAt
-          ? new Date(app.createdAt).toLocaleDateString("vi-VN")
-          : "-"}
-      </td>
-      <td>
-      {(app.status === "Chờ duyệt" || app.status === "Đã từ chối") && (
+    <Table striped bordered hover className="bg-white rounded-3 shadow-sm">
+      <thead className="table-primary">
+        <tr>
+          <th>STT</th>
+          <th>Tên</th>
+          <th>Email</th>
+          <th>Số điện thoại</th>
+          <th>Mã căn hộ</th>
+          <th>Loại giấy tờ</th>
+          <th>Trạng thái</th>
+          <th>Ngày gửi</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        {paginatedApps.map((app, index) => (
+          <tr key={app._id}>
+            <td>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+            <td>{app.fullName || "N/A"}</td>
+            <td>{app.email || "N/A"}</td>
+            <td>{app.phone || "N/A"}</td>
+            <td>{app.apartmentCode || "N/A"}</td>
+            <td>{app.documentType || "-"}</td>
+            <td>
+              <span
+                className={`badge ${
+                  app.status === "Đã duyệt"
+                    ? "bg-success"
+                    : app.status === "Chờ duyệt"
+                    ? "bg-warning text-dark"
+                    : app.status === "Đã từ chối"
+                    ? "bg-danger"
+                    : app.status === "Đã huỷ bỏ"
+                    ? "bg-secondary text-dark"
+                    : "bg-secondary"
+                }`}
+              >
+                {app.status === "Chờ duyệt"
+                  ? "Chờ duyệt"
+                  : app.status === "Đã duyệt"
+                  ? "Đã duyệt"
+                  : app.status === "Đã từ chối"
+                  ? "Từ chối"
+                  : app.status === "Đã huỷ bỏ"
+                  ? "Đã huỷ bỏ"
+                  : app.status}
+              </span>
+            </td>
+            <td>
+              {app.createdAt
+                ? new Date(app.createdAt).toLocaleDateString("vi-VN")
+                : "-"}
+            </td>
+            <td>
+              {(app.status === "Chờ duyệt" || app.status === "Đã từ chối") && (
+                <Button
+                  size="sm"
+                  variant="primary"
+                  className="me-2"
+                  onClick={() => handleEditClick(app)}
+                >
+                  Sửa
+                </Button>
+              )}
+
+{app.status === "Chờ duyệt" && (
   <Button
     size="sm"
-    variant="primary"
-    className="me-2"
-    onClick={() => handleEditClick(app)}
+    variant="danger"
+    onClick={() => setCancelId(app._id)}
   >
-    Sửa
+    Huỷ
   </Button>
 )}
 
-        {app.status === "Chờ duyệt" && (
-          <Button
-            size="sm"
-            variant="danger"
-            onClick={() => handleCancel(app._id)}
-          >
-            Huỷ
-          </Button>
+
+            </td>
+          </tr>
+        ))}
+
+        {paginatedApps.length === 0 && (
+          <tr>
+            <td colSpan={9} className="text-center">
+              Không có dữ liệu
+            </td>
+          </tr>
         )}
-      </td>
-    </tr>
-  ))}
+      </tbody>
+    </Table>
 
-  {paginatedApps.length === 0 && (
-    <tr>
-      <td colSpan={9} className="text-center">
-        Không có dữ liệu
-      </td>
-    </tr>
-  )}
-</tbody>
+    {/* Pagination */}
+    <div className="d-flex justify-content-between align-items-center mt-3">
+      <span>
+        Hiển thị {paginatedApps.length} / {filteredApps.length} kết quả
+      </span>
+      <div>
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(prev => prev - 1)}
+        >
+          &lt;
+        </Button>
+        <span className="mx-2">
+          Trang {currentPage} / {totalPages}
+        </span>
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage(prev => prev + 1)}
+        >
+          &gt;
+        </Button>
+      </div>
+        {/* ReusableModal cho Huỷ */}
+        {cancelId && (
+  <ReusableModal
+    show={!!cancelId}
+    onHide={() => setCancelId(null)}   // ✅ Nút X vẫn đóng modal
+    title="Xác nhận huỷ yêu cầu"
+    body={<div>Bạn có chắc muốn huỷ yêu cầu này?</div>}
+    footerButtons={[
+      {
+        label: "Đóng",
+        variant: "secondary",
+        onClick: () => setCancelId(null),
+        disabled: loading,
+      },
+      {
+        label: "Huỷ",
+        variant: "danger",
+        onClick: async () => {
+          // ✅ Đóng modal ngay khi bấm
+          setCancelId(null);
 
-            </Table>
-            <div className="d-flex justify-content-between align-items-center mt-3">
-  <span>
-    Hiển thị {paginatedApps.length} / {filteredApps.length} kết quả
-  </span>
-  <div>
-    <Button
-      variant="outline-secondary"
-      size="sm"
-      disabled={currentPage === 1}
-      onClick={() => setCurrentPage(prev => prev - 1)}
-    >
-      &lt;
-    </Button>
-    <span className="mx-2">
-      Trang {currentPage} / {totalPages}
-    </span>
-    <Button
-      variant="outline-secondary"
-      size="sm"
-      disabled={currentPage === totalPages}
-      onClick={() => setCurrentPage(prev => prev + 1)}
-    >
-      &gt;
-    </Button>
+          // ✅ Sau đó bật loading toàn màn hình
+          setLoading(true);
+
+          try {
+            await axios.patch(
+              `${API_URL}/api/resident-verifications/${cancelId}/cancel-staff`
+            );
+            toast.success("✅ Huỷ yêu cầu thành công!");
+            fetchApplications();
+          } catch (err) {
+            console.error(err);
+            toast.error("❌ Huỷ thất bại!");
+          } finally {
+            setLoading(false); // tắt loading
+          }
+        },
+        disabled: loading,
+      },
+    ]}
+  />
+)}
+
+
+{/* Loading toàn màn hình */}
+{loading && <LoadingModal />}
+    </div>
   </div>
-</div>
-          </div>
-        )}
+)}
+
       </main>
 
       {/* Modal sửa */}
-      <Modal show={showEditModal} onHide={() => handleCloseModal} size="lg">
-        <Modal.Header>
-          <Modal.Title>Sửa thông tin xác minh</Modal.Title>
-        </Modal.Header>
-        <Form onSubmit={handleEditSubmit}>
-          <Modal.Body>
-            <div className="row">
-              <div className="col-md-6">
-              <Form.Group className="mb-3">
-  <Form.Label>Họ và tên</Form.Label>
-  <Form.Control
-    type="text"
-    value={editData.fullName || ""}
-    readOnly // hoặc dùng disabled
-  />
-</Form.Group>
+      {/* Modal sửa */}
+<Modal show={showEditModal} onHide={handleCloseModal} size="lg" centered>
+  <Form onSubmit={handleEditSubmit}>
+    <Modal.Header closeButton>
+      <Modal.Title>Sửa thông tin xác minh</Modal.Title>
+    </Modal.Header>
 
-              </div>
-
-              <div className="col-md-6">
-              <Form.Group className="mb-3">
-  <Form.Label>Email</Form.Label>
-  <Form.Control
-    type="email"
-    value={editData.email || ""}
-    readOnly
-  />
-</Form.Group>
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col-md-6">
-              <Form.Group className="mb-3">
-  <Form.Label>Số điện thoại</Form.Label>
-  <Form.Control
-    type="text"
-    value={editData.phone || ""}
-    readOnly
-  />
-</Form.Group>
-              </div>
-
-              <div className="col-md-6">
-              <Form.Group className="mb-3">
-  <Form.Label>Mã căn hộ</Form.Label>
-  <Form.Select
-    value={editData.apartmentCode || ""}
-    onChange={(e) =>
-      setEditData({ ...editData, apartmentCode: e.target.value })
-    }
-  >
-    <option value="">-- Chọn căn hộ --</option>
-    {apartments.map((apt) => (
-      <option key={apt._id} value={apt.apartmentCode}>
-        {apt.apartmentCode}
-      </option>
-    ))}
-  </Form.Select>
-
-  {errors.apartmentCode && (
-    <div className="text-danger">{errors.apartmentCode}</div>
-  )}
-</Form.Group>
-
-
-              </div>
-            </div>
-
+    <Modal.Body>
+      {/* Thông tin người dùng */}
+      <div className="mb-4 p-3 border rounded">
+        <h6 className="mb-3">Thông tin người dùng</h6>
+        <div className="row">
+          <div className="col-md-6">
             <Form.Group className="mb-3">
-  <Form.Label>Loại giấy tờ</Form.Label>
-  <Form.Select
-    value={editData.documentType || ""}
-    onChange={(e) =>
-      setEditData({ ...editData, documentType: e.target.value })
-    }
-  >
-    <option value="">-- Chọn loại giấy tờ --</option>
-    <option value="Hợp đồng mua bán">Hợp đồng mua bán</option>
-    <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
-  </Form.Select>
-  {errors.documentType && (
-    <div className="text-danger">{errors.documentType}</div>
-  )}
-</Form.Group>
-
-
-            <Form.Group className="mb-3">
-              <Form.Label>Ghi chú</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={editData.note || ""}
-                onChange={(e) =>
-                  setEditData({ ...editData, note: e.target.value })
-                }
-              />
+              <Form.Label>Họ và tên</Form.Label>
+              <Form.Control type="text" value={editData.fullName || ""} readOnly />
             </Form.Group>
-
+          </div>
+          <div className="col-md-6">
             <Form.Group className="mb-3">
-  <Form.Label>Tài liệu xác minh (có thể chọn nhiều)</Form.Label>
-  <Form.Control
-    type="file"
-    multiple
-    accept="image/*"
-    onChange={(e) => {
-      const selectedFiles = Array.from(e.target.files);
-      setFiles(selectedFiles);
+              <Form.Label>Email</Form.Label>
+              <Form.Control type="email" value={editData.email || ""} readOnly />
+            </Form.Group>
+          </div>
+        </div>
 
-      // Tạo preview URL
-      const previews = selectedFiles.map((file) => URL.createObjectURL(file));
-      setFilePreviews(previews);
-    }}
-  />
+        <div className="row">
+          <div className="col-md-6">
+            <Form.Group className="mb-3">
+              <Form.Label>Số điện thoại</Form.Label>
+              <Form.Control type="text" value={editData.phone || ""} readOnly />
+            </Form.Group>
+          </div>
+          <div className="col-md-6">
+            <Form.Group className="mb-3">
+              <Form.Label>Mã căn hộ</Form.Label>
+              <Form.Select
+                value={editData.apartmentCode || ""}
+                onChange={(e) =>
+                  setEditData({ ...editData, apartmentCode: e.target.value })
+                }
+              >
+                <option value="">-- Chọn căn hộ --</option>
+                {apartments.map((apt) => (
+                  <option key={apt._id} value={apt.apartmentCode}>
+                    {apt.apartmentCode}
+                  </option>
+                ))}
+              </Form.Select>
+              {errors.apartmentCode && (
+                <div className="text-danger small">{errors.apartmentCode}</div>
+              )}
+            </Form.Group>
+          </div>
+        </div>
+      </div>
 
-  {/* Preview ảnh */}
-  <div className="mt-3 d-flex flex-wrap gap-2">
-    {filePreviews.map((src, idx) => (
-      <img
-        key={idx}
-        src={src}
-        alt={`preview-${idx}`}
-        style={{
-          width: "120px",
-          height: "120px",
-          objectFit: "cover",
-          borderRadius: "8px",
-          border: "1px solid #ccc"
-        }}
-      />
-    ))}
-  </div>
-</Form.Group>
+      {/* Thông tin xác minh */}
+      <div className="mb-4 p-3 border rounded">
+        <h6 className="mb-3">Thông tin xác minh</h6>
+        <Form.Group className="mb-3">
+          <Form.Label>Loại giấy tờ</Form.Label>
+          <Form.Select
+            value={editData.documentType || ""}
+            onChange={(e) =>
+              setEditData({ ...editData, documentType: e.target.value })
+            }
+          >
+            <option value="">-- Chọn loại giấy tờ --</option>
+            <option value="Hợp đồng mua bán">Hợp đồng mua bán</option>
+            <option value="Hợp đồng cho thuê">Hợp đồng cho thuê</option>
+          </Form.Select>
+          {errors.documentType && (
+            <div className="text-danger small">{errors.documentType}</div>
+          )}
+        </Form.Group>
 
-          </Modal.Body>
-          <Modal.Footer>
-          <Button variant="secondary" onClick={() => handleCloseModal(editData._id)}>
-  Đóng
-</Button>
+        <Form.Group>
+          <Form.Label>Ghi chú</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={3}
+            value={editData.note || ""}
+            onChange={(e) =>
+              setEditData({ ...editData, note: e.target.value })
+            }
+          />
+        </Form.Group>
+      </div>
 
-            <Button type="submit" variant="primary">
-              Lưu
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
+      {/* Upload tài liệu */}
+      <div className="p-3 border rounded">
+        <h6 className="mb-3">Tài liệu xác minh</h6>
+        <Form.Group>
+          <Form.Control
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(e) => {
+              const selectedFiles = Array.from(e.target.files);
+              setFiles(selectedFiles);
+
+              // Tạo preview URL
+              const previews = selectedFiles.map((file) =>
+                URL.createObjectURL(file)
+              );
+              setFilePreviews(previews);
+            }}
+          />
+        </Form.Group>
+
+        {/* Preview ảnh */}
+        {filePreviews.length > 0 && (
+          <div className="mt-3 row g-2">
+            {filePreviews.map((src, idx) => (
+              <div key={idx} className="col-6 col-md-3">
+                <img
+                  src={src}
+                  alt={`preview-${idx}`}
+                  className="img-fluid rounded border"
+                  style={{ height: "120px", objectFit: "cover" }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </Modal.Body>
+
+    <ReusableModal show={loading} />
+
+    <Modal.Footer>
+      <Button
+        variant="secondary"
+        onClick={() => handleCloseModal(editData._id)}
+        disabled={loading}
+      >
+        Đóng
+      </Button>
+      <Button type="submit" variant="primary" disabled={loading}>
+        {loading ? (
+          <span className="d-flex align-items-center gap-2">
+            <span
+              className="spinner-border spinner-border-sm"
+              role="status"
+              aria-hidden="true"
+            />
+            Đang lưu...
+          </span>
+        ) : (
+          "Lưu"
+        )}
+      </Button>
+    </Modal.Footer>
+  </Form>
+</Modal>
+
       
     </div>
     

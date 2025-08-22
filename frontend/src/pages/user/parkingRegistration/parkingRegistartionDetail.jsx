@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Header from '../../../../components/header';
+import LoadingModal from '../../../../components/loadingModal';
 import { useAuth } from "../../../../context/authContext";
-
 const ParkingRegistrationDetail = () => {
   const { id } = useParams();
   const { user, logout } = useAuth();
@@ -14,6 +14,7 @@ const ParkingRegistrationDetail = () => {
     setName(user?.name || null);
 
     const fetchDetail = async () => {
+      setLoading(true);
       try {
         const token = localStorage.getItem('token');
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/detail-parkinglot/${id}`, {
@@ -37,18 +38,17 @@ const ParkingRegistrationDetail = () => {
     fetchDetail();
   }, [id, user]);
 
-  if (loading) return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
-      <div className="spinner-border text-primary me-2"></div>
-      <span>Đang tải...</span>
-    </div>
-  );
-  if (!detail) return (
-    <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
-      <span className="text-danger fs-5">Không tìm thấy dữ liệu.</span>
-    </div>
-  );
+  if (loading) {
+    return <LoadingModal show={true} />;
+  }
 
+  if (!detail) {
+    return (
+      <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+        <span className="text-danger fs-5">Không tìm thấy dữ liệu.</span>
+      </div>
+    );
+  }
   return (
     <div className="bg-light min-vh-100">
       <Header user={user} name={name} logout={logout} />
@@ -152,6 +152,8 @@ const ParkingRegistrationDetail = () => {
           &copy; 2025 Bãi giữ xe
         </footer>
       </div>
+       {/* ✅ Loading toàn màn hình */}
+       {loading && <LoadingModal show={loading} text="Đang tải dữ liệu nhân khẩu..." />}
     </div>
   );
 };

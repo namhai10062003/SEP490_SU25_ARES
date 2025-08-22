@@ -8,6 +8,7 @@ import {
   Bar, BarChart, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis,
   YAxis
 } from 'recharts';
+import LoadingModal from '../../../components/loadingModal';
 import socket from '../../server/socket';
 import StaffNavbar from './staffNavbar';
 const StaffDashboard = () => {
@@ -20,7 +21,7 @@ const StaffDashboard = () => {
     
   });
   const [monthlyRevenue, setMonthlyRevenue] = useState([]);
-
+  const [loading, setLoading] = useState(false);
   const location = useLocation(); // 🔹 Lấy userName từ token
    // 🔹 Lấy userName từ token (an toàn)
    const token = localStorage.getItem("token");
@@ -44,6 +45,7 @@ const StaffDashboard = () => {
 
   useEffect(() => {
     const fetchAllStats = async () => {
+      setLoading(true);
       try {
         const [parkingRes, feesRes, residentsRes, verifsRes, revenueRes] = await Promise.all([
           axios.get(`${import.meta.env.VITE_API_URL}/api/staff-dashboard/staff/count-by-status`),
@@ -75,6 +77,7 @@ const StaffDashboard = () => {
         console.error('❌ Lỗi khi lấy thống kê:', err);
         toast.error('Không thể tải thống kê, vui lòng thử lại sau.');
       }
+      setLoading(false);
     };
 
     fetchAllStats();
@@ -336,7 +339,8 @@ const StaffDashboard = () => {
 </div>
 
       </main>
-      
+            {/* Modal loading */}
+{loading && <LoadingModal />}
     </div>
   );
 };

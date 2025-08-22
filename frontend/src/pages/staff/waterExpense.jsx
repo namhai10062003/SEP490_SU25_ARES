@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import LoadingModal from "../../../components/loadingModal";
 import StaffNavbar from "./staffNavbar";
-
 const PAGE_SIZE = 10;
 
 export default function WaterExpense() {
@@ -12,6 +12,7 @@ export default function WaterExpense() {
   const [page, setPage] = useState(1);
   const [filterMonth, setFilterMonth] = useState("");
 const [filterText, setFilterText] = useState("");
+const [loadingModal, setLoadingModal] = useState(false);
 
 
   useEffect(() => {
@@ -19,29 +20,44 @@ const [filterText, setFilterText] = useState("");
   }, []);
 
   const fetchWaterUsage = async () => {
+    setLoadingModal(true);
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/water/usage`);
       setWaterData(res.data);
     } catch (err) {
       toast.error("Lỗi khi tải dữ liệu nước từ server!");
     }
+    setLoadingModal(false)
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) return toast.error("Chọn file trước.");
-
+  
     const formData = new FormData();
     formData.append("file", file);
-
+  
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/water/upload`, formData);
-      toast.success("Tải file thành công!");
+      setLoadingModal(true); // 👉 bật loading
+  
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/water/upload`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+  
+      toast.success("📁 Tải file thành công!");
       fetchWaterUsage();
+      setFile(null); // reset file nếu cần
     } catch (err) {
-      toast.error("Tải file thất bại!");
+      toast.error("❌ Tải file thất bại!");
+    } finally {
+      setLoadingModal(false); // 👉 tắt loading
     }
   };
+  
 
   // Pagination
   const filteredData = waterData.filter((item) => {
@@ -65,7 +81,7 @@ const [filterText, setFilterText] = useState("");
 
   return (
     <div className="bg-light min-vh-100">
-      <ToastContainer position="top-right" autoClose={2000} />
+      
       <div className="d-flex flex-nowrap">
         {/* Sidebar */}
         <div style={{ minWidth: 240, maxWidth: 320 }}>
@@ -81,16 +97,19 @@ const [filterText, setFilterText] = useState("");
           <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap" style={{ maxWidth: 800, margin: "0 auto" }}>
             <h4 className="fw-bold text-primary m-0">📊 Thống kê tiêu thụ nước</h4>
             <form onSubmit={handleSubmit} className="d-flex gap-2">
-              <input
-                type="file"
-                accept=".xlsx,.xls"
-                onChange={(e) => setFile(e.target.files[0])}
-                required
-                className="form-control form-control-sm"
-                style={{ width: 240 }}
-              />
-              <button type="submit" className="btn btn-primary btn-sm">📁 Import File</button>
-            </form>
+  <input
+    type="file"
+    accept=".xlsx,.xls"
+    onChange={(e) => setFile(e.target.files[0])}
+    required
+    className="form-control form-control-sm"
+    style={{ width: 240 }}
+  />
+  <button type="submit" className="btn btn-primary btn-sm">
+    📁 Import File
+  </button>
+</form>
+
           </div>
           <div className="row g-3 mb-3" style={{ maxWidth: 1000, margin: "0 auto" }}>
   <div className="col-md-3">
@@ -168,6 +187,8 @@ const [filterText, setFilterText] = useState("");
           )}
         </main>
       </div>
+      {loadingModal && <LoadingModal />}
+
     </div>
   );
 }

@@ -1,9 +1,10 @@
 import { jwtDecode } from 'jwt-decode';
 import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
+import ReusableModal from '../../../../components/ReusableModal';
+import LoadingModal from '../../../../components/loadingModal'; // ✅ Thêm dòng này
 import socket from '../../../server/socket';
-import StaffNavbar from '../../staff/staffNavbar'; // ✅ Thêm dòng này
-
+import StaffNavbar from '../../staff/staffNavbar';
 const ManageParkingLot = () => {
   const [parkingRequests, setParkingRequests] = useState([]);
   const [role, setRole] = useState('');
@@ -16,7 +17,7 @@ const ManageParkingLot = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [selectedId, setSelectedId] = useState(null);
-  
+  const [loading, setLoading] = useState(false);
   const openRejectModal = (id) => {
     setSelectedId(id);
     setRejectReason("");
@@ -35,7 +36,7 @@ const ManageParkingLot = () => {
       toast.error('Không có token. Vui lòng đăng nhập lại.');
       return;
     }
-
+    setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/detail-parkinglot/${id}`, {
         headers: {
@@ -49,6 +50,7 @@ const ManageParkingLot = () => {
     } catch (err) {
       toast.error(`Không lấy được chi tiết: ${err.message}`);
     }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -98,6 +100,7 @@ const ManageParkingLot = () => {
   }, []);
 
   const fetchParkingRequests = async (token) => {
+    setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/parkinglotall`, {
         headers: {
@@ -127,6 +130,7 @@ const ManageParkingLot = () => {
       if (isMountedRef.current)
         toast.error(`Lỗi tải dữ liệu: ${err.message}`);
     }
+    setLoading(false);
   };
 
   const handleStatusChange = async (id, action, reason = null) => {
@@ -135,7 +139,7 @@ const ManageParkingLot = () => {
       toast.error('🚫 Bạn không có quyền thực hiện hành động này.');
       return;
     }
-  
+    setLoading(true);
     const url = `${import.meta.env.VITE_API_URL}/api/parkinglot/${action}/${id}`;
     const method = 'PATCH';
     const status = action === 'approve' ? 'approved' : 'rejected';
@@ -187,6 +191,7 @@ const ManageParkingLot = () => {
       toast.error('❌ Có lỗi xảy ra, vui lòng thử lại sau');
       console.error('❌ Lỗi khi cập nhật trạng thái:', err);
     }
+    setLoading(false);
   };
   
   
@@ -244,33 +249,38 @@ const ManageParkingLot = () => {
                       <td>{item.licensePlate}</td>
                       <td>{item.vehicleType}</td>
                       <td>{formatDate(item.registerDate)}</td>
-                      <td>
-                        {role === 'staff' ? (
-                          <div className="d-flex gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleStatusChange(item._id, 'approve');
-                              }}
-                              className="btn btn-success btn-sm"
-                            >
-                              Phê duyệt
-                            </button>
-                           <button
-  onClick={(e) => {
-    e.stopPropagation();
-    openRejectModal(item._id); // 🆕 mở modal thay vì gọi trực tiếp
-  }}
-  className="btn btn-danger btn-sm"
->
-  Từ chối
-</button>
-                          </div>
-                          
-                        ) : (
-                          <i>Chỉ xem</i>
-                        )}
-                      </td>
+                      {/* Nút trong bảng */}
+<td>
+  {role === "staff" ? (
+    <div className="d-flex gap-2">
+      {/* Phê duyệt */}
+      <button
+        onClick={async (e) => {
+          e.stopPropagation();
+          setLoading(true); // bật loading
+          await handleStatusChange(item._id, "approve");
+          setLoading(false); // tắt loading
+        }}
+        className="btn btn-success btn-sm"
+      >
+        Phê duyệt
+      </button>
+
+      {/* Từ chối */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          openRejectModal(item._id);
+        }}
+        className="btn btn-danger btn-sm"
+      >
+        Từ chối
+      </button>
+    </div>
+  ) : (
+    <i>Chỉ xem</i>
+  )}
+</td>
                     </tr>
                   ))
                 ) : (
@@ -345,48 +355,44 @@ const ManageParkingLot = () => {
             </div>
           </div>
         )}
-    {showRejectModal && (
-  <div
-    className="modal fade show d-block"
-    tabIndex="-1"
-    style={{ backgroundColor: "rgba(0,0,0,0.3)" }}
-  >
-    <div className="modal-dialog">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title">Nhập lý do từ chối</h5>
-          <button type="button" className="btn-close" onClick={closeRejectModal}></button>
-        </div>
-        <div className="modal-body">
-          <textarea
-            className="form-control"
-            placeholder="Nhập lý do..."
-            value={rejectReason}
-            onChange={(e) => setRejectReason(e.target.value)}
-          />
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={closeRejectModal}>
-            Hủy
-          </button>
-          <button
-            className="btn btn-danger"
-            onClick={() => {
-              if (!rejectReason.trim()) {
-                toast.error("❌ Vui lòng nhập lý do từ chối");
-                return;
-              }
-              handleStatusChange(selectedId, "reject", rejectReason);
-              closeRejectModal();
-            }}
-          >
-            Xác nhận từ chối
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+   {/* Modal từ chối */}
+<ReusableModal
+  show={showRejectModal}
+  title="Nhập lý do từ chối"
+  onClose={closeRejectModal}
+  body={
+    <textarea
+      className="form-control"
+      placeholder="Nhập lý do..."
+      value={rejectReason}
+      onChange={(e) => setRejectReason(e.target.value)}
+    />
+  }
+  footerButtons={[
+    {
+      label: "Hủy",
+      variant: "secondary",
+      onClick: closeRejectModal,
+    },
+    {
+      label: "Xác nhận từ chối",
+      variant: "danger",
+      onClick: async () => {
+        if (!rejectReason.trim()) {
+          toast.error("❌ Vui lòng nhập lý do từ chối");
+          return;
+        }
+        setLoading(true); // bật loading
+        await handleStatusChange(selectedId, "reject", rejectReason);
+        setLoading(false); // tắt loading
+        closeRejectModal();
+      },
+    },
+  ]}
+/>
+
+{/* Modal loading */}
+{loading && <LoadingModal />}
       </main>
     </div>
   );

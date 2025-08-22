@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import LoadingModal from "../../../components/loadingModal";
 import StaffNavbar from "./staffNavbar";
 export function ChangePasswordStaff() {
   const navigate = useNavigate();
@@ -82,7 +83,7 @@ const handleSubmit = async (e) => {
     );
 
     if (response.status === 200) {
-      toast.success("Đổi mật khẩu thành công! 🎉");
+      // toast.success("Đổi mật khẩu thành công! 🎉");
       setFormData({
         currentPassword: "",
         newPassword: "",
@@ -91,7 +92,7 @@ const handleSubmit = async (e) => {
 
       // Redirect sau 2s
       setTimeout(() => {
-        navigate("/staffDashboard");
+        navigate("/staff-dashboard");
       }, 2000);
     } else {
       toast.error(
@@ -264,6 +265,8 @@ const handleSubmit = async (e) => {
       </div>
     </div>
   </main>
+        {/* Modal loading */}
+{loading && <LoadingModal />}
 </div>
 
   );

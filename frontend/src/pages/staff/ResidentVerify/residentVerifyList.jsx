@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Modal } from "react-bootstrap";
 import { toast } from "react-toastify";
-import StaffNavbar from "../../staff/staffNavbar"; // ✅ Thêm dòng này
+import ReusableModal from "../../../../components/ReusableModal"; // ✅ Thêm dòng này
+import LoadingModal from "../../../../components/loadingModal";
+import StaffNavbar from "../../staff/staffNavbar";
 const ResidentVerifyList = () => {
   const [residents, setResidents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -74,7 +76,7 @@ const ResidentVerifyList = () => {
 
       if (res.ok) {
         toast.success("✅ Xác minh thành công");
-        setResidents((prev) => prev.filter((r) => r._id !== confirmId));
+        await fetchResidents(); 
       } else {
         toast.error("❌ Thao tác thất bại");
       }
@@ -107,8 +109,7 @@ const ResidentVerifyList = () => {
       if (res.ok) {
         toast.success("🚫 Đã từ chối nhân khẩu");
 
-        // ❌ Xoá khỏi danh sách
-        setResidents((prev) => prev.filter((r) => r._id !== rejectId));
+        await fetchResidents(); 
 
         setRejectId(null);
         setRejectReason("");
@@ -300,32 +301,40 @@ const ResidentVerifyList = () => {
       </Modal>
     </td>
 
-                    <td>
-                      {r.verifiedByStaff === "pending" && (
-                        <>
-                          <button className="btn btn-success mb-2" onClick={() => setConfirmId(r._id)}>
-                            Xác minh
-                          </button>
-                          <button className="btn btn-danger" onClick={() => setRejectId(r._id)}>
-                            Từ chối
-                          </button>
-                        </>
-                      )}
+                   {/* Nút trong cột hành động */}
+<td>
+  {r.verifiedByStaff === "pending" && (
+    <>
+      <button
+        className="btn btn-success mb-2"
+        onClick={() => setConfirmId(r._id)}
+      >
+        Xác minh
+      </button>
+      <button
+        className="btn btn-danger"
+        onClick={() => setRejectId(r._id)}
+      >
+        Từ chối
+      </button>
+    </>
+  )}
 
-                      {r.verifiedByStaff === "true" && (
-                        <span className="text-success fw-bold">Đã xác minh</span>
-                      )}
+  {r.verifiedByStaff === "true" && (
+    <span className="text-success fw-bold">Đã xác minh</span>
+  )}
 
-                      {r.verifiedByStaff === "false" && (
-                        <div>
-                          <span className="text-danger fw-bold">Đã từ chối</span>
-                          {r.rejectReason && (
-                            <div className="text-muted small mt-1">Lý do: {r.rejectReason}</div>
-                          )}
-                        </div>
-                      )}
-
-                    </td>
+  {r.verifiedByStaff === "false" && (
+    <div>
+      <span className="text-danger fw-bold">Đã từ chối</span>
+      {r.rejectReason && (
+        <div className="text-muted small mt-1">
+          Lý do: {r.rejectReason}
+        </div>
+      )}
+    </div>
+  )}
+</td>
 
 
                   </tr>
@@ -335,77 +344,77 @@ const ResidentVerifyList = () => {
           </div>
         )}
 
-        {/* Modal xác minh */}
-        {confirmId && (
-          <div
-            className="modal fade show"
-            style={{ display: "block", background: "rgba(30,41,59,0.5)" }}
-            tabIndex={-1}
-            onClick={() => setConfirmId(null)}
-          >
-            <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-content rounded-4">
-                <div className="modal-header">
-                  <h5 className="modal-title">Xác minh nhân khẩu</h5>
-                  <button type="button" className="btn-close" onClick={() => setConfirmId(null)} />
-                </div>
-                <div className="modal-body">
-                  <p>Bạn có chắc chắn muốn xác minh nhân khẩu này?</p>
-                </div>
-                <div className="modal-footer d-flex justify-content-end gap-2">
-                  <button className="btn btn-success" onClick={handleVerify}>
-                    Xác minh
-                  </button>
-                  <button className="btn btn-secondary" onClick={() => setConfirmId(null)}>
-                    Huỷ
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+       {/* Modal xác minh */}
+<ReusableModal
+  show={!!confirmId}
+  title="Xác minh nhân khẩu"
+  onClose={() => setConfirmId(null)}
+  body={<p>Bạn có chắc chắn muốn xác minh nhân khẩu này?</p>}
+  footerButtons={[
+    {
+      label: "Xác minh",
+      variant: "success",
+      onClick: async () => {
+        setLoading(true);
+        await handleVerify(confirmId);
+        setLoading(false);
+        setConfirmId(null);
+      },
+    },
+    {
+      label: "Huỷ",
+      variant: "secondary",
+      onClick: () => setConfirmId(null),
+    },
+  ]}
+/>
 
-        {/* Modal từ chối */}
-        {rejectId && (
-          <div
-            className="modal fade show"
-            style={{ display: "block", background: "rgba(30,41,59,0.5)" }}
-            tabIndex={-1}
-            onClick={() => setRejectId(null)}
-          >
-            <div className="modal-dialog modal-dialog-centered" onClick={(e) => e.stopPropagation()}>
-              <div className="modal-content rounded-4">
-                <div className="modal-header">
-                  <h5 className="modal-title">Lý do từ chối</h5>
-                  <button type="button" className="btn-close" onClick={() => setRejectId(null)} />
-                </div>
-                <div className="modal-body">
-                  <textarea
-                    rows="4"
-                    className="form-control"
-                    placeholder="Nhập lý do từ chối..."
-                    value={rejectReason}
-                    onChange={(e) => setRejectReason(e.target.value)}
-                  />
-                </div>
-                <div className="modal-footer d-flex justify-content-end gap-2">
-                  <button className="btn btn-danger" onClick={handleReject}>
-                    Gửi từ chối
-                  </button>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => {
-                      setRejectId(null);
-                      setRejectReason("");
-                    }}
-                  >
-                    Huỷ
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+{/* Modal từ chối */}
+<ReusableModal
+  show={!!rejectId}
+  title="Lý do từ chối"
+  onClose={() => {
+    setRejectId(null);
+    setRejectReason("");
+  }}
+  body={
+    <textarea
+      rows={4}
+      className="form-control"
+      placeholder="Nhập lý do từ chối..."
+      value={rejectReason}
+      onChange={(e) => setRejectReason(e.target.value)}
+    />
+  }
+  footerButtons={[
+    {
+      label: "Gửi từ chối",
+      variant: "danger",
+      onClick: async () => {
+        if (!rejectReason.trim()) {
+          toast.error("❌ Vui lòng nhập lý do từ chối");
+          return;
+        }
+        setLoading(true);
+        await handleReject(rejectId, rejectReason);
+        setLoading(false);
+        setRejectId(null);
+        setRejectReason("");
+      },
+    },
+    {
+      label: "Huỷ",
+      variant: "secondary",
+      onClick: () => {
+        setRejectId(null);
+        setRejectReason("");
+      },
+    },
+  ]}
+/>
+
+{/* Modal loading chung */}
+{loading && <LoadingModal />}
         <div className="d-flex justify-content-center mt-4 gap-2 flex-wrap">
           {Array.from({ length: totalPages }, (_, index) => (
             <button
