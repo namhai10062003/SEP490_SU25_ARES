@@ -148,6 +148,7 @@ const addDays = (date, days) => {
   
 
   const handleResubmit = async () => {
+    setLoading(true);
     try {
       await axios.put(
         `${import.meta.env.VITE_API_URL}/api/contracts/${editingContract._id}/resubmit`,
@@ -167,6 +168,8 @@ const addDays = (date, days) => {
       setEditingContract(null);
     } catch {
       toast.error("❌ Lỗi khi gửi lại hợp đồng");
+    }finally{
+      setLoading(false);
     }
   };
   // hàm xử lý hủy hợp đồng
@@ -527,10 +530,7 @@ const addDays = (date, days) => {
     type="date"
     className="form-control"
     value={editForm.startDate}
-    min={getToday()}
-    onChange={(e) =>
-      setEditForm({ ...editForm, startDate: e.target.value })
-    }
+    disabled // ⬅️ chặn sửa + input xám
   />
 </div>
 
@@ -540,14 +540,7 @@ const addDays = (date, days) => {
     type="date"
     className="form-control"
     value={editForm.endDate}
-    min={(() => {
-      const nextDay = new Date(editForm.startDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      return nextDay.toISOString().split("T")[0];
-    })()}
-    onChange={(e) =>
-      setEditForm({ ...editForm, endDate: e.target.value })
-    }
+    disabled // ⬅️ chặn sửa + input xám
   />
 </div>
 
