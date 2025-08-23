@@ -501,15 +501,18 @@ const AdminPostDetail = () => {
                                 {/* Description */}
                                 <hr className="my-4" />
                                 <div>
-                                    <h6 className="fw-bold mb-3">📄 Mô tả</h6>
-                                    <p className="text-muted" style={{
-                                        whiteSpace: "pre-line",
-                                        lineHeight: '1.6',
-                                        fontSize: '14px'
-                                    }}>
-                                        {post.description || 'Không có mô tả'}
-                                    </p>
-                                </div>
+  <h6 className="fw-bold mb-3">📄 Mô tả</h6>
+  <p className="text-muted" style={{
+      whiteSpace: "pre-line",
+      lineHeight: '1.6',
+      fontSize: '14px'
+  }}>
+    {post.description
+      ? post.description.replace(/<[^>]*>/g, '')  // Loại bỏ hết thẻ HTML
+      : 'Không có mô tả'}
+  </p>
+</div>
+
 
                                 {post.isEditing && (
                                     <div className="alert alert-warning mt-3" role="alert">
