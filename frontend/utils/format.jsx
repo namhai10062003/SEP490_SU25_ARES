@@ -1,6 +1,6 @@
 // --- Currency ---
 export const formatPrice = (p) =>
-    new Intl.NumberFormat("vi-VN").format(p || 0) + " VND";
+    new Intl.NumberFormat("vi-VN").format(p || 0) + " VNĐ";
 
 // --- Dates ---
 export const formatDateWithTime = (d) => {
@@ -25,8 +25,8 @@ export const toInputDate = (date) => {
     return `${y}-${m}-${d}`;
 };
 export const formatCurrency = (amount) => {
-    if (amount == null || isNaN(amount)) return "0 VND";
-    return Number(amount).toLocaleString("vi-VN") + " VND";
+    if (amount == null || isNaN(amount)) return "0 VNĐ";
+    return Number(amount).toLocaleString("vi-VN") + " VNĐ";
 };
 
 export const formatSmartDate = (dateStr) => {
@@ -213,4 +213,14 @@ export const parseDateRange = (startDate, endDate) => {
         start: startDate ? new Date(startDate) : defaultStart,
         end: endDate ? new Date(endDate) : defaultEnd,
     };
+};
+
+// --- Get badge color for package ---
+export const getBadgeColorForPackage = (type) => {
+    switch ((type || "").toUpperCase()) {
+        case "VIP1": return "badge bg-primary";       // Blue
+        case "VIP2": return "badge bg-danger";        // Red
+        case "VIP3": return "badge bg-warning text-dark"; // Yellow
+        default: return "badge bg-secondary";         // Gray
+    }
 };

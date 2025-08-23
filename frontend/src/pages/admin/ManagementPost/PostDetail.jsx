@@ -11,12 +11,17 @@ import {
     FaTimes,
     FaTrash,
     FaUser,
+    FaClock,
+    FaHome,
+    FaFileAlt,
+    FaCouch,
+    FaTag,
 } from "react-icons/fa";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import EditHistoryModal from "../../../../components/showHistory.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
-import { formatCurrency } from "../../../../utils/format.jsx";
+import { formatCurrency, formatDate } from "../../../../utils/format.jsx";
 import {
     deletePostByAdmin,
     getPostByIdForAdmin,
@@ -26,7 +31,7 @@ import {
 } from "../../../service/postService.js";
 import AdminDashboard from "../adminDashboard.jsx";
 
-// Simple Modal 
+// Simple Modal Component
 const SimpleModal = ({
     show,
     onHide,
@@ -106,14 +111,16 @@ const SimpleModal = ({
                             borderTopRightRadius: 16,
                         }}
                     >
-                        <h5 className="modal-title" style={{ fontWeight: 600 }}>{title}</h5>
+                        <h5 className="modal-title" style={{ fontWeight: 600 }}>
+                            {title}
+                        </h5>
                         <button
                             type="button"
                             className="btn-close"
                             aria-label="Close"
                             onClick={onHide}
                             style={{ outline: "none", boxShadow: "none" }}
-                        ></button>
+                        />
                     </div>
                     <div style={{ padding: "24px" }}>
                         {children}
@@ -129,6 +136,7 @@ const AdminPostDetail = () => {
     const { user } = useAuth();
     const navigate = useNavigate();
 
+    // State management
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
     const [mainImage, setMainImage] = useState(null);
@@ -136,18 +144,21 @@ const AdminPostDetail = () => {
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [rejectReason, setRejectReason] = useState("");
+
+    // Computed properties for button states
     const isApproveDisabled =
-    post?.isEditing ||
-    post?.status === "deleted" ||
-    ["approved", "rejected"].includes(post?.status);
-  
-  const isRejectDisabled =
-    post?.isEditing ||
-    post?.status === "deleted" ||
-    ["approved", "rejected"].includes(post?.status);
-  
-  const isDeleteDisabled =
-    post?.isEditing || post?.status === "deleted";
+        post?.isEditing ||
+        post?.status === "deleted" ||
+        ["approved", "rejected"].includes(post?.status);
+
+    const isRejectDisabled =
+        post?.isEditing ||
+        post?.status === "deleted" ||
+        ["approved", "rejected"].includes(post?.status);
+
+    const isDeleteDisabled = post?.isEditing || post?.status === "deleted";
+
+    // Fetch post and history data
     useEffect(() => {
         const fetchPostAndHistory = async () => {
             try {
@@ -156,8 +167,8 @@ const AdminPostDetail = () => {
                     toast.error("Vui lòng đăng nhập để tiếp tục.");
                     return navigate("/login");
                 }
-    
-                // Lấy bài đăng
+
+                // Fetch post data
                 const res = await getPostByIdForAdmin(id);
                 if (!res?.data?.success || !res.data.data) {
                     toast.error("❌ Không tìm thấy bài đăng.");
@@ -165,16 +176,15 @@ const AdminPostDetail = () => {
                 }
                 setPost(res.data.data);
                 setMainImage(res.data.data.images?.[0]);
-    
-                // Lấy lịch sử chỉnh sửa
-                const historyRes = await getPostHistoryByPostId(id); 
-                // historyRes ở đây đã là response.data trả từ axios
+
+                // Fetch edit history
+                const historyRes = await getPostHistoryByPostId(id);
                 if (historyRes?.success && historyRes.data) {
                     setHistory(historyRes.data);
                 } else {
                     toast.error("⚠️ Không thể lấy lịch sử chỉnh sửa");
                 }
-                  
+
             } catch (err) {
                 console.error("Lỗi khi tải dữ liệu:", err);
                 toast.error("❌ Lỗi khi tải bài đăng.");
@@ -183,11 +193,11 @@ const AdminPostDetail = () => {
                 setLoading(false);
             }
         };
-    
+
         if (id) fetchPostAndHistory();
     }, [id, navigate]);
-    
 
+    // Event handlers
     const handleApprove = async () => {
         try {
             await verifyPostByAdmin(id);
@@ -206,7 +216,10 @@ const AdminPostDetail = () => {
         }
 
         try {
-            await rejectPostByAdmin(id, { status: "rejected", reasonreject: rejectReason });
+            await rejectPostByAdmin(id, {
+                status: "rejected",
+                reasonreject: rejectReason
+            });
             toast.success("🚫 Đã từ chối bài đăng.");
             setShowRejectModal(false);
             setRejectReason("");
@@ -227,6 +240,7 @@ const AdminPostDetail = () => {
         }
     };
 
+    // Loading state
     if (loading) {
         return (
             <AdminDashboard>
@@ -268,7 +282,10 @@ const AdminPostDetail = () => {
                     {/* Left Column - Media and Contact Info */}
                     <div className="col-lg-8">
                         {/* Main Image Section */}
-                        <div className="card shadow-sm mb-4" style={{ borderRadius: '12px', border: 'none' }}>
+                        <div className="card shadow-sm mb-4" style={{
+                            borderRadius: '12px',
+                            border: 'none'
+                        }}>
                             <div className="position-relative">
                                 <img
                                     src={mainImage || "https://via.placeholder.com/600x400"}
@@ -314,7 +331,10 @@ const AdminPostDetail = () => {
                         </div>
 
                         {/* Contact Information */}
-                        <div className="card shadow-sm mb-4" style={{ borderRadius: '12px', border: 'none' }}>
+                        <div className="card shadow-sm mb-4" style={{
+                            borderRadius: '12px',
+                            border: 'none'
+                        }}>
                             <div className="card-body">
                                 <h6 className="fw-bold mb-3 d-flex align-items-center gap-2">
                                     <FaUser className="text-primary" /> Thông tin liên hệ
@@ -323,7 +343,14 @@ const AdminPostDetail = () => {
                                     <div className="col-md-6">
                                         <p className="mb-2 d-flex align-items-center gap-2">
                                             <FaUser className="text-muted" style={{ width: '16px' }} />
-                                            <span className="fw-medium">{post.contactInfo?.name}</span>
+                                            <Link
+                                                to={`/admin-dashboard/manage-user/${post.contactInfo?.userId || ""}`}
+                                                className="fw-medium text-decoration-underline text-primary"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {post.contactInfo?.name}
+                                            </Link>
                                         </p>
                                         <p className="mb-2 d-flex align-items-center gap-2">
                                             <FaPhone className="text-muted" style={{ width: '16px' }} />
@@ -346,50 +373,53 @@ const AdminPostDetail = () => {
 
                         {/* Action Buttons */}
                         <div className="d-flex gap-3 justify-content-center">
-                        <button
-  className="btn btn-success px-4 py-2 d-flex align-items-center gap-2"
-  onClick={handleApprove}
-  style={{
-    borderRadius: '8px',
-    fontWeight: '500',
-    minWidth: '120px'
-  }}
-  disabled={isApproveDisabled}
->
-  <FaCheck /> {post?.status === "approved" ? "Đã duyệt" : "Duyệt"}
-</button>
+                            <button
+                                className="btn btn-success px-4 py-2 d-flex align-items-center gap-2"
+                                onClick={handleApprove}
+                                style={{
+                                    borderRadius: '8px',
+                                    fontWeight: '500',
+                                    minWidth: '120px'
+                                }}
+                                disabled={isApproveDisabled}
+                            >
+                                <FaCheck /> {post?.status === "approved" ? "Đã duyệt" : "Duyệt"}
+                            </button>
 
-<button
-  className="btn btn-warning px-4 py-2 d-flex align-items-center gap-2"
-  onClick={() => setShowRejectModal(true)}
-  style={{
-    borderRadius: '8px',
-    fontWeight: '500',
-    minWidth: '120px'
-  }}
-  disabled={isRejectDisabled}
->
-  <FaTimes /> {post?.status === "rejected" ? "Đã từ chối" : "Từ chối"}
-</button>
+                            <button
+                                className="btn btn-warning px-4 py-2 d-flex align-items-center gap-2"
+                                onClick={() => setShowRejectModal(true)}
+                                style={{
+                                    borderRadius: '8px',
+                                    fontWeight: '500',
+                                    minWidth: '120px'
+                                }}
+                                disabled={isRejectDisabled}
+                            >
+                                <FaTimes /> {post?.status === "rejected" ? "Đã từ chối" : "Từ chối"}
+                            </button>
 
-<button
-  className="btn btn-danger px-4 py-2 d-flex align-items-center gap-2"
-  onClick={() => setShowDeleteModal(true)}
-  style={{
-    borderRadius: '8px',
-    fontWeight: '500',
-    minWidth: '120px'
-  }}
-  disabled={isDeleteDisabled}
->
-  <FaTrash /> {post?.status === "deleted" ? "Đã xoá" : "Xoá"}
-</button>
+                            <button
+                                className="btn btn-danger px-4 py-2 d-flex align-items-center gap-2"
+                                onClick={() => setShowDeleteModal(true)}
+                                style={{
+                                    borderRadius: '8px',
+                                    fontWeight: '500',
+                                    minWidth: '120px'
+                                }}
+                                disabled={isDeleteDisabled}
+                            >
+                                <FaTrash /> {post?.status === "deleted" ? "Đã xoá" : "Xoá"}
+                            </button>
                         </div>
                     </div>
 
                     {/* Right Column - Property Details */}
                     <div className="col-lg-4">
-                        <div className="card shadow-sm" style={{ borderRadius: '12px', border: 'none' }}>
+                        <div className="card shadow-sm" style={{
+                            borderRadius: '12px',
+                            border: 'none'
+                        }}>
                             <div className="card-body">
                                 <h4 className="card-title text-primary mb-3">{post.title}</h4>
 
@@ -424,7 +454,7 @@ const AdminPostDetail = () => {
                                         <div>
                                             <div className="fw-medium">Ngày đăng</div>
                                             <div className="text-muted">
-                                                {new Date(post.createdAt).toLocaleDateString("vi-VN")}
+                                                {formatDate(post.createdAt)}
                                             </div>
                                         </div>
                                     </div>
@@ -434,13 +464,13 @@ const AdminPostDetail = () => {
                                         <div>
                                             <div className="fw-medium">Gói VIP</div>
                                             <div className="text-muted">
-                                                ({formatCurrency(post.postPackage?.price)})
+                                                {post.postPackage.type}  ({formatCurrency(post.postPackage?.price)})
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="d-flex align-items-center gap-3 py-2">
-                                        <div className="text-muted" style={{ width: '16px' }}></div>
+                                        <FaTag className="text-muted" style={{ width: '16px' }} />
                                         <div>
                                             <div className="fw-medium">Loại tin</div>
                                             <div className="text-muted">{post.type || '-'}</div>
@@ -448,7 +478,7 @@ const AdminPostDetail = () => {
                                     </div>
 
                                     <div className="d-flex align-items-center gap-3 py-2">
-                                        <div className="text-muted" style={{ width: '16px' }}></div>
+                                        <FaHome className="text-muted" style={{ width: '16px' }} />
                                         <div>
                                             <div className="fw-medium">Property</div>
                                             <div className="text-muted">{post.property}</div>
@@ -456,7 +486,7 @@ const AdminPostDetail = () => {
                                     </div>
 
                                     <div className="d-flex align-items-center gap-3 py-2">
-                                        <div className="text-muted" style={{ width: '16px' }}></div>
+                                        <FaFileAlt className="text-muted" style={{ width: '16px' }} />
                                         <div>
                                             <div className="fw-medium">Mã căn hộ</div>
                                             <div className="text-muted">{post.apartmentCode || '-'}</div>
@@ -464,7 +494,7 @@ const AdminPostDetail = () => {
                                     </div>
 
                                     <div className="d-flex align-items-center gap-3 py-2">
-                                        <div className="text-muted" style={{ width: '16px' }}></div>
+                                        <FaFileAlt className="text-muted" style={{ width: '16px' }} />
                                         <div>
                                             <div className="fw-medium">Pháp lý</div>
                                             <div className="text-muted">{post.legalDocument}</div>
@@ -472,7 +502,7 @@ const AdminPostDetail = () => {
                                     </div>
 
                                     <div className="d-flex align-items-center gap-3 py-2">
-                                        <div className="text-muted" style={{ width: '16px' }}></div>
+                                        <FaCouch className="text-muted" style={{ width: '16px' }} />
                                         <div>
                                             <div className="fw-medium">Nội thất</div>
                                             <div className="text-muted">{post.interiorStatus}</div>
@@ -480,7 +510,20 @@ const AdminPostDetail = () => {
                                     </div>
 
                                     <div className="d-flex align-items-center gap-3 py-2">
-                                        <div className="text-muted" style={{ width: '16px' }}></div>
+                                        <FaClock className="text-muted" style={{ width: '16px' }} />
+                                        <div>
+                                            <div className="fw-medium">Ngày hết hạn</div>
+                                            <div className="text-muted">
+                                                {post.expiredDate
+                                                    ? formatDate(post.expiredDate)
+                                                    : 'Không có'
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="d-flex align-items-center gap-3 py-2">
+                                        <FaStar className="text-muted" style={{ width: '16px' }} />
                                         <div>
                                             <div className="fw-medium">Trạng thái</div>
                                             <span
@@ -490,7 +533,10 @@ const AdminPostDetail = () => {
                                                         ? "bg-warning text-dark"
                                                         : "bg-danger"
                                                     }`}
-                                                style={{ borderRadius: '20px', padding: '6px 12px' }}
+                                                style={{
+                                                    borderRadius: '20px',
+                                                    padding: '6px 12px'
+                                                }}
                                             >
                                                 {post.status}
                                             </span>
@@ -501,19 +547,19 @@ const AdminPostDetail = () => {
                                 {/* Description */}
                                 <hr className="my-4" />
                                 <div>
-  <h6 className="fw-bold mb-3">📄 Mô tả</h6>
-  <p className="text-muted" style={{
-      whiteSpace: "pre-line",
-      lineHeight: '1.6',
-      fontSize: '14px'
-  }}>
-    {post.description
-      ? post.description.replace(/<[^>]*>/g, '')  // Loại bỏ hết thẻ HTML
-      : 'Không có mô tả'}
-  </p>
-</div>
+                                    <h6 className="fw-bold mb-3">📄 Mô tả</h6>
+                                    <p className="text-muted" style={{
+                                        whiteSpace: "pre-line",
+                                        lineHeight: '1.6',
+                                        fontSize: '14px'
+                                    }}>
+                                        {post.description
+                                            ? post.description.replace(/<[^>]*>/g, '')  // Remove HTML tags
+                                            : 'Không có mô tả'}
+                                    </p>
+                                </div>
 
-
+                                {/* Editing Warning */}
                                 {post.isEditing && (
                                     <div className="alert alert-warning mt-3" role="alert">
                                         <strong>⚠️ Lưu ý:</strong> Người dùng đang chỉnh sửa bài viết này!
@@ -550,9 +596,7 @@ const AdminPostDetail = () => {
                         onChange={(e) => setRejectReason(e.target.value)}
                         style={{ resize: 'vertical' }}
                     />
-                    <div
-                        className="d-flex justify-content-end gap-2 mt-4"
-                    >
+                    <div className="d-flex justify-content-end gap-2 mt-4">
                         <button
                             type="button"
                             className="btn btn-secondary"
@@ -588,9 +632,7 @@ const AdminPostDetail = () => {
                         <strong>⚠️ Cảnh báo:</strong> Bạn có muốn xóa bài post này không?
                         Hành động này không thể hoàn tác.
                     </p>
-                    <div
-                        className="d-flex justify-content-end gap-2 mt-4"
-                    >
+                    <div className="d-flex justify-content-end gap-2 mt-4">
                         <button
                             type="button"
                             className="btn btn-secondary"
@@ -608,7 +650,6 @@ const AdminPostDetail = () => {
                     </div>
                 </div>
             </SimpleModal>
-
         </AdminDashboard>
     );
 };
