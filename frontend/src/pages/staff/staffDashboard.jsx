@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {
@@ -144,204 +144,152 @@ const StaffDashboard = () => {
   ];
 
   return (
-    <div className="d-flex min-vh-100 bg-light">
-      {/* <ToastContainer /> */}
-      <StaffNavbar />
-      <main className="flex-grow-1 p-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-  <h2 className="fw-bold mb-0">Dashboard</h2>
-  <div className="d-flex align-items-center gap-3">
-    {/* Nút đổi mật khẩu */}
-    <Link
-      to="/staff-changePassWord"
-      className="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold"
-    >
-      🔑 Đổi mật khẩu
-    </Link>
+<div className="d-flex min-vh-100 bg-light">
+  <StaffNavbar />
 
-    <input
-      type="text"
-      placeholder="Tìm kiếm..."
-      className="form-control rounded-pill"
-      style={{ width: 250 }}
-    />
-    <span className="fw-bold text-primary">{userName}</span>
-  </div>
-</div>
+  <main className="flex-grow-1 p-4" style={{ minWidth: 0 }}>
+    <div className="container-fluid">
 
-        <div className="row g-4">
-  {cards.map((c, i) => (
-    <div key={i} className="col-12 col-md-6 col-lg-3">
-      <div 
-        className="card shadow-sm border-0 h-100 rounded-4"
-        style={{
-          transition: "transform 0.2s ease, box-shadow 0.2s ease"
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "translateY(-5px)";
-          e.currentTarget.style.boxShadow = "0 1rem 2rem rgba(0,0,0,.15)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "translateY(0)";
-          e.currentTarget.style.boxShadow = "";
-        }}
-      >
-        <div className="card-body">
-          <div className="d-flex align-items-center">
-            {/* Icon */}
-            <div 
-              className="rounded-circle d-flex align-items-center justify-content-center me-3 text-white"
-              style={{
-                width: "55px",
-                height: "55px",
-                background: `linear-gradient(135deg, var(--bs-${c.color}), rgba(var(--bs-${c.color}-rgb), 0.8))`
-              }}
-            >
-              <i className={`bi bi-${c.icon} fs-4`}></i>
-            </div>
-
-            {/* Title & main number */}
-            <div>
-              <h6 className="mb-1 text-secondary">{c.title}</h6>
-              <div className="fs-4 fw-bold">{c.lines[0]}</div>
-            </div>
-          </div>
-
-          {/* Các dòng chi tiết */}
-          <div className="mt-3">
-            {c.lines.slice(1).map((l, j) => (
-              <div key={j} className="small text-muted">{l}</div>
-            ))}
-          </div>
+      {/* Header */}
+      <div className="row align-items-center mb-4 bg-white rounded-4 shadow-sm p-3 sticky-top" style={{ zIndex: 10 }}>
+        <div className="col">
+          <h2 className="fw-bold mb-0 text-primary d-flex align-items-center gap-2">
+            <i className="bi bi-bar-chart-line"></i> Dashboard
+          </h2>
+        </div>
+        <div className="col-auto d-flex align-items-center gap-2">
+          <i className="bi bi-person-circle fs-4 text-secondary"></i>
+          <span className="fw-semibold">{userName}</span>
         </div>
       </div>
+
+      {/* Cards Summary */}
+      <div className="row g-4 mb-4">
+        {cards.map((c, i) => (
+          <div key={i} className="col-6 col-lg-3">
+            <div
+              className="card border-0 rounded-4 shadow-sm h-100 p-4 d-flex flex-column justify-content-center"
+              style={{
+                transition: "all 0.3s ease",
+                cursor: "pointer",
+                background: "linear-gradient(135deg, #f9fafb, #ffffff)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-6px) scale(1.02)";
+                e.currentTarget.style.boxShadow = "0 1rem 2rem rgba(0,0,0,0.08)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0) scale(1)";
+                e.currentTarget.style.boxShadow = "";
+              }}
+            >
+              <div className="d-flex align-items-center">
+                <div
+                  className="rounded-circle d-flex align-items-center justify-content-center me-3"
+                  style={{
+                    width: "56px",
+                    height: "56px",
+                    background: `linear-gradient(135deg, var(--bs-${c.color}), rgba(var(--bs-${c.color}-rgb),0.7))`,
+                    color: "white",
+                    fontSize: "1.2rem",
+                  }}
+                >
+                  <i className={`bi bi-${c.icon}`}></i>
+                </div>
+                <div>
+                  <div className="fw-semibold small text-muted">{c.title}</div>
+                  <div className="fw-bold fs-5 text-dark">{c.lines[0]}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts */}
+      <h5 className="fw-bold mb-3 text-primary">📊 Thống kê</h5>
+      <div className="row g-4 mb-4">
+        {[
+          { title: "Gửi xe", data: [
+              { name: "Đã duyệt", value: stats.parking.approved },
+              { name: "Chờ duyệt", value: stats.parking.pending },
+              { name: "Từ chối", value: stats.parking.rejected },
+            ], colors: ["#22c55e", "#fbbf24", "#ef4444"] },
+          { title: "Hóa đơn", data: [
+              { name: "Đã thanh toán", value: stats.fees.paid },
+              { name: "Chưa thanh toán", value: stats.fees.unpaid },
+            ], colors: ["#3b82f6", "#ef4444"] },
+          { title: "Cư dân", data: [
+              { name: "Đã xác minh", value: stats.residents.verifiedResidents },
+              { name: "Từ chối", value: stats.residents.rejectedResidents },
+            ], colors: ["#06b6d4", "#ef4444"] },
+          { title: "Xác minh cư dân", data: [
+              { name: "Đã duyệt", value: stats.verifications.approved },
+              { name: "Chờ duyệt", value: stats.verifications.pending },
+              { name: "Từ chối", value: stats.verifications.rejected },
+            ], colors: ["#22c55e", "#fbbf24", "#ef4444"] },
+        ].map((chart, i) => (
+          <div key={i} className="col-12 col-md-6">
+            <div className="card border-0 rounded-4 shadow-sm p-4 h-100">
+              <h6 className="fw-semibold mb-3">{chart.title}</h6>
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie
+                    data={chart.data}
+                    dataKey="value"
+                    innerRadius={45}
+                    outerRadius={75}
+                    label
+                  >
+                    {chart.colors.map((c, idx) => (
+                      <Cell key={idx} fill={c} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Revenue */}
+      <div className="card border-0 rounded-4 shadow-sm p-4">
+        <h5 className="fw-bold mb-3 text-primary">💰 Doanh thu theo tháng</h5>
+        <ResponsiveContainer width="100%" height={280}>
+          <BarChart
+            data={monthlyRevenue.map(item => ({
+              month: item.month,
+              revenue: item.paid + item.unpaid
+            }))}
+            margin={{ top: 20, right: 20, left: 0, bottom: 5 }}
+          >
+            <XAxis dataKey="month" />
+            <YAxis
+              domain={[0, (dataMax) => Math.ceil(dataMax / 100000) * 100000]} 
+              tickCount={6}
+              tickFormatter={(value) => (value >= 1_000 ? (value / 1_000) + "K" : value)}
+            />
+            <Tooltip formatter={(value) => `${value.toLocaleString("vi-VN")} VNĐ`} />
+            <Bar dataKey="revenue" fill="url(#colorRevenue)" radius={[8, 8, 0, 0]} />
+            <defs>
+              <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#6366f1" stopOpacity={0.9} />
+                <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.7} />
+              </linearGradient>
+            </defs>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
-  ))}
+  </main>
+
+  {/* Loading Modal */}
+  {loading && <LoadingModal />}
 </div>
 
 
-        <div className="row">
-  <h4 className="fw-bold mb-3">Biểu đồ thống kê</h4>
-
-  {/* Pie Chart: Đăng ký gửi xe */}
-  <div className="col-md-6 col-lg-3 mb-4">
-    <h6 className="text-center">Gửi xe</h6>
-    <ResponsiveContainer width="100%" height={250}>
-      <PieChart>
-        <Pie
-          data={[
-            { name: 'Đã duyệt', value: stats.parking.approved },
-            { name: 'Chờ duyệt', value: stats.parking.pending },
-            { name: 'Từ chối', value: stats.parking.rejected }
-          ]}
-          dataKey="value"
-          outerRadius={80}
-          label
-        >
-          <Cell fill="#00C49F" />
-          <Cell fill="#FFBB28" />
-          <Cell fill="#FF4D4F" />
-        </Pie>
-        <Tooltip />
-        <Legend />
-      </PieChart>
-    </ResponsiveContainer>
-  </div>
-
-  {/* Pie Chart: Hóa đơn */}
-  <div className="col-md-6 col-lg-3 mb-4">
-    <h6 className="text-center">Hóa đơn</h6>
-    <ResponsiveContainer width="100%" height={250}>
-      <PieChart>
-        <Pie
-          data={[
-            { name: 'Đã thanh toán', value: stats.fees.paid },
-            { name: 'Chưa thanh toán', value: stats.fees.unpaid }
-          ]}
-          dataKey="value"
-          outerRadius={80}
-          label
-        >
-          <Cell fill="#00C49F" />
-          <Cell fill="#FF4D4F" />
-        </Pie>
-        <Tooltip />
-        <Legend />
-      </PieChart>
-    </ResponsiveContainer>
-  </div>
-
-  {/* Pie Chart: Cư dân */}
-  <div className="col-md-6 col-lg-3 mb-4">
-    <h6 className="text-center">Cư dân</h6>
-    <ResponsiveContainer width="100%" height={250}>
-      <PieChart>
-        <Pie
-          data={[
-            { name: 'Đã xác minh', value: stats.residents.verifiedResidents },
-            { name: 'Từ chối', value: stats.residents.rejectedResidents }
-          ]}
-          dataKey="value"
-          outerRadius={80}
-          label
-        >
-          <Cell fill="#00C49F" />
-          <Cell fill="#FF4D4F" />
-        </Pie>
-        <Tooltip />
-        <Legend />
-      </PieChart>
-    </ResponsiveContainer>
-  </div>
-
-  {/* Pie Chart: Xác minh cư dân */}
-  <div className="col-md-6 col-lg-3 mb-4">
-    <h6 className="text-center">Xác minh cư dân</h6>
-    <ResponsiveContainer width="100%" height={250}>
-      <PieChart>
-        <Pie
-          data={[
-            { name: 'Đã duyệt', value: stats.verifications.approved },
-            { name: 'Chờ duyệt', value: stats.verifications.pending },
-            { name: 'Từ chối', value: stats.verifications.rejected }
-          ]}
-          dataKey="value"
-          outerRadius={80}
-          label
-        >
-          <Cell fill="#00C49F" />
-          <Cell fill="#FFBB28" />
-          <Cell fill="#FF4D4F" />
-        </Pie>
-        <Tooltip />
-        <Legend />
-      </PieChart>
-    </ResponsiveContainer>
-  </div>
-</div>
-<div className="mt-5">
-  <h4 className="fw-bold mb-3">Doanh thu theo tháng</h4>
-  <ResponsiveContainer width="100%" height={300}>
-  <BarChart
-    data={monthlyRevenue.map(item => ({
-      month: item.month,
-      revenue: item.paid + item.unpaid
-    }))}
-    margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
-  >
-    <Tooltip />
-    <Legend />
-    <XAxis dataKey="month" />
-    <YAxis />
-    <Bar dataKey="revenue" fill="#007bff" radius={[4, 4, 0, 0]} />
-  </BarChart>
-</ResponsiveContainer>
-</div>
-
-      </main>
-            {/* Modal loading */}
-{loading && <LoadingModal />}
-    </div>
   );
 };
 

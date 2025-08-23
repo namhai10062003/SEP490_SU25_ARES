@@ -1,9 +1,9 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import ReusableModal from "../../../../components/ReusableModal";
 import Header from "../../../../components/header";
 import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
@@ -17,6 +17,7 @@ const MyContracts = () => {
   const [dateTo, setDateTo] = useState("");
   const [paidStatus, setPaidStatus] = useState({});
   const [isloading, setLoading] = useState(false);
+  const [cancelId, setCancelId] = useState(null);
   const [editForm, setEditForm] = useState({
     startDate: "",
     endDate: "",
@@ -173,36 +174,37 @@ const addDays = (date, days) => {
     }
   };
   // hàm xử lý hủy hợp đồng
-  const handleCancelContract = async (id) => {
-    confirmAlert({
-      title: "Xác nhận huỷ hợp đồng",
-      message: "Bạn có chắc chắn muốn huỷ hợp đồng này?",
-      buttons: [
-        {
-          label: "Huỷ hợp đồng",
-          onClick: async () => {
-            try {
-              const token = localStorage.getItem("token");
-              await axios.patch(`${import.meta.env.VITE_API_URL}/api/contracts/cancel/${id}`, null, {
-                headers: { Authorization: `Bearer ${token}` },
-              });
+  // 👉 Hàm mở modal xác nhận
+  const confirmCancelContract = (id) => {
+    setCancelId(id);
+  };
 
-              toast.success("🗑️ Đã huỷ hợp đồng");
-              setContracts((prev) =>
-                prev.map((c) => (c._id === id ? { ...c, status: "cancelled" } : c))
-              );
-            } catch (err) {
-              console.error(err);
-              toast.error("❌ Lỗi khi huỷ hợp đồng");
-            }
-          },
-        },
-        {
-          label: "Không huỷ",
-          onClick: () => toast.info("⛔ Bạn đã huỷ thao tác"),
-        },
-      ],
-    });
+  // 👉 Hàm xử lý huỷ
+  const handleCancelContract = async () => {
+    if (!cancelId) return;
+    try {
+      setLoading(true);
+
+      const token = localStorage.getItem("token");
+      await axios.patch(
+        `${import.meta.env.VITE_API_URL}/api/contracts/cancel/${cancelId}`,
+        null,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      toast.success("🗑️ Đã huỷ hợp đồng");
+      setContracts((prev) =>
+        prev.map((c) =>
+          c._id === cancelId ? { ...c, status: "cancelled" } : c
+        )
+      );
+      setCancelId(null); // đóng modal
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Lỗi khi huỷ hợp đồng");
+    } finally {
+      setLoading(false);
+    }
   };
   // hàm xử lí thanh toán
   const handlePayment = async (id) => {
@@ -476,14 +478,47 @@ const addDays = (date, days) => {
                         </button>
   
                         {/* HUỶ nếu pending và chưa hết hạn */}
-                        {contract.status === "pending" && !isExpired && (
-                          <button
-                            className="btn btn-outline-danger fw-bold"
-                            onClick={() => handleCancelContract(contract._id)}
-                          >
-                            HUỶ HỢP ĐỒNG
-                          </button>
-                        )}
+                        <>
+      {contracts.map((contract) => (
+        <div key={contract._id} className="d-flex align-items-center gap-3">
+          <span>{contract.name}</span>
+          {/* HUỶ nếu pending và chưa hết hạn */}
+          {contract.status === "pending" && !contract.isExpired && (
+            <button
+              className="btn btn-outline-danger fw-bold"
+              onClick={() => confirmCancelContract(contract._id)}
+            >
+              HUỶ HỢP ĐỒNG
+            </button>
+          )}
+        </div>
+      ))}
+
+      {/* Modal xác nhận */}
+      <ReusableModal
+        show={!!cancelId}
+        onClose={() => setCancelId(null)}
+        title="Xác nhận huỷ hợp đồng"
+        body={<p>Bạn có chắc chắn muốn huỷ hợp đồng này?</p>}
+        footerButtons={[
+          {
+            label: isloading ? "⏳ Đang huỷ..." : "❌ Huỷ hợp đồng",
+            variant: "danger",
+            onClick: handleCancelContract,
+            disabled: isloading,
+          },
+          {
+            label: "Đóng",
+            variant: "secondary",
+            onClick: () => setCancelId(null),
+            disabled: isloading,
+          },
+        ]}
+      />
+
+      {/* Loading overlay */}
+      {isloading && <LoadingModal />}
+    </>
   
                         {/* THANH TOÁN nếu đã được duyệt và chưa thanh toán */}
                         {contract.status === "approved" && contract.paymentStatus === "unpaid" && (

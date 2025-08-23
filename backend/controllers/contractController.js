@@ -496,4 +496,130 @@ export const handleSignatureUpload = async (req, res) => {
   }
 };
 
+// Lấy hợp đồng của landlord
+export const getContractsByLandlord = async (req, res) => {
+  try {
+    const contracts = await Contract.find({
+      landlordId: req.user._id,
+      deletedAt: null, // chỉ lấy hợp đồng chưa xoá
+    })
+      .populate("postId")
+      .populate("userId")
+      .sort({ createdAt: -1 });
 
+    console.log("✅ Hợp đồng tìm được:", contracts.length);
+
+    const now = new Date();
+
+    // Kiểm tra hợp đồng hết hạn
+    const updatedContracts = await Promise.all(
+      contracts.map(async (contract) => {
+        if (
+          contract.status === "approved" &&
+          new Date(contract.endDate) < now
+        ) {
+          contract.status = "expired";
+          await contract.save();
+        }
+        return contract;
+      })
+    );
+
+    res.json({ data: updatedContracts });
+  } catch (err) {
+    console.error("❌ Lỗi backend:", err);
+    res.status(500).json({ message: "Lỗi khi lấy hợp đồng của chủ nhà" });
+  }
+};
+// Kiểm tra bài post đã có hợp đồng thanh toán chưa
+export const checkPostHasPaidContract = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    const hasPaid = await Contract.exists({
+      postId,
+      $or: [{ paymentStatus: "paid" }, { hasPaid: true }],
+    });
+
+    res.json({ hasPaid: !!hasPaid });
+  } catch (err) {
+    res.status(500).json({ error: true, message: err.message });
+  }
+};
+// Lấy hợp đồng theo userId (người thuê)
+export const getContractsByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const contracts = await Contract.find({ userId })
+      .sort({ startDate: -1 });
+
+    res.json({ success: true, data: contracts });
+  } catch (err) {
+    console.error("❌ Lỗi lấy hợp đồng:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+// Hủy hợp đồng (chỉ khi đang pending)
+export const cancelContract = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const contract = await Contract.findById(id);
+    if (!contract) {
+      return res.status(404).json({ message: "Không tìm thấy hợp đồng." });
+    }
+
+    if (contract.status !== "pending") {
+      return res.status(400).json({
+        message: "Chỉ có thể huỷ hợp đồng khi đang chờ duyệt.",
+      });
+    }
+
+    contract.status = "cancelled";
+    await contract.save();
+
+    res.json({ message: "Đã huỷ hợp đồng thành công.", contract });
+  } catch (err) {
+    console.error("❌ Lỗi khi huỷ hợp đồng:", err);
+    res.status(500).json({ message: "Lỗi server khi huỷ hợp đồng." });
+  }
+};
+// Lấy hợp đồng theo postId (ưu tiên paid, nếu không thì lấy approved gần nhất)
+export const getContractByPost = async (req, res) => {
+  try {
+    const { postId } = req.params;
+
+    // 1️⃣ Kiểm tra hợp đồng đã thanh toán
+    const paidContract = await Contract.findOne({
+      postId,
+      paymentStatus: "paid",
+    }).sort({ createdAt: -1 });
+
+    if (paidContract) {
+      return res.json({
+        success: true,
+        data: paidContract,
+        message: "Đã có người thanh toán cho bài đăng này",
+      });
+    }
+
+    // 2️⃣ Nếu chưa có paid, tìm hợp đồng approved gần nhất
+    const approvedContract = await Contract.findOne({
+      postId,
+      status: "approved",
+    }).sort({ createdAt: -1 });
+
+    if (!approvedContract) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy hợp đồng khả dụng cho bài đăng này",
+      });
+    }
+
+    res.json({ success: true, data: approvedContract });
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy hợp đồng theo postId:", err);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};

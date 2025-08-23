@@ -1002,4 +1002,27 @@ export const countPostsByUser = async (req, res) => {
     });
   }
 };
+// Xóa ảnh trong bài viết
+export const deletePostImage = async (req, res) => {
+  const { postId } = req.params;
+  const { imageUrl } = req.body;
 
+  try {
+    if (!postId) {
+      return res.status(400).json({ message: "Thiếu postId" });
+    }
+
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Xóa ảnh
+    post.images = post.images.filter((img) => img !== imageUrl);
+
+    await post.save();
+    res.json({ message: "Xóa ảnh thành công", images: post.images });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server", error: err.message });
+  }
+};
