@@ -139,32 +139,34 @@ export const unBlockUserFromPosting = async (req, res) => {
     user.status = 1;
     await user.save();
 
+    const notificationMessage = 'Tài khoản của bạn đã được mở chặn đăng bài.';
+    // tạo Notification (id cần, message:"abc")
     const newNotification = await Notification.create({
       userId: user._id,
-      message: 'Tài khoản của bạn đã được mở chặn đăng bài.'
+      message: notificationMessage
     });
-    // --- SOCKET.IO NOTIFICATION ---
+    // --- Gọi socket ---
+    // hàm socket trong socket helper(id cần, sự kiện), sự kiện đang để tất cả là newNotification
     emitNotification(user._id, newNotification);
-    emitToUser(user._id, "newNotification", { message });
-    // --- SEND EMAIL & SMS NOTIFICATION ---
+    // --- send email và sms nếu cần ---
     if (user.email) {
       await sendEmailNotification({
         to: user.email,
         subject: "Thông báo mở chặn đăng bài",
-        text: "Tài khoản của bạn đã được mở chặn đăng bài.",
-        html: "<b>Tài khoản của bạn đã được mở chặn đăng bài.</b>"
+        text: notificationMessage,
+        html: "<b>" + notificationMessage + "</b>"
       });
     }
     if (user.phone) {
       await sendSMSNotification({
         to: user.phone,
-        body: "[ARES] Tài khoản của bạn đã được mở chặn đăng bài."
+        body: "[ARES] " + notificationMessage
       });
     }
     // --- END EMAIL & SMS NOTIFICATION ---
     res.json(user);
   } catch (err) {
-    res.status(500).json({ error: "Server error", message: err.message });
+    res.status(500).json({ error: "Server error", message: "message is not defined" });
   }
 };
 
@@ -317,14 +319,14 @@ export const updateProfile = async (req, res) => {
     }
 
     console.log("=== Thông tin người dùng hiện tại ===", currentUser);
-    
- // 🔹 Validate trùng số điện thoại (nếu có gửi phone)
-  if (phone) {
-    const phoneExists = await User.findOne({ phone, _id: { $ne: userId }, deletedAt: null });
-    if (phoneExists) {
-      return res.status(400).json({ message: "Số điện thoại đã tồn tại!" });
+
+    // 🔹 Validate trùng số điện thoại (nếu có gửi phone)
+    if (phone) {
+      const phoneExists = await User.findOne({ phone, _id: { $ne: userId }, deletedAt: null });
+      if (phoneExists) {
+        return res.status(400).json({ message: "Số điện thoại đã tồn tại!" });
+      }
     }
-  }
     const updateData = {};
     if (name !== undefined) updateData.name = name;
     if (phone !== undefined) updateData.phone = phone;
@@ -377,6 +379,18 @@ export const updateProfile = async (req, res) => {
         newCccdFrontImage: cccdFrontImage,
         newCccdBackImage: cccdBackImage,
       });
+
+      // 🔔 Tạo thông báo cho user: đã gửi yêu cầu cập nhật nhạy cảm, chờ admin duyệt
+      await Notification.create({
+        userId: userId,
+        message: "Bạn đã gửi yêu cầu cập nhật thông tin nhạy cảm (CCCD/ảnh). Vui lòng chờ admin duyệt.",
+        type: "profile_update_request",
+      });
+
+      // 🔔 Tạo thông báo cho admin: có yêu cầu cập nhật nhạy cảm mới
+      // Giả sử có role admin, lấy tất cả admin
+      // Không gửi thông báo cho admin ở đây nữa.
+      // Thông báo cho user sẽ được gửi khi admin duyệt yêu cầu cập nhật hồ sơ.
     }
 
     if (changedCCCD) {
@@ -387,6 +401,15 @@ export const updateProfile = async (req, res) => {
 
     // ✅ Giải mã trước khi trả về
     updatedUser.identityNumber = safeDecrypt(updatedUser.identityNumber);
+
+    // Nếu là cập nhật thông tin cơ bản (không cần duyệt), tạo thông báo thành công
+    if (!requiresApproval) {
+      await Notification.create({
+        userId: userId,
+        message: "Bạn đã cập nhật thành công thông tin cá nhân.",
+        type: "profile_update_success",
+      });
+    }
 
     return res.status(200).json({
       message: requiresApproval
@@ -400,7 +423,7 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-
+// cần sừa thành 2
 export const getUserProfileById = async (req, res) => {
   try {
     const _id = req.params.id;

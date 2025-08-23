@@ -1,5 +1,5 @@
 import express from "express";
-import { countPostsByUser, createPost, deletePost, deletePostByAdmin, deletePostImage, getAllPosts, getAllPostsNearlyExpire, getApprovedPosts, getPost, getPostApproved, getPostDetail, getPostDetailForAdmin, getPostForGuest, getPostHistories, getPostStats, getPostbyUser, rejectPostByAdmin, startEditingPost, updatePost, updatePostStatusByAdmin, verifyPostByAdmin } from "../controllers/postController.js";
+import { getTop6Posts, countPostsByUser, createPost, deletePost, deletePostByAdmin, deletePostImage, getAllPosts, getAllPostsNearlyExpire, getApprovedPosts, getPost, getPostApproved, getPostDetail, getPostDetailForAdmin, getPostForGuest, getPostHistories, getPostStats, getPostbyUser, rejectPostByAdmin, startEditingPost, updatePost, updatePostStatusByAdmin, verifyPostByAdmin } from "../controllers/postController.js";
 import { upload } from "../db/cloudinary.js";
 import verifyUser from "../middleware/authMiddleware.js";
 import isAdmin from "../middleware/isAdmin.js";
@@ -13,6 +13,7 @@ router.get("/get-post-active", optionalAuth, getPostApproved);
 router.get("/active", verifyUser, getApprovedPosts);
 router.get("/guest/get-post", optionalAuth, getPostForGuest); // 👈 KHÔNG verifyUser
 router.get('/get-nearly-expire-post', verifyUser, getAllPostsNearlyExpire);
+router.get('/get-top-6', getTop6Posts);
 
 //post detail s
 router.get("/postdetail/:id", optionalAuth, getPostDetail);

@@ -213,6 +213,72 @@ export const getAllPostsNearlyExpire = async (req, res) => {
   }
 };
 
+// Lấy căn hộ nổi bật
+export const getTop6Posts = async (req, res) => {
+  try {
+    // Only get posts with type "ban", status "approved", isActive true
+    // Prioritize VIP3 > VIP2 > VIP1 > others (VIP0 or no package)
+    // Only get posts that are not expired
+    const now = new Date();
+
+    // VIP priority mapping
+    const vipPriority = {
+      "VIP3": 1,
+      "VIP2": 2,
+      "VIP1": 3,
+      "VIP0": 4
+    };
+
+    // Find posts
+    let posts = await Post.find({
+      type: "ban",
+      status: "approved",
+      isActive: true,
+      expiredDate: { $exists: true, $gte: now }
+    })
+      .populate("contactInfo", "name email phone address identityNumber userId")
+      .populate("postPackage", "type price expireAt")
+      .sort({ createdAt: -1 }) // fallback sort by newest
+      .lean();
+
+    // Sort by VIP priority
+    posts = posts.sort((a, b) => {
+      const aType = a.postPackage?.type || "VIP0";
+      const bType = b.postPackage?.type || "VIP0";
+      const aPriority = vipPriority[aType] || 5;
+      const bPriority = vipPriority[bType] || 5;
+      if (aPriority !== bPriority) return aPriority - bPriority;
+      // If same VIP, sort by createdAt desc (newest first)
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    // Take top 6
+    const top6 = posts.slice(0, 6);
+
+    if (top6.length === 0) {
+      return res.status(404).json({
+        message: "Không có bài đăng phù hợp.",
+        success: false,
+        error: true
+      });
+    }
+
+    // Format response as required (single object if only 1, else array)
+    return res.status(200).json({
+      message: "Post details retrieved successfully",
+      success: true,
+      error: false,
+      data: top6.length === 1 ? top6[0] : top6
+    });
+  } catch (error) {
+    console.error("Lỗi lấy top 6 bài bán nổi bật:", error);
+    return res.status(500).json({
+      message: "Lỗi server",
+      success: false,
+      error: true
+    });
+  }
+};
 
 // get post ra trang home 
 export const getPostForGuest = async (req, res) => {
@@ -339,7 +405,7 @@ export const getPostApproved = async (req, res) => {
       .populate('contactInfo', 'name email phone')
       .populate('postPackage', 'type price expireAt');
 
-    if (posts.length === 0) {
+    if (!posts || posts.length === 0) {
       return res.status(404).json({
         message: "Không tìm thấy bài viết đã duyệt và đã thanh toán nào",
         success: false,
@@ -347,11 +413,34 @@ export const getPostApproved = async (req, res) => {
       });
     }
 
+    // Ưu tiên theo package: VIP3 > VIP2 > VIP1 > VIP0 (hoặc khác)
+    const packagePriority = {
+      VIP3: 1,
+      VIP2: 2,
+      VIP1: 3,
+      VIP0: 4
+    };
+
+    const sortedPosts = posts.sort((a, b) => {
+      // Lấy type package, mặc định là VIP0 nếu không có
+      const aType = (a.postPackage && a.postPackage.type) ? a.postPackage.type.toUpperCase() : "VIP0";
+      const bType = (b.postPackage && b.postPackage.type) ? b.postPackage.type.toUpperCase() : "VIP0";
+      const aPriority = packagePriority[aType] || 5;
+      const bPriority = packagePriority[bType] || 5;
+      if (aPriority !== bPriority) {
+        return aPriority - bPriority;
+      }
+      // Nếu cùng priority, sort theo paymentDate mới nhất trước (giảm dần)
+      const aDate = a.paymentDate ? new Date(a.paymentDate).getTime() : 0;
+      const bDate = b.paymentDate ? new Date(b.paymentDate).getTime() : 0;
+      return bDate - aDate;
+    });
+
     return res.status(200).json({
       message: "Lấy bài viết đã duyệt và đã thanh toán thành công",
       success: true,
       error: false,
-      data: posts
+      data: sortedPosts
     });
   } catch (error) {
     return res.status(500).json({

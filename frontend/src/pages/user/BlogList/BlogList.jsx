@@ -7,6 +7,7 @@ import Header from "../../../../components/header";
 import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
 import { getPostApproved } from "../../../service/postService";
+import { formatPrice } from "../../../../utils/format";
 const BlogList = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState([]);
@@ -59,10 +60,7 @@ const BlogList = () => {
       const response = await getPostApproved();
       if (response.data.success) {
         const filteredData = response.data.data.filter(post => post.paymentDate);
-        const sorted = filteredData.sort(
-          (a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()
-        );
-        setPosts(sorted);
+        setPosts(filteredData);
       } else {
         setError("Không thể tải dữ liệu bài đăng");
       }
@@ -76,14 +74,17 @@ const BlogList = () => {
 
   const applyFilter = () => {
     let filtered = posts;
-    if (filter.minPrice)
-      filtered = filtered.filter((p) => p.price >= Number(filter.minPrice));
-    if (filter.maxPrice)
-      filtered = filtered.filter((p) => p.price <= Number(filter.maxPrice));
-    if (filter.minArea)
-      filtered = filtered.filter((p) => p.area >= Number(filter.minArea));
-    if (filter.maxArea)
-      filtered = filtered.filter((p) => p.area <= Number(filter.maxArea));
+
+    // Price filtering based on selected range
+    if (filter.minPrice && filter.maxPrice) {
+      filtered = filtered.filter((p) => p.price >= Number(filter.minPrice) && p.price <= Number(filter.maxPrice));
+    }
+
+    // Area filtering based on selected range
+    if (filter.minArea && filter.maxArea) {
+      filtered = filtered.filter((p) => p.area >= Number(filter.minArea) && p.area <= Number(filter.maxArea));
+    }
+
     if (filter.location)
       filtered = filtered.filter((p) =>
         p.location?.toLowerCase().includes(filter.location.toLowerCase())
@@ -92,13 +93,6 @@ const BlogList = () => {
       filtered = filtered.filter((p) => p.type === filter.type);
     setFilteredPosts(filtered);
   };
-
-  const formatPrice = (price) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-      currencyDisplay: "code", // hiển thị VND thay vì ₫
-    }).format(price);
 
   // Pagination logic
   const totalPages = Math.max(1, Math.ceil(filteredPosts.length / postsPerPage));
@@ -201,59 +195,48 @@ const BlogList = () => {
               <div className="col-12 col-lg-3">
                 <div className="card shadow-sm border-0 p-3 mb-3 mb-lg-0">
                   <div className="row g-2 align-items-center">
-                    <div className="col-6 col-lg-12">
-                      <input
-                        type="number"
-                        className="form-control mb-2"
-                        placeholder="Giá từ (VNĐ)"
-                        value={filter.minPrice}
-                        onChange={e => setFilter(f => ({ ...f, minPrice: e.target.value }))}
-                      />
+                    <div className="col-12">
+                      <select
+                        className="form-select mb-2"
+                        value={`${filter.minPrice}-${filter.maxPrice}`}
+                        onChange={e => {
+                          const [min, max] = e.target.value.split('-');
+                          setFilter(f => ({ ...f, minPrice: min, maxPrice: max }));
+                        }}
+                      >
+                        <option value="-">Tất cả giá</option>
+                        <option value="0-500000000">Dưới 500 triệu</option>
+                        <option value="500000000-1000000000">500 triệu - 1 tỷ</option>
+                        <option value="1000000000-1500000000">1 tỷ - 1 tỷ 5</option>
+                        <option value="1500000000-2000000000">1 tỷ 5 - 2 tỷ</option>
+                        <option value="2000000000-999999999999">2 tỷ trở lên</option>
+                      </select>
                     </div>
 
-                    <div className="col-6 col-lg-12">
-                      <input
-                        type="number"
-                        className="form-control mb-2"
-                        placeholder="Đến (VNĐ)"
-                        value={filter.maxPrice}
-                        onChange={e => setFilter(f => ({ ...f, maxPrice: e.target.value }))}
-                      />
+                    <div className="col-12">
+                      <select
+                        className="form-select mb-2"
+                        value={`${filter.minArea}-${filter.maxArea}`}
+                        onChange={e => {
+                          const [min, max] = e.target.value.split('-');
+                          setFilter(f => ({ ...f, minArea: min, maxArea: max }));
+                        }}
+                      >
+                        <option value="-">Tất cả diện tích</option>
+                        <option value="0-50">Dưới 50m²</option>
+                        <option value="50-100">50-100m²</option>
+                        <option value="100-150">100-150m²</option>
+                        <option value="150-999999">Trên 150m²</option>
+                      </select>
                     </div>
-                    <div className="col-6 col-lg-12">
-                      <input
-                        type="number"
-                        className="form-control mb-2"
-                        placeholder="Diện tích từ (m²)"
-                        value={filter.minArea}
-                        onChange={e => setFilter(f => ({ ...f, minArea: e.target.value }))}
-                      />
-                    </div>
-                    <div className="col-6 col-lg-12">
-                      <input
-                        type="number"
-                        className="form-control mb-2"
-                        placeholder="Đến (m²)"
-                        value={filter.maxArea}
-                        onChange={e => setFilter(f => ({ ...f, maxArea: e.target.value }))}
-                      />
-                    </div>
-                    <div className="col-6 col-lg-12">
-                      <input
-                        type="text"
-                        className="form-control mb-2"
-                        placeholder="Vị trí"
-                        value={filter.location}
-                        onChange={e => setFilter(f => ({ ...f, location: e.target.value }))}
-                      />
-                    </div>
-                    <div className="col-6 col-lg-12">
+
+                    <div className="col-12">
                       <select
                         className="form-select mb-2"
                         value={filter.type}
                         onChange={e => setFilter(f => ({ ...f, type: e.target.value }))}
                       >
-                        <option value="all">Tất cả</option>
+                        <option value="all">Tất cả dạng bài đăng</option>
                         <option value="ban">Bán</option>
                         <option value="cho_thue">Cho thuê</option>
                         <option value="dich_vu">Dịch vụ</option>
@@ -275,9 +258,7 @@ const BlogList = () => {
                       >
                         Xoá bộ lọc
                       </button>
-                      <button className="btn btn-light" onClick={() => setShowFilter(false)}>
-                        <FaTimes />
-                      </button>
+
                     </div>
                   </div>
                 </div>
@@ -347,21 +328,18 @@ const BlogList = () => {
                               }}
                               title={post.title}
                             >
+                              {post.type === "ban" && (
+                                <span style={{ color: "#1976d2", fontWeight: 600 }}>Bán: </span>
+                              )}
+                              {post.type === "cho_thue" && (
+                                <span style={{ color: "#43a047", fontWeight: 600 }}>Cho thuê: </span>
+                              )}
+                              {post.type === "dich_vu" && (
+                                <span style={{ color: "#fbc02d", fontWeight: 600 }}>Dịch vụ: </span>
+                              )}
                               {post.title}
-                            </span>
-                            <span
-                              className={`badge flex-shrink-0 ${post.postPackage?.type === "VIP1"
-                                  ? "bg-success"
-                                  : post.postPackage?.type === "VIP2"
-                                    ? "bg-warning text-dark"
-                                    : post.postPackage?.type === "VIP3"
-                                      ? "bg-danger"
-                                      : "bg-primary"
-                                }`}
-                            >
-                              {post.postPackage?.type || "Standard"}
-                            </span>
 
+                            </span>
                           </div>
                           {/* Practical info grid */}
                           <div className="row g-1 small mb-2">
@@ -379,6 +357,8 @@ const BlogList = () => {
                               >
                                 Địa chỉ:
                               </span>
+                              {/* uncomment để check xem nó vip gì  */}
+                              {/* {post.postPackage.type} */}
                               <span
                                 style={{
                                   overflow: "hidden",
@@ -422,9 +402,9 @@ const BlogList = () => {
                             </div>
                             <span
                               className={`badge ${post.type === "ban" ? "bg-danger" :
-                                  post.type === "cho_thue" ? "bg-success" :
-                                    post.type === "dich_vu" ? "bg-info" :
-                                      "bg-secondary"
+                                post.type === "cho_thue" ? "bg-success" :
+                                  post.type === "dich_vu" ? "bg-info" :
+                                    "bg-secondary"
                                 }`}
                             >
                               {post.type === "ban" && "Bán"}
@@ -483,8 +463,8 @@ const BlogList = () => {
             </div>
           </div>
         </div>
-              {/* ✅ Loading toàn màn hình */}
-{isLoading && <LoadingModal />}
+        {/* ✅ Loading toàn màn hình */}
+        {isLoading && <LoadingModal />}
       </div >
       <Footer />
 
