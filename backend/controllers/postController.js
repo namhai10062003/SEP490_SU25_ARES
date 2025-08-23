@@ -214,7 +214,7 @@ export const getAllPostsNearlyExpire = async (req, res) => {
 };
 
 // Lấy căn hộ nổi bật
-export const getTop3Posts = async (req, res) => {
+export const getTop6Posts = async (req, res) => {
   try {
     // Only get posts with type "ban", status "approved", isActive true
     // Prioritize VIP3 > VIP2 > VIP1 > others (VIP0 or no package)
@@ -252,10 +252,10 @@ export const getTop3Posts = async (req, res) => {
       return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
-    // Take top 3
-    const top3 = posts.slice(0, 3);
+    // Take top 6
+    const top6 = posts.slice(0, 6);
 
-    if (top3.length === 0) {
+    if (top6.length === 0) {
       return res.status(404).json({
         message: "Không có bài đăng phù hợp.",
         success: false,
@@ -268,10 +268,10 @@ export const getTop3Posts = async (req, res) => {
       message: "Post details retrieved successfully",
       success: true,
       error: false,
-      data: top3.length === 1 ? top3[0] : top3
+      data: top6.length === 1 ? top6[0] : top6
     });
   } catch (error) {
-    console.error("Lỗi lấy top 3 bài bán nổi bật:", error);
+    console.error("Lỗi lấy top 6 bài bán nổi bật:", error);
     return res.status(500).json({
       message: "Lỗi server",
       success: false,
