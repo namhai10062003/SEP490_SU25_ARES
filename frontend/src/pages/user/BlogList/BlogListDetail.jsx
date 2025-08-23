@@ -605,9 +605,17 @@ const PostDetail = () => {
                       />
                       <div className="card-body d-flex flex-column justify-content-between">
                         <h5 className="card-title">{truncatedTitle}</h5>
-                        <p className="card-text text-muted" style={{ fontSize: "0.9rem" }}>
-                          {truncatedDesc}
-                        </p>
+                        {truncatedDesc.split("\n").map((line, index) => (
+  <span
+    key={index}
+    dangerouslySetInnerHTML={{
+      __html: line.replace(
+        /^([^:]+):/,
+        "<strong style='color:#0d6efd'>$1:</strong>"
+      ) + "<br/>", // thêm xuống dòng nếu muốn
+    }}
+  />
+))}
                         <p className="card-text fw-bold fs-5 text-danger">{formatPrice(rp.price)}</p>
                       </div>
                     </div>
