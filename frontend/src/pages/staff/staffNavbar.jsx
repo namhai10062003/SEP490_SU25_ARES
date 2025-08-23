@@ -7,7 +7,8 @@ const StaffNavbar = () => {
   const isResidentActive =
     location.pathname === "/staff-resident-register" ||
     location.pathname === "/staff-resident-verification" ||
-    location.pathname === "/staff-resident/history"
+    location.pathname === "/staff-resident/history";
+    location.pathname === "/staff-changePassWord";
     ;
 
   const [showResidentSub, setShowResidentSub] = useState(isResidentActive);
@@ -35,14 +36,15 @@ const StaffNavbar = () => {
         zIndex: 100,
       }}
     >
-      <div className="py-4 px-3 border-bottom border-2 border-warning bg-gradient">
-        <h2
-          className="fw-bold mb-0 text-warning text-center"
-          style={{ letterSpacing: 1 }}
-        >
-          BẢN QUẢN LÝ
-        </h2>
-      </div>
+      <div className="py-3 px-3 border-bottom border-2 border-warning bg-gradient">
+  <h4
+    className="fw-bold mb-0 text-warning text-center"
+    style={{ letterSpacing: 1, fontSize: "1.25rem" }} // đồng bộ với h2 trong main
+  >
+    BẢN QUẢN LÝ
+  </h4>
+</div>
+
       <nav className="flex-grow-1">
         <ul className="nav flex-column gap-1 px-2 py-3">
           <li className="nav-item">
@@ -359,6 +361,24 @@ const StaffNavbar = () => {
                 </li>
               </ul>
             </div>
+            <li className="nav-item">
+            <Link
+              to="/staff-changePassWord"
+              className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${
+                location.pathname === "/staff-changePassWord"
+                  ? "active bg-white text-primary fw-bold shadow-sm"
+                  : "text-white"
+              }`}
+              style={{
+                background:
+                  location.pathname === "/staff-changePassWord"
+                    ? "white"
+                    : "transparent",
+              }}
+            >
+              Đổi mật khẩu
+            </Link>
+          </li>
           </li>
 
 

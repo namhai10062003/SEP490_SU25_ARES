@@ -90,10 +90,15 @@ const fetchApartments = async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${API_URL}/api/resident-verifications`);
+      
+      // Lấy danh sách forms từ res.data.data
+      const forms = res.data?.data || [];
+  
       // Sắp xếp mới nhất lên đầu
-      const sorted = (res.data || []).sort(
+      const sorted = forms.sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
+  
       setApplications(sorted);
     } catch (err) {
       console.error(err);
@@ -102,6 +107,7 @@ const fetchApartments = async () => {
       setLoading(false);
     }
   };
+  
   
 
   useEffect(() => {

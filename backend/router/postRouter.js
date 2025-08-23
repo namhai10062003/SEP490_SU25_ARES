@@ -1,10 +1,9 @@
 import express from "express";
-import { countPostsByUser, createPost, deletePost, deletePostByAdmin, getAllPosts, getAllPostsNearlyExpire, getApprovedPosts, getPost, getPostApproved, getPostDetail, getPostDetailForAdmin, getPostForGuest, getPostHistories, getPostStats, getPostbyUser, rejectPostByAdmin, startEditingPost, updatePost, updatePostStatusByAdmin, verifyPostByAdmin } from "../controllers/postController.js";
+import { countPostsByUser, createPost, deletePost, deletePostByAdmin, deletePostImage, getAllPosts, getAllPostsNearlyExpire, getApprovedPosts, getPost, getPostApproved, getPostDetail, getPostDetailForAdmin, getPostForGuest, getPostHistories, getPostStats, getPostbyUser, rejectPostByAdmin, startEditingPost, updatePost, updatePostStatusByAdmin, verifyPostByAdmin } from "../controllers/postController.js";
 import { upload } from "../db/cloudinary.js";
 import verifyUser from "../middleware/authMiddleware.js";
 import isAdmin from "../middleware/isAdmin.js";
 import { optionalAuth } from "../middleware/optionalAuth.js";
-import Post from "../models/Post.js";
 const router = express.Router();
 
 router.post("/create-post", verifyUser, upload.array("images"), createPost);
@@ -34,27 +33,8 @@ router.get("/count/:userId", countPostsByUser);
 // routes/postRoutes.js
 // DELETE /:postId/images
 // routes/postRouter.js
-router.delete("/:postId/images", verifyUser,async (req, res) => {
-  const { postId } = req.params;
-  const { imageUrl } = req.body;
-
-  try {
-    if (!postId) {
-      return res.status(400).json({ message: "Thiếu postId" });
-    }
-
-    const post = await Post.findById(postId);
-    if (!post) return res.status(404).json({ message: "Post not found" });
-
-    // Xóa ảnh
-    post.images = post.images.filter((img) => img !== imageUrl);
-
-    await post.save();
-    res.json({ message: "Xóa ảnh thành công", images: post.images });
-  } catch (err) {
-    res.status(500).json({ message: "Lỗi server", error: err.message });
-  }
-});
+// DELETE /api/posts/:postId/images
+router.delete("/:postId/images", verifyUser, deletePostImage);
 
 
 
