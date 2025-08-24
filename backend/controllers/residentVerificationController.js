@@ -304,9 +304,9 @@ const approveResidentVerification = async (req, res) => {
     if (application.status === "Đã từ chối")
       return res.status(400).json({ error: "Đơn này đã bị từ chối, không thể duyệt." });
 
-      // 🔥 lấy fresh doc luôn từ _id
+    // 🔥 lấy fresh doc luôn từ _id
     const apartment = await Apartment.findById(application.apartment);
-      if (!apartment) return res.status(404).json({ error: "Không tìm thấy căn hộ" });
+    if (!apartment) return res.status(404).json({ error: "Không tìm thấy căn hộ" });
 
     const user = await User.findById(application.user);
     if (!user) return res.status(404).json({ error: "Không tìm thấy người dùng" });
@@ -522,11 +522,20 @@ const cancelResidentVerification = async (req, res) => {
 
     verification.status = "Đã hủy bỏ";
     await verification.save();
-
+    if (verification.user) {
+      const user = await User.findById(verification.user);
+      if (user) {
+        await Notification.create({
+          userId: user._id,
+          message: `Đơn xác nhận cư dân ${verification._id} ${verification.apartmentCode || "Không rõ căn hộ"} của bạn đã bị hủy.`,
+        });
+      }
+    }
     return res.status(200).json({
       message: "Hủy đơn xác minh thành công",
       apartment: updatedApartment,
     });
+
   } catch (error) {
     console.error("❌ Lỗi huỷ đơn xác minh:", error);
     return res.status(500).json({ error: "Lỗi server khi huỷ đơn" });
