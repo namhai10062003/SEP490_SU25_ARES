@@ -40,26 +40,29 @@ export const getApartments = async (req, res) => {
 
 export const submitVerification = async (req, res) => {
   try {
-    console.log("==== SUBMIT VERIFICATION ====");
-    console.log("req.body:", req.body);
     const data = req.body;
-    console.log("data.userId:", data.userId);
     const imageUrls = req.files?.map(file => file.path);
-    console.log(imageUrls);
+
+    // 🔎 tìm apartment theo apartmentCode
+    const apartment = await Apartment.findOne({ apartmentCode: data.apartmentCode });
+    if (!apartment) {
+      return res.status(404).json({ message: "Apartment not found" });
+    }
 
     const newVerification = new ResidentVerification({
       user: data.user,
       fullName: data.fullName,
       email: data.email,
       phone: data.phone,
-      apartmentCode: data.apartmentCode,
+      apartmentCode: data.apartmentCode, // để frontend hiển thị
+      apartment: apartment._id,          // 💡 lưu luôn _id để sau này cancel dễ
       documentType: data.documentType,
       contractStart: data.contractStart,
       contractEnd: data.contractEnd,
       documentImage: imageUrls
     });
+
     await newVerification.save();
-    console.log(newVerification);
 
     res.status(201).json({
       message: "Verification request created",
@@ -68,10 +71,11 @@ export const submitVerification = async (req, res) => {
       data: newVerification,
     });
   } catch (err) {
-    console.error("❌ Lỗi trong submitVerification:", err); // Log toàn bộ lỗi
-    res.status(500).json({ error: err.message, detail: err });
+    console.error("❌ Lỗi trong submitVerification:", err);
+    res.status(500).json({ error: err.message });
   }
 };
+
 
 // const getAllResidentVerifications = async (req, res) => {
 //   try {
@@ -300,8 +304,9 @@ const approveResidentVerification = async (req, res) => {
     if (application.status === "Đã từ chối")
       return res.status(400).json({ error: "Đơn này đã bị từ chối, không thể duyệt." });
 
-    const apartment = await Apartment.findOne({ apartmentCode: application.apartmentCode });
-    if (!apartment) return res.status(404).json({ error: "Không tìm thấy căn hộ" });
+      // 🔥 lấy fresh doc luôn từ _id
+    const apartment = await Apartment.findById(application.apartment);
+      if (!apartment) return res.status(404).json({ error: "Không tìm thấy căn hộ" });
 
     const user = await User.findById(application.user);
     if (!user) return res.status(404).json({ error: "Không tìm thấy người dùng" });
@@ -340,9 +345,9 @@ const approveResidentVerification = async (req, res) => {
     if (application.documentType === "Hợp đồng mua bán" || application.documentType === "ownership" || application.documentType === 'Giấy chủ quyền')
     // ADDED CHECK: nếu đã có owner khác (không phải applicant) thì không duyệt
     {
-      if (apartment.isOwner && apartment.isOwner.toString() !== user._id.toString()) {
-        return res.status(403).json({ error: "Căn hộ này đã có chủ sở hữu, không thể duyệt thành chủ mới." });
-      }
+      // if (apartment.isOwner && apartment.isOwner.toString() !== user._id.toString()) {
+      //   return res.status(403).json({ error: "Căn hộ này đã có chủ sở hữu, không thể duyệt thành chủ mới." });
+      // }
       apartment.ownerName = application.fullName;
       apartment.ownerPhone = application.phone;
       apartment.isOwner = user._id;
@@ -483,37 +488,55 @@ const rejectResidentVerification = async (req, res) => {
 const cancelResidentVerification = async (req, res) => {
   try {
     const { id } = req.params;
-
-    // Tìm đơn xác minh
     const verification = await ResidentVerification.findById(id);
-    if (!verification) {
-      return res.status(404).json({ error: "Không tìm thấy đơn xác minh" });
-    }
+    if (!verification) return res.status(404).json({ error: "Không tìm thấy đơn xác minh" });
 
-    // Chỉ cho phép hủy nếu đã duyệt
     if (verification.status !== "Đã duyệt") {
       return res.status(400).json({ error: "Chỉ có thể hủy đơn đã được duyệt" });
     }
 
-    // Nếu đơn này liên kết với một căn hộ, cập nhật trạng thái căn hộ
+    let updatedApartment = null;
+
     if (verification.apartment) {
       const apartment = await Apartment.findById(verification.apartment);
+
       if (apartment) {
-        apartment.status = "bỏ trống";
+        if (verification.documentType === "Hợp đồng mua bán") {
+          apartment.status = "đang ở";
+          // nếu có renter thì xoá renter
+          apartment.isRenter = null;
+        }
+
+        if (verification.documentType === "Hợp đồng cho thuê") {
+          apartment.isRenter = null; // 🚀 clear renter
+          apartment.status = apartment.isOwner ? "đang ở" : "bỏ trống";
+        }
+
         await apartment.save();
+
+        updatedApartment = await Apartment.findById(apartment._id)
+          .populate("isOwner", "name phone")
+          .populate("isRenter", "name phone");
       }
     }
 
-    // Cập nhật trạng thái đơn thành cancelled
     verification.status = "Đã hủy bỏ";
     await verification.save();
 
-    return res.status(200).json({ message: "Hủy đơn xác minh thành công" });
+    return res.status(200).json({
+      message: "Hủy đơn xác minh thành công",
+      apartment: updatedApartment,
+    });
   } catch (error) {
-    console.error("Lỗi huỷ đơn xác minh:", error);
+    console.error("❌ Lỗi huỷ đơn xác minh:", error);
     return res.status(500).json({ error: "Lỗi server khi huỷ đơn" });
   }
 };
+
+
+
+
+
 // hàm hủy cho staff
 const cancelPendingVerification = async (req, res) => {
   try {
