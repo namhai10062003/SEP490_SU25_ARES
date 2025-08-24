@@ -1,131 +1,231 @@
+
 import axios from "axios";
-import DOMPurify from "dompurify";
 import React, { useEffect, useRef, useState } from "react";
+import $ from "jquery";
+import "fullpage.js";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import "fullpage.js/dist/jquery.fullpage.min.css";
+import DOMPurify from "dompurify";
 import { Button } from "react-bootstrap";
 import { FaCheckCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import Footer from "../../components/footer";
 import Header from "../../components/header";
-// import getBadgeColorForPackage from "../../utils/format.jsx"
+import Footer from "../../components/footer";
 import ReusableModal from "../../components/ReusableModal.jsx";
 import { useAuth } from "../../context/authContext";
+import CountUp from "react-countup";
 
-const CountUpOnView = ({ end, duration = 2000 }) => {
-  const [count, setCount] = useState(0);
-  const ref = useRef();
-  const started = useRef(false);
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!ref.current) return;
-      const rect = ref.current.getBoundingClientRect();
-      if (rect.top < window.innerHeight && !started.current) {
-        started.current = true;
-        let start = 0;
-        const increment = end / (duration / 16);
-        const step = () => {
-          start += increment;
-          if (start < end) {
-            setCount(Math.floor(start));
-            requestAnimationFrame(step);
-          } else {
-            setCount(end);
-          }
-        };
-        requestAnimationFrame(step);
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [end, duration]);
-  return <span ref={ref}>{count}</span>;
-};
+const HeroSection = ({ postStats }) => (
+  <div
+    className="hero-section d-flex flex-column align-items-center justify-content-center text-center position-relative"
+    style={{
+      backgroundImage: `url(/src/pages/images/banner.webp)`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      minHeight: "100vh",
+      color: "#fff", // Make all text white by default
+    }}
+  >
+    {/* Overlay */}
+    <div
+      className="position-absolute top-0 start-0 w-100 h-100"
+      style={{
+        background: "linear-gradient(120deg, rgba(0,0,0,0.7) 60%, rgba(0,0,0,0.2) 100%)",
+        zIndex: 1,
+      }}
+    ></div>
 
-
-const HeroSection = ({ user, logout }) => (
-  <section className="position-relative overflow-hidden hero-section">
-    <img src="/images/banner.jpg" alt="Banner" className="w-100 hero-bg" />
-    <div className="position-absolute top-0 start-0 w-100 h-100 hero-overlay"></div>
-    <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-center">
-      <div className="text-white px-3 hero-text">
-        <h1 className="fw-bold mb-3 hero-title">Căn hộ mơ ước của bạn</h1>
-        <p className="lead mb-4 hero-desc">
-          Hệ thống cho thuê & mua bán căn hộ hiện đại, uy tín tại FPT City
-        </p>
-        <div className="d-flex flex-wrap justify-content-center gap-3 mt-4">
-          <a href="/blog" className="btn btn-primary px-5 py-3 rounded-pill fw-bold shadow hero-btn">🔍 Khám phá dự án</a>
-          <a href="/contact" className="btn btn-secondary px-5 py-3 rounded-pill fw-bold hero-contact-btn">📞 Liên hệ tư vấn</a>
-        </div>
+    {/* Content */}
+    <div className="position-relative w-100" style={{ zIndex: 2, maxWidth: 1200, margin: "0 auto", color: "#fff" }}>
+      <h1
+        className="fw-bold mb-3"
+        style={{
+          fontSize: "3.2rem",
+          textShadow: "0 4px 24px rgba(0,0,0,0.85)",
+          letterSpacing: 1,
+          color: "#fff",
+        }}
+      >
+        Căn hộ mơ ước của bạn
+      </h1>
+      <p
+        className="lead mb-4"
+        style={{
+          fontSize: "1.25rem",
+          maxWidth: 700,
+          margin: "0 auto",
+          textShadow: "0 2px 10px rgba(0,0,0,0.7)",
+          color: "#fff",
+        }}
+      >
+        Hệ thống cho thuê & mua bán căn hộ hiện đại, uy tín tại FPT City
+      </p>
+      <div className="d-flex flex-wrap justify-content-center gap-3 mt-4 mb-5">
+        <a
+          href="/blog"
+          className="btn btn-primary px-5 py-3 rounded-pill fw-bold shadow"
+          style={{ fontSize: "1.1rem", minWidth: 180, color: "#fff" }}
+        >
+          🔍 Khám phá dự án
+        </a>
+        <a
+          href="/contact"
+          className="btn btn-outline-light px-5 py-3 rounded-pill fw-bold"
+          style={{ fontSize: "1.1rem", minWidth: 180, borderWidth: 2, color: "#fff" }}
+        >
+          📞 Liên hệ tư vấn
+        </a>
       </div>
-    </div>
-  </section>
-);
-
-const StatisticsSection = ({ postStats }) => (
-  <section className="container py-5">
-    <div className="row g-4 justify-content-center">
-      <div className="col-12 col-md-4">
-        <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-          <div className="fs-4 fw-bold text-dark mb-3">Tin đăng bán</div>
-          <div className="display-3 fw-bold text-warning">
-            <CountUpOnView end={postStats?.data?.forSale ?? 0} duration={2} />
-          </div>
-        </div>
-      </div>
-      <div className="col-12 col-md-4">
-        <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-          <div className="fs-4 fw-bold text-dark mb-3">Tin cho thuê</div>
-          <div className="display-3 fw-bold text-warning">
-            <CountUpOnView end={postStats?.data?.forRent ?? 0} duration={2} />
-          </div>
-        </div>
-      </div>
-      <div className="col-12 col-md-4">
-        <div className="bg-white rounded-4 shadow-lg py-5 h-100 d-flex flex-column align-items-center justify-content-center">
-          <div className="fs-4 fw-bold text-dark mb-3">Tin dịch vụ</div>
-          <div className="display-3 fw-bold text-warning">
-            <CountUpOnView end={postStats?.data?.saleAndRent ?? 0} duration={2} />
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-);
-
-const PlazasSection = ({ plazas, navigate }) => (
-  <section className="container py-5">
-    <h2 className="fw-bold text-uppercase mb-4 text-center">Dự án nổi bật</h2>
-    <div className="row g-4">
-      {plazas.map((p) => (
-        <div className="col-12 col-sm-6 col-lg-4" key={p._id}>
-          <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
-            <div className="ratio ratio-16x9">
-              <img src={p.img} className="rounded-top" alt={p.name} style={{ objectFit: "cover" }} />
+      <div className="d-flex justify-content-center w-100">
+        <div className="row g-4 justify-content-center w-100" style={{ maxWidth: 900 }}>
+          <div className="col-12 col-md-4">
+            <div
+              className="rounded-4 shadow-lg py-4 px-2 h-100 d-flex flex-column align-items-center justify-content-center"
+              style={{
+                background: "#fff",
+                minHeight: 160,
+                border: "2px solid #f5f5f5",
+                transition: "box-shadow 0.2s",
+                color: "#333", // Make card text dark for contrast
+              }}
+            >
+              <div className="fs-5 fw-semibold text-secondary mb-2" style={{ letterSpacing: 0.5, color: "#333" }}>Tin đăng bán</div>
+              <div
+                className="fw-bold"
+                style={{
+                  fontSize: "3.2rem",
+                  color: "#ff9800",
+                  lineHeight: 1,
+                  textShadow: "0 2px 10px rgba(255,152,0,0.15)",
+                }}
+              >
+                <CountUp end={postStats?.forSale ?? 0} duration={2.5} />
+              </div>
             </div>
-            <div className="card-body bg-white">
-              <h5 className="card-title fw-bold text-dark">{p.name}</h5>
-              <p className="text-muted mb-2">
-                <i className="fa fa-map-marker-alt me-2 text-warning"></i>{p.location}
-              </p>
-              <div className="d-flex justify-content-center">
-                <button className="btn btn-outline-warning btn-sm" onClick={() => navigate(`/plaza/${p._id}`)}>Chi tiết</button>
+          </div>
+          <div className="col-12 col-md-4">
+            <div
+              className="rounded-4 shadow-lg py-4 px-2 h-100 d-flex flex-column align-items-center justify-content-center"
+              style={{
+                background: "#fff",
+                minHeight: 160,
+                border: "2px solid #f5f5f5",
+                transition: "box-shadow 0.2s",
+                color: "#333",
+              }}
+            >
+              <div className="fs-5 fw-semibold text-secondary mb-2" style={{ letterSpacing: 0.5, color: "#333" }}>Tin cho thuê</div>
+              <div
+                className="fw-bold"
+                style={{
+                  fontSize: "3.2rem",
+                  color: "#1976d2",
+                  lineHeight: 1,
+                  textShadow: "0 2px 10px rgba(25,118,210,0.15)",
+                }}
+              >
+                <CountUp end={postStats?.forRent ?? 0} duration={2.5} />
+              </div>
+            </div>
+          </div>
+          <div className="col-12 col-md-4">
+            <div
+              className="rounded-4 shadow-lg py-4 px-2 h-100 d-flex flex-column align-items-center justify-content-center"
+              style={{
+                background: "#fff",
+                minHeight: 160,
+                border: "2px solid #f5f5f5",
+                transition: "box-shadow 0.2s",
+                color: "#333",
+              }}
+            >
+              <div className="fs-5 fw-semibold text-secondary mb-2" style={{ letterSpacing: 0.5, color: "#333" }}>Tin dịch vụ</div>
+              <div
+                className="fw-bold"
+                style={{
+                  fontSize: "3.2rem",
+                  color: "#1565c0",
+                  lineHeight: 1,
+                  textShadow: "0 2px 10px rgba(21,101,192,0.15)",
+                }}
+              >
+                <CountUp end={postStats?.saleAndRent ?? 0} duration={2.5} />
               </div>
             </div>
           </div>
         </div>
-      ))}
+      </div>
     </div>
-  </section>
+  </div>
 );
 
-const FeaturedApartmentsSection = ({ posts, handleViewDetail, listRef }) => {
+// Fix: Use correct keys from postStats (res.data is an object with keys: forSale, forRent, saleAndRent)
+
+
+const PlazasSection = ({ plazas, navigate }) => {
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    arrows: true,
+    responsive: [
+      { breakpoint: 992, settings: { slidesToShow: 2 } },
+      { breakpoint: 600, settings: { slidesToShow: 1 } }
+    ]
+  };
   return (
-    <section className="container py-5" ref={listRef}>
-      <h2 className="fw-bold text-uppercase mb-4 text-center">Căn hộ nổi bật</h2>
-      <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
-        {posts.map((post) => (
-          <div className="col" key={post._id}>
+    <div className="container py-5">
+      <h2 className="fw-bold text-uppercase mb-4 text-center">Dự án nổi bật</h2>
+      <Slider {...sliderSettings}>
+        {plazas.map((p) => (
+          <div key={p._id} className="px-2">
             <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
+              <div className="ratio ratio-16x9">
+                <img src={p.img} className="rounded-top" alt={p.name} style={{ objectFit: "cover" }} />
+              </div>
+              <div className="card-body bg-white">
+                <h5 className="card-title fw-bold text-dark">{p.name}</h5>
+                <p className="text-muted mb-2">
+                  <i className="fa fa-map-marker-alt me-2 text-warning"></i>{p.location}
+                </p>
+                <div className="d-flex justify-content-center">
+                  <button className="btn btn-outline-warning btn-sm" onClick={() => navigate(`/plaza/${p._id}`)}>Chi tiết</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </Slider>
+    </div>
+  );
+};
+
+// Rewrite: Use react-slick for FeaturedApartmentsSection
+const FeaturedApartmentsSection = ({ posts, handleViewDetail, listRef }) => {
+  const slidesToShow = Math.min(posts.length, 3);
+  const sliderSettings = {
+    dots: posts.length > 3,
+    infinite: posts.length > 3,
+    speed: 500,
+    slidesToShow,
+    slidesToScroll: 1,
+    arrows: posts.length > 3,
+    responsive: [
+      { breakpoint: 992, settings: { slidesToShow: Math.min(posts.length, 2) } },
+      { breakpoint: 600, settings: { slidesToShow: 1 } }
+    ]
+  };
+  return (
+    <div className="container py-5" ref={listRef}>
+      <h2 className="fw-bold text-uppercase mb-4 text-center">Căn hộ nổi bật</h2>
+      <Slider {...sliderSettings}>
+        {posts.map((post) => (
+          <div key={post._id} style={{ display: 'flex', justifyContent: 'center' }}>
+            <div className="card border-0 shadow rounded-4 h-100 overflow-hidden" style={{ maxWidth: 450, width: '100%', margin: '0 auto' }}>
               <div className="position-relative">
                 <img src={post.images[0]} className="card-img-top" alt={post.title} style={{ height: 200, objectFit: "cover" }} />
                 <span className={`position-absolute top-0 start-0 m-2 px-3 py-1 rounded-pill shadow-lg border border-white ${post.type === "ban"
@@ -139,9 +239,6 @@ const FeaturedApartmentsSection = ({ posts, handleViewDetail, listRef }) => {
                       ? "💼 Cho thuê"
                       : "🛠️ Dịch vụ"}
                 </span>
-                {/* <span className={`${getBadgeColorForPackage(post.postPackage?.type)} position-absolute top-0 end-0 m-2 px-3 py-1 rounded-pill shadow-lg border border-white text-white`} style={{ fontSize: "0.75rem", fontWeight: 700, letterSpacing: 0.5 }}>
-                  {post.postPackage?.type?.toUpperCase() || "KHÔNG GÓI"}
-                </span> */}
               </div>
               <div className="card-body d-flex flex-column bg-white">
                 <h5 className="card-title fw-bold">{post.title}</h5>
@@ -178,13 +275,13 @@ const FeaturedApartmentsSection = ({ posts, handleViewDetail, listRef }) => {
             </div>
           </div>
         ))}
-      </div>
-    </section>
+      </Slider>
+    </div>
   );
 };
 
-const InfoBanner = () => (
-  <section className="my-5">
+const InfoBannerSection = () => (
+  <div className="my-5">
     <div className="container">
       <div className="row align-items-center bg-white rounded-4 shadow p-4">
         <div className="col-md-6 mb-3 mb-md-0">
@@ -201,7 +298,7 @@ const InfoBanner = () => (
         </div>
       </div>
     </div>
-  </section>
+  </div>
 );
 
 const Home = () => {
@@ -214,45 +311,66 @@ const Home = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [postStats, setPostStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch all data in parallel, then init fullPage.js
   useEffect(() => {
-    const fetchPostStats = async () => {
-      try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/posts/stats`);
-        setPostStats(res.data);
-      } catch (error) {
-        console.error("Lỗi khi fetch postStats:", error);
+    let isMounted = true;
+    setLoading(true);
+    const token = localStorage.getItem("token");
+    Promise.all([
+      axios.get(`${import.meta.env.VITE_API_URL}/api/posts/stats`),
+      axios.get(`${import.meta.env.VITE_API_URL}/api/plaza`),
+      axios.get(`${import.meta.env.VITE_API_URL}/api/posts/get-top-6`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+    ]).then(([statsRes, plazasRes, postsRes]) => {
+      if (!isMounted) return;
+      setPostStats(statsRes.data.data);
+      setPlazas(plazasRes.data.data);
+      setPosts(postsRes.data.data);
+      setLoading(false);
+    }).catch((err) => {
+      if (!isMounted) return;
+      setLoading(false);
+      // Optionally handle error UI
+      console.error('Error loading home data:', err);
+    });
+    return () => { isMounted = false; };
+  }, []);
+
+  // Only init fullPage.js after data is loaded
+  useEffect(() => {
+    if (loading) return;
+    if (window.$ === undefined) window.$ = $;
+    $("#fullpage").fullpage({
+      navigation: true,
+      scrollingSpeed: 350, // Faster, snappier scroll
+      easingcss3: "ease",
+      fitToSectionDelay: 300,
+      anchors: ["hero", "plazas", "featured", "info", "footer"],
+      fitToSection: true,
+      scrollBar: false,
+      scrollOverflow: true,
+      scrollOverflowReset: true,
+      scrollOverflowOptions: {
+        scrollbars: true,
+        mouseWheel: true,
+        hideScrollbars: false,
+        fadeScrollbars: false,
+        disableMouse: false
       }
+    });
+    return () => {
+      if ($.fn.fullpage.destroy) $.fn.fullpage.destroy("all");
     };
-    fetchPostStats();
-  }, []);
-
-  useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL}/api/plaza`)
-      .then(res => setPlazas(res.data.data))
-      .catch(err => console.error(err));
-  }, []);
+  }, [loading]);
 
   useEffect(() => {
     if (user && (!user.identityNumber || !user.phone)) {
       setShowUpdateModal(true);
     }
   }, [user]);
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/posts/get-top-3`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setPosts(res.data.data);
-      } catch (err) {
-        console.error("❌ Error fetching posts:", err.response?.data || err.message);
-      }
-    };
-    fetchPosts();
-  }, []);
 
   const handleViewDetail = (postId) => {
     if (!user) {
@@ -267,18 +385,26 @@ const Home = () => {
     navigate("/login", { state: { redirectTo: "/blog" } });
   };
 
+  if (loading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ background: "#f8fafc" }}>
-      <Header user={user} name={user?.name} logout={logout} />
-      <HeroSection user={user} logout={logout} />
-      <StatisticsSection postStats={postStats} />
-      <PlazasSection plazas={plazas} navigate={navigate} />
-      <FeaturedApartmentsSection
-        posts={posts}
-        handleViewDetail={handleViewDetail}
-        listRef={listRef}
-      />
-      <InfoBanner />
+    <div>
+      <Header />
+      <div id="fullpage">
+        <div className="section"> <HeroSection postStats={postStats} /> </div>
+        <div className="section"> <PlazasSection plazas={plazas} navigate={navigate} /> </div>
+        <div className="section"> <FeaturedApartmentsSection posts={posts} handleViewDetail={handleViewDetail} listRef={listRef} /> </div>
+        <div className="section"> <InfoBannerSection /> </div>
+        <div className="section" id="footer-section" style={{ height: "auto" }}> <Footer /> </div>
+      </div>
       <ReusableModal
         show={showModal}
         onClose={() => setShowModal(false)}
@@ -313,7 +439,6 @@ const Home = () => {
           },
         ]}
       />
-      <Footer />
     </div>
   );
 };

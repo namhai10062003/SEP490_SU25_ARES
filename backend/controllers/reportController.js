@@ -1,5 +1,6 @@
 import Post from "../models/Post.js";
 import Report from "../models/Report.js";
+import Notification from "../models/Notification.js";
 
 // controllers/reportController.js
 
@@ -146,6 +147,12 @@ export const updateReportStatus = async (req, res) => {
     await report.save();
 
     console.log("[updateReportStatus] ✅ Cập nhật thành công:", report);
+
+    // Gửi thông báo cho user: Báo cáo của bạn đã được xử lý
+
+
+
+
     res.json({ message: "Cập nhật thành công", data: report });
   } catch (err) {
     console.error("❌ Lỗi cập nhật báo cáo:", err);

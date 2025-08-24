@@ -508,6 +508,17 @@ const cancelResidentVerification = async (req, res) => {
     verification.status = "Đã hủy bỏ";
     await verification.save();
 
+    // Thông báo cho user nếu có
+    if (verification.user) {
+      const user = await User.findById(verification.user);
+      if (user) {
+        await Notification.create({
+          userId: user._id,
+          message: `Đơn xác nhận cư dân ${verification._id} ${verification.apartmentCode || "Không rõ căn hộ"} của bạn đã bị hủy.`,
+        });
+      }
+    }
+
     return res.status(200).json({ message: "Hủy đơn xác minh thành công" });
   } catch (error) {
     console.error("Lỗi huỷ đơn xác minh:", error);

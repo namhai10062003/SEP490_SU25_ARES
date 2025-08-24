@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Contract from "../models/Contract.js";
 import WithdrawRequest from "../models/WithdrawRequest.js";
+import Notification from "../models/Notification.js";
 
 export const createWithdrawRequest = async (req, res) => {
   try {
@@ -139,12 +140,12 @@ export const approveWithdrawRequest = async (req, res) => {
       user: objectUserId,
       status: "approved", // ✅ chỉ tính lệnh đã duyệt
     });
-    
+
     const totalAlreadyWithdrawn = withdrawHistory.reduce(
       (sum, w) => sum + Number(w.amount || 0),
       0
     );
-    
+
 
     // ✅ Tính số tiền còn có thể rút
     const availableToWithdraw = totalDeposits - totalAlreadyWithdrawn;
@@ -160,6 +161,25 @@ export const approveWithdrawRequest = async (req, res) => {
     request.status = "approved";
     request.approvedAt = new Date();
     await request.save();
+
+    // Gửi thông báo cho user
+    try {
+      // Giả sử bạn có Notification model và hàm gửi thông báo
+      // Nếu chưa có, bạn có thể thay thế bằng logic phù hợp
+
+      await Notification.create({
+        userId: request.user, // Đúng với model Notification
+        title: "Yêu cầu rút tiền đã được duyệt",
+        message: "Yêu cầu rút tiền của bạn đã được duyệt. Vui lòng kiểm tra tài khoản ngân hàng.",
+        data: {
+          withdrawRequestId: request._id,
+          amount: request.amount,
+        },
+      });
+    } catch (notifyErr) {
+      console.error("❌ Lỗi gửi thông báo duyệt rút tiền:", notifyErr);
+      // Không trả lỗi cho client, chỉ log
+    }
 
     return res.json({
       message: "✅ Đã duyệt yêu cầu rút tiền",
