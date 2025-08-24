@@ -63,12 +63,25 @@ const getParkingRegistrations = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    const formatted = registrations.map(item => {
+    const formatted = [];
+    for (const item of registrations) {
+      // ✅ Kiểm tra lại xem user còn là renter/owner của apartmentCode này không
+      const apartment = await Apartment.findOne({ apartmentCode: item.apartmentCode });
+
+      if (!apartment) continue; // bỏ qua nếu apartment không tồn tại
+
+      // ❌ Nếu user không còn là owner hoặc renter của căn hộ => bỏ qua
+      const stillValid =
+        (apartment.isOwner && apartment.isOwner.toString() === userId.toString()) ||
+        (apartment.isRenter && apartment.isRenter.toString() === userId.toString());
+
+      if (!stillValid) continue;
+
       let gia = '---';
       if (item.vehicleType === 'ô tô') gia = '800.000VNĐ / tháng';
       else if (item.vehicleType === 'xe máy') gia = '80.000VNĐ / tháng';
 
-      return {
+      formatted.push({
         tênChủSởHữu: item.owner || 'Không rõ',
         loạiXe: item.vehicleType || '---',
         biểnSốXe: item.licensePlate || '---',
@@ -78,15 +91,12 @@ const getParkingRegistrations = async (req, res) => {
           ? item.registerDate.toISOString().split('T')[0]
           : '---',
         trạngThái: item.status || 'Chưa rõ',
-      
-        // ✅ Thêm ảnh trước / sau
         ảnhTrước: item.documentFront || null,
         ảnhSau: item.documentBack || null,
-        lído :item.rejectionReason,
+        lído: item.rejectionReason,
         id: item._id
-      };
-      
-    });
+      });
+    }
 
     return res.status(200).json({
       message: 'Lấy danh sách bãi gửi xe thành công',
@@ -98,6 +108,7 @@ const getParkingRegistrations = async (req, res) => {
     return res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 };
+
 
 
 
