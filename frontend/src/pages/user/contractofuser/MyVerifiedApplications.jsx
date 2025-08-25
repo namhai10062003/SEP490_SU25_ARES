@@ -31,27 +31,28 @@ const MyVerifiedApplications = () => {
         const profileRes = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/users/profile/${user._id}`,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
         setUserData(profileRes.data);
-
+  
         // Lấy danh sách đơn xác thực đã duyệt
         const res = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/resident-verifications`,
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
-
-        const userVerified = res.data.filter(
+  
+        // 🔎 Kiểm tra xem API trả ra cái gì
+        const applications = Array.isArray(res.data)
+          ? res.data
+          : res.data?.data || []; // nếu có field data thì lấy data
+  
+        const userVerified = applications.filter(
           (form) => form.user?._id === user._id && form.status === "Đã duyệt"
         );
-
+  
         setAllApplications(userVerified);
         setApplications(userVerified);
       } catch (err) {
@@ -60,9 +61,10 @@ const MyVerifiedApplications = () => {
         setLoading(false);
       }
     };
-
+  
     fetchVerifiedApplications();
   }, [user, navigate]);
+  
 
   const handleDateFilter = () => {
     const search = searchText.toLowerCase();
