@@ -216,7 +216,7 @@ export const getAllPostsNearlyExpire = async (req, res) => {
 // Lấy căn hộ nổi bật
 export const getTop6Posts = async (req, res) => {
   try {
-    // Only get posts with type "ban", status "approved", isActive true
+    // Only get posts with type "ban", and "cho_thue", status "approved", isActive true
     // Prioritize VIP3 > VIP2 > VIP1 > others (VIP0 or no package)
     // Only get posts that are not expired
     const now = new Date();
@@ -231,7 +231,7 @@ export const getTop6Posts = async (req, res) => {
 
     // Find posts
     let posts = await Post.find({
-      type: "ban",
+      type: { $in: ["ban", "cho_thue"] }, // cho_thue ve ban
       status: "approved",
       isActive: true,
       expiredDate: { $exists: true, $gte: now }
