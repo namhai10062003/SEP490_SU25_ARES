@@ -16,6 +16,7 @@ import Footer from "../../components/footer";
 import ReusableModal from "../../components/ReusableModal.jsx";
 import { useAuth } from "../../context/authContext";
 import CountUp from "react-countup";
+import { formatPrice, formatAddress } from "../../utils/format";
 
 const HeroSection = ({ postStats }) => (
   <div
@@ -205,6 +206,42 @@ const PlazasSection = ({ plazas, navigate }) => {
 };
 
 // Rewrite: Use react-slick for FeaturedApartmentsSection
+const CardImageCarousel = ({ images }) => {
+  const settings = {
+    dots: false,
+    arrows: false,
+    infinite: true,
+    speed: 800,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 2500,
+    pauseOnHover: true,
+    fade: true, // 👈 hiệu ứng fade mượt hơn
+  };
+
+  return (
+    <div style={{ height: "180px", overflow: "hidden" }}>
+      <Slider {...settings}>
+        {images.map((img, idx) => (
+          <img
+            key={idx}
+            src={img}
+            alt=""
+            className="w-100"
+            style={{
+              height: "180px",
+              objectFit: "cover",
+              objectPosition: "center",
+            }}
+          />
+        ))}
+      </Slider>
+    </div>
+  );
+};
+
+
 const FeaturedApartmentsSection = ({ posts, handleViewDetail, listRef }) => {
   const slidesToShow = Math.min(posts.length, 3);
   const sliderSettings = {
@@ -216,23 +253,40 @@ const FeaturedApartmentsSection = ({ posts, handleViewDetail, listRef }) => {
     arrows: posts.length > 3,
     responsive: [
       { breakpoint: 992, settings: { slidesToShow: Math.min(posts.length, 2) } },
-      { breakpoint: 600, settings: { slidesToShow: 1 } }
-    ]
+      { breakpoint: 600, settings: { slidesToShow: 1 } },
+    ],
   };
+  const formatArea = (area) => (area ? `${area}m²` : "-");
+  const getAddress = (post) => formatAddress(post.contactInfo?.address || post.location || "-");
+  const getDescription = (desc) => {
+    if (!desc) return "";
+    const text = DOMPurify.sanitize(desc, { ALLOWED_TAGS: [] })
+      .replace(/\s+/g, " ")
+      .trim();
+    return text.length > 80 ? text.slice(0, 80) + "..." : text;
+  };
+
   return (
-    <div className="container py-5" ref={listRef}>
+    <div className="container py-5 featured-apartments-slider" ref={listRef}>
       <h2 className="fw-bold text-uppercase mb-4 text-center">Căn hộ nổi bật</h2>
       <Slider {...sliderSettings}>
         {posts.map((post) => (
-          <div key={post._id} style={{ display: 'flex', justifyContent: 'center' }}>
-            <div className="card border-0 shadow rounded-4 h-100 overflow-hidden" style={{ maxWidth: 450, width: '100%', margin: '0 auto' }}>
+          <div key={post._id} className="px-2">
+            <div
+              className="card border-0 shadow rounded-4 d-flex flex-column"
+              style={{ minHeight: "200px" }} // Adjusted for single-line changes
+            >
+              {/* Image */}
               <div className="position-relative">
-                <img src={post.images[0]} className="card-img-top" alt={post.title} style={{ height: 200, objectFit: "cover" }} />
-                <span className={`position-absolute top-0 start-0 m-2 px-3 py-1 rounded-pill shadow-lg border border-white ${post.type === "ban"
-                  ? "bg-danger bg-opacity-75"
-                  : post.type === "cho_thue"
-                    ? "bg-primary bg-opacity-75"
-                    : "bg-warning bg-opacity-75"} text-white`} style={{ fontSize: "0.75rem", fontWeight: 600, letterSpacing: 0.5 }}>
+                <CardImageCarousel images={post.images} />
+                <span
+                  className={`position-absolute top-0 start-0 m-2 px-3 py-1 rounded-pill text-white small fw-bold ${post.type === "ban"
+                    ? "bg-danger"
+                    : post.type === "cho_thue"
+                      ? "bg-primary"
+                      : "bg-warning"
+                    }`}
+                >
                   {post.type === "ban"
                     ? "🏠 Bán"
                     : post.type === "cho_thue"
@@ -240,45 +294,81 @@ const FeaturedApartmentsSection = ({ posts, handleViewDetail, listRef }) => {
                       : "🛠️ Dịch vụ"}
                 </span>
               </div>
-              <div className="card-body d-flex flex-column bg-white">
-                <h5 className="card-title fw-bold">{post.title}</h5>
-                <p className="card-text flex-grow-1">{post.address}</p>
-                <div className="card-text" style={{ fontSize: "0.95rem", lineHeight: "1.6", color: "#555", maxHeight: "3.2em", overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                  <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
-                    {post.description &&
-                      DOMPurify.sanitize(post.description, { ALLOWED_TAGS: [] })
-                        .split(/\n+/)
-                        .map((line) => line.trim())
-                        .filter(Boolean)
-                        .slice(0, 2)
-                        .map((line, index) => {
-                          const isSectionTitle = line.startsWith("✨") || /THÔNG TIN/i.test(line);
-                          return (
-                            <li key={index} className={`d-flex align-items-start ${isSectionTitle ? "fw-bold text-primary" : "text-truncate"}`} style={{ gap: "6px" }}>
-                              {isSectionTitle ? (
-                                <span style={{ fontSize: "1rem" }}>✨</span>
-                              ) : (
-                                <FaCheckCircle style={{ color: "#0d6efd", marginTop: "3px", fontSize: "0.9rem", flexShrink: 0 }} />
-                              )}
-                              <span dangerouslySetInnerHTML={{ __html: line.replace(/^([^:]+):/, "<strong style='color:#0d6efd'>$1:</strong>") }} />
-                            </li>
-                          );
-                        })}
-                  </ul>
+
+              {/* Body */}
+              <div className="card-body d-flex flex-column p-3">
+                <h6
+                  className="fw-bold mb-2 text-truncate"
+                  style={{ minHeight: "24px" }}
+                >
+                  {post.title}
+                </h6>
+                <div
+                  className="mb-2 small text-muted text-truncate"
+                  style={{
+                    minHeight: "20px",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  <span>
+                    <i className="fa fa-money-bill-wave text-success me-1"></i>
+                    {formatPrice(post.price)}
+                  </span>
+                  <span className="mx-2">•</span>
+                  <span>
+                    <i className="fa fa-expand text-info me-1"></i>
+                    {formatArea(post.area)}
+                  </span>
+                  <span className="mx-2">•</span>
+                  <span>
+                    <i className="fa fa-couch text-warning me-1"></i>
+                    {post.interiorStatus || "-"}
+                  </span>
                 </div>
-                <div className="d-flex justify-content-center mt-2">
-                  <Button variant="outline-warning" onClick={() => handleViewDetail(post._id)} className="btn-sm px-3 py-1" style={{ fontSize: '0.8rem' }}>
+                <p
+                  className="flex-grow-0 mb-3 text-secondary small text-truncate"
+                  style={{
+                    minHeight: "20px",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  <i className="fa fa-map-marker-alt text-danger me-1"></i>
+                  {getAddress(post)}
+                </p>
+                <p
+                  className="flex-grow-0 mb-3 text-secondary small text-truncate"
+                  style={{
+                    minHeight: "20px",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {getDescription(post.description)}
+                </p>
+                <div className="mt-auto text-center">
+                  <Button
+                    variant="outline-warning"
+                    size="sm"
+                    onClick={() => handleViewDetail(post._id)}
+                  >
                     Chi tiết
                   </Button>
                 </div>
               </div>
             </div>
           </div>
-        ))}
-      </Slider>
-    </div>
+        ))
+        }
+      </Slider >
+    </div >
   );
 };
+
 
 const InfoBannerSection = () => (
   <div className="my-5">
