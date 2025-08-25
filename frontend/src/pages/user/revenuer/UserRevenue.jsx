@@ -492,7 +492,7 @@ const UserRevenue = () => {
                         onClick={() =>
                           setWithdrawForm({
                             ...withdrawForm,
-                            amount: availableToWithdraw.toFixed(2),
+                            amount: availableToWithdraw,
                           })
                         }
                       >

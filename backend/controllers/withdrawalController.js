@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import Contract from "../models/Contract.js";
-import WithdrawRequest from "../models/WithdrawRequest.js";
 import Notification from "../models/Notification.js";
+import WithdrawRequest from "../models/WithdrawRequest.js";
 
 export const createWithdrawRequest = async (req, res) => {
   try {
@@ -233,37 +233,39 @@ export const rejectWithdrawRequest = async (req, res) => {
 // hàm rút tiền để tính giảm tiền
 export const getAvailableWithdrawInfo = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const landlordId = new mongoose.Types.ObjectId(req.user._id);
 
-    const objectUserId = new mongoose.Types.ObjectId(userId);
+    // B1: Lấy các hợp đồng đã thanh toán của landlord
+    const contracts = await Contract.find(
+      { paymentStatus: "paid", landlordId },
+      { withdrawableAmount: 1, depositAmount: 1 } // chỉ lấy field cần
+    );
 
-    // ✅ B1: Lấy tất cả hợp đồng đã thanh toán của landlord
-    const contracts = await Contract.find({
-      paymentStatus: "paid",
-      landlordId: objectUserId,
-    });
-
-    const totalDeposits = contracts.reduce((sum, contract) => {
-      return sum + Number(contract.depositAmount || 0);
+    // 👉 Tổng tiền CÓ THỂ RÚT = tổng withdrawableAmount (fallback về depositAmount nếu thiếu)
+    const totalWithdrawableFromContracts = contracts.reduce((sum, c) => {
+      const v = c.withdrawableAmount ?? c.depositAmount ?? 0;
+      const n = Number(v);
+      return sum + (Number.isFinite(n) ? n : 0);
     }, 0);
 
-    // ✅ B2: Lấy tổng số tiền đã yêu cầu rút (pending và approved)
-    const withdrawRequests = await WithdrawRequest.find({
-      user: objectUserId,
-      status: { $in: ["pending", "approved"] },
-    });
+    // B2: Tổng tiền đã yêu cầu rút (pending + approved) để chống rút trùng
+    const withdrawRequests = await WithdrawRequest.find(
+      { user: landlordId, status: { $in: ["pending", "approved"] } },
+      { amount: 1 }
+    );
 
-    const withdrawnAmount = withdrawRequests.reduce((sum, req) => {
-      return sum + Number(req.amount || 0);
+    const withdrawnAmount = withdrawRequests.reduce((sum, r) => {
+      const n = Number(r.amount || 0);
+      return sum + (Number.isFinite(n) ? n : 0);
     }, 0);
 
-    // ✅ B3: Tính số tiền có thể rút
-    const availableToWithdraw = Math.max(totalDeposits - withdrawnAmount, 0);
+    // B3: Còn lại có thể rút
+    const availableToWithdraw = Math.max(totalWithdrawableFromContracts - withdrawnAmount, 0);
 
     return res.json({
-      totalDeposits,
-      withdrawnAmount,
-      availableToWithdraw,
+      totalWithdrawableFromContracts, // "Tổng tiền có thể rút"
+      withdrawnAmount,                // "Đã rút" (đã yêu cầu)
+      availableToWithdraw,            // "Còn lại"
     });
   } catch (err) {
     console.error("❌ Lỗi khi tính toán số tiền rút:", err);

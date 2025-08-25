@@ -1,15 +1,15 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { Modal } from "react-bootstrap";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
-
 import Pagination from "../../../components/Pagination.jsx";
 import ReusableModal from "../../../components/ReusableModal.jsx";
+import SearchInput from "../../../components/admin/searchInput.jsx";
 import StatusFilter from "../../../components/admin/statusFilter.jsx";
 import LoadingModal from "../../../components/loadingModal.jsx";
 import { formatDate, formatPhoneNumber, formatPrice } from "../../../utils/format.jsx";
 import AdminDashboard from "./adminDashboard.jsx";
-import SearchInput from "../../../components/admin/searchInput.jsx";
 
 const ManageResidentVerification = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -37,7 +37,18 @@ const ManageResidentVerification = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [show, setShow] = useState(false);
+  const [selectedImg, setSelectedImg] = useState(null);
 
+  const handleShow = (img) => {
+    setSelectedImg(img);
+    setShow(true);
+  };
+
+  const handleClose = () => {
+    setShow(false);
+    setSelectedImg(null);
+  };
   // Update query helper
   const updateQuery = (newParams = {}) => {
     const updated = {
@@ -476,32 +487,53 @@ const ManageResidentVerification = () => {
                   </ul>
 
                   {documentImages.length > 0 && (
-                    <div className="p-3">
-                      <label className="fw-semibold mb-2 d-block">Ảnh hợp đồng:</label>
-                      <div className="d-flex flex-wrap gap-3">
-                        {documentImages.map((img, idx) => (
-                          <img
-                            key={idx}
-                            src={img}
-                            alt={`Hợp đồng ${idx + 1}`}
-                            className="rounded shadow-sm border"
-                            style={{
-                              maxHeight: 200,
-                              maxWidth: 300,
-                              objectFit: "cover",
-                            }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
+        <div className="p-3">
+          <label className="fw-semibold mb-2 d-block">Ảnh hợp đồng:</label>
+          <div className="d-flex flex-wrap gap-3">
+            {documentImages.map((img, idx) => (
+              <img
+                key={idx}
+                src={img}
+                alt={`Hợp đồng ${idx + 1}`}
+                className="rounded shadow-sm border"
+                style={{
+                  maxHeight: 200,
+                  maxWidth: 300,
+                  objectFit: "cover",
+                  cursor: "pointer",
+                }}
+                onClick={() => handleShow(img)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Modal hiển thị ảnh */}
+      <Modal show={show} onHide={handleClose} centered size="lg">
+        <Modal.Body className="text-center">
+          {selectedImg && (
+            <img
+              src={selectedImg}
+              alt="Xem ảnh hợp đồng"
+              style={{ maxWidth: "100%", maxHeight: "80vh" }}
+              className="rounded shadow"
+            />
+          )}
+        </Modal.Body>
+      </Modal>
                 </div>
 
                 {/* Người thuê */}
                 <div className="card border-0 shadow-sm mb-4 rounded-3">
-                  <div className="card-header bg-info text-white fw-bold rounded-top-3">
-                    👤 Người thuê
-                  </div>
+                <div className="card-header bg-info text-white fw-bold rounded-top-3">
+  👤 {selectedApp.documentType === "Hợp đồng cho thuê"
+        ? "Người thuê"
+        : selectedApp.documentType === "Hợp đồng mua bán"
+        ? "Người mua bán"
+        : "Người liên quan"}
+</div>
+
                   <ul className="list-group list-group-flush">
                     {console.log("🔍 selectedApp =", selectedApp)}
                     <li className="list-group-item">
