@@ -64,19 +64,28 @@ const EditHistoryModal = ({ history }) => {
 
   const renderValue = (val, key) => {
     if (!val) return "Không rõ";
-
+  
     if (key === "postPackage") {
       return packageNameMap[val] || val;
     }
-
+  
     const imageFields = ["images", "oldImages"];
     if (imageFields.includes(key)) {
       return renderImage(val, key);
     }
-
+  
+    // ✅ Giải mã HTML cho mô tả
+    if (key === "description") {
+      return (
+        <div
+          style={{ whiteSpace: "pre-wrap" }}
+          dangerouslySetInnerHTML={{ __html: val }}
+        />
+      );
+    }
+  
     return val;
   };
-
   return (
     <>
       <Button variant="outline-primary" onClick={handleShow}>
