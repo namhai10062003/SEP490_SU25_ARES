@@ -203,19 +203,22 @@ const AdminReportPage = () => {
                       </td>
                       <td>{p?.title || "--"}</td>
                       <td
-                        style={{
-                          maxWidth: 220,
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          cursor: "pointer",
-                          color: "#007bff",
-                        }}
-                        title="Click để xem đầy đủ"
-                        onClick={() => setShowFullDesc(p?.description)}
-                      >
-                        {p?.description || "--"}
-                      </td>
+  style={{
+    maxWidth: 220,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    cursor: "pointer",
+    color: "#007bff",
+  }}
+  title="Click để xem đầy đủ"
+  onClick={() => setShowFullDesc(p?.description)}
+>
+  <div
+    dangerouslySetInnerHTML={{ __html: p?.description || "--" }}
+  />
+</td>
+
                       <td>{p?.type || "--"}</td>
                       <td>{p?.property || "--"}</td>
                       <td>{p?.legalDocument || "--"}</td>
@@ -267,40 +270,43 @@ const AdminReportPage = () => {
 
         {/* Modal xem đầy đủ mô tả */}
         {showFullDesc && (
-          <div
-            className="modal fade show"
-            style={{
-              display: "block",
-              background: "rgba(0,0,0,0.5)",
-              position: "fixed",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 1050,
-            }}
+  <div
+    className="modal fade show"
+    style={{
+      display: "block",
+      background: "rgba(0,0,0,0.5)",
+      position: "fixed",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 1050,
+    }}
+    onClick={() => setShowFullDesc(null)}
+  >
+    <div
+      className="modal-dialog modal-dialog-centered"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title">Mô tả bài đăng</h5>
+          <button
+            type="button"
+            className="btn-close"
             onClick={() => setShowFullDesc(null)}
-          >
-            <div
-              className="modal-dialog modal-dialog-centered"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Mô tả bài đăng</h5>
-                  <button
-                    type="button"
-                    className="btn-close"
-                    onClick={() => setShowFullDesc(null)}
-                  ></button>
-                </div>
-                <div className="modal-body">
-                  <p>{showFullDesc}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+          ></button>
+        </div>
+        <div className="modal-body">
+          <div
+            style={{ whiteSpace: "pre-wrap" }}
+            dangerouslySetInnerHTML={{ __html: showFullDesc }}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
         {/* Modal nhập lý do từ chối */}
         {rejectModalOpen && (
