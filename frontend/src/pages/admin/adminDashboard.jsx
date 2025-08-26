@@ -20,11 +20,11 @@ export default function AdminDashboard({ children }) {
 
   const navItems = [
     { to: "/admin-dashboard", label: "Tổng Quan" },
-    { to: "/admin-dashboard/posts", label: "Quản Lý Bài Post" },
-    { to: "/admin-dashboard/manage-notification", label: "Quản lý Notification" },
-    { to: "/admin-dashboard/manage-contract", label: "Quản lý Contract" },
-    { to: "/admin-dashboard/manage-user", label: "Quản Lý User" },
-    { to: "/admin-dashboard/manage-staff", label: "Quản Lý Staff" },
+    { to: "/admin-dashboard/posts", label: "Quản Lý Tin Tức" },
+    { to: "/admin-dashboard/manage-notification", label: "Quản lý Thông Báo" },
+    { to: "/admin-dashboard/manage-contract", label: "Quản lý Hợp Đồng" },
+    { to: "/admin-dashboard/manage-user", label: "Quản Lý Người Dùng" },
+    { to: "/admin-dashboard/manage-staff", label: "Quản Lý Nhân Viên" },
     { to: "/admin-dashboard/manage-apartment", label: "Quản Lý Căn hộ" },
     { to: "/admin-dashboard/manage-resident-verification", label: "Quản Lý Xác Nhận Cư Dân" },
     { to: "/admin-dashboard/user-revenue", label: "Quản Lý Yêu Cầu Rút Tiền" },

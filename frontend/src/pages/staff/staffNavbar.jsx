@@ -61,7 +61,7 @@ const StaffNavbar = () => {
                     : "transparent",
               }}
             >
-              Dashboard
+              Tổng Quát
             </Link>
           </li>
           {/* <li className="nav-item">
