@@ -37,6 +37,8 @@ const getParkingRegistrationAll = async (req, res) => {
         giá: price,
         ngàyĐăngKý: item.registerDate?.toISOString().split('T')[0] || '---',
         trạngThái: item.status || 'Chưa rõ',
+        ảnhmặttrước : item.documentFront,
+        ảnhmặtsau : item.documentBack,
         id: item._id
       };
     });
