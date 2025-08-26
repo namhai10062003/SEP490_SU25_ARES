@@ -91,7 +91,7 @@ const Navbar = () => {
 
       <li className="nav-item mx-2">
         <Link className={getNavClass("/blog")} to="/blog">
-          BLOG
+          TIN TỨC
         </Link>
       </li>
       <li className="nav-item mx-2">
