@@ -110,7 +110,7 @@ const ManageParkingLot = () => {
       });
 
       const responseData = await res.json();
-      console.log(responseData);
+      // console.log(responseData);
       const rawList = Array.isArray(responseData.data) ? responseData.data : [];
 
       const mappedList = rawList
@@ -123,6 +123,8 @@ const ManageParkingLot = () => {
           vehicleType: item['loạiXe'],
           registerDate: item['ngàyĐăngKý'],
           status: item['trạngThái'] || 'pending',
+          documentFront: item["ảnhmặttrước"],
+          documentBack: item["ảnhmặtsau"],
         }));
 
       if (isMountedRef.current) setParkingRequests(mappedList);
@@ -236,59 +238,87 @@ const ManageParkingLot = () => {
                   <th>Biển số</th>
                   <th>Loại xe</th>
                   <th>Ngày đăng ký</th>
+                  <th>Ảnh bằng lái xe mặt trước</th>
+                  <th>Ảnh bằng lái xe mặt sau</th>
                   <th>Hành động</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredRequests.length > 0 ? (
-                  filteredRequests.map((item, idx) => (
-                    <tr key={item._id} style={{ cursor: 'pointer' }} onClick={() => handleRowClick(item._id)}>
-                      <td>{idx + 1}</td>
-                      <td>{item.apartmentCode}</td>
-                      <td>{item.owner}</td>
-                      <td>{item.licensePlate}</td>
-                      <td>{item.vehicleType}</td>
-                      <td>{formatDate(item.registerDate)}</td>
-                      {/* Nút trong bảng */}
-<td>
-  {role === "staff" ? (
-    <div className="d-flex gap-2">
-      {/* Phê duyệt */}
-      <button
-        onClick={async (e) => {
-          e.stopPropagation();
-          setLoading(true); // bật loading
-          await handleStatusChange(item._id, "approve");
-          setLoading(false); // tắt loading
-        }}
-        className="btn btn-success btn-sm"
+  {filteredRequests.length > 0 ? (
+    filteredRequests.map((item, idx) => (
+      <tr
+        key={item._id}
+        style={{ cursor: "pointer" }}
+        onClick={() => handleRowClick(item._id)}
       >
-        Phê duyệt
-      </button>
+        <td>{idx + 1}</td>
+        <td>{item.apartmentCode}</td>
+        <td>{item.owner}</td>
+        <td>{item.licensePlate}</td>
+        <td>{item.vehicleType}</td>
+        <td>{formatDate(item.registerDate)}</td>
 
-      {/* Từ chối */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          openRejectModal(item._id);
-        }}
-        className="btn btn-danger btn-sm"
-      >
-        Từ chối
-      </button>
-    </div>
+        {/* Ảnh bằng lái mặt trước */}
+        <td>
+          <img
+            src={item.documentFront}
+            alt="Ảnh bằng lái trước"
+            width="120"
+          />
+        </td>
+
+        {/* Ảnh bằng lái mặt sau */}
+        <td>
+          <img
+            src={item.documentBack}
+            alt="Ảnh bằng lái sau"
+            width="120"
+          />
+        </td>
+
+        {/* Nút hành động */}
+        <td>
+          {role === "staff" ? (
+            <div className="d-flex gap-2">
+              {/* Phê duyệt */}
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  setLoading(true);
+                  await handleStatusChange(item._id, "approve");
+                  setLoading(false);
+                }}
+                className="btn btn-success btn-sm"
+              >
+                Phê duyệt
+              </button>
+
+              {/* Từ chối */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openRejectModal(item._id);
+                }}
+                className="btn btn-danger btn-sm"
+              >
+                Từ chối
+              </button>
+            </div>
+          ) : (
+            <i>Chỉ xem</i>
+          )}
+        </td>
+      </tr>
+    ))
   ) : (
-    <i>Chỉ xem</i>
+    <tr>
+      <td colSpan="10" className="text-center">
+        Không có kết quả phù hợp.
+      </td>
+    </tr>
   )}
-</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="text-center">Không có kết quả phù hợp.</td>
-                  </tr>
-                )}
-              </tbody>
+</tbody>
+
             </table>
           </div>
         </div>

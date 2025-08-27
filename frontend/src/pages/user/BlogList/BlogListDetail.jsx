@@ -69,14 +69,14 @@ const PostDetail = () => {
   useEffect(() => {
     setLoading(true);
     if (post?.contactInfo?._id) {
-      console.log("📌 contactInfo có dữ liệu:", post.contactInfo);
+      // console.log("📌 contactInfo có dữ liệu:", post.contactInfo);
       
       fetch(`${import.meta.env.VITE_API_URL}/api/posts/count/${post.contactInfo.userId || post.contactInfo._id}`)
         .then((res) => res.json())
         .then((data) => setUserPostsCount(data.count))
         .catch((err) => console.error("Lỗi lấy số tin đăng:", err));
     } else {
-      console.log("⚠️ contactInfo chưa có dữ liệu:", post?.contactInfo);
+      // console.log("⚠️ contactInfo chưa có dữ liệu:", post?.contactInfo);
     }
     setLoading(false);
   }, [post]); // ✅ chạy lại khi post thay đổi
@@ -192,7 +192,7 @@ const PostDetail = () => {
             )
             .slice(0, 3);
 
-          console.log("👉 Related posts:", others);
+          // console.log("👉 Related posts:", others);
           setRelatedPosts(others);
         }
       } catch (err) {

@@ -106,7 +106,7 @@ const Header = () => {
                         to="/profile"
                         onClick={() => setShowProfileDropdown(false)}
                       >
-                        My Profile
+                        Trang Cá Nhân
                       </Link>
                     </li>
                     <li>
@@ -180,7 +180,7 @@ const Header = () => {
                   onClick={logout}
                   className="btn btn-outline-warning ms-2"
                 >
-                  Log out
+                  Đăng Xuất
                 </button>
               </>
             ) : (
@@ -189,13 +189,13 @@ const Header = () => {
                   to="/login"
                   className="btn btn-link text-secondary fw-semibold"
                 >
-                  Sign In
+                  Đăng Nhập
                 </Link>
                 <Link
                   to="/register"
                   className="btn btn-warning fw-semibold px-3 rounded-pill"
                 >
-                  Register
+                  Đăng Ký
                 </Link>
               </div>
             )}

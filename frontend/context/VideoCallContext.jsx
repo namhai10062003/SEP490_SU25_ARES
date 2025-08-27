@@ -91,7 +91,7 @@ export const VideoCallProvider = ({ userId, children }) => {
     peerRef.current = peer;
   
     peer.on("open", (id) => {
-      console.log("✅ Peer ID:", id);
+      // console.log("✅ Peer ID:", id);
       setPeerReady(true);
   
       // ✅ Gửi cả userId và peerId về server nếu cần

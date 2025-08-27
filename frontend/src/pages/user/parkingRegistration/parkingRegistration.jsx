@@ -147,8 +147,8 @@ const ParkingRegistrationList = () => {
       const matchesPlate = normalizeText(item.biểnSốXe).includes(cleanedPlate);
       const matchesApartment = normalizeText(item.mãCănHộ).includes(cleanedApartment);
       const matchesOwnerName = normalizeText(item.tênChủSởHữu).includes(cleanedOwner);
-      console.log('Status after normalize:', normalizeText(item.trạngThái));
-      console.log('Mapped status:', mappedStatus);
+      // console.log('Status after normalize:', normalizeText(item.trạngThái));
+      // console.log('Mapped status:', mappedStatus);
       return matchesStatus && matchesPlate && matchesApartment && matchesOwnerName;
 
 
