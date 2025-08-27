@@ -90,6 +90,7 @@ import ResetPassword from "./pages/user/resetpassword";
 import UserRevenue from "./pages/user/revenuer/UserRevenue.jsx";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
 import PlazaDetail from "./pages/user/Plaza/PlazaDetail.jsx";
+
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
 function ProtectedRoute({ element, allowedRoles }) {
@@ -156,6 +157,7 @@ function AppRoutes() {
         <Route path="/canho/liked-posts" element={<LikedPosts />} />
         <Route path="/my-verified" element={<MyVerifiedApplications />} />
         <Route path="/gioi-thieu" element={<Introduce />} />
+
         <Route path="/my-revenue" element={<UserRevenue />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/residence-declaration" element={<ResidenceDeclarationRegister />} />

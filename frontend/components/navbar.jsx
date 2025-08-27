@@ -10,28 +10,30 @@ const Navbar = () => {
   const isSubPath = (basePath) => currentPath.startsWith(basePath);
 
   const getNavClass = (path) =>
-    `nav-link px-3 py-2 rounded fw-bold ${
-      isActive(path) ? "text-primary bg-light shadow-sm" : "text-dark"
+    `nav-link px-3 py-2 rounded fw-bold ${isActive(path) ? "text-primary bg-light shadow-sm" : "text-dark"
     }`;
-  
+
   const getDropdownClass = (basePath) =>
-    `nav-link dropdown-toggle px-3 py-2 rounded fw-bold ${
-      isSubPath(basePath) ? "text-primary bg-light shadow-sm" : "text-dark"
+    `nav-link dropdown-toggle px-3 py-2 rounded fw-bold ${isSubPath(basePath) ? "text-primary bg-light shadow-sm" : "text-dark"
     }`;
 
   return (
     <ul className="navbar-nav flex-row ms-3">
       <li className="nav-item mx-2">
-      <Link className={getNavClass("/")} to="/">
-  TRANG CHỦ
-</Link>
+        <Link className={getNavClass("/")} to="/">
+          TRANG CHỦ
+        </Link>
       </li>
       <li className="nav-item mx-2">
         <Link className={getNavClass("/gioi-thieu")} to="/gioi-thieu">
           GIỚI THIỆU
         </Link>
       </li>
-
+      <li className="nav-item mx-2">
+        <Link className={getNavClass("/plaza/68a6b1f48d53c5e6b89393a7")} to="/plaza/68a6b1f48d53c5e6b89393a7">
+          DỰ ÁN
+        </Link>
+      </li>
       {/* DỊCH VỤ */}
       <li className="nav-item dropdown mx-2">
         <span
