@@ -48,8 +48,8 @@ const EditVehicleModal = ({ show, onClose, vehicleData,selectedItem, onSave }) =
             return false;
           });
   
-          console.log("📌 Apartments fetched:", data);
-          console.log("✅ Apartments filtered:", filtered);
+          // console.log("📌 Apartments fetched:", data);
+          // console.log("✅ Apartments filtered:", filtered);
   
           setApartments(filtered);
         } catch (error) {

@@ -32,7 +32,7 @@ export default function ResidentVerificationForm() {
   // hàm sort apartment 
   // 🛠️ Di chuyển HÀM NÀY LÊN ĐÂU FILE, TRƯỚC KHI GỌI
   const sortApartments = (apartments) => {
-    console.log("Danh sách apartments đầu vào:", apartments);
+    // console.log("Danh sách apartments đầu vào:", apartments);
     return apartments
       .slice() // tạo bản sao
       .sort((a, b) => {

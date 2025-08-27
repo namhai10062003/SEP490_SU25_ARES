@@ -220,7 +220,7 @@ const UserRevenue = () => {
       sum + (typeof c.withdrawableAmount === "number" ? c.withdrawableAmount : 0),
     0
   );
-  console.log(filteredContracts.map(c => c.withdrawableAmount));
+  // console.log(filteredContracts.map(c => c.withdrawableAmount));
 
   // ✅ Tính tổng số tiền có thể rút từ các hợp đồng
   const totalWithdrawableFromContracts = filteredContracts.reduce(
