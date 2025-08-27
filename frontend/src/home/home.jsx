@@ -17,7 +17,7 @@ import ReusableModal from "../../components/ReusableModal.jsx";
 import { useAuth } from "../../context/authContext";
 import CountUp from "react-countup";
 import { formatPrice, formatAddress } from "../../utils/format";
-
+import LoadingModal from "../../components/loadingModal.jsx"
 const HeroSection = ({ postStats }) => (
   <div
     className="hero-section d-flex flex-column align-items-center justify-content-center text-center position-relative"
@@ -185,9 +185,9 @@ const PlazasSection = ({ plazas, navigate }) => {
         {plazas.map((p) => (
           <div key={p._id} className="px-2">
             <div className="card border-0 shadow rounded-4 h-100 overflow-hidden">
-              <div className="ratio ratio-16x9">
-                <img src={p.img} className="rounded-top" alt={p.name} style={{ objectFit: "cover" }} />
-              </div>
+
+              <img src={p.img} className="rounded-top" alt={p.name} style={{ objectFit: "cover", height: 300 }} />
+
               <div className="card-body bg-white">
                 <h5 className="card-title fw-bold text-dark">{p.name}</h5>
                 <p className="text-muted mb-2">
@@ -221,18 +221,19 @@ const CardImageCarousel = ({ images }) => {
   };
 
   return (
-    <div style={{ height: "180px", overflow: "hidden" }}>
+    <div style={{ height: "280px", overflow: "hidden" }}>
       <Slider {...settings}>
         {images.map((img, idx) => (
           <img
             key={idx}
             src={img}
             alt=""
-            className="w-100"
             style={{
-              height: "180px",
+              width: "100%",
+              height: "100%",
               objectFit: "cover",
               objectPosition: "center",
+              display: "block",
             }}
           />
         ))}
@@ -269,6 +270,7 @@ const FeaturedApartmentsSection = ({ posts, handleViewDetail, listRef }) => {
   return (
     <div className="container py-5 featured-apartments-slider" ref={listRef}>
       <h2 className="fw-bold text-uppercase mb-4 text-center">Căn hộ nổi bật</h2>
+
       <Slider {...sliderSettings}>
         {posts.map((post) => (
           <div key={post._id} className="px-2">
@@ -365,7 +367,8 @@ const FeaturedApartmentsSection = ({ posts, handleViewDetail, listRef }) => {
         ))
         }
       </Slider >
-    </div >
+
+    </div>
   );
 };
 
@@ -375,7 +378,7 @@ const InfoBannerSection = () => (
     <div className="container">
       <div className="row align-items-center bg-white rounded-4 shadow p-4">
         <div className="col-md-6 mb-3 mb-md-0">
-          <img src="/images/content (2).jpg" alt="Info" className="w-100 rounded-4" style={{ height: 260, objectFit: "cover" }} />
+          <img src="/images/content (2).jpg" alt="Info" className="w-100 rounded-4" style={{ minHeight: 500, height: 360, objectFit: "cover" }} />
         </div>
         <div className="col-md-6">
           <h3 className="fw-bold mb-3 text-warning">Vì sao chọn Ares?</h3>
@@ -438,11 +441,11 @@ const Home = () => {
       scrollingSpeed: 350, // Faster, snappier scroll
       easingcss3: "ease",
       fitToSectionDelay: 300,
-      anchors: ["hero", "plazas", "featured", "info", "footer"],
-      fitToSection: true,
-      scrollBar: false,
+      anchors: ["hero", "plazas", "featured", "info"],
+      fitToSection: false,
+      scrollBar: true,
       scrollOverflow: true,
-      scrollOverflowReset: true,
+      scrollOverflowReset: false,
       scrollOverflowOptions: {
         scrollbars: true,
         mouseWheel: true,
@@ -477,11 +480,7 @@ const Home = () => {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
+      <LoadingModal />
     );
   }
 
@@ -493,8 +492,8 @@ const Home = () => {
         <div className="section"> <PlazasSection plazas={plazas} navigate={navigate} /> </div>
         <div className="section"> <FeaturedApartmentsSection posts={posts} handleViewDetail={handleViewDetail} listRef={listRef} /> </div>
         <div className="section"> <InfoBannerSection /> </div>
-        <div className="section" id="footer-section" style={{ height: "auto" }}> <Footer /> </div>
       </div>
+      <Footer />
       <ReusableModal
         show={showModal}
         onClose={() => setShowModal(false)}

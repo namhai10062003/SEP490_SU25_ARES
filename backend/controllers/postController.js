@@ -138,8 +138,8 @@ export const getAllPosts = async (req, res) => {
 
       query.$or = [
         { title: searchRegex },      // Tìm trong tiêu đề bài đăng
-        { location: searchRegex },   // Tìm trong vị trí
-        { type: searchRegex }        // Tìm trong loại bài đăng
+        // { location: searchRegex },   // Tìm trong vị trí
+        //  { type: searchRegex }        // Tìm trong loại bài đăng
         // NOTE: Tìm theo `contactInfo.name` cần aggregate, để đơn giản ta sẽ populate và lọc ở FE
       ];
     }
@@ -184,7 +184,7 @@ export const getAllPostsNearlyExpire = async (req, res) => {
   try {
     const now = new Date();
     // 3 ngày tới (tính theo mili giây)
-    const threeDaysLater = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+    const threeDaysLater = new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000);
 
     // Lấy các bài đăng có expiredDate trong khoảng từ bây giờ đến 3 ngày tới, và chưa hết hạn
     const posts = await Post.find({
