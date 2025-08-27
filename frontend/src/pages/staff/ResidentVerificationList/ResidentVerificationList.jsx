@@ -20,7 +20,7 @@ export default function ResidentVerificationList() {
         `${import.meta.env.VITE_API_URL}/api/resident-verifications/get-user-apartment`
       );
       setUsers(res.data?.data || []);
-      console.log("✅ Dữ liệu từ API:", res.data);
+      // console.log("✅ Dữ liệu từ API:", res.data);
       setError(null);
     } catch (err) {
       console.error("❌ Lỗi khi fetch users:", err);

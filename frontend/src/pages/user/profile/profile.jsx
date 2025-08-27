@@ -54,7 +54,7 @@ const Profile = () => {
         return "Chưa cập nhật";
     }
   };
-console.log(userData);
+// console.log(userData);
   return (
     <div className="bg-light min-vh-100">
       <Header user={userData} name={name} logout={logout} />

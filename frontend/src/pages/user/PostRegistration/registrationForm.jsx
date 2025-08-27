@@ -65,14 +65,14 @@ const RegistrationForm = () => {
       setIsSubmitting(true);
       try {
         const response = await getApartmentList();
-        console.log("📦 Full response:", response);
+        // console.log("📦 Full response:", response);
 
         if (response?.data) {
           const apartments = Array.isArray(response.data)
             ? response.data
             : response.data.data;
 
-          console.log("✅ Danh sách căn hộ (trước sort):", apartments);
+          // console.log("✅ Danh sách căn hộ (trước sort):", apartments);
 
           // ✅ Sắp xếp theo apartmentCode, xử lý khi thiếu
           const sortedApartments = [...apartments].sort((a, b) =>
@@ -83,7 +83,7 @@ const RegistrationForm = () => {
             )
           );
 
-          console.log("📑 Danh sách căn hộ (đã sort):", sortedApartments);
+          // console.log("📑 Danh sách căn hộ (đã sort):", sortedApartments);
 
           setApartmentOptions(sortedApartments);
         } else {
@@ -115,7 +115,7 @@ const RegistrationForm = () => {
           },
         });
   
-        console.log("📦 Dữ liệu plaza từ server:", res.data);
+        // console.log("📦 Dữ liệu plaza từ server:", res.data);
   
         if (res?.data?.data) {
           setPlazaOptions(res.data.data);
@@ -238,11 +238,11 @@ useEffect(() => {
         ...prev,
         thongTinNguoiDangBan: user.phone,
       }));
-      console.log("📲 Gán SDT tự động:", user.phone);
+      // console.log("📲 Gán SDT tự động:", user.phone);
     }
   }, [user?.phone]);
   useEffect(() => {
-    console.log("👤 USER:", user);
+    // console.log("👤 USER:", user);
   }, [user]);
  // Hàm xử lý file chung
 const handleFiles = (files) => {
@@ -458,7 +458,7 @@ const filteredApartments = apartmentOptions.filter(
   (apartment) => selectedPlazaName.includes(apartment.building)
 );
 
-console.log("✅ filteredApartments:", filteredApartments);
+// console.log("✅ filteredApartments:", filteredApartments);
 
 
   const apartmentSelectStyles = {
@@ -472,7 +472,7 @@ console.log("✅ filteredApartments:", filteredApartments);
       zIndex: 9999,
     }),
   };
-  console.log("🏘️ Danh sách căn hộ sau lọc theo plaza:", filteredApartments);
+  // console.log("🏘️ Danh sách căn hộ sau lọc theo plaza:", filteredApartments);
   return (
     <div className="bg-light min-vh-100">
       <Header user={user} name={name} logout={logout} />

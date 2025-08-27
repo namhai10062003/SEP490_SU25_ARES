@@ -110,7 +110,7 @@ const ManageParkingLot = () => {
       });
 
       const responseData = await res.json();
-      console.log(responseData);
+      // console.log(responseData);
       const rawList = Array.isArray(responseData.data) ? responseData.data : [];
 
       const mappedList = rawList

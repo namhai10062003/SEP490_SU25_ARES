@@ -75,7 +75,7 @@ const Expenses = () => {
 
             const matchesStatus =
                 filterStatus === "all" || fee.paymentStatus === filterStatus;
-                console.log(fee.paymentStatus);
+                // console.log(fee.paymentStatus);
 
             return matchesMonth && matchesText && matchesStatus;
         }).sort((a, b) => {

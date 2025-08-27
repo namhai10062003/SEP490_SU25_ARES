@@ -68,7 +68,7 @@ const handleCccdBackChange = (e) => {
     const fetchUserProfile = async () => {
       setLoading(true);
       try {
-        console.log("🔍 Fetching profile for user:", user?._id);
+        // console.log("🔍 Fetching profile for user:", user?._id);
   
         // Lấy thông tin người dùng
         const res = await axios.get(
@@ -97,8 +97,8 @@ const handleCccdBackChange = (e) => {
         if (userInfo) {
           setOldFront(userInfo.cccdFrontImage || "");
           setOldBack(userInfo.cccdBackImage || "");
-          console.log("Ảnh cũ mặt trước:", userInfo.cccdFrontImage);
-          console.log("Ảnh cũ mặt sau:", userInfo.cccdBackImage);
+          // console.log("Ảnh cũ mặt trước:", userInfo.cccdFrontImage);
+          // console.log("Ảnh cũ mặt sau:", userInfo.cccdBackImage);
         }
         // 🟡 Lấy yêu cầu cập nhật gần nhất
         const requestRes = await axios.get(
@@ -106,7 +106,7 @@ const handleCccdBackChange = (e) => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
   
-        console.log("🟢 Kết quả yêu cầu cập nhật:", requestRes.data);
+        // console.log("🟢 Kết quả yêu cầu cập nhật:", requestRes.data);
   
         const latest = requestRes.data?.[0];
   

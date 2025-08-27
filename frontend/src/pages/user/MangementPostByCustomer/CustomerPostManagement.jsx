@@ -129,15 +129,15 @@ const CustomerPostManagement = () => {
   };
 
   useEffect(() => {
-    console.log(
-      "Dữ liệu type trong bài đăng:",
-      posts.map((p) => p.type)
-    );
-    console.log("Filter đang chọn:", filters.type);
-    console.log(
-      "So sánh sau normalize:",
-      posts.map((p) => normalize(p.type))
-    );
+    // console.log(
+    //   "Dữ liệu type trong bài đăng:",
+    //   posts.map((p) => p.type)
+    // );
+    // console.log("Filter đang chọn:", filters.type);
+    // console.log(
+    //   "So sánh sau normalize:",
+    //   posts.map((p) => normalize(p.type))
+    // );
   }, [posts, filters]);
   const normalize = (str) => str?.toLowerCase().replace(/\s/g, "_");
 
@@ -393,13 +393,13 @@ const CustomerPostManagement = () => {
     formData.append("status", newStatus);
     formData.append("paymentStatus", newPaymentStatus);
 
-    console.log("🔍 Status hiện tại:", editForm.status);
-    console.log(
-      "🔍 Disabled?",
-      editForm.status
-        ? editForm.status.toLowerCase().trim() !== "expired"
-        : false
-    );
+    // console.log("🔍 Status hiện tại:", editForm.status);
+    // console.log(
+    //   "🔍 Disabled?",
+    //   editForm.status
+    //     ? editForm.status.toLowerCase().trim() !== "expired"
+    //     : false
+    // );
 
     if (editForm.oldImages?.length > 0) {
       formData.append("oldImages", JSON.stringify(editForm.oldImages));
@@ -452,15 +452,15 @@ const CustomerPostManagement = () => {
 
   // Format date
   const formatDate = (dateString) => {
-    console.log("Ngày raw nhận được:", dateString); // log dữ liệu đầu vào
+    // console.log("Ngày raw nhận được:", dateString); // log dữ liệu đầu vào
     const date = new Date(dateString);
-    console.log("Ngày sau khi parse:", date); // log đối tượng Date
+    // console.log("Ngày sau khi parse:", date); // log đối tượng Date
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
 
     const formatted = `${day}/${month}/${year}`;
-    console.log("Ngày đã format:", formatted); // log kết quả trả về
+    // console.log("Ngày đã format:", formatted); // log kết quả trả về
     return formatted;
   };
 

@@ -361,7 +361,9 @@ const StaffNavbar = () => {
                 </li>
               </ul>
             </div>
-            <li className="nav-item">
+            
+          </li>
+          <li className="nav-item">
             <Link
               to="/staff-changePassWord"
               className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${
@@ -379,8 +381,6 @@ const StaffNavbar = () => {
               Đổi mật khẩu
             </Link>
           </li>
-          </li>
-
 
 
           <li className="nav-item mt-3">

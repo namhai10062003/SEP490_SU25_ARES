@@ -147,10 +147,10 @@ const ResidentVerifyList = () => {
     const pendingList = residents.filter(
       (r) => String(r.verifiedByStaff) === "pending"
     );
-    console.log("🟡 Resident có trạng thái pending:", pendingList);
+    // console.log("🟡 Resident có trạng thái pending:", pendingList);
 
-    // ✅ Log kết quả lọc final
-    console.log("✅ filteredResidents sau khi lọc:", result);
+    // // ✅ Log kết quả lọc final
+    // console.log("✅ filteredResidents sau khi lọc:", result);
 
     return result;
   }, [residents, filterText, dobFilter, issueDateFilter, statusFilter]);

@@ -45,7 +45,7 @@ const [deleteId, setDeleteId] = useState(null);
         setRequests(sortedData);
         setContractToApprove(sortedData[0]); // ✅ lấy hợp đồng đầu tiên (mới nhất)
   
-        console.log("✅ Hợp đồng để duyệt:", sortedData[0]);
+        // console.log("✅ Hợp đồng để duyệt:", sortedData[0]);
       } catch (err) {
         toast.error("❌ Lỗi khi tải yêu cầu hợp đồng");
       }finally{
@@ -158,12 +158,12 @@ const handleDelete = async () => {
   
   // Ở đầu component, sau các useState
   useEffect(() => {
-    console.log("✅ signaturePartyAUrl trong ContractForm:", signaturePartyAUrl);
+    // console.log("✅ signaturePartyAUrl trong ContractForm:", signaturePartyAUrl);
   }, [signaturePartyAUrl]);
   
   useEffect(() => {
     if (contractToApprove) {
-      console.log("✅ Đã cập nhật contractToApprove:", contractToApprove);
+      // console.log("✅ Đã cập nhật contractToApprove:", contractToApprove);
     }
   }, [contractToApprove]);
   

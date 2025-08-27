@@ -2,7 +2,6 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useChat } from "../../../../context/ChatContext"; // đường dẫn tùy dự án của bạn
-import ChatBox from "./ChatBox";
 const Inbox = ({ currentUserId }) => {
   const location = useLocation(); // ⬅️ Lấy state từ router
   const [partners, setPartners] = useState([]);
@@ -38,7 +37,7 @@ if (!chatBoxes.has(user._id)) {
   });
 }
   
-    console.log("✅ Đã chọn user:", user._id, user.name || user.email);
+    // console.log("✅ Đã chọn user:", user._id, user.name || user.email);
   };
   
 
@@ -59,7 +58,7 @@ if (!chatBoxes.has(user._id)) {
     
         setPartners(filtered);
     
-        console.log("🧾 Danh sách người đã từng nhắn (filtered):");
+        // console.log("🧾 Danh sách người đã từng nhắn (filtered):");
         filtered.forEach((user, i) =>
           console.log(`${i + 1}. ID: ${user._id}, Tên: ${user.name}`)
         );
@@ -81,12 +80,12 @@ if (!chatBoxes.has(user._id)) {
           setReceiver({ id: stateReceiver.id, name: stateReceiver.name || "Người dùng" });
           setPostInfo(statePostInfo || null);
     
-          console.log("➡️ Đang chọn từ location.state:", stateReceiver.id, stateReceiver.name);
+          // console.log("➡️ Đang chọn từ location.state:", stateReceiver.id, stateReceiver.name);
     
           window.history.replaceState({}, document.title);
         } else {
           // ❌ KHÔNG còn tự động chọn người đầu tiên
-          console.log("ℹ️ Không có state receiver, chờ user chọn người từ sidebar.");
+          // console.log("ℹ️ Không có state receiver, chờ user chọn người từ sidebar.");
         }
       } catch (err) {
         console.error("❌ Lỗi lấy danh sách:", err);
@@ -98,7 +97,7 @@ if (!chatBoxes.has(user._id)) {
   }, [currentUserId]);
   
   useEffect(() => {
-    console.log("📍 Selected user:", selectedUserId, selectedUserName);
+    // console.log("📍 Selected user:", selectedUserId, selectedUserName);
   }, [selectedUserId, selectedUserName]);
   
   

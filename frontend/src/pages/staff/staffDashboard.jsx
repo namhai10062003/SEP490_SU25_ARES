@@ -62,10 +62,10 @@ const StaffDashboard = () => {
         const verifsData = verifsRes.data?.data || {};
         const revenueData = revenueRes.data?.data || [];
         setMonthlyRevenue(revenueData);
-        console.log("🚗 Parking API:", parkingData);
-        console.log("💰 Fees API:", feesData);
-        console.log("🧑‍🤝‍🧑 Residents API:", residentsData);
-        console.log("📋 Verifications API:", verifsData);
+        // console.log("🚗 Parking API:", parkingData);
+        // console.log("💰 Fees API:", feesData);
+        // console.log("🧑‍🤝‍🧑 Residents API:", residentsData);
+        // console.log("📋 Verifications API:", verifsData);
 
         setStats({
           parking: parkingData,

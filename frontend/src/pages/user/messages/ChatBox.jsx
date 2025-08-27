@@ -62,7 +62,7 @@ const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
   }, [messages]);
   useEffect(() => {
     if (postInfo) {
-      console.log("📥 postInfo đã cập nhật từ context:", postInfo);
+      // console.log("📥 postInfo đã cập nhật từ context:", postInfo);
       // nếu cần xử lý thêm, thực hiện ở đây
     }
   }, [postInfo]);
@@ -125,7 +125,7 @@ const ChatBox = ({ currentUserId, receiverId, receiverName }) => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  console.log("📦 postInfo:", postInfo);
+  // console.log("📦 postInfo:", postInfo);
 
   return (
     <div className="d-flex flex-column h-100">

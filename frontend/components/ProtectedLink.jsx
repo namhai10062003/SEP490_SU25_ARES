@@ -7,7 +7,7 @@ import { useAuth } from "../context/authContext";
 const ProtectedLink = ({ to, children, className, allowWithoutProfile = false }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  console.log("🟡 Current user:", user);
+  // console.log("🟡 Current user:", user);
 
   const isIncompleteProfile = () => {
     const requiredFields = ["name", "dob", "phone", "address"];
@@ -15,13 +15,13 @@ const ProtectedLink = ({ to, children, className, allowWithoutProfile = false })
       (field) => !user?.[field] || String(user[field]).trim() === ""
     );
   };
-  console.log("📋 Kiểm tra profile:", {
-    name: user?.name,
-    dob: user?.dob,
-    phone: user?.phone,
-    address: user?.address,
-    identityNumber: user?.identityNumber
-  });
+  // console.log("📋 Kiểm tra profile:", {
+  //   name: user?.name,
+  //   dob: user?.dob,
+  //   phone: user?.phone,
+  //   address: user?.address,
+  //   identityNumber: user?.identityNumber
+  // });
   
 
   const handleClick = (e) => {
