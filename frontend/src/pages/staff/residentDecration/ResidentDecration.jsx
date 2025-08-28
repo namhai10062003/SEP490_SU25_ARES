@@ -333,7 +333,7 @@ const ResidenceDeclarationVerifyList = () => {
     </>
   )}
 
-  {(r.verifiedByStaff === "pending" || r.verifiedByStaff === "true") &&
+  {(r.verifiedByStaff === "true") &&
     r.showNotifyButton && (
       <button
         className="btn btn-warning d-flex align-items-center gap-2 px-3 py-1 rounded-pill shadow-sm"
@@ -369,6 +369,10 @@ const ResidenceDeclarationVerifyList = () => {
       )}
     </div>
   )}
+{r.verifiedByStaff === "expired" && (
+  <span className="text-secondary fw-bold">Đã hết hạn</span>
+)}
+
 </td>
 
                   </tr>

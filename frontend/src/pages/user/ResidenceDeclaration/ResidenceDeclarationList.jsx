@@ -311,17 +311,18 @@ if (editForm.idNumber && !/^\d{12}$/.test(editForm.idNumber.trim())) {
       </Modal.Body>
     </Modal>
   </td>
-                    <td>
-                      {d.verifiedByStaff === "true" ? (
-                        <span className="badge bg-success">✅ Đã duyệt</span>
-                      ) : d.verifiedByStaff === "false" ? (
-                        <span className="badge bg-danger">❌ Từ chối</span>
-                      ) : (
-                        <span className="badge bg-warning text-dark">
-                          🟡 Chờ duyệt
-                        </span>
-                      )}
-                    </td>
+  <td>
+  {d.verifiedByStaff === "true" ? (
+    <span className="badge bg-success">✅ Đã duyệt</span>
+  ) : d.verifiedByStaff === "false" ? (
+    <span className="badge bg-danger">❌ Từ chối</span>
+  ) : d.verifiedByStaff === "expired" ? (
+    <span className="badge bg-secondary">⌛ Đã hết hạn</span>
+  ) : (
+    <span className="badge bg-warning text-dark">🟡 Chờ duyệt</span>
+  )}
+</td>
+
                     <td>
                       {d.verifiedByStaff === "false" && d.rejectReason && (
                         <span className="text-danger fw-bold">

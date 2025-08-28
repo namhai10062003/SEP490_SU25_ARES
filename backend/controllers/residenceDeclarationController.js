@@ -246,60 +246,76 @@ function calcExpiry(endDate) {
 // 📌 Gửi thông báo cho user khi sắp hết hạn
 
 export const notifyUser = async (req, res) => {
-    try {
-      const declaration = await ResidenceDeclaration.findById(req.params.id)
-        .populate("createdBy", "fullName username email")
-        .populate("apartmentId", "apartmentCode");
-  
-      if (!declaration) {
-        return res.status(404).json({ message: "Không tìm thấy hồ sơ" });
-      }
-  
-      // ✅ Tính số ngày còn lại
-      const today = new Date();
-      const daysLeft = Math.ceil(
-        (new Date(declaration.endDate) - today) / (1000 * 60 * 60 * 24)
-      );
-  
-      if (daysLeft > 3) {
-        return res.status(400).json({ message: "Hồ sơ chưa gần hết hạn" });
-      }
-  
-      // ✅ Lấy tên user (fallback nếu thiếu)
-      const userName =
-//   declaration.fullName || // tên người trong hồ sơ
-//   declaration.createdBy?.fullName || // tên từ tài khoản user
-  declaration.createdBy.username || // username từ tài khoản user
-  "Người dùng";
-  
-      // ✅ Thông tin căn hộ
-      const apartmentCode =
-        declaration.apartmentId?.apartmentCode || "không xác định";
-  
-      // ✅ Nội dung thông báo (không lộ ID)
-      const notifyTitle = "Hồ sơ tạm trú/tạm vắng sắp hết hạn";
-      const notifyMessage = `Hồ sơ tạm trú/tạm vắng của bạn cho căn hộ ${apartmentCode} sẽ hết hạn sau ${daysLeft} ngày.`;
-  
-      // ✅ Lưu thông báo kèm dữ liệu ID vào DB
-      await Notification.create({
-        userId: declaration.createdBy._id,
-        title: notifyTitle,
-        message: notifyMessage,
-        data: {
-          declarationId: declaration._id, // 👈 để frontend mở chi tiết
-        },
-      });
-  
-      console.log(`📢 Đã gửi thông báo tới người ${userName} (${declaration.createdBy.email})`);
-  
-      return res.status(200).json({
-        message: `Đã gửi thông báo cho ${userName}`,
-      });
-    } catch (err) {
-      console.error("❌ Lỗi khi gửi thông báo:", err);
-      res.status(500).json({ message: "Lỗi server" });
+  try {
+    const declaration = await ResidenceDeclaration.findById(req.params.id)
+      .populate("createdBy", "fullName name email")
+      .populate("apartmentId", "apartmentCode");
+
+    if (!declaration) {
+      return res.status(404).json({ message: "Không tìm thấy hồ sơ" });
     }
-  };
+
+    // ✅ Tính số ngày còn lại
+    const today = new Date();
+    const endDate = new Date(declaration.endDate);
+    const daysLeft = Math.ceil(
+      (endDate.setHours(0, 0, 0, 0) - today.setHours(0, 0, 0, 0)) /
+        (1000 * 60 * 60 * 24)
+    );
+
+    // ✅ Nếu đúng ngày hết hạn hoặc đã quá hạn
+    if (daysLeft <= 0) {
+      declaration.verifiedByStaff = "expired"; // cập nhật trạng thái
+      await declaration.save();
+
+      return res.status(200).json({
+        message: "Hồ sơ đã hết hạn, trạng thái được cập nhật.",
+      });
+    }
+
+    // ✅ Nếu còn hơn 3 ngày → không cần thông báo
+    if (daysLeft > 3) {
+      return res.status(400).json({ message: "Hồ sơ chưa gần hết hạn" });
+    }
+
+    // ✅ Lấy tên user (fallback nếu thiếu)
+    const userName =
+      // declaration.fullName ||
+      // declaration.createdBy?.fullName ||
+      declaration.createdBy.name || "Người dùng";
+
+    // ✅ Thông tin căn hộ
+    const apartmentCode =
+      declaration.apartmentId?.apartmentCode || "không xác định";
+
+    // ✅ Nội dung thông báo (không lộ ID)
+    const notifyTitle = "Hồ sơ tạm trú/tạm vắng sắp hết hạn";
+    const notifyMessage = `Hồ sơ tạm trú/tạm vắng của ${userName} cho căn hộ ${apartmentCode} sẽ hết hạn sau ${daysLeft} ngày.`;
+
+
+    // ✅ Lưu thông báo kèm dữ liệu ID vào DB
+    await Notification.create({
+      userId: declaration.createdBy._id,
+      title: notifyTitle,
+      message: notifyMessage,
+      data: {
+        declarationId: declaration._id, // 👈 để frontend mở chi tiết
+      },
+    });
+
+    console.log(
+      `📢 Đã gửi thông báo tới ${userName} (${declaration.createdBy.email})`
+    );
+
+    return res.status(200).json({
+      message: `Đã gửi thông báo cho ${userName}`,
+    });
+  } catch (err) {
+    console.error("❌ Lỗi khi gửi thông báo:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
 // hàm update tạm trú-tạm vắng 
 export const updateDeclaration = async (req, res) => {
   try {

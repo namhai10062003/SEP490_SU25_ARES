@@ -27,7 +27,7 @@ const residenceDeclarationSchema = new Schema({
 
   verifiedByStaff: {
     type: String,
-    enum: ["pending", "true", "false"],
+    enum: ["pending", "true", "false", "expired"],
     default: "pending",
   },
 
