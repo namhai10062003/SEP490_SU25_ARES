@@ -62,28 +62,38 @@ const Expenses = () => {
     // console.log("All fee months:", apartmentFees.map((f) => f.month));
     // console.log("Filtered fee months:", filteredFees.map((f) => f.month));
 
-    const getFilteredFees = () => {
-        return apartmentFees.filter(fee => {
-            const matchesMonth =
-                !filterMonth || fee.month === `${filterMonth.split("-")[1]}/${filterMonth.split("-")[0]}`;
-
-            const search = filterText.trim().toLowerCase();
-            const matchesText =
-                !search ||
-                fee.apartmentCode.toLowerCase().includes(search) ||
-                fee.ownerName.toLowerCase().includes(search);
-
-            const matchesStatus =
-                filterStatus === "all" || fee.paymentStatus === filterStatus;
-                // console.log(fee.paymentStatus);
-
-            return matchesMonth && matchesText && matchesStatus;
-        }).sort((a, b) => {
-            const dateA = new Date(`01/${a.month}`);
-            const dateB = new Date(`01/${b.month}`);
-            return dateB - dateA;
-        });
-    };
+   // Khi fetch hoặc setApartmentFees lần đầu
+useEffect(() => {
+    if (apartmentFees.length > 0) {
+      const sorted = [...apartmentFees].sort((a, b) => {
+        const dateA = new Date(`01/${a.month}`);
+        const dateB = new Date(`01/${b.month}`);
+        return dateB - dateA;
+      });
+      setApartmentFees(sorted);
+    }
+  }, [apartmentFees.length]);
+  
+  const getFilteredFees = () => {
+    return apartmentFees.filter((fee) => {
+      const matchesMonth =
+        !filterMonth ||
+        fee.month ===
+          `${filterMonth.split("-")[1]}/${filterMonth.split("-")[0]}`;
+  
+      const search = filterText.trim().toLowerCase();
+      const matchesText =
+        !search ||
+        (fee.apartmentCode?.toLowerCase() || "").includes(search) ||
+        (fee.ownerName?.toLowerCase() || "").includes(search);
+  
+      const matchesStatus =
+        filterStatus === "all" || fee.paymentStatus === filterStatus;
+  
+      return matchesMonth && matchesText && matchesStatus;
+    });
+  };
+  
 
 
     const filteredFees = getFilteredFees();
