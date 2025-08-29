@@ -7,7 +7,7 @@ const ReusableModal = ({
   title,
   body,
   footerButtons = [],
-  size = "sm", // Accepts "sm", "md", "lg", "xl", or custom Bootstrap modal size
+  size = "md", // Accepts "sm", "md", "lg", "xl", or custom Bootstrap modal size
 }) => {
   if (!show) return null;
 
@@ -17,17 +17,15 @@ const ReusableModal = ({
     case "sm":
       sizeClass = "modal-sm";
       break;
-    case "md":
-      sizeClass = ""; // default, no extra class
-      break;
     case "lg":
       sizeClass = "modal-lg";
       break;
     case "xl":
       sizeClass = "modal-xl";
       break;
+    case "md":
     default:
-      sizeClass = size; // allow custom class if provided
+      sizeClass = ""; // Không có class cho md hoặc mặc định
   }
 
   return ReactDOM.createPortal(

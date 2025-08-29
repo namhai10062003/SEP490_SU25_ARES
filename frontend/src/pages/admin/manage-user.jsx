@@ -239,48 +239,49 @@ const ManageUsers = () => {
                 />
 
                 {/* Block account modal */}
-                <ReusableModal
-                    show={showBlockModal}
-                    onClose={() => {
-                        setShowBlockModal(false);
-                        setUserToBlock(null);
-                        setConfirmBlockReason("");
-                    }}
-                    size="md"
-                    title={userToBlock?.status === 2 ? "Mở khoá tài khoản" : "Khoá hoàn toàn tài khoản"}
-                    body={
-                        <div>
-                            {userToBlock && (
-                                <>
-                                    <p>
-                                        Bạn có chắc muốn <strong>{userToBlock.status === 2 ? "mở khoá" : "khoá hoàn toàn"}</strong> tài khoản{" "}
-                                        <strong>{userToBlock.name}</strong>?
-                                    </p>
-                                    {/* allow reason when locking; optional */}
-                                    {userToBlock.status !== 2 && (
-                                        <>
-                                            <label className="form-label">Lý do (tuỳ chọn)</label>
-                                            <textarea
-                                                className="form-control"
-                                                rows={3}
-                                                value={confirmBlockReason}
-                                                onChange={(e) => setConfirmBlockReason(e.target.value)}
-                                            />
-                                        </>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    }
-                    footerButtons={[
-                        { label: "Huỷ", variant: "secondary", onClick: () => setShowBlockModal(false) },
-                        {
-                            label: userToBlock?.status === 2 ? "Mở khoá" : "Khoá",
-                            variant: "danger",
-                            onClick: () => handleToggleBlockAccount(userToBlock, confirmBlockReason),
-                        },
-                    ]}
-                />
+                {showBlockModal && (
+                    <ReusableModal
+                        size="lg"
+                        show={showBlockModal}
+                        onClose={() => {
+                            setShowBlockModal(false);
+                            setUserToBlock(null);
+                            setConfirmBlockReason("");
+                        }}
+                        title={userToBlock?.status === 2 ? "Mở khoá tài khoản" : "Khoá hoàn toàn tài khoản"}
+                        body={
+                            <div>
+                                {userToBlock && (
+                                    <>
+                                        <p>
+                                            Bạn có chắc muốn <strong>{userToBlock.status === 2 ? "mở khoá" : "khoá hoàn toàn"}</strong> tài khoản{" "}
+                                            <strong>{userToBlock.name}</strong>?
+                                        </p>
+                                        {userToBlock.status !== 2 && (
+                                            <>
+                                                <label className="form-label">Lý do (tuỳ chọn)</label>
+                                                <textarea
+                                                    className="form-control"
+                                                    rows={3}
+                                                    value={confirmBlockReason}
+                                                    onChange={(e) => setConfirmBlockReason(e.target.value)}
+                                                />
+                                            </>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                        }
+                        footerButtons={[
+                            { label: "Huỷ", variant: "secondary", onClick: () => setShowBlockModal(false) },
+                            {
+                                label: userToBlock?.status === 2 ? "Mở khoá" : "Khoá",
+                                variant: "danger",
+                                onClick: () => handleToggleBlockAccount(userToBlock, confirmBlockReason),
+                            },
+                        ]}
+                    />
+                )}
             </div>
         </AdminDashboard>
     );

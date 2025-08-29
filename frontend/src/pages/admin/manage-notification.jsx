@@ -94,7 +94,7 @@ const ManageNotifications = () => {
         try {
             setLoading(true);
             await axios.post(`${import.meta.env.VITE_API_URL}/api/notifications/sendAll`, formData);
-            toast.success("Đã gửi thông báo");
+            // toast.success("Đã gửi thông báo");// không cần bởi vì có emit hết tất cả users
             setFormData({ message: "", userId: "" });
             setShowModal(false);
             fetchNotifications();
@@ -240,6 +240,7 @@ const ManageNotifications = () => {
                     show={showModal}
                     onClose={() => setShowModal(false)}
                     title="Gửi thông báo mới"
+                    size="md"
                     body={
                         <>
                             <div className="mb-3">

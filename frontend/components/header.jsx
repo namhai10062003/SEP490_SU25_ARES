@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "./navbar";
-import NotificationBell from "./notification";
+import NotificationBell from "./notificationBell";
 import { useAuth } from "/context/AuthContext";
 const HEADER_HEIGHT = 64; // px, adjust if your header is taller/shorter
 

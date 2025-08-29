@@ -51,7 +51,7 @@ const getRecentNotifications = async (req, res) => {
     try {
         const { userId } = req.params;
         const notifications = await Notification.find({ userId })
-            .sort({ createdAt: -1 })
+            .sort({ createdAt: -1 }) // -1 là lấy mới nhất, 1 là cũ
             .limit(10);
         res.json(notifications);
     } catch (err) {

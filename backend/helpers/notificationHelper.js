@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
-import twilio from "twilio";
+import https from "https";
+
 dotenv.config();
 function formatVietnamPhoneNumber(number) {
     if (!number) return number;
@@ -13,8 +14,6 @@ function formatVietnamPhoneNumber(number) {
 }
 
 // Nodemailer setup (use Gmail for free, or any SMTP)
-console.log("EMAIL_USER:", process.env.EMAIL_USER);
-console.log("EMAIL_PASS:", process.env.EMAIL_PASS);
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -39,29 +38,87 @@ export async function sendEmailNotification({ to, subject, text, html }) {
     }
 }
 
-// Twilio setup
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-console.log("TWILIO_ACCOUNT_SID:", process.env.TWILIO_ACCOUNT_SID);
-console.log("TWILIO_AUTH_TOKEN:", process.env.TWILIO_AUTH_TOKEN);
-
 export async function sendSMSNotification({ to, body }) {
-    if (process.env.TWILIO_ENABLE !== "true") {
-        console.log("Twilio is disabled.");
+    if (process.env.SPEEDSMS_ENABLE !== "true") {
+        console.log("SpeedSMS is disabled.");
         return false;
     }
 
-    try {
-        const formattedTo = formatVietnamPhoneNumber(to);
-        console.log("Sending SMS to:", formattedTo);
-        await twilioClient.messages.create({
-            body,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            to: formattedTo,
-        });
+    return new Promise((resolve) => {
+        try {
+            const formattedTo = formatVietnamPhoneNumber(to).replace("+", ""); // SpeedSMS expects 84xxxx
+            const ACCESS_TOKEN = process.env.SPEEDSMS_ACCESS_TOKEN;
 
-        return true;
-    } catch (err) {
-        console.error("Twilio error:", err.message);
-        return false;
-    }
+            // If SPEEDSMS_SENDER is set, use it. Otherwise, leave empty string.
+            const sender =
+                typeof process.env.SPEEDSMS_SENDER === "string"
+                    ? process.env.SPEEDSMS_SENDER
+                    : "";
+
+            const params = JSON.stringify({
+                to: [formattedTo],
+                content: body,
+                sms_type: 2, // 2 = brandname, 3 = OTP, 1 = ad, 4 = notify. Use 2 or 4 for normal notify.
+                sender: sender // use env var or empty string
+            });
+
+            const buf = Buffer.from(ACCESS_TOKEN + ':x');
+            const auth = "Basic " + buf.toString('base64');
+            const options = {
+                hostname: 'api.speedsms.vn',
+                port: 443,
+                path: '/index.php/sms/send',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': auth
+                }
+            };
+
+            const req = https.request(options, function (res) {
+                res.setEncoding('utf8');
+                let bodyData = '';
+                res.on('data', function (d) {
+                    bodyData += d;
+                });
+                res.on('end', function () {
+                    try {
+                        const json = JSON.parse(bodyData);
+                        if (json.status === 'success') {
+                            console.log("✅ SMS sent:", json);
+                            resolve(true);
+                        } else {
+                            // Special handling for "sender not found" error
+                            if (
+                                json.status === 'error' &&
+                                typeof json.message === 'string' &&
+                                json.message.toLowerCase().includes('sender not found')
+                            ) {
+                                console.error(`❌ SMS failed: sender not found. Please check your SPEEDSMS_SENDER environment variable or register your brandname sender with SpeedSMS.`);
+                            } else if (json.status === 'error' && json.code && json.message) {
+                                console.error(`❌ SMS failed: [${json.code}] ${json.message}`);
+                            } else {
+                                console.error("❌ SMS failed:", bodyData);
+                            }
+                            resolve(false);
+                        }
+                    } catch (e) {
+                        console.error("❌ SMS response parse error:", e, bodyData);
+                        resolve(false);
+                    }
+                });
+            });
+
+            req.on('error', function (e) {
+                console.error("send sms failed:", e);
+                resolve(false);
+            });
+
+            req.write(params);
+            req.end();
+        } catch (err) {
+            console.error("SpeedSMS error:", err.message);
+            resolve(false);
+        }
+    });
 }
