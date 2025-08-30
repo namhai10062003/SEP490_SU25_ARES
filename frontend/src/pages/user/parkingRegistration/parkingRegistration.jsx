@@ -118,14 +118,14 @@ const ParkingRegistrationList = () => {
     approved: "approved",
     rejected: "rejected",
   };
-  useEffect(() => {
-    if (user && user.status === 0) {
-      console.log("🚫 Tài khoản bị chặn đăng bài");
-      setIsBlocked(true);
-    } else {
-      setIsBlocked(false);
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (user && user.status === 0) {
+  //     console.log("🚫 Tài khoản bị chặn đăng bài");
+  //     setIsBlocked(true);
+  //   } else {
+  //     setIsBlocked(false);
+  //   }
+  // }, [user]);
   const normalizeText = (text) =>
     text?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
   // Ánh xạ filterStatus sang dạng normalize của dữ liệu thực tế
@@ -179,54 +179,54 @@ const ParkingRegistrationList = () => {
   };
 
   // hàm hủy khi mà người dùng không muốn đăng ký nữa 
- // Mở modal xác nhận huỷ
- const handleCancel = (id) => {
-  setCancelModal({ show: true, id });
-};
+  // Mở modal xác nhận huỷ
+  const handleCancel = (id) => {
+    setCancelModal({ show: true, id });
+  };
 
-// Thực hiện huỷ
-const doCancel = async (id) => {
-  if (!id) {
-    console.error("❌ Không có ID để huỷ");
-    toast.error("Không tìm thấy đơn để huỷ.");
-    return;
-  }
-  setLoading(true);
-  try {
-    const token = localStorage.getItem("token");
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/parkinglot/cancel/${id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (!res.ok) {
-      const errData = await res.json();
-      throw new Error(errData.message || "Không thể huỷ đơn");
+  // Thực hiện huỷ
+  const doCancel = async (id) => {
+    if (!id) {
+      console.error("❌ Không có ID để huỷ");
+      toast.error("Không tìm thấy đơn để huỷ.");
+      return;
     }
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/parkinglot/cancel/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    // Xoá item khỏi danh sách hiển thị
-    setCarRegistrations((prev) =>
-      prev.filter((p) => `${p._id || p.id}` !== `${id}`)
-    );
-    setBikeRegistrations((prev) =>
-      prev.filter((p) => `${p._id || p.id}` !== `${id}`)
-    );
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.message || "Không thể huỷ đơn");
+      }
 
-    toast.success("✅ Đã huỷ đơn đăng ký gửi xe thành công.");
-  } catch (err) {
-    console.error("❌ Lỗi huỷ đơn:", err);
-    toast.error(`🚫 ${err.message}`);
-  } finally {
-    setLoading(false); // ẩn loading  
-    setCancelModal({ show: false, id: null });
-  }
-};
+      // Xoá item khỏi danh sách hiển thị
+      setCarRegistrations((prev) =>
+        prev.filter((p) => `${p._id || p.id}` !== `${id}`)
+      );
+      setBikeRegistrations((prev) =>
+        prev.filter((p) => `${p._id || p.id}` !== `${id}`)
+      );
+
+      toast.success("✅ Đã huỷ đơn đăng ký gửi xe thành công.");
+    } catch (err) {
+      console.error("❌ Lỗi huỷ đơn:", err);
+      toast.error(`🚫 ${err.message}`);
+    } finally {
+      setLoading(false); // ẩn loading  
+      setCancelModal({ show: false, id: null });
+    }
+  };
 
   // Lấy quyền đăng ký
   useEffect(() => {
@@ -271,7 +271,7 @@ const doCancel = async (id) => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        
+
         const token = localStorage.getItem('token');
         const res = await fetch(`${import.meta.env.VITE_API_URL}/api/parkinglot/parkinglot`, {
           method: 'GET',
@@ -410,7 +410,7 @@ const doCancel = async (id) => {
     <div className="bg-light min-vh-100">
       <Header user={user} name={name} logout={logout} />
       <div className="container py-5">
-        {isBlocked ? (
+        {/* {isBlocked ? (
           <div className="alert alert-danger text-center">
             <h4 className="alert-heading">Tài khoản của bạn đã bị chặn</h4>
             <p>
@@ -421,115 +421,115 @@ const doCancel = async (id) => {
               Đăng xuất
             </button>
           </div>
-        ) : (
-          <div className="bg-white rounded-4 shadow p-4 mx-auto" style={{ maxWidth: 1200 }}>
-            <h2 className="fw-bold text-center mb-4">Danh sách đăng ký bãi giữ xe</h2>
+        ) : ( */}
+        <div className="bg-white rounded-4 shadow p-4 mx-auto" style={{ maxWidth: 1200 }}>
+          <h2 className="fw-bold text-center mb-4">Danh sách đăng ký bãi giữ xe</h2>
 
-            {canRegister && (
-              <div className="d-flex justify-content-end mb-3">
-                <Link to="/dichvu/dangkybaidoxe" className="btn btn-primary fw-bold">
-                  + Đăng ký mới
-                </Link>
-              </div>
-            )}
-            <div className="row">
-              {/* Sidebar lọc bên trái */}
-              <div className="col-md-3">
-                <div className="bg-light p-3 rounded shadow-sm mb-4">
-                  <h5 className="fw-bold mb-3">
-                    <i className="bi bi-funnel me-2"></i>Bộ lọc
-                  </h5>
-                  <label className="form-label">Chủ sở hữu</label>
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    value={filterOwnerName}
-                    onChange={(e) => setFilterOwnerName(e.target.value)}
-                    placeholder="Nhập tên chủ sở hữu"
-                  />
-                  {/* Trạng thái */}
-                  <label className="form-label">Trạng thái</label>
-                  <select
-                    className="form-select mb-3"
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                  >
-                    <option value="all">Tất cả</option>
-                    <option value="pending">Đang đăng ký</option>
-                    <option value="approved">Đã đăng ký</option>
-                    <option value="rejected">Bị từ chối</option>
-                  </select>
+          {canRegister && (
+            <div className="d-flex justify-content-end mb-3">
+              <Link to="/dichvu/dangkybaidoxe" className="btn btn-primary fw-bold">
+                + Đăng ký mới
+              </Link>
+            </div>
+          )}
+          <div className="row">
+            {/* Sidebar lọc bên trái */}
+            <div className="col-md-3">
+              <div className="bg-light p-3 rounded shadow-sm mb-4">
+                <h5 className="fw-bold mb-3">
+                  <i className="bi bi-funnel me-2"></i>Bộ lọc
+                </h5>
+                <label className="form-label">Chủ sở hữu</label>
+                <input
+                  type="text"
+                  className="form-control mb-3"
+                  value={filterOwnerName}
+                  onChange={(e) => setFilterOwnerName(e.target.value)}
+                  placeholder="Nhập tên chủ sở hữu"
+                />
+                {/* Trạng thái */}
+                <label className="form-label">Trạng thái</label>
+                <select
+                  className="form-select mb-3"
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                >
+                  <option value="all">Tất cả</option>
+                  <option value="pending">Đang đăng ký</option>
+                  <option value="approved">Đã đăng ký</option>
+                  <option value="rejected">Bị từ chối</option>
+                </select>
 
-                  {/* Biển số */}
-                  <label className="form-label">Biển số xe</label>
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    value={filterPlate}
-                    onChange={(e) => setFilterPlate(e.target.value)}
-                    placeholder="Nhập biển số"
-                  />
+                {/* Biển số */}
+                <label className="form-label">Biển số xe</label>
+                <input
+                  type="text"
+                  className="form-control mb-3"
+                  value={filterPlate}
+                  onChange={(e) => setFilterPlate(e.target.value)}
+                  placeholder="Nhập biển số"
+                />
 
-                  {/* Căn hộ */}
-                  <label className="form-label">Mã căn hộ</label>
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    value={filterApartment}
-                    onChange={(e) => setFilterApartment(e.target.value)}
-                    placeholder="Nhập mã căn hộ"
-                  />
+                {/* Căn hộ */}
+                <label className="form-label">Mã căn hộ</label>
+                <input
+                  type="text"
+                  className="form-control mb-3"
+                  value={filterApartment}
+                  onChange={(e) => setFilterApartment(e.target.value)}
+                  placeholder="Nhập mã căn hộ"
+                />
 
-                  {/* Sort */}
-                  <label className="form-label">Sắp xếp</label>
-                  <select
-                    className="form-select mb-3"
-                    value={sortOption}
-                    onChange={(e) => setSortOption(e.target.value)}
-                  >
-                    <option value="date_desc">Ngày đăng ký (mới nhất)</option>
-                    <option value="date_asc">Ngày đăng ký (cũ nhất)</option>
-                    {/* <option value="price_asc">Giá tăng dần</option>
+                {/* Sort */}
+                <label className="form-label">Sắp xếp</label>
+                <select
+                  className="form-select mb-3"
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value)}
+                >
+                  <option value="date_desc">Ngày đăng ký (mới nhất)</option>
+                  <option value="date_asc">Ngày đăng ký (cũ nhất)</option>
+                  {/* <option value="price_asc">Giá tăng dần</option>
         <option value="price_desc">Giá giảm dần</option> */}
-                  </select>
+                </select>
 
-                  {/* Reset */}
-                  <button
-                    className="btn btn-outline-secondary w-100"
-                    onClick={() => {
-                      setFilterStatus('all');
-                      setFilterPlate('');
-                      setFilterApartment('');
-                      setFilterOwnerName('');
-                      setSortOption('date_desc');
-                    }}
-                  >
-                    Xoá bộ lọc
-                  </button>
-                </div>
-              </div>
-
-              {/* Bảng hiển thị bên phải */}
-              <div className="col-md-9">
-                {loading ? (
-                  <p className="text-center text-secondary py-4">⏳ Đang tải dữ liệu...</p>
-                ) : (
-                  <>
-                    <>
-                      {Object.entries(groupByApartment(getFilteredAndSortedData(carRegistrations))).map(([apt, items]) =>
-                        renderTable(`🚗 Ô tô - ${apt}`, items)
-                      )}
-                      {Object.entries(groupByApartment(getFilteredAndSortedData(bikeRegistrations))).map(([apt, items]) =>
-                        renderTable(`🏍️ Xe máy - ${apt}`, items)
-                      )}
-                    </>
-
-
-                  </>
-                )}
+                {/* Reset */}
+                <button
+                  className="btn btn-outline-secondary w-100"
+                  onClick={() => {
+                    setFilterStatus('all');
+                    setFilterPlate('');
+                    setFilterApartment('');
+                    setFilterOwnerName('');
+                    setSortOption('date_desc');
+                  }}
+                >
+                  Xoá bộ lọc
+                </button>
               </div>
             </div>
-            {/* <div className="col-md-3">
+
+            {/* Bảng hiển thị bên phải */}
+            <div className="col-md-9">
+              {loading ? (
+                <p className="text-center text-secondary py-4">⏳ Đang tải dữ liệu...</p>
+              ) : (
+                <>
+                  <>
+                    {Object.entries(groupByApartment(getFilteredAndSortedData(carRegistrations))).map(([apt, items]) =>
+                      renderTable(`🚗 Ô tô - ${apt}`, items)
+                    )}
+                    {Object.entries(groupByApartment(getFilteredAndSortedData(bikeRegistrations))).map(([apt, items]) =>
+                      renderTable(`🏍️ Xe máy - ${apt}`, items)
+                    )}
+                  </>
+
+
+                </>
+              )}
+            </div>
+          </div>
+          {/* <div className="col-md-3">
   <label className="form-label">Sắp xếp</label>
   <select
     className="form-select"
@@ -542,7 +542,7 @@ const doCancel = async (id) => {
     <option value="price_desc">Giá giảm dần</option>
   </select>
 </div> */}
-            {/* <div className="row g-3 mb-4">
+          {/* <div className="row g-3 mb-4">
   <div className="col-md-3">
     <label className="form-label">Trạng thái</label>
     <select
@@ -578,7 +578,7 @@ const doCancel = async (id) => {
   </div>
 </div> */}
 
-            {/* {loading ? (
+          {/* {loading ? (
   
   <p className="text-center text-secondary py-4">⏳ Đang tải dữ liệu...</p>
   
@@ -588,38 +588,38 @@ const doCancel = async (id) => {
     {renderTable('🏍️ Xe máy', applySort(applyFilters(bikeRegistrations)))}
   </>
 )} */}
-            <EditVehicleModal
-              show={showEditModal}
-              onClose={() => setShowEditModal(false)}
-              vehicleData={selectedItem}
-              onSave={handleSaveEdit}   // ✅ chỉ gọi cha
+          <EditVehicleModal
+            show={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            vehicleData={selectedItem}
+            onSave={handleSaveEdit}   // ✅ chỉ gọi cha
+          />
+        </div>
+        )
+        {showReason && (
+          <>
+            <ReusableModal
+              show={!!showReason}             // true nếu có lý do
+              onClose={() => setShowReason(null)}
+              title="Lý do từ chối"
+              body={<p>{showReason || "Không có lý do"}</p>}
+              footerButtons={[
+                {
+                  label: "Đóng",
+                  variant: "secondary",
+                  onClick: () => setShowReason(null),
+                },
+              ]}
             />
-          </div>
+            {loading && <LoadingModal show={loading} />}
+          </>
         )}
-       {showReason && (
-  <>
-    <ReusableModal
-      show={!!showReason}             // true nếu có lý do
-      onClose={() => setShowReason(null)}
-      title="Lý do từ chối"
-      body={<p>{showReason || "Không có lý do"}</p>}
-      footerButtons={[
-        {
-          label: "Đóng",
-          variant: "secondary",
-          onClick: () => setShowReason(null),
-        },
-      ]}
-    />
-    {loading && <LoadingModal show={loading} />}
-  </>
-)}
 
 
 
       </div>
-       {/* Modal xác nhận huỷ */}
-       <ReusableModal
+      {/* Modal xác nhận huỷ */}
+      <ReusableModal
         show={cancelModal.show}
         onClose={() => setCancelModal({ show: false, id: null })}
         title="Xác nhận huỷ đơn"
@@ -637,7 +637,7 @@ const doCancel = async (id) => {
           },
         ]}
       />
-      
+
       {/* Loading modal */}
       {loading && <LoadingModal show={loading} />}
     </div>

@@ -1,11 +1,7 @@
 import bcrypt from 'bcrypt';
 import User from '../models/User.js';
-// Lấy tất cả staff
-// controllers/staffController.js (or wherever)
-function escapeRegex(str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
+// Lấy tất cả staff
 const getAllStaff = async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
@@ -19,8 +15,8 @@ const getAllStaff = async (req, res) => {
         }
 
         if (req.query.email && String(req.query.email).trim() !== "") {
-            const safe = escapeRegex(String(req.query.email).trim());
-            filter.email = { $regex: safe, $options: "i" };
+            // Không dùng escapeRegex nữa, chỉ dùng regex thường
+            filter.email = { $regex: String(req.query.email).trim(), $options: "i" };
         }
 
         const [staff, total] = await Promise.all([

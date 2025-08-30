@@ -1,6 +1,8 @@
 import PayOS from "@payos/node";
 import Contract from "../models/Contract.js";
-
+import { emitNotification } from "../helpers/socketHelper.js";
+import User from "../models/User.js";
+import { sendEmailNotification, sendSMSNotification } from "../helpers/notificationHelper.js";
 const payos = new PayOS(
   process.env.CLIENTIDCONTRACT,
   process.env.APIKEYCONTRACT,
@@ -105,19 +107,19 @@ export const createContractPayment = async (req, res) => {
         error: true,
       });
     }
-// ✅ Check xem có hợp đồng khác cùng postId đã thanh toán chưa
-const paidContract = await Contract.findOne({
-  postId: contract.postId,
-  paymentStatus: "paid",
-  _id: { $ne: contractId }
-});
-if (paidContract) {
-  return res.status(400).json({
-    message: "Bài đăng này đã được thanh toán, không thể đặt cọc thêm",
-    success: false,
-    error: true,
-  });
-}
+    // ✅ Check xem có hợp đồng khác cùng postId đã thanh toán chưa
+    const paidContract = await Contract.findOne({
+      postId: contract.postId,
+      paymentStatus: "paid",
+      _id: { $ne: contractId }
+    });
+    if (paidContract) {
+      return res.status(400).json({
+        message: "Bài đăng này đã được thanh toán, không thể đặt cọc thêm",
+        success: false,
+        error: true,
+      });
+    }
     // Tạo orderCode
     const timestamp = Date.now();
     const randomNum = Math.floor(Math.random() * 1000);
@@ -223,7 +225,7 @@ export const handleContractPaymentWebhook = async (req, res) => {
       });
 
       console.log("✅ Đã cập nhật trạng thái paid:", contract._id);
-    } 
+    }
     else {
       // ❌ Thanh toán thất bại hoặc bị hủy
       await Contract.findByIdAndUpdate(contract._id, {
@@ -232,7 +234,34 @@ export const handleContractPaymentWebhook = async (req, res) => {
       });
       console.log("❌ Thanh toán thất bại:", contract._id);
     }
+    // 🔹 Lấy thông tin user để gửi email/sms
+    const apartmentCode = contract.apartmentCode || contract.postSnapshot?.apartmentCode || "";
+    const user = await User.findById(contract.userId).lean();
 
+    const message = `Bạn đã thanh toán hợp đồng cho căn hộ ${apartmentCode} thành công.`;
+
+    const noti = await Notification.create({
+      userId: contract.userId,
+      message
+    });
+    emitNotification(contract.userId, noti);
+    // 🔹 Email
+    if (user?.email) {
+      await sendEmailNotification({
+        to: user.email,
+        subject: "Thanh toán hợp đồng thành công",
+        text: message,
+        html: `<p>${message}</p>`,
+      });
+    }
+
+    // 🔹 SMS
+    if (user?.phone) {
+      await sendSMSNotification({
+        to: user.phone,
+        body: `[ARES] ${message}`,
+      });
+    }
     return res.status(200).send("OK");
   } catch (error) {
     console.error("❌ Lỗi xử lý webhook:", error);
