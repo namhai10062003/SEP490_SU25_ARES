@@ -788,34 +788,62 @@ const CustomerPostManagement = () => {
                         {post.contactInfo?.phone}
                       </div>
                       <div className="small">
-                        <span
-                          className="material-symbols-rounded align-middle"
-                          style={{ fontSize: 16, verticalAlign: "middle" }}
-                        >
-                          calendar_month
-                        </span>
-                        Ngày đăng: {formatDate(post.paymentDate)} •
-                        <span
-                          className={`badge ms-2 px-2 py-1 rounded-pill fw-normal ${post.status === "pending"
-                            ? "bg-warning text-dark"
-                            : post.status === "approved"
-                              ? "bg-success"
-                              : "bg-danger"
-                            }`}
-                        >
-                          {postStatusLabels[post.status] || post.status}
-                        </span>
-                        <span
-                          className={`badge ms-2 px-2 py-1 rounded-pill fw-normal ${post.paymentStatus === "unpaid"
-                            ? "bg-light text-danger border"
-                            : "bg-success"
-                            }`}
-                        >
-                          {post.paymentStatus === "unpaid"
-                            ? "Chưa thanh toán"
-                            : "Đã thanh toán"}
-                        </span>
-                      </div>
+  <div className="mb-1">
+    <span
+      className="material-symbols-rounded align-middle"
+      style={{ fontSize: 16, verticalAlign: "middle" }}
+    >
+      calendar_month
+    </span>
+    Ngày đăng: {post.createdAt ? formatDate(post.createdAt) : "—"}
+  </div>
+
+  <div className="mb-1">
+    <span
+      className="material-symbols-rounded align-middle"
+      style={{ fontSize: 16, verticalAlign: "middle" }}
+    >
+      calendar_month
+    </span>
+    Ngày thanh toán:{" "}
+    {post.paymentDate ? formatDate(post.paymentDate) : "Chưa thanh toán"}
+  </div>
+
+  <div className="mb-2">
+    <span
+      className="material-symbols-rounded align-middle"
+      style={{ fontSize: 16, verticalAlign: "middle" }}
+    >
+      calendar_month
+    </span>
+    Ngày hết hạn: {post.expiredDate ? formatDate(post.expiredDate) : "—"}
+  </div>
+
+  <div>
+    <span
+      className={`badge me-2 px-2 py-1 rounded-pill fw-normal ${
+        post.status === "pending"
+          ? "bg-warning text-dark"
+          : post.status === "approved"
+          ? "bg-success"
+          : "bg-danger"
+      }`}
+    >
+      {postStatusLabels[post.status] || post.status}
+    </span>
+
+    <span
+      className={`badge px-2 py-1 rounded-pill fw-normal ${
+        post.paymentStatus === "unpaid"
+          ? "bg-light text-danger border"
+          : "bg-success"
+      }`}
+    >
+      {post.paymentStatus === "unpaid" ? "Chưa thanh toán" : "Đã thanh toán"}
+    </span>
+  </div>
+</div>
+
                     </div>
                     {/* Action Buttons */}
                     <div className="col-auto d-flex flex-column gap-2">

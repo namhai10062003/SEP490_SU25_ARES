@@ -84,22 +84,32 @@ const StaffDashboard = () => {
   }, []);
 
   useEffect(() => {
+    // 📢 Sự kiện gửi xe mới
     socket.on('staff:new-parking-request', data => {
       const { apartmentCode, owner, licensePlate, vehicleType } = data.registration;
       toast.info(`📢 Yêu cầu gửi xe mới: ${apartmentCode} - ${owner} (${licensePlate}, ${vehicleType})`, {
-        onClick: () => navigate('/manage-parkinglot')
+        onClick: () => navigate('/staff-manage-parkinglot')
       });
     });
-
+  
+    // 📋 Nhân khẩu mới
     socket.on('new-resident-registered', resident => {
       toast.info(`📋 Nhân khẩu mới: ${resident.fullName} – Căn hộ ${resident.apartmentCode}`, {
-        onClick: () => navigate('/resident-verify')
+        onClick: () => navigate('/staff-resident-verify')
       });
     });
-
+  
+    // 📝 Hồ sơ tạm trú/tạm vắng mới
+    socket.on('new-declaration-registered', declaration => {
+      toast.info(`📝 Hồ sơ tạm trú/tạm vắng: ${declaration.fullName} – Căn hộ ${declaration.apartmentCode}`, {
+        onClick: () => navigate('/staff-residence-decration')
+      });
+    });
+  
     return () => {
       socket.off('staff:new-parking-request');
       socket.off('new-resident-registered');
+      socket.off('new-declaration-registered');
     };
   }, [navigate]);
 

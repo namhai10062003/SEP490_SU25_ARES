@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Header from '../../../../components/header';
 import LoadingModal from '../../../../components/loadingModal';
@@ -98,28 +98,96 @@ const handleChangeIphone = (e) => {
 };
 
 // Validate ngày
-const validateDates = () => {
+const validateParkingForm = () => {
+  if (!formData.owner?.trim()) {
+    toast.error("❌ Nhập tên chủ sở hữu");
+    return false;
+  }
+
+  if (!formData.ownerPhone?.trim()) {
+    toast.error("❌ Nhập số điện thoại");
+    return false;
+  }
+  if (!/^(0|\+84)\d{9,10}$/.test(formData.ownerPhone.trim())) {
+    toast.error("❌ Số điện thoại không hợp lệ");
+    return false;
+  }
+
+  // if (!formData.apartmentName?.trim()) {
+  //   toast.error("❌ Nhập tên căn hộ");
+  //   return false;
+  // }
+
+  if (!formData.apartmentId) {
+    toast.error("❌ Chọn căn hộ");
+    return false;
+  }
+
+  
+
+  if (!formData.vehicleType) {
+    toast.error("❌ Chọn loại xe");
+    return false;
+  }
+
+  if (!formData.licensePlate?.trim()) {
+    toast.error("❌ Nhập biển số xe");
+    return false;
+  }
+  
+  if (!formData.registeredCity?.trim()) {
+    toast.error("❌ Nhập nơi đăng ký (Tỉnh / Thành phố)");
+    return false;
+  }
+
+  if (!formData.registeredDistrict?.trim()) {
+    toast.error("❌ Nhập nơi đăng ký (Quận / Huyện)");
+    return false;
+  }
+
+  if (!formData.registerDate) {
+    toast.error("❌ Chọn ngày đăng ký");
+    return false;
+  }
+
   const reg = new Date(formData.registerDate);
   if (isNaN(reg)) {
-    toast.error('Vui lòng chọn ngày đăng ký hợp lệ!');
+    toast.error("❌ Ngày đăng ký không hợp lệ");
     return false;
   }
 
   if (formData.expireDate) {
     const exp = new Date(formData.expireDate);
     if (isNaN(exp)) {
-      toast.error('Ngày hết hạn không hợp lệ!');
+      toast.error("❌ Ngày hết hạn không hợp lệ");
+      return false;
+    }
+    if (reg > exp) {
+      toast.error("❌ Ngày hết hạn phải sau ngày đăng ký");
       return false;
     }
   }
 
+  // // ✅ Check file đúng kiểu
+  // if (!(formData.documentFront instanceof File)) {
+  //   toast.error("❌ Vui lòng tải lên ảnh mặt trước giấy tờ xe");
+  //   return false;
+  // }
+
+  // if (!(formData.documentBack instanceof File)) {
+  //   toast.error("❌ Vui lòng tải lên ảnh mặt sau giấy tờ xe");
+  //   return false;
+  // }
+
   return true;
 };
+
+
 
   // Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateDates()) return;
+    if (!validateParkingForm()) return;
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
@@ -153,7 +221,7 @@ const validateDates = () => {
       if (!res.ok) throw new Error(result.message || 'Đăng ký thất bại');
 
       toast.success('✅ Bạn đã đăng ký. Vui lòng đợi nhân viên phê duyệt.');
-      setTimeout(() => navigate('/dichvu/baidoxe'), 3000);
+      setTimeout(() => navigate('/dichvu/baidoxe'), 2000);
 
     } catch (err) {
       console.error(err);
@@ -167,7 +235,7 @@ const validateDates = () => {
   return (
     <div className="bg-light min-vh-100">
       <Header user={user} name={name} logout={logout} />
-      <ToastContainer />
+
 
       <div className="container py-5">
         <div className="bg-white rounded-4 shadow p-4 mx-auto" style={{ maxWidth: 700 }}>
@@ -189,7 +257,7 @@ const validateDates = () => {
     value={formData.ownerPhone}
     onChange={handleChange}
     className={`form-control ${formData.ownerPhone && !/^[0-9]{9,11}$/.test(formData.ownerPhone) ? 'is-invalid' : ''}`}
-    required
+    
     pattern="^[0-9]{9,11}$"
     title="Số điện thoại phải là số và từ 9 đến 11 chữ số"
   />
@@ -205,7 +273,7 @@ const validateDates = () => {
             {/* Căn hộ */}
             <div className="col-md-6">
               <label className="form-label">Tên căn hộ *</label>
-              <select name="apartmentId" value={formData.apartmentId} onChange={handleChange} className="form-select" required>
+              <select name="apartmentId" value={formData.apartmentId} onChange={handleChange} className="form-select" >
                 <option value="">-- Chọn căn hộ --</option>
                 {apartments.map((apt) => (
                   <option key={apt._id} value={apt._id}>{apt.apartmentCode}</option>
@@ -216,7 +284,7 @@ const validateDates = () => {
             {/* Loại xe */}
             <div className="col-md-6">
               <label className="form-label">Loại xe *</label>
-              <select name="vehicleType" value={formData.vehicleType} onChange={handleChange} className="form-select" required>
+              <select name="vehicleType" value={formData.vehicleType} onChange={handleChange} className="form-select" >
                 <option value="">-- Chọn loại --</option>
                 <option value="ô tô">Ô tô</option>
                 <option value="xe máy">Xe máy</option>
@@ -226,7 +294,7 @@ const validateDates = () => {
             {/* Biển số */}
             <div className="col-md-6">
               <label className="form-label">Biển số xe *</label>
-              <input type="text" name="licensePlate" value={formData.licensePlate} onChange={handleChange} className="form-control" required />
+              <input type="text" name="licensePlate" value={formData.licensePlate} onChange={handleChange} className="form-control" />
             </div>
 
             {/* Số khung */}
@@ -246,10 +314,10 @@ const validateDates = () => {
               <label className="form-label">Đăng ký tại *</label>
               <div className="row g-2">
                 <div className="col">
-                  <input type="text" placeholder="Tỉnh / Thành phố" name="registeredCity" value={formData.registeredCity} onChange={handleChange} className="form-control" required />
+                  <input type="text" placeholder="Tỉnh / Thành phố" name="registeredCity" value={formData.registeredCity} onChange={handleChange} className="form-control"  />
                 </div>
                 <div className="col">
-                  <input type="text" placeholder="Quận / Huyện" name="registeredDistrict" value={formData.registeredDistrict} onChange={handleChange} className="form-control" required />
+                  <input type="text" placeholder="Quận / Huyện" name="registeredDistrict" value={formData.registeredDistrict} onChange={handleChange} className="form-control"  />
                 </div>
               </div>
             </div>
@@ -257,7 +325,7 @@ const validateDates = () => {
             {/* Ngày đăng ký */}
             <div className="col-md-6">
               <label className="form-label">Ngày đăng ký *</label>
-              <input type="date" name="registerDate" value={formData.registerDate} onChange={handleChange} className="form-control" required />
+              <input type="date" name="registerDate" value={formData.registerDate} onChange={handleChange} className="form-control"  />
             </div>
 
             {/* Ngày hết hạn
