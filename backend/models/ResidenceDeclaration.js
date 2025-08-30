@@ -15,7 +15,7 @@ const residenceDeclarationSchema = new Schema({
   dateOfBirth: { type: Date },
   relationWithOwner: { type: String },
   nationality: { type: String },
-  idNumber: { type: String }, // sẽ mã hóa khi lưu
+  idNumber: { type: String , required: true }, // sẽ mã hóa khi lưu
   // issueDate: { type: Date },
 
   apartmentId: { type: Schema.Types.ObjectId, ref: 'Apartment', required: true },

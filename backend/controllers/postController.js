@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 import { decrypt } from "../db/encryption.js";
+import Notification from '../models/Notification.js';
 import Post from '../models/Post.js';
 import PostHistory from "../models/PostHistory.js"; // nhớ thêm `.js` nếu dùng ESM
 import PostPackage from '../models/Postpackage.js';
 import User from '../models/User.js';
-import Notification from '../models/Notification.js';
 
 export const createPost = async (req, res) => {
   try {
@@ -867,7 +867,7 @@ export const verifyPostByAdmin = async (req, res) => {
 
     // Gửi thông báo bài đăng đã được duyệt
     await Notification.create({
-      user: existingPost.user, // assuming 'user' field in Post refers to the userId
+      userId: existingPost.contactInfo, // assuming 'user' field in Post refers to the userId
       type: "post_approved",
       title: "Bài đăng đã được duyệt",
       message: `Bài đăng của bạn với tiêu đề "${existingPost.title}" đã được duyệt.`,

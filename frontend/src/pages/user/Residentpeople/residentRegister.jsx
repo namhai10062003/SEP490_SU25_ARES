@@ -85,36 +85,62 @@ const ResidentRegister = () => {
     }
   };
 
-  const validate = () => {
-    if (!form.apartmentId) return toast.error('Chọn căn hộ');
-    if (!form.fullName.trim()) return toast.error('Nhập họ tên');
-    if (!form.gender) return toast.error('Chọn giới tính');
-    if (!form.dateOfBirth) return toast.error('Chọn ngày sinh');
-    if (!form.relationWithOwner.trim()) return toast.error('Nhập quan hệ với chủ hộ');
+  // Hàm tính tuổi từ ngày sinh
+const getAge = (dob) => {
+  const birth = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  return age;
+};
 
-    const age = getAge(form.dateOfBirth);
+const validate = () => {
+  if (!form.apartmentId) {
+    toast.error("❌ Chọn căn hộ");
+    return false;
+  }
+  if (!form.fullName.trim()) {
+    toast.error("❌ Nhập họ tên");
+    return false;
+  }
+  if (!form.gender) {
+    toast.error("❌ Chọn giới tính");
+    return false;
+  }
+  if (!form.dateOfBirth) {
+    toast.error("❌ Chọn ngày sinh");
+    return false;
+  }
+  if (!form.relationWithOwner.trim()) {
+    toast.error("❌ Nhập quan hệ với chủ hộ");
+    return false;
+  }
 
-    if (age >= 16) {
-      if (!form.idNumber.trim()) return toast.error('Nhập số CCCD');
-      if (!/^\d{12}$/.test(form.idNumber.trim())) return toast.error('CCCD phải gồm đúng 12 chữ số');
-    } else {
-      if (!form.documentFront) return toast.error('Vui lòng tải lên ảnh giấy khai sinh');
+  // ✅ Kiểm tra tuổi để xác định validate CCCD hay giấy khai sinh
+  const age = getAge(form.dateOfBirth);
+
+  if (age >= 16) {
+    if (!form.idNumber?.trim()) {
+      toast.error("❌ Nhập số CCCD");
+      return false;
     }
-
-    return true;
-  };
-
-  const getAge = (dob) => {
-    if (!dob) return 0;
-    const birthDate = new Date(dob);
-    const now = new Date();
-    let age = now.getFullYear() - birthDate.getFullYear();
-    const m = now.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && now.getDate() < birthDate.getDate())) {
-      age--;
+    if (!/^\d{12}$/.test(form.idNumber.trim())) {
+      toast.error("❌ CCCD phải gồm đúng 12 chữ số");
+      return false;
     }
-    return age;
-  };
+  } else {
+    if (!form.documentFront) {
+      toast.error("❌ Vui lòng tải lên ảnh giấy khai sinh");
+      return false;
+    }
+  }
+
+  return true;
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -224,29 +250,31 @@ const ResidentRegister = () => {
               </div>
               {/* Quốc tịch */}
               <div className="col-md-3">
-                <label className="form-label">Quốc tịch</label>
+                <label className="form-label">Quốc tịch *</label>
                 <input
                   type="text"
                   name="nationality"
                   value={form.nationality}
                   onChange={handleChange}
                   className="form-control"
+                  required
                 />
               </div>
               {/* Ngày chuyển đến */}
               <div className="col-md-6">
-                <label className="form-label">Ngày chuyển đến</label>
+                <label className="form-label">Ngày chuyển đến *</label>
                 <input
                   type="date"
                   name="moveInDate"
                   value={form.moveInDate}
                   onChange={handleChange}
                   className="form-control"
+                  required
                 />
               </div>
               {/* Số CCCD */}
               <div className="col-md-3">
-                <label className="form-label">Số CCCD/ Giấy khai sinh</label>
+                <label className="form-label">Số CCCD/ Giấy khai sinh *</label>
                 <input
                   type="text"
                   name="idNumber"
@@ -256,23 +284,25 @@ const ResidentRegister = () => {
                   maxLength={12}
                   pattern="\d{12}"
                   placeholder="Nhập 12 số"
+                  required
                 />
               </div>
               {/* Ngày cấp */}
               <div className="col-md-3">
-                <label className="form-label">Ngày cấp</label>
+                <label className="form-label">Ngày cấp *</label>
                 <input
                   type="date"
                   name="issueDate"
                   value={form.issueDate}
                   onChange={handleChange}
                   className="form-control"
+                  required
                 />
               </div>
               {/* Ảnh giấy tờ */}
               <div className="col-md-6">
                 <label className="form-label">
-                  {getAge(form.dateOfBirth) < 16 ? 'Ảnh giấy khai sinh *' : 'Mặt trước CCCD'}
+                  {getAge(form.dateOfBirth) < 16 ? 'Ảnh giấy khai sinh *' : 'Mặt trước CCCD *'}
                 </label>
                 <input
                   type="file"
@@ -288,7 +318,7 @@ const ResidentRegister = () => {
               </div>
               {getAge(form.dateOfBirth) >= 16 && (
                 <div className="col-md-6">
-                  <label className="form-label">Mặt sau CCCD</label>
+                  <label className="form-label">Mặt sau CCCD *</label>
                   <input
                     type="file"
                     name="documentBack"

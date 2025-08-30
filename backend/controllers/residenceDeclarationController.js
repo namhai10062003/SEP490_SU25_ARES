@@ -40,10 +40,23 @@ export const createDeclaration = async (req, res) => {
       relationWithOwner,
       nationality,
       idNumber,
-    //   issueDate,
       startDate,
       endDate
     } = req.body;
+
+    // ✅ Validate ngày
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return res.status(400).json({ message: "Ngày bắt đầu hoặc ngày kết thúc không hợp lệ." });
+      }
+
+      if (start > end) {
+        return res.status(400).json({ message: "Ngày bắt đầu không thể lớn hơn ngày kết thúc." });
+      }
+    }
 
     // ✅ Tìm căn hộ
     const apartment = await Apartment.findById(apartmentId);
@@ -87,13 +100,25 @@ export const createDeclaration = async (req, res) => {
       relationWithOwner,
       nationality,
       idNumber: encryptedIdNumber,
-    //   issueDate: issueDate || null,
       startDate,
       endDate,
       documentImage: documentImageUrl,
       createdBy: req.user._id,
       verifiedByStaff: "pending"
     });
+
+    // ✅ Emit socket nếu có
+    if (global._io) {
+      global._io.emit('new-declaration-registered', {
+        _id: declaration._id,
+        fullName: declaration.fullName,
+        gender: declaration.gender,
+        apartmentCode: apartment.apartmentCode,
+        relation: declaration.relationWithOwner,
+        dateOfBirth: declaration.dateOfBirth,
+        documentImage: declaration.documentImage
+      });
+    }
 
     res.status(201).json({
       message: 'Thêm hồ sơ tạm trú/tạm vắng thành công, vui lòng đợi xác minh.',
@@ -103,6 +128,7 @@ export const createDeclaration = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server', error: err.message });
   }
 };
+
 
 // 📌 Lấy danh sách chờ xác minh
 export const getUnverifiedDeclarations = async (req, res) => {

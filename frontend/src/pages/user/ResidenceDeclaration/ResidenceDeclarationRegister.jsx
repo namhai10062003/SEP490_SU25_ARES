@@ -85,19 +85,59 @@ const ResidenceDeclarationRegister = () => {
   };
   
   const validate = () => {
-    if (!form.apartmentId) return toast.error('Chọn căn hộ');
-    if (!form.fullName.trim()) return toast.error('Nhập họ tên');
-    if (!form.gender) return toast.error('Chọn giới tính');
-    if (!form.dateOfBirth) return toast.error('Chọn ngày sinh');
-    if (!form.relationWithOwner.trim()) return toast.error('Nhập quan hệ với chủ hộ');
-    if (!form.startDate) return toast.error('Chọn ngày bắt đầu');
-    if (!form.endDate) return toast.error('Chọn ngày kết thúc');
-    if (new Date(form.startDate) > new Date(form.endDate)) {
-      return toast.error('Ngày kết thúc phải sau ngày bắt đầu');
+    if (!form.apartmentId) {
+      toast.error("❌ Chọn căn hộ");
+      return false;
     }
-    if (!form.documentImage) return toast.error('Vui lòng tải lên giấy tạm trú/tạm vắng');
+    if (!form.fullName.trim()) {
+      toast.error("❌ Nhập họ tên");
+      return false;
+    }
+    if (!form.gender) {
+      toast.error("❌ Chọn giới tính");
+      return false;
+    }
+    if (!form.dateOfBirth) {
+      toast.error("❌ Chọn ngày sinh");
+      return false;
+    }
+    if (!form.relationWithOwner.trim()) {
+      toast.error("❌ Nhập quan hệ với chủ hộ");
+      return false;
+    }
+  
+    // ✅ Check CCCD
+    if (!form.idNumber) {
+      toast.error("❌ Nhập số CCCD");
+      return false;
+    }
+    if (!/^\d{12}$/.test(form.idNumber.trim())) {
+      toast.error("❌ Số CCCD phải gồm đúng 12 chữ số");
+      return false;
+    }
+  
+    if (!form.startDate) {
+      toast.error("❌ Chọn ngày bắt đầu");
+      return false;
+    }
+    if (!form.endDate) {
+      toast.error("❌ Chọn ngày kết thúc");
+      return false;
+    }
+    if (new Date(form.startDate) > new Date(form.endDate)) {
+      toast.error("❌ Ngày kết thúc phải sau ngày bắt đầu");
+      return false;
+    }
+    if (!form.documentImage) {
+      toast.error("❌ Vui lòng tải lên giấy tờ tạm trú/tạm vắng");
+      return false;
+    } 
+  
     return true;
   };
+  
+  
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -115,8 +155,10 @@ const ResidenceDeclarationRegister = () => {
       });
 
       const result = await res.json();
-      if (!res.ok) throw new Error(result.message || 'Đăng ký thất bại');
-
+         // Check cả status HTTP lẫn message trong body
+    if (!res.ok || result.success === false) {
+      throw new Error(result.message || 'Đăng ký thất bại');
+    }
       toast.success('✅ Gửi yêu cầu thành công – chờ xác minh');
       setTimeout(() => navigate('/residence-declaration/list'), 2500);
     } catch (err) {
@@ -223,7 +265,7 @@ const ResidenceDeclarationRegister = () => {
 
               {/* Quốc tịch */}
               <div className="col-md-6">
-                <label className="form-label">Quốc tịch</label>
+                <label className="form-label">Quốc tịch *</label>
                 <input
                   type="text"
                   name="nationality"
@@ -235,7 +277,7 @@ const ResidenceDeclarationRegister = () => {
 
               {/* Số CCCD */}
               <div className="col-md-6">
-                <label className="form-label">Số CCCD</label>
+                <label className="form-label">Số CCCD *</label>
                 <input
   type="text"
   name="idNumber"
@@ -245,6 +287,7 @@ const ResidenceDeclarationRegister = () => {
   placeholder="Nhập 12 số"
   pattern="\d{12}"   // chỉ đúng 12 chữ số
   title="CCCD phải gồm đúng 12 số"
+  required
 />
 
               </div>
