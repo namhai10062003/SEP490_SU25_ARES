@@ -421,14 +421,7 @@ const Home = () => {
       if (!isMounted) return;
       setPostStats(statsRes.data.data);
       setPlazas(plazasRes.data.data);
-
-      // get-top-6 trả về 1 object (bài viết), không phải array
-      // Để tương thích với code cũ (posts.map), ta chuyển thành mảng nếu cần
-      const topPosts = postsRes.data.data
-        ? (Array.isArray(postsRes.data.data) ? postsRes.data.data : [postsRes.data.data])
-        : [];
-      setPosts(topPosts);
-
+      setPosts(postsRes.data.data);
       setLoading(false);
     }).catch((err) => {
       if (!isMounted) return;
