@@ -234,23 +234,26 @@ const calculateAndSaveFees = async (req, res) => {
       }
     }
 
-// Giữ trạng thái đã thanh toán
-const oldFees = await Fee.find({ paymentStatus: "paid" }).lean();
-const paidMap = {};
-oldFees.forEach((f) => {
-  const normMonth = normalizeMonthKey(f.month);
-  paidMap[`${f.apartmentId}_${normMonth}`] = f;
-});
+    const oldFees = await Fee.find({ paymentStatus: "paid" }).lean();
 
-feeDocs.forEach((doc) => {
-  const normMonth = normalizeMonthKey(doc.month);
-  const key = `${doc.apartmentId}_${normMonth}`;
-  if (paidMap[key]) {
-    doc.paymentStatus = "paid";
-    doc.paymentDate = paidMap[key].paymentDate;
-    doc.orderCode = paidMap[key].orderCode;
-  }
-});
+    const paidMap = {};
+    oldFees.forEach((f) => {
+      const normMonth = normalizeMonthKey(f.month);
+      const key = `${f.apartmentId.toString()}_${normMonth}`;
+      paidMap[key] = f;
+    });
+    
+    feeDocs.forEach((doc) => {
+      const normMonth = normalizeMonthKey(doc.month);
+      const key = `${doc.apartmentId.toString()}_${normMonth}`;
+    
+      if (paidMap[key]) {
+        doc.paymentStatus = "paid";
+        doc.paymentDate = paidMap[key].paymentDate;
+        doc.orderCode = paidMap[key].orderCode;
+      }
+    });
+    
 
     // ===== Lưu xuống DB =====
     await Fee.deleteMany({});

@@ -3,21 +3,21 @@ import {
     FaArrowLeft,
     FaCalendarAlt,
     FaCheck,
+    FaClock,
+    FaCouch,
     FaEnvelope,
+    FaFileAlt,
+    FaHome,
     FaMapMarkerAlt,
     FaPhone,
     FaRulerCombined,
     FaStar,
+    FaTag,
     FaTimes,
     FaTrash,
     FaUser,
-    FaClock,
-    FaHome,
-    FaFileAlt,
-    FaCouch,
-    FaTag,
 } from "react-icons/fa";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import EditHistoryModal from "../../../../components/showHistory.jsx";
 import { useAuth } from "../../../../context/authContext.jsx";
@@ -149,12 +149,12 @@ const AdminPostDetail = () => {
     const isApproveDisabled =
         post?.isEditing ||
         post?.status === "deleted" ||
-        ["approved", "rejected"].includes(post?.status);
+        ["approved", "rejected","expired"].includes(post?.status);
 
     const isRejectDisabled =
         post?.isEditing ||
         post?.status === "deleted" ||
-        ["approved", "rejected"].includes(post?.status);
+        ["approved", "rejected", "expired"].includes(post?.status);
 
     const isDeleteDisabled = post?.isEditing || post?.status === "deleted";
 
