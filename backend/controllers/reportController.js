@@ -1,6 +1,5 @@
 import Post from "../models/Post.js";
 import Report from "../models/Report.js";
-import Notification from "../models/Notification.js";
 
 // controllers/reportController.js
 
@@ -26,16 +25,23 @@ export const getRecentPendingReport = async (req, res) => {
 
 export const createReport = async (req, res) => {
   try {
-    /* ====== DEBUG tiện kiểm tra ====== */
-    console.log("[DEBUG] req.params:", req.params); // { postId: ... }
-    console.log("[DEBUG] req.body  :", req.body);   // Có thể {reason,...} hoặc {data:{reason,...}}
-    console.log("[DEBUG] req.user  :", req.user);   // Lấy từ middleware auth
+    console.log("[DEBUG] req.params:", req.params);
+    console.log("[DEBUG] req.body  :", req.body);
+    console.log("[DEBUG] req.user  :", req.user);
 
     const { postId } = req.params;
-    const userId = req.user?._id;   // Có thể undefined nếu chấp nhận ẩn danh
+    const userId = req.user?._id;
+
+    /* ===== 0. Check đăng nhập ===== */
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Vui lòng đăng nhập để báo cáo.",
+      });
+    }
 
     /* ----- 1. Lấy payload thật sự ----- */
-    const payload = req.body?.data ? req.body.data : req.body;   // ưu tiên req.body.data
+    const payload = req.body?.data ? req.body.data : req.body;
     const reason = typeof payload.reason === "string" ? payload.reason.trim() : "";
     const description = typeof payload.description === "string" ? payload.description.trim() : "";
 
@@ -47,7 +53,7 @@ export const createReport = async (req, res) => {
       });
     }
 
-    /* ----- 3. bài đăng có tồn tại? ----- */
+    /* ----- 3. Kiểm tra bài đăng có tồn tại không ----- */
     const post = await Post.findById(postId);
     if (!post) {
       return res.status(404).json({
@@ -75,7 +81,6 @@ export const createReport = async (req, res) => {
   } catch (err) {
     console.error("[DEBUG] createReport error:", err);
 
-    // Lỗi duplicate key (đã báo cáo trước đó)
     if (err.code === 11000) {
       return res.status(409).json({
         success: false,
@@ -89,6 +94,7 @@ export const createReport = async (req, res) => {
     });
   }
 };
+
 
 /**
  * (Tùy chọn) Lấy tất cả report – thường cho admin

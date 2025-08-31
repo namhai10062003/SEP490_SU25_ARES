@@ -110,11 +110,6 @@ const getParkingRegistrations = async (req, res) => {
     return res.status(500).json({ message: 'Lỗi server', error: error.message });
   }
 };
-
-
-
-
-// Hiển thị chi tiết xe đã đăng ký
 // Hiển thị chi tiết xe đã đăng ký
 const getParkingRegistrationDetail = async (req, res) => {
   try {
