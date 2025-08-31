@@ -11,7 +11,7 @@ export default function ResidentVerificationList() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [searchDate, setSearchDate] = useState("");
-
+  const [selectedImage, setSelectedImage] = useState(null);
   const [show, setShow] = useState(false);
   const fetchUsers = async () => {
     setLoading(true);
@@ -128,31 +128,39 @@ export default function ResidentVerificationList() {
             </td>
 
             <td className="p-2">
-              {user.contractImage ? (
-                <>
-                  <img
-                    src={user.contractImage}
-                    alt="Hợp đồng"
-                    className="rounded shadow-sm"
-                    style={{ width: 60, cursor: "pointer", border: "1px solid #ccc" }}
-                    onClick={() => setShow(true)}
-                  />
+  {user.contractImages && user.contractImages.length > 0 ? (
+    <>
+      {user.contractImages.map((img, idx) => (
+        <img
+          key={idx}
+          src={img}
+          alt={`Hợp đồng ${idx + 1}`}
+          className="rounded me-2"
+          style={{ width: 60, cursor: "pointer", border: "1px solid #ccc" }}
+          onClick={() => {
+            setSelectedImage(img); // ảnh nào click thì show ảnh đó
+            setShow(true);
+          }}
+        />
+      ))}
 
-                  {/* Modal xem ảnh */}
-                  <Modal show={show} onHide={() => setShow(false)} centered size="lg">
-                    <Modal.Body className="text-center">
-                      <img
-                        src={user.contractImage}
-                        alt="Hợp đồng"
-                        style={{ maxWidth: "100%", maxHeight: "80vh" }}
-                      />
-                    </Modal.Body>
-                  </Modal>
-                </>
-              ) : (
-                <span className="text-muted ms-2">Không có</span>
-              )}
-            </td>
+      {/* Modal xem ảnh */}
+      <Modal show={show} onHide={() => setShow(false)} centered size="lg">
+        <Modal.Body className="text-center">
+          <img
+            src={selectedImage}
+            alt="Hợp đồng"
+            style={{ maxWidth: "100%", maxHeight: "80vh" }}
+          />
+        </Modal.Body>
+      </Modal>
+    </>
+  ) : (
+    <span className="text-muted ms-2">Không có</span>
+  )}
+</td>
+
+
 
             <td>
               {user.approvedAt

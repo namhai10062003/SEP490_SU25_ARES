@@ -428,26 +428,43 @@ const PostDetail = () => {
                 🚩 Báo cáo
               </button>
               <button
-                className="btn btn-success px-3"
-                onClick={() => {
-                  if (contract?.paymentStatus === "paid") {
-                    toast.info("Căn hộ/bất động sản này đã được đặt cọc", {
-                      position: "top-right",
-                      autoClose: 3000,
-                      hideProgressBar: false,
-                      closeOnClick: true,
-                      pauseOnHover: true,
-                      draggable: true,
-                      progress: undefined,
-                    });
-                    return;
-                  }
-                  navigate(`/booking/${post._id}`);
-                }}
-                disabled={post.type === "dich_vu"}
-              >
-                📄 Đặt Cọc
-              </button>
+  className="btn btn-success px-3"
+  onClick={() => {
+    const token = localStorage.getItem("token"); // hoặc state user
+
+    if (!token) {
+      toast.info("⚠️ Vui lòng đăng nhập để đặt cọc!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return; // dừng ở đây, không navigate
+    }
+
+    if (contract?.paymentStatus === "paid") {
+      toast.info("Căn hộ/bất động sản này đã được đặt cọc", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+      return;
+    }
+
+    navigate(`/booking/${post._id}`);
+  }}
+  disabled={post.type === "dich_vu"}
+>
+  📄 Đặt Cọc
+</button>
+
             </div>
           </div>
 
