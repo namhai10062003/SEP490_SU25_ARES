@@ -181,59 +181,103 @@ export const getUserApartment = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Lấy tất cả căn hộ mà user là Owner hoặc Renter
     const apartments = await Apartment.find({
-      $or: [
-        { isOwner: userId },
-        { isRenter: userId }
-      ]
+      $or: [{ isOwner: userId }, { isRenter: userId }]
     })
-      .populate('isOwner', 'name phone email')
-      .populate('isRenter', 'name phone email')
-      .lean(); // trả object plain để dễ thêm field mới
+      .populate("isOwner", "name phone email")
+      .populate("isRenter", "name phone email")
+      .lean();
 
     if (!apartments || apartments.length === 0) {
       return res.status(404).json({ error: "Không tìm thấy căn hộ của bạn" });
     }
 
-    // Lấy danh sách fees theo apartmentId
     const apartmentIds = apartments.map(a => a._id);
-    const fees = await Fee.find({ apartmentId: { $in: apartmentIds } })
-      .select('apartmentId paymentStatus')
-      .lean();
+
+    // Lấy fee: chuẩn hoá tháng + ưu tiên paid
+    const fees = await Fee.aggregate([
+      { $match: { apartmentId: { $in: apartmentIds } } },
+    
+      {
+        $addFields: {
+          normMonth: {
+            $cond: [
+              { $regexMatch: { input: "$month", regex: /^\d{2}\/\d{4}$/ } },
+              {
+                $concat: [
+                  { $arrayElemAt: [{ $split: ["$month", "/"] }, 1] },
+                  "-",
+                  { $arrayElemAt: [{ $split: ["$month", "/"] }, 0] }
+                ]
+              },
+              "$month"
+            ]
+          },
+          statusRank: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$paymentStatus", "paid"] }, then: 2 },
+                { case: { $eq: ["$paymentStatus", "pending"] }, then: 1 }
+              ],
+              default: 0
+            }
+          },
+          paymentDateSortable: { $ifNull: ["$paymentDate", new Date(0)] } // null -> thời điểm cực cũ
+        }
+      },
+    
+      // Sắp xếp ưu tiên: paid > pending > unpaid, rồi theo ngày thanh toán, rồi updatedAt
+      { $sort: { statusRank: -1, paymentDateSortable: -1, updatedAt: -1, createdAt: -1 } },
+    
+      {
+        $group: {
+          _id: { apartmentId: "$apartmentId", normMonth: "$normMonth" },
+          fee: { $first: "$$ROOT" }
+        }
+      },
+    
+      { $sort: { "_id.apartmentId": 1, "fee.normMonth": -1 } },
+    
+      {
+        $group: {
+          _id: "$_id.apartmentId",
+          fee: { $first: "$fee" }
+        }
+      }
+    ]);
+    
 
     // Map fee theo apartmentId
     const feeMap = {};
-    fees.forEach(fee => {
-      feeMap[fee.apartmentId.toString()] = fee.paymentStatus;
+    fees.forEach(f => {
+      feeMap[f._id.toString()] = {
+        ...f.fee,
+        month: f.fee.normMonth // đảm bảo trả về YYYY-MM
+      };
     });
 
-    // Thêm logic canPay và paymentStatus
+    // Build kết quả
     const result = apartments.map(apartment => {
       const isOwner = apartment.isOwner && apartment.isOwner._id.toString() === userId;
       const isRenter = apartment.isRenter && apartment.isRenter._id.toString() === userId;
-
-      let canPay = false;
-
-      if (isRenter) {
-        canPay = true; // renter luôn thấy nút
-      } else if (isOwner && !apartment.isRenter) {
-        canPay = true; // owner chỉ thấy khi chưa có renter
-      }
+      const canPay = isRenter || (isOwner && !apartment.isRenter);
 
       return {
         ...apartment,
-        paymentStatus: feeMap[apartment._id.toString()] || "unpaid",
+        fee: feeMap[apartment._id.toString()] || null,
         canPay
       };
     });
 
     res.json(result);
-
   } catch (err) {
+    console.error("❌ getUserApartment error:", err);
     res.status(500).json({ error: err.message });
   }
 };
+
+
+
 
 // Tính phí bảo trì căn hộ
 export const getApartmentExpense = async (req, res) => {

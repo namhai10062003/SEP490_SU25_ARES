@@ -165,35 +165,39 @@ function PlazaDetail({ user, name, logout }) {
                 </div>
                 <div className="card-body p-0">
                   <div className="list-group list-group-flush">
-                    {otherPlazas.slice(0, 5).map((p) => (
-                      <Link
-                        key={p._id}
-                        to={`/plaza/${p._id}`}
-                        className="list-group-item list-group-item-action border-0 p-3 d-flex align-items-center gap-3 hover-lift"
-                        style={{ transition: "all 0.2s ease" }}
-                      >
-                        <div className="flex-shrink-0">
-                          <img
-                            src={p.img}
-                            alt={p.name}
-                            className="rounded-3"
-                            style={{
-                              width: "60px",
-                              height: "60px",
-                              objectFit: "cover",
-                            }}
-                          />
-                        </div>
-                        <div className="flex-grow-1 min-w-0">
-                          <h6 className="mb-1 fw-semibold text-truncate">{p.name}</h6>
-                          <small className="text-muted d-flex align-items-center">
-                            <i className="bi bi-geo-alt me-1"></i>
-                            <span className="text-truncate">{p.location}</span>
-                          </small>
-                        </div>
-                        <i className="bi bi-chevron-right text-muted"></i>
-                      </Link>
-                    ))}
+                  {otherPlazas
+  .sort((a, b) => a.name.localeCompare(b.name)) // sắp xếp theo tên
+  .slice(0, 5)
+  .map((p) => (
+    <Link
+      key={p._id}
+      to={`/plaza/${p._id}`}
+      className="list-group-item list-group-item-action border-0 p-3 d-flex align-items-center gap-3 hover-lift"
+      style={{ transition: "all 0.2s ease" }}
+    >
+      <div className="flex-shrink-0">
+        <img
+          src={p.img}
+          alt={p.name}
+          className="rounded-3"
+          style={{
+            width: "60px",
+            height: "60px",
+            objectFit: "cover",
+          }}
+        />
+      </div>
+      <div className="flex-grow-1 min-w-0">
+        <h6 className="mb-1 fw-semibold text-truncate">{p.name}</h6>
+        <small className="text-muted d-flex align-items-center">
+          <i className="bi bi-geo-alt me-1"></i>
+          <span className="text-truncate">{p.location}</span>
+        </small>
+      </div>
+      <i className="bi bi-chevron-right text-muted"></i>
+    </Link>
+))}
+
                   </div>
                 </div>
                 {otherPlazas.length > 5 && (

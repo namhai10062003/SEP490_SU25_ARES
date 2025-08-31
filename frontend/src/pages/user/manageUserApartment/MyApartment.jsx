@@ -200,24 +200,36 @@ const MyApartment = () => {
                   <div className="ms-3 fw-semibold text-secondary">Tổng: {parkingFee.toLocaleString("vi-VN")} VND</div>
                 </div>
                 <div className="mt-2 fw-bold">Tổng cộng: {total.toLocaleString("vi-VN")} VND</div>
+                <div className="mt-2 fw-bold">
+  Trạng thái: {apartment.fee 
+    ? apartment.fee.paymentStatus === "paid" 
+      ? "Đã thanh toán" 
+      : apartment.fee.paymentStatus === "unpaid"
+        ? "Chưa thanh toán"
+        : "Đang chờ"
+    : "Chưa có phí"}
+</div>
 
                 {apartment.canPay ? (
-                  apartment.paymentStatus === "unpaid" ? (
-                    <button
-                      className="btn btn-success rounded-pill fw-semibold mt-3"
-                      onClick={() => handlePayment(apartment._id)}
-                    >
-                      Thanh toán
-                    </button>
-                  ) : (
-                    <button
-                      className="btn btn-primary rounded-pill fw-semibold mt-3"
-                      onClick={() => handleShowBill(apartment._id)}
-                    >
-                      Xem hóa đơn
-                    </button>
-                  )
-                ) : null}
+  !apartment.fee || apartment.fee.paymentStatus === "unpaid" ? (
+    <button
+      className="btn btn-success rounded-pill fw-semibold mt-3"
+      onClick={() => handlePayment(apartment._id)}
+    >
+      Thanh toán
+    </button>
+  ) : (
+    <button
+      className="btn btn-primary rounded-pill fw-semibold mt-3"
+      onClick={() => handleShowBill(apartment._id)}
+    >
+      Xem hóa đơn
+    </button>
+  )
+) : null}
+
+
+
               </div>
             );
           })}
