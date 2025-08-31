@@ -121,7 +121,7 @@ const Profile = () => {
         </div>
 
         <footer className="text-center mt-4 text-secondary small">
-          &copy; 2025 Hồ sơ người dùng
+          {/* &copy; 2025 Hồ sơ người dùng */}
         </footer>
       </div>
       {loading && <LoadingModal />}

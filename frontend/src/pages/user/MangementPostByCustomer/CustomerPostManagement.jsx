@@ -33,7 +33,7 @@ const CustomerPostManagement = () => {
   const [preview, setPreview] = useState(null);
   const [filters, setFilters] = useState({
     month: "",
-    status: "",
+    status: "pending",
     type: "",
     postPackage: "",
   });
@@ -66,6 +66,7 @@ const CustomerPostManagement = () => {
     approved: "Đã duyệt",
     rejected: "Từ chối",
     expired: "Đã hết hạn",
+    deleted: "Đã xóa"
   };
 
   const propertyOptions = [

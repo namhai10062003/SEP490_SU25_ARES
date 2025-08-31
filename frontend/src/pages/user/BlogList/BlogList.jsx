@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FaFilter, FaTimes } from "react-icons/fa";
+import { FaFilter } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
 import Footer from "../../../../components/footer";
 import Header from "../../../../components/header";
 import LoadingModal from "../../../../components/loadingModal";
 import { useAuth } from "../../../../context/authContext";
-import { getPostApproved } from "../../../service/postService";
 import { formatPrice } from "../../../../utils/format";
+import { getPostApproved } from "../../../service/postService";
 const BlogList = () => {
   const { user, logout, loading: authLoading } = useAuth();
   const [posts, setPosts] = useState([]);
@@ -276,7 +276,7 @@ const BlogList = () => {
                   currentPosts.map((post, idx) => (
                     <div key={post._id} className="col-12 col-md-6 col-lg-4 d-flex">
                       <Link
-                        to={`/postdetail/${post._id}`} onClick={handleClick}
+                        to={`/postdetail/${post._id}`}  
                         className="card h-100 shadow-sm border-0 text-decoration-none text-dark w-100"
                         style={{
                           minHeight: '260px',

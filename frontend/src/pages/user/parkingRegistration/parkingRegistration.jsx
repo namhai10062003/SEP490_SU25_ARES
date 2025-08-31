@@ -595,7 +595,7 @@ const ParkingRegistrationList = () => {
             onSave={handleSaveEdit}   // ✅ chỉ gọi cha
           />
         </div>
-        )
+        
         {showReason && (
           <>
             <ReusableModal

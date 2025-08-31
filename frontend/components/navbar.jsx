@@ -84,16 +84,16 @@ const Navbar = () => {
             </ProtectedLink>
           </li>
           <li>
-            <Link className="dropdown-item" to="/canho/liked-posts">
+            <ProtectedLink className="dropdown-item" to="/canho/liked-posts">
               Yêu thích
-            </Link>
+            </ProtectedLink>
           </li>
         </ul>
       </li>
 
       <li className="nav-item mx-2">
         <Link className={getNavClass("/blog")} to="/blog">
-          TIN TỨC
+          BÀI ĐĂNG
         </Link>
       </li>
       <li className="nav-item mx-2">

@@ -87,12 +87,13 @@ const Header = () => {
                     }
                     tabIndex={0}
                   >
-                    <img
-                      src="https://i.imgur.com/2DhmtJ4.png"
-                      alt="Avatar"
-                      className="rounded-circle border"
-                      style={{ width: 36, height: 36, objectFit: "cover" }}
-                    />
+                  <img
+  src={user?.profileImage || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRixKnMNs6qXtEhlou-lvePwx__5RuMB8eG5A&s"}
+  alt="Avatar"
+  className="rounded-circle border"
+  style={{ width: 36, height: 36, objectFit: "cover" }}
+/>
+
                   </button>
                   <ul
                     className={`dropdown-menu dropdown-menu-end mt-2${showProfileDropdown ? " show" : ""

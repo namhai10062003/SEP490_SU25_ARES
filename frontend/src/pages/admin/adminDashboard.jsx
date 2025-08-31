@@ -20,7 +20,7 @@ export default function AdminDashboard({ children }) {
 
   const navItems = [
     { to: "/admin-dashboard", label: "Tổng Quan" },
-    { to: "/admin-dashboard/posts", label: "Quản Lý Tin Tức" },
+    { to: "/admin-dashboard/posts", label: "Quản Lý Bài Đăng" },
     { to: "/admin-dashboard/manage-notification", label: "Quản lý Thông Báo" },
     { to: "/admin-dashboard/manage-contract", label: "Quản lý Hợp Đồng" },
     { to: "/admin-dashboard/manage-user", label: "Quản Lý Người Dùng" },

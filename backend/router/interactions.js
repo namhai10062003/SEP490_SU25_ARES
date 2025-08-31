@@ -8,11 +8,12 @@ import {
 } from "../controllers/reportController.js";
 import verifysUser from "../middleware/authMiddleware.js";
 import isAdmin from "../middleware/isAdmin.js";
+import { optionalAuth } from "../middleware/optionalAuth.js";
 import Like from "../models/Like.js";
 const router = express.Router();
 
-router.post("/likes/:postId", verifysUser, toggleLike);
-router.get("/likes/:postId", verifysUser, checkIfLiked);
+router.post("/likes/:postId", optionalAuth, toggleLike);
+router.get("/likes/:postId", optionalAuth, checkIfLiked);
 router.get("/my-liked-posts", verifysUser, getLikedPostsByUser);
 router.get("/:postId/count", async (req, res) => {
     try {
@@ -26,7 +27,7 @@ router
   .route("/comments/:postId")
   .get(getCommentsByPost)          // ai cũng xem được, không cần token
   .post(verifysUser, createComment);
-router.post("/reports/:postId", verifysUser, createReport);
+router.post("/reports/:postId", optionalAuth, createReport);
 // xem tat ca bai bao cao va duyejt nó của bên admin 
 // admin xem tất cả báo cáo
 router.get("/reports", isAdmin, getReports);

@@ -212,23 +212,64 @@ const PostDetail = () => {
       currencyDisplay: "code",
     }).format(price);
 
-  const handleLike = async () => {
-    await toggleLike(id);
-    setIsLiked((prev) => !prev);
-    setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
-  };
-
-  const handleAddComment = async () => {
-    if (!commentText.trim()) return;
-    await addComment(id, commentText);
-    const updated = await getComments(id);
-    setComments(updated.data.data);
-    setCommentText("");
-  };
+    const handleLike = async () => {
+      try {
+        const res = await toggleLike(id);
+    
+        if (res.data.success) {
+          setIsLiked(res.data.liked);
+          setLikeCount(res.data.likeCount);
+          toast.success(res.data.message);
+        } else {
+          toast.error(res.data.message);
+        }
+      } catch (err) {
+        const status = err.response?.status;
+        const msg = err.response?.data?.message || "❌ Like thất bại, vui lòng thử lại!";
+    
+        if (status === 401) {
+          toast.warn("⚠️ Vui lòng đăng nhập để like bài viết!");
+          // navigate("/login");
+        } else {
+          toast.error(msg);
+        }
+      }
+    };
+    
+    
+    
+    const handleAddComment = async () => {
+      // Giả sử có biến user hoặc token để check đăng nhập
+      const token = localStorage.getItem("token"); // hoặc state user
+    
+      if (!token) {
+        toast.warn("⚠️ Vui lòng đăng nhập để bình luận!");
+        return;
+      }
+    
+      if (!commentText.trim()) return;
+    
+      try {
+        await addComment(id, commentText);
+        const updated = await getComments(id);
+        setComments(updated.data.data);
+        setCommentText("");
+      } catch (error) {
+        console.error("Lỗi khi thêm bình luận:", error);
+      }
+    };
+    
 
   // Placeholder for report handler
 
   const handleReport = async () => {
+    // Giả sử có biến user hoặc token để check đăng nhập
+    const token = localStorage.getItem("token"); // hoặc state user
+    
+    if (!token) {
+      toast.warn("⚠️ Vui lòng đăng nhập để bình luận!");
+      return;
+    }
     if (!reportReason.trim()) {
       toast.warn("Vui lòng nhập lý do báo cáo!", { position: "top-right" });
       return;
@@ -241,11 +282,12 @@ const PostDetail = () => {
       setShowReport(false);
     } catch (error) {
       toast.error(
-        error?.response?.data?.message || "Gửi báo cáo thất bại.",
+        error?.response?.data?.message,
         { position: "top-right" }
       );
     }
   };
+
   if (loading) return <LoadingModal />;
   if (err) return <div className="text-danger text-center py-5">{err}</div>;
 
