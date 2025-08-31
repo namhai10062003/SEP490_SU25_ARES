@@ -22,7 +22,15 @@ const Expenses = () => {
     const [addPrice, setAddPrice] = useState("");
     const [apartmentFees, setApartmentFees] = useState([]);
     const [loadingFees, setLoadingFees] = useState(true);
-    const [filterMonth, setFilterMonth] = useState("");
+
+    const getCurrentMonth = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        return `${year}-${month}`;
+    };
+
+    const [filterMonth, setFilterMonth] = useState(getCurrentMonth());
     const [currentPage, setCurrentPage] = useState(1);
     const [filterText, setFilterText] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
@@ -31,12 +39,11 @@ const Expenses = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedId, setSelectedId] = useState(null);
     const [loadingModal, setLoadingModal] = useState(false);
-   
 
     const openDeleteModal = (id) => {
         setSelectedId(id);
         setShowDeleteModal(true);
-      };
+    };
     const formattedFilterMonth = filterMonth
         ? (() => {
             const [year, month] = filterMonth.split("-");
@@ -62,48 +69,50 @@ const Expenses = () => {
     // console.log("All fee months:", apartmentFees.map((f) => f.month));
     // console.log("Filtered fee months:", filteredFees.map((f) => f.month));
 
-   // Khi fetch hoặc setApartmentFees lần đầu
-useEffect(() => {
-    if (apartmentFees.length > 0) {
-      const sorted = [...apartmentFees].sort((a, b) => {
-        const dateA = new Date(`01/${a.month}`);
-        const dateB = new Date(`01/${b.month}`);
-        return dateB - dateA;
-      });
-      setApartmentFees(sorted);
-    }
-  }, [apartmentFees.length]);
-  
-  const getFilteredFees = () => {
-    return apartmentFees.filter((fee) => {
-      const matchesMonth =
-        !filterMonth ||
-        fee.month ===
-          `${filterMonth.split("-")[1]}/${filterMonth.split("-")[0]}`;
-  
-      const search = filterText.trim().toLowerCase();
-      const matchesText =
-        !search ||
-        (fee.apartmentCode?.toLowerCase() || "").includes(search) ||
-        (fee.ownerName?.toLowerCase() || "").includes(search);
-  
-      const matchesStatus =
-        filterStatus === "all" || fee.paymentStatus === filterStatus;
-  
-      return matchesMonth && matchesText && matchesStatus;
-    });
-  };
-  
+    // Khi fetch hoặc setApartmentFees lần đầu
+    useEffect(() => {
+        if (apartmentFees.length > 0) {
+            const sorted = [...apartmentFees].sort((a, b) => {
+                const dateA = new Date(`01/${a.month}`);
+                const dateB = new Date(`01/${b.month}`);
+                return dateB - dateA;
+            });
+            setApartmentFees(sorted);
+        }
+    }, [apartmentFees]);
+    
 
+    const getFilteredFees = () => {
+        return apartmentFees.filter((fee) => {
+            const matchesMonth =
+                !filterMonth ||
+                fee.month ===
+                `${filterMonth.split("-")[1]}/${filterMonth.split("-")[0]}`;
+
+            const search = filterText.trim().toLowerCase();
+            const matchesText =
+                !search ||
+                (fee.apartmentCode?.toLowerCase() || "").includes(search) ||
+                (fee.ownerName?.toLowerCase() || "").includes(search);
+
+            const matchesStatus =
+                filterStatus === "all" || fee.paymentStatus === filterStatus;
+
+            return matchesMonth && matchesText && matchesStatus;
+        });
+    };
 
     const filteredFees = getFilteredFees();
-
 
     const totalPages = Math.ceil(filteredFees.length / rowsPerPage);
     const paginatedFees = filteredFees.slice(
         (currentPage - 1) * rowsPerPage,
         currentPage * rowsPerPage
     );
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filterText, filterMonth, filterStatus]);    
 
 
     useEffect(() => {
@@ -137,84 +146,84 @@ useEffect(() => {
 
     const handleDelete = async () => {
         if (!selectedId) return;
-      
-        try {
-          setLoadingModal(true); // bật loading
-          await axios.delete(`${API_URL}/api/expenses/${selectedId}`);
-          toast.success("🗑️ Đã xóa chi phí!");
-          fetchExpenses();
-        } catch (err) {
-          toast.error("❌ Xóa thất bại!");
-        } finally {
-          setLoadingModal(false); // tắt loading
-          setShowDeleteModal(false); // đóng modal confirm
-          setSelectedId(null);
-        }
-      };
 
-      const handleRecalculateFees = async () => {
         try {
-          setLoadingModal(true); // 👉 bật modal loading
-          await axios.post(`${API_URL}/api/fees/calculate`);
-          toast.success("✅ Đã tính lại phí!");
-          fetchApartmentFees();
+            setLoadingModal(true); // bật loading
+            await axios.delete(`${API_URL}/api/expenses/${selectedId}`);
+            toast.success("🗑️ Đã xóa chi phí!");
+            fetchExpenses();
         } catch (err) {
-          toast.error("❌ Lỗi khi tính lại phí!");
+            toast.error("❌ Xóa thất bại!");
         } finally {
-          setLoadingModal(false); // 👉 tắt modal loading
+            setLoadingModal(false); // tắt loading
+            setShowDeleteModal(false); // đóng modal confirm
+            setSelectedId(null);
         }
-      };
+    };
 
-      const handleAdd = async (e) => {
+    const handleRecalculateFees = async () => {
+        try {
+            setLoadingModal(true); // 👉 bật modal loading
+            await axios.post(`${API_URL}/api/fees/calculate`);
+            toast.success("✅ Đã tính lại phí!");
+            fetchApartmentFees();
+        } catch (err) {
+            toast.error("❌ Lỗi khi tính lại phí!");
+        } finally {
+            setLoadingModal(false); // 👉 tắt modal loading
+        }
+    };
+
+    const handleAdd = async (e) => {
         e.preventDefault();
-      
+
         // Reset lỗi trước khi validate
         setPriceError("");
-      
+
         // Validate
         if (!addType) {
-          toast.warn("Vui lòng chọn loại chi phí!");
-          return;
+            toast.warn("Vui lòng chọn loại chi phí!");
+            return;
         }
-      
+
         if (!addLabel) {
-          toast.warn("Vui lòng nhập tên tòa nhà!");
-          return;
+            toast.warn("Vui lòng nhập tên tòa nhà!");
+            return;
         }
-      
+
         if (!addPrice) {
-          toast.warn("Vui lòng nhập giá chi phí!");
-          return;
+            toast.warn("Vui lòng nhập giá chi phí!");
+            return;
         }
-      
+
         if (Number(addPrice) <= 0) {
-          setPriceError("Giá phải lớn hơn 0");
-          toast.warn("Giá phải lớn hơn 0!");
-          return;
+            setPriceError("Giá phải lớn hơn 0");
+            toast.warn("Giá phải lớn hơn 0!");
+            return;
         }
-      
+
         try {
-          setLoadingModal(true); // 👉 bật loading
-      
-          await axios.post(`${API_URL}/api/expenses`, {
-            type: Number(addType),
-            label: addLabel,
-            price: Number(addPrice),
-          });
-      
-          toast.success("Thêm chi phí thành công!");
-          setAddType("");
-          setAddLabel("");
-          setAddPrice("");
-          setPriceError(""); // Reset lỗi sau khi thành công
-          fetchExpenses();
+            setLoadingModal(true); // 👉 bật loading
+
+            await axios.post(`${API_URL}/api/expenses`, {
+                type: Number(addType),
+                label: addLabel,
+                price: Number(addPrice),
+            });
+
+            toast.success("Thêm chi phí thành công!");
+            setAddType("");
+            setAddLabel("");
+            setAddPrice("");
+            setPriceError(""); // Reset lỗi sau khi thành công
+            fetchExpenses();
         } catch (err) {
-          const msg = err?.response?.data?.error || "Thêm chi phí thất bại!";
-          toast.error(msg);
+            const msg = err?.response?.data?.error || "Thêm chi phí thất bại!";
+            toast.error(msg);
         } finally {
-          setLoadingModal(false); // 👉 tắt loading
+            setLoadingModal(false); // 👉 tắt loading
         }
-      };
+    };
 
 
 
@@ -306,23 +315,23 @@ useEffect(() => {
                                         </tr>
                                     </thead>
                                     <tbody>
-  {items.map((exp) => (
-    <tr key={exp._id}>
-      <td>{TYPE_LABELS[exp.type] || `Loại ${exp.type}`}</td>
-      <td className="text-end text-primary fw-bold">
-        {exp.price.toLocaleString()} {exp.type === 1 ? "VND/m²" : "VND/tháng"}
-      </td>
-      <td className="text-center">
-        <button
-          className="btn btn-danger btn-sm"
-          onClick={() => openDeleteModal(exp._id)}
-        >
-          Xóa
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
+                                        {items.map((exp) => (
+                                            <tr key={exp._id}>
+                                                <td>{TYPE_LABELS[exp.type] || `Loại ${exp.type}`}</td>
+                                                <td className="text-end text-primary fw-bold">
+                                                    {exp.price.toLocaleString()} {exp.type === 1 ? "VND/m²" : "VND/tháng"}
+                                                </td>
+                                                <td className="text-center">
+                                                    <button
+                                                        className="btn btn-danger btn-sm"
+                                                        onClick={() => openDeleteModal(exp._id)}
+                                                    >
+                                                        Xóa
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
                                 </table>
                             </div>
                         ))}
@@ -334,11 +343,11 @@ useEffect(() => {
                 </p>
 
                 <button
-  className="btn btn-outline-warning mb-3"
-  onClick={handleRecalculateFees}
->
-  Tính lại phí tổng hợp
-</button>
+                    className="btn btn-outline-warning mb-3"
+                    onClick={handleRecalculateFees}
+                >
+                    Tính lại phí tổng hợp
+                </button>
 
 
                 <hr className="my-4" />
@@ -477,29 +486,28 @@ useEffect(() => {
                     )}
                 </div>
                 {/* Modal xác nhận xóa */}
-{/* Modal xác nhận xóa */}
-<ReusableModal
-  show={showDeleteModal}
-  title="Xác nhận xoá chi phí"
-  onClose={() => setShowDeleteModal(false)}
-  body="Bạn có chắc muốn xoá loại chi phí này?"
-  footerButtons={[
-    {
-      label: "Hủy",
-      variant: "secondary",
-      onClick: () => setShowDeleteModal(false),
-    },
-    {
-      label: "Xóa",
-      variant: "danger",
-      onClick: handleDelete,
-    },
-  ]}
-/>
+                <ReusableModal
+                    show={showDeleteModal}
+                    title="Xác nhận xoá chi phí"
+                    onClose={() => setShowDeleteModal(false)}
+                    body="Bạn có chắc muốn xoá loại chi phí này?"
+                    footerButtons={[
+                        {
+                            label: "Hủy",
+                            variant: "secondary",
+                            onClick: () => setShowDeleteModal(false),
+                        },
+                        {
+                            label: "Xóa",
+                            variant: "danger",
+                            onClick: handleDelete,
+                        },
+                    ]}
+                />
 
 
-{/* Modal loading */}
-{loadingModal && <LoadingModal />}
+                {/* Modal loading */}
+                {loadingModal && <LoadingModal />}
             </main>
         </div>
     );
