@@ -78,9 +78,18 @@ const Home = () => {
 
   useEffect(() => {
     axios.get(`${import.meta.env.VITE_API_URL}/api/plaza`)
-      .then(res => setPlazas(res.data.data))
+      .then(res => {
+        const sorted = [...(res.data.data || [])].sort((a, b) => {
+          // Lấy số từ chuỗi "Plaza 1", "Plaza 2" ...
+          const numA = parseInt(a.name?.match(/\d+/)?.[0] || 0, 10);
+          const numB = parseInt(b.name?.match(/\d+/)?.[0] || 0, 10);
+          return numA - numB;
+        });
+        setPlazas(sorted);
+      })
       .catch(err => console.error(err));
   }, []);
+  
 
   useEffect(() => {
     // Giả sử bạn xác định người dùng chưa cập nhật nếu thiếu identityNumber hoặc phone
@@ -354,7 +363,7 @@ const Home = () => {
       {/* FEATURED APARTMENTS */}
       {/* FEATURED APARTMENTS */}
       <section className="container py-5" ref={listRef}>
-        <h2 className="fw-bold text-uppercase mb-4 text-center">Căn hộ nổi bật</h2>
+        <h2 className="fw-bold text-uppercase mb-4 text-center">Bài Đăng nổi bật</h2>
         <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
           {selectedPosts.map((post) => (
             <div className="col" key={post._id}>

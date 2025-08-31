@@ -292,6 +292,37 @@ const BlogList = () => {
                         onMouseEnter={() => handleMouseEnter(idx, post.images)}
                         onMouseLeave={handleMouseLeave}
                       >
+                 {/* Badge VIP Ribbon */}
+{post.postPackage?.type && (
+  <div
+    className="position-absolute top-0 end-0 m-2 px-3 py-1 fw-bold text-white rounded-pill"
+    style={{
+      fontSize: "0.8rem",
+      boxShadow: "0 4px 10px rgba(0,0,0,0.25)",
+      background:
+        post.postPackage.type.toLowerCase() === "vip1"
+          ? "linear-gradient(135deg, #42A5F5, #1E88E5)" // xanh nhạt -> xanh đậm
+          : post.postPackage.type.toLowerCase() === "vip2"
+          ? "linear-gradient(135deg, #FF5252, #D32F2F)" // đỏ sáng -> đỏ đậm
+          : post.postPackage.type.toLowerCase() === "vip3"
+          ? "linear-gradient(135deg, #FFD700, #FFA500)" // vàng -> cam
+          : "linear-gradient(135deg, #9e9e9e, #616161)", // mặc định xám
+      letterSpacing: "1px",
+      textTransform: "uppercase",
+      minWidth: "65px",
+      textAlign: "center",
+      zIndex: 30,
+    }}
+  >
+    {post.postPackage.type}
+  </div>
+)}
+
+
+
+
+
+
                         <div style={{ width: "100%", height: "180px", overflow: "hidden", borderTopLeftRadius: 8, borderTopRightRadius: 8, position: "relative" }}>
                           {post.images?.length ? (
                             <img

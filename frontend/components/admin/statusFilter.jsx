@@ -60,6 +60,13 @@ const statusOptions = {
         { value: "active", label: "Active" },
         { value: "inactive", label: "Inactive" },
     ],
+    refund: [
+        { value: "", label: "Tất cả trạng thái" },
+        { value: "pending", label: "Chờ duyệt" },
+        { value: "approved", label: "Đã hoàn tiền" },
+        { value: "rejected", label: "Đã từ chối" },
+      ],
+      
 };
 
 const StatusFilter = ({ value, onChange, type = "default" }) => {

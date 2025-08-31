@@ -9,6 +9,7 @@ const StaffNavbar = () => {
     location.pathname === "/staff-resident-verification" ||
     location.pathname === "/staff-resident/history";
     location.pathname === "/staff-changePassWord";
+    location.pathname === "/staff-refund";
     ;
 
   const [showResidentSub, setShowResidentSub] = useState(isResidentActive);
@@ -381,7 +382,24 @@ const StaffNavbar = () => {
               Đổi mật khẩu
             </Link>
           </li>
-
+          <li className="nav-item">
+            <Link
+              to="/staff-refund"
+              className={`nav-link rounded-3 px-3 py-2 d-flex align-items-center ${
+                location.pathname === "/staff-refund"
+                  ? "active bg-white text-primary fw-bold shadow-sm"
+                  : "text-white"
+              }`}
+              style={{
+                background:
+                  location.pathname === "/staff-refund"
+                    ? "white"
+                    : "transparent",
+              }}
+            >
+              Hoàn Tiền
+            </Link>
+          </li>
 
           <li className="nav-item mt-3">
             <button
