@@ -277,7 +277,7 @@ const ResidenceDeclarationRegister = () => {
 
               {/* Số CCCD */}
               <div className="col-md-6">
-                <label className="form-label">Số CCCD *</label>
+                <label className="form-label">Số CCCD */ Giấy khai sinh *</label>
                 <input
   type="text"
   name="idNumber"

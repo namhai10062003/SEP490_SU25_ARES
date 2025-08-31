@@ -24,6 +24,8 @@ import plazaRoutes from "./router/plazaRoutes.js";
 import postPackage from "./router/postPackage.js";
 import postRouter from "./router/postRouter.js";
 import profileUpdateRoutes from "./router/profileUpdateRoutes.js";
+import refundRoutes from "./router/refundRoutes.js";
+import reportRoutes from "./router/reportRoutes.js";
 import ResidenceDeclaration from "./router/residenceDeclarationRoutes.js";
 import residentRouter from "./router/residentRoutes.js";
 import residentVerificationRouter from "./router/residentVerificationRoutes.js";
@@ -34,7 +36,6 @@ import userRouter from "./router/user.js";
 import waterRoutes from "./router/waterRoutes.js";
 import withdrawalRouter from "./router/withdrawalRouter.js";
 import { initSocket } from "./socket.js";
-import reportRoutes from "./router/reportRoutes.js";
 
 dotenv.config();
 
@@ -114,7 +115,7 @@ app.use("/api/residence-declaration", ResidenceDeclaration);
 app.use("/api/ai", aiChatRoutes);
 app.use("/api/payment-history", paymentAllRoutes);
 app.use("/api/report", reportRoutes);
-
+app.use("/api/refunds", refundRoutes);
 
 /* --------- Socket.IO events --------- */
 io.on("connection", (socket) => {

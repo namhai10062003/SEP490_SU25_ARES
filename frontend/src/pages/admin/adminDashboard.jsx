@@ -14,7 +14,8 @@ export default function AdminDashboard({ children }) {
     setShowFeedbackSub(
       location.pathname.startsWith("/admin-dashboard/report") ||
       location.pathname.startsWith("/admin-dashboard/contact") ||
-      location.pathname.startsWith("/admin-dashboard/updateprofile")
+      location.pathname.startsWith("/admin-dashboard/updateprofile") ||
+      location.pathname.startsWith("/admin-dashboard/refundPage")
     );
   }, [location.pathname]);
 
@@ -132,6 +133,17 @@ export default function AdminDashboard({ children }) {
                     >
                       <span className="me-2">•</span>
                       <span className="flex-grow-1" style={{ minWidth: 0 }}>Cập nhật thông tin</span>
+                    </Link>
+                  </li>
+                  <li className="nav-item">
+                    <Link
+                      to="/admin-dashboard/refundPage"
+                      className={`nav-link rounded px-3 py-2 d-flex align-items-center ${isActive("/admin-dashboard/refundPage") ? "bg-white text-primary fw-bold" : "text-white"}`}
+                      style={menuItemStyle}
+                      title="Cập nhật thông tin"
+                    >
+                      <span className="me-2">•</span>
+                      <span className="flex-grow-1" style={{ minWidth: 0 }}>Quản lí hoàn tiền</span>
                     </Link>
                   </li>
                 </ul>

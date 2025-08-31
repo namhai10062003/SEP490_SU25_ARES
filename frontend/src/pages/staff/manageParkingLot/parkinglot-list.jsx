@@ -138,17 +138,22 @@ const ParkingLotList = () => {
       item.owner.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.licensePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.vehicleType.toLowerCase().includes(searchTerm.toLowerCase());
-
+  
     const matchStatus = statusFilter === 'all' || item.status === statusFilter;
-
+  
     const matchDate =
       !searchDate ||
       new Date(item.registerDate).toISOString().slice(0, 10) === searchDate;
-
+  
     return matchSearch && matchStatus && matchDate;
   });
+  
+  // ✅ Sắp xếp theo ngày mới nhất trước
   const totalPages = Math.ceil(filteredList.length / PAGE_SIZE);
-  const currentList = filteredList.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const sortedList = [...filteredList].sort(
+    (a, b) => new Date(b.registerDate) - new Date(a.registerDate)
+  );
+  const currentList = sortedList.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   useEffect(() => {
     // Reset page if filter changes and page is out of range

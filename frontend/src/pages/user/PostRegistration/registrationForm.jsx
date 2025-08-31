@@ -556,6 +556,12 @@ const filteredApartments = apartmentOptions.filter(
       </li>
     </ul>
   </div>
+  <div className="alert alert-danger mt-3 d-flex align-items-center" role="alert">
+  <i className="bi bi-exclamation-triangle-fill me-2"></i>
+  <span>
+    <strong>Lưu ý:</strong> Đối với hợp đồng đặt cọc, Ares sẽ thu <strong>10%</strong> trên giá trị tiền đặt cọc.
+  </span>
+</div>
 </div>
 
 {/* ✅ Loading toàn màn hình */}

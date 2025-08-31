@@ -29,13 +29,14 @@ import PostManagement from "./pages/admin/ManagementPost/PostManagement.jsx";
 import AdminContactPage from "./pages/admin/contactPage/adminContactPage.jsx";
 import AdminContractDetail from './pages/admin/contractDetail.jsx';
 import ManageApartment from "./pages/admin/manage-apartment.jsx";
-import ManageResidentVerification from "./pages/admin/manage-resident-verification.jsx";
 import ManageContract from "./pages/admin/manage-contract.jsx";
 import ManageNotifications from "./pages/admin/manage-notification.jsx";
+import ManageResidentVerification from "./pages/admin/manage-resident-verification.jsx";
 import ManageStaff from "./pages/admin/manage-staff.jsx";
 import ManageUser from "./pages/admin/manage-user.jsx";
 import AdminReportPage from "./pages/admin/report/AdminReportPage";
 import AdminResidentApproval from "./pages/admin/residentVerifyByAdmin/AdminResidentApproval";
+import AdminRefundPage from "./pages/admin/revenue/AdminRefundPage.jsx";
 import AdminWithdrawPage from "./pages/admin/revenue/AdminWithdrawRequests.jsx";
 import AdminRevenueApartment from "./pages/admin/revenue/apartment.jsx";
 import AdminRevenueApartmentDeposit from "./pages/admin/revenue/apartmentDeposit.jsx";
@@ -43,6 +44,7 @@ import AdminRevenuePost from "./pages/admin/revenue/posts.jsx";
 import ManageUserDetail from "./pages/admin/userDetail.jsx";
 import AdminProfileUpdatePage from "./pages/admin/verifyprofileuser/AdminProfileUpdatePage.jsx";
 import ChangePasswordStaff from "./pages/staff/ChangePassWordStaff.jsx";
+import RefundForm from "./pages/staff/RefundForm.jsx";
 import ResidentVerificationForm from "./pages/staff/ResidentVerificationForm/ResidentVerificationForm.jsx";
 import ResidentVerificationHistory from "./pages/staff/ResidentVerificationList/ResidentVerificationHistory.jsx";
 import ResidentVerificationList from "./pages/staff/ResidentVerificationList/ResidentVerificationList.jsx";
@@ -61,6 +63,7 @@ import Contact from "./pages/user/Contact/Contact.jsx";
 import Introduce from "./pages/user/Introduce/Introduce.jsx";
 import CustomerPostManagement from "./pages/user/MangementPostByCustomer/CustomerPostManagement.jsx";
 import PaymentHistoryTable from "./pages/user/PaymentHistory/paymentHistory.jsx";
+import PlazaDetail from "./pages/user/Plaza/PlazaDetail.jsx";
 import RegistrationForm from "./pages/user/PostRegistration/registrationForm.jsx";
 import ResidenceDeclarationDetail from "./pages/user/ResidenceDeclaration/ResidenceDeclarationDetail.jsx";
 import ResidenceDeclarationList from "./pages/user/ResidenceDeclaration/ResidenceDeclarationList.jsx";
@@ -89,7 +92,6 @@ import Register from "./pages/user/register.jsx";
 import ResetPassword from "./pages/user/resetpassword";
 import UserRevenue from "./pages/user/revenuer/UserRevenue.jsx";
 import VerifyEmail from "./pages/user/verify-otp.jsx";
-import PlazaDetail from "./pages/user/Plaza/PlazaDetail.jsx";
 
 // Component bảo vệ route (chặn người chưa login, hoặc không đủ quyền)
 
@@ -188,6 +190,7 @@ function AppRoutes() {
         <Route path="/admin-dashboard/manage-contract" element={<ProtectedRoute element={<ManageContract />} allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/manage-contract/:id" element={<ProtectedRoute element={< AdminContractDetail />} allowedRoles={["admin"]} />} />
         <Route path="/admin-dashboard/changePassWord" element={<ProtectedRoute element={< ChangPassWord1 />} allowedRoles={["admin"]} />} />
+        <Route path="/admin-dashboard/refundPage" element={<ProtectedRoute element={< AdminRefundPage />} allowedRoles={["admin"]} />} />
         {/* Staff */}
         <Route path="/staff-dashboard" element={<ProtectedRoute element={<DashboardPage />} allowedRoles={["staff"]} />} />
         <Route path="staff-expenses" element={<ProtectedRoute element={<ManageExpense />} allowedRoles={["staff"]} />} />
@@ -201,6 +204,7 @@ function AppRoutes() {
         <Route path="staff-residence-decration" element={<ProtectedRoute element={<ResidenceDeclarationVerifyList />} allowedRoles={["staff"]} />} />
         <Route path="staff-resident/history" element={<ProtectedRoute element={<ResidentVerificationHistory />} allowedRoles={["staff"]} />} />
         <Route path="staff-changePassWord" element={<ProtectedRoute element={<ChangePasswordStaff />} allowedRoles={["staff"]} />} />
+        <Route path="staff-refund" element={<ProtectedRoute element={<RefundForm />} allowedRoles={["staff"]} />} />
         {/* User */}
       </Routes>
 
