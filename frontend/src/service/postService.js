@@ -148,12 +148,14 @@ export const deletePostByAdmin = async (postId) => {
     );
 }
 export const createPost = async (updatedData) => {
+    const token = localStorage.getItem("token"); // hoặc từ context
     return axios.post(`${import.meta.env.VITE_API_URL}/api/posts/create-post`, updatedData, {
-        headers: {
-            Authorization: `Bearer ${token}`, // hoặc lấy từ context nếu muốn
-        },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
-};
+  };
+  
 
 export const updatePostStatus = async (postId, data) => {
     return axios.put(

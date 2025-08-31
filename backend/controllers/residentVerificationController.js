@@ -144,7 +144,14 @@ const getAllResidentVerifications = async (req, res) => {
       .limit(pageSizeNum)
       .populate('staff', 'name email')
       .populate('user', '_id name email')
-      .populate('apartment', 'apartmentCode name');
+      .populate({
+        path: "apartment",
+        select: "apartmentCode name isOwner isRenter",
+        populate: [
+          { path: "isOwner", select: "name phone email" },
+          { path: "isRenter", select: "name phone email" },
+        ],
+      })
 
     res.status(200).json({
       data: forms,
@@ -407,6 +414,7 @@ const getUserWithApartment = async (req, res) => {
           list.push({
             userId: apartment.isOwner,
             role: "Chủ hộ",
+            apartmentId: apartment._id,
             apartmentCode: apartment.apartmentCode,
           });
         }
@@ -415,6 +423,7 @@ const getUserWithApartment = async (req, res) => {
           list.push({
             userId: apartment.isRenter,
             role: "Người thuê",
+            apartmentId: apartment._id,
             apartmentCode: apartment.apartmentCode,
           });
         }
@@ -424,33 +433,45 @@ const getUserWithApartment = async (req, res) => {
         const user = await User.findById(entry.userId).lean();
         if (!user) return null;
 
-        const verification = await ResidentVerification.findOne({ user: user._id }).lean();
+        // ✅ lấy verification đúng theo user + apartment
+        const verification = await ResidentVerification.findOne({
+          user: user._id,
+          apartment: entry.apartmentId, // match theo apartment
+        })
+          .sort({ updatedAt: -1 })
+          .lean();
 
         const status = verification?.status || "Chờ duyệt";
-        const approvedAt = (status === "Đã duyệt" || status === "Đã từ chối")
-          ? verification?.updatedAt
-          : null;
+        const approvedAt =
+          status === "Đã duyệt" || status === "Đã từ chối"
+            ? verification?.updatedAt
+            : null;
 
         return {
-          name: user.name,
+          name: user.fullName || user.name,
           email: user.email,
-          picture: user.picture,
+          phone: user.phone || null,
+          picture: user.picture || null,
           apartmentCode: entry.apartmentCode,
           role: entry.role,
-          contractImage: verification?.documentImage || null,
+          contractImages: Array.isArray(verification?.documentImage)
+            ? verification.documentImage
+            : [],
           status,
           approvedAt,
         };
       })
     );
 
-    const filteredResult = result.filter(item => item !== null);
+    const filteredResult = result.filter((item) => item !== null);
     res.status(200).json({ success: true, data: filteredResult });
   } catch (err) {
     console.error("❌ Lỗi:", err);
     res.status(500).json({ success: false, message: "Lỗi server." });
   }
 };
+
+
 
 
 const rejectResidentVerification = async (req, res) => {
