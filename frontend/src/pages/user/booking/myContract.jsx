@@ -64,7 +64,6 @@ const addDays = (date, days) => {
   // }, [editForm.startDate, editingContract]);
   //fix lấy trạng thaias 
   useEffect(() => {
-    setLoading(true)
     contracts.forEach(contract => {
       fetch(`${import.meta.env.VITE_API_URL}/api/contracts/posts/${contract.postId}/has-paid-contract`)
         .then(res => {
@@ -82,7 +81,6 @@ const addDays = (date, days) => {
         .catch(err => {
           console.error(`Lỗi fetch trạng thái paid của postId ${contract.postId}:`, err);
         });
-        setLoading(false);
     });
   }, [contracts]);
   

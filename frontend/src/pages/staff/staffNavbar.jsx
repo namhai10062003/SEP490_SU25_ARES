@@ -397,7 +397,7 @@ const StaffNavbar = () => {
                     : "transparent",
               }}
             >
-              Hoàn Tiền
+              Chuyển Tiền
             </Link>
           </li>
 

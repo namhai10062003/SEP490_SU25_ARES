@@ -122,7 +122,7 @@ const AdminRefundPage = () => {
   const handleApprove = async (id) => {
     try {
       await approveRefund(id);
-      toast.success("✅ Đã duyệt hoàn tiền!");
+      toast.success("✅ Đã duyệt Chuyển Tiền!");
       loadRefunds();
     } catch (err) {
       toast.error("❌ Duyệt thất bại: " + err.response?.data?.message);
@@ -136,7 +136,7 @@ const AdminRefundPage = () => {
     }
     try {
       await rejectRefund(selectedId, rejectReason);
-      toast.success("❌ Đã từ chối yêu cầu hoàn tiền!");
+      toast.success("❌ Đã từ chối yêu cầu chuyển tiền!");
       closeRejectModal();
       loadRefunds();
     } catch (err) {
@@ -149,7 +149,7 @@ const AdminRefundPage = () => {
       {loading && <LoadingModal />}
 
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold mb-0">Yêu cầu hoàn tiền</h2>
+        <h2 className="fw-bold mb-0">Yêu cầu chuyển tiền</h2>
       </div>
 
       <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
@@ -243,7 +243,7 @@ const AdminRefundPage = () => {
                     {r.status === "pending"
                       ? "Chờ duyệt"
                       : r.status === "approved"
-                      ? "Đã hoàn tiền"
+                      ? "Đã chuyển tiền"
                       : r.status === "rejected"
                       ? "Từ chối"
                       : r.status}
