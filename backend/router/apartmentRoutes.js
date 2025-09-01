@@ -1,16 +1,17 @@
 // ✅ apartmentRoutes.js (ESM version)
 import express from "express";
 import {
+  assignUserToApartment,
   createApartment,
+  deleteApartment,
   getAllApartments,
   getApartmentById,
-  updateApartment,
-  deleteApartment,
-  assignUserToApartment,
-  getUserApartment,
   getApartmentExpense,
   getApartmentHistory,
-  getFeesByApartmentCode
+  getFeesByApartmentCode,
+  getUserApartment,
+  togglePaymentStatus,
+  updateApartment
 } from "../controllers/apartmentController.js";
 const router = express.Router();
 
@@ -24,5 +25,5 @@ router.get('/my-apartment/:userId', getUserApartment);
 router.get("/expense/:apartmentId", getApartmentExpense);
 router.get("/history/:code", getApartmentHistory);
 router.get("/:code/fees", getFeesByApartmentCode);
-
+router.patch("/payment-status-all", togglePaymentStatus);
 export default router;

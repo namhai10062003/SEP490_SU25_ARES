@@ -33,7 +33,7 @@ const CustomerPostManagement = () => {
   const [preview, setPreview] = useState(null);
   const [filters, setFilters] = useState({
     month: "",
-    status: "pending",
+    status: "",
     type: "",
     postPackage: "",
   });
@@ -561,8 +561,26 @@ const CustomerPostManagement = () => {
         name={user?.username || user?.name || ""}
         logout={logout}
       />
+        
 
+        
       <div className="container py-4">
+      <div className="mb-4 d-flex justify-content-center">
+        <div
+  className="bg-primary text-white rounded-4 p-2 text-center"
+  style={{ width: "1300px", margin: "0 auto" , height:"50px"}}
+>
+    <h5 className="mb-0 d-flex align-items-center justify-content-center">
+      <span
+        className="material-symbols-rounded"
+        style={{ fontSize: 22 }}
+      >
+        library_books
+      </span>
+      <span className="ms-2">Bài Đăng Của Tôi</span>
+    </h5>
+  </div>
+</div>
         <div className="card p-3 mb-4 rounded-4">
           <div className="row g-3 align-items-end">
             {/* Tháng */}
@@ -654,17 +672,7 @@ const CustomerPostManagement = () => {
             </button>
           </div>
         </div>
-        <div className="bg-primary text-white rounded-4 p-3 mb-4 text-center">
-          <h2 className="mb-0">
-            <span
-              className="material-symbols-rounded align-middle"
-              style={{ fontSize: 32, verticalAlign: "middle" }}
-            >
-              library_books
-            </span>
-            <span className="ms-2">Bài Đăng Của Tôi</span>
-          </h2>
-        </div>
+       
 
         {/* Post List */}
         <div className="row g-4">
@@ -757,15 +765,8 @@ const CustomerPostManagement = () => {
                                 ? "home_work"
                                 : "article"}
                         </span>
-                        {(post.type === "ban"
-                          ? "Bán"
-                          : post.type === "dich_vu"
-                            ? "Dịch vụ"
-                            : post.type === "cho_thue"
-                              ? "Cho thuê"
-                              : post.type) +
-                          " - " +
-                          post.title}
+                        {
+                        post.title}
                       </div>
                       <div className="text-muted small mb-1">
                         <span

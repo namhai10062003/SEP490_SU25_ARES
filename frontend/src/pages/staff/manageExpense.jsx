@@ -1,6 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import 'react-confirm-alert/src/react-confirm-alert.css';
+import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ReusableModal from '../../../components/ReusableModal';
@@ -39,7 +40,7 @@ const Expenses = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedId, setSelectedId] = useState(null);
     const [loadingModal, setLoadingModal] = useState(false);
-
+    const [disabledRecalc, setDisabledRecalc] = useState(false);
     const openDeleteModal = (id) => {
         setSelectedId(id);
         setShowDeleteModal(true);
@@ -70,18 +71,19 @@ const Expenses = () => {
     // console.log("Filtered fee months:", filteredFees.map((f) => f.month));
 
     // Khi fetch hoặc setApartmentFees lần đầu
-    useEffect(() => {
-        if (apartmentFees.length > 0) {
-            const sorted = [...apartmentFees].sort((a, b) => {
-                const dateA = new Date(`01/${a.month}`);
-                const dateB = new Date(`01/${b.month}`);
-                return dateB - dateA;
-            });
-            setApartmentFees(sorted);
-        }
-    }, [apartmentFees]);
-    
+    // useEffect(() => {
+    //     if (apartmentFees.length > 0) {
+    //         const sorted = [...apartmentFees].sort((a, b) => {
+    //             const dateA = new Date(`01/${a.month}`);
+    //             const dateB = new Date(`01/${b.month}`);
+    //             return dateB - dateA;
+    //         });
+    //         setApartmentFees(sorted);
+    //     }
+    // }, [apartmentFees]);
 
+    
+    const { apartmentId } = useParams(); 
     const getFilteredFees = () => {
         return apartmentFees.filter((fee) => {
             const matchesMonth =
@@ -135,14 +137,19 @@ const Expenses = () => {
 
     const fetchApartmentFees = async () => {
         try {
-            const res = await axios.get(`${API_URL}/api/fees`);
-            setApartmentFees(res.data.data || []);
+          const res = await axios.get(`${API_URL}/api/fees`);
+          const sorted = [...(res.data.data || [])].sort((a, b) => {
+            const dateA = new Date(`01/${a.month}`);
+            const dateB = new Date(`01/${b.month}`);
+            return dateB - dateA;
+          });
+          setApartmentFees(sorted);
         } catch (err) {
-            console.error("Lỗi khi lấy dữ liệu chi phí căn hộ:", err);
-            toast.error("Lỗi lấy dữ liệu phí tổng hợp!");
+          console.error("Lỗi khi lấy dữ liệu chi phí căn hộ:", err);
+          toast.error("Lỗi lấy dữ liệu phí tổng hợp!");
         }
         setLoadingFees(false);
-    };
+      };
 
     const handleDelete = async () => {
         if (!selectedId) return;
@@ -163,17 +170,34 @@ const Expenses = () => {
 
     const handleRecalculateFees = async () => {
         try {
-            setLoadingModal(true); // 👉 bật modal loading
-            await axios.post(`${API_URL}/api/fees/calculate`);
-            toast.success("✅ Đã tính lại phí!");
-            fetchApartmentFees();
+          setLoadingModal(true);
+          const res = await axios.post(`${API_URL}/api/fees/calculate`);
+          toast.success("✅ Đã tính lại phí!");
+          setApartmentFees(res.data?.data || []); // 👉 dùng data trả về luôn
         } catch (err) {
-            toast.error("❌ Lỗi khi tính lại phí!");
+          toast.error("❌ Lỗi khi tính lại phí!");
         } finally {
-            setLoadingModal(false); // 👉 tắt modal loading
+          setLoadingModal(false);
         }
-    };
+      };
 
+      const handleToggleAllPayments = async (status) => {
+        try {
+          await axios.patch(`${API_URL}/api/apartments/payment-status-all`, {
+            canPay: status,
+          });
+          toast.success(status ? "✅ Đã mở thanh toán toàn bộ!" : "✅ Đã khóa thanh toán toàn bộ!");
+          fetchApartmentFees(); // refresh lại danh sách
+        } catch (error) {
+          console.error("Error updating all payment statuses:", error);
+          toast.error("❌ Lỗi cập nhật trạng thái thanh toán toàn bộ!");
+        }
+          // Chỉ disable khi mở thanh toán
+  setDisabledRecalc(status)
+      };
+      
+
+      
     const handleAdd = async (e) => {
         e.preventDefault();
 
@@ -243,111 +267,140 @@ const Expenses = () => {
 
 
                 {/* Form Thêm Chi Phí */}
-                <form
-                    onSubmit={handleAdd}
-                    className="row g-2 align-items-center mb-4"
-                    style={{ maxWidth: 600 }}
-                >
-                    <div className="col-md-3">
-                        <select
-                            className="form-select"
-                            value={addType}
-                            onChange={(e) => setAddType(e.target.value)}
+              {/* Form Thêm Chi Phí */}
+<form
+  onSubmit={handleAdd}
+  className="row g-2 align-items-center mb-4"
+  style={{ maxWidth: 600 }}
+>
+  <div className="col-md-3">
+    <select
+      className="form-select"
+      value={addType}
+      onChange={(e) => setAddType(e.target.value)}
+      disabled={disabledRecalc} // disable khi mở thanh toán
+    >
+      <option value="">Chọn loại chi phí</option>
+      <option value="1">Chi phí quản lý</option>
+      <option value="3">Phí dịch vụ khác</option>
+      <option value="4">Phí tiện ích</option>
+    </select>
+  </div>
+  <div className="col-md-4">
+    <input
+      type="text"
+      className="form-control"
+      placeholder="Tên Tòa nhà"
+      value={addLabel}
+      onChange={(e) => setAddLabel(e.target.value)}
+      disabled={disabledRecalc}
+    />
+  </div>
+  <div className="col-md-3">
+    <input
+      type="number"
+      className={`form-control ${priceError ? "is-invalid" : ""}`}
+      placeholder="Giá (VND/m²)"
+      value={addPrice}
+      onChange={handlePriceChange}
+      min={1}
+      disabled={disabledRecalc}
+    />
+    {priceError && <div className="invalid-feedback">{priceError}</div>}
+  </div>
 
-                        >
-                            <option value="">Chọn loại chi phí</option>
-                            <option value="1">Chi phí quản lý</option>
-                            <option value="3">Phí dịch vụ khác</option>
-                            <option value="4">Phí tiện ích</option>
-                        </select>
-                    </div>
-                    <div className="col-md-4">
-                        <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Tên Tòa nhà"
-                            value={addLabel}
-                            onChange={(e) => setAddLabel(e.target.value)}
+  <div className="col-md-2">
+    <button
+      className={`btn w-100 ${
+        disabledRecalc ? "btn-secondary" : "btn-success"
+      }`}
+      type="submit"
+      disabled={disabledRecalc}
+    >
+      Thêm mới
+    </button>
+  </div>
+</form>
 
-                        />
-                    </div>
-                    <div className="col-md-3">
-                        <input
-                            type="number"
-                            className={`form-control ${priceError ? 'is-invalid' : ''}`}
-                            placeholder="Giá (VND/m²)"
-                            value={addPrice}
-                            onChange={handlePriceChange}
-                            min={1}
+{/* Danh sách chi phí */}
+{loading ? (
+  <div className="text-secondary">Đang tải dữ liệu...</div>
+) : expenses.length === 0 ? (
+  <div className="text-secondary">Không có dữ liệu chi phí.</div>
+) : (
+  <div className="d-flex flex-wrap gap-4 justify-content-center">
+    {Object.entries(grouped).map(([label, items]) => (
+      <div
+        key={label}
+        className="bg-white shadow-sm rounded p-4"
+        style={{ minWidth: 320, maxWidth: 420 }}
+      >
+        <h5 className="text-primary fw-bold mb-3">{label}</h5>
+        <table className="table table-bordered table-sm mb-0">
+          <thead className="table-light">
+            <tr>
+              <th>Loại phí</th>
+              <th className="text-end">Giá</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((exp) => (
+              <tr key={exp._id}>
+                <td>{TYPE_LABELS[exp.type] || `Loại ${exp.type}`}</td>
+                <td className="text-end text-primary fw-bold">
+                  {exp.price.toLocaleString()}{" "}
+                  {exp.type === 1 ? "VND/m²" : "VND/tháng"}
+                </td>
+                <td className="text-center">
+                  <button
+                    className={`btn btn-sm ${
+                      disabledRecalc ? "btn-secondary" : "btn-danger"
+                    }`}
+                    onClick={() => openDeleteModal(exp._id)}
+                    disabled={disabledRecalc}
+                  >
+                    Xóa
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ))}
+  </div>
+)}
 
-                        />
-                        {priceError && <div className="invalid-feedback">{priceError}</div>}
-                    </div>
-
-
-                    <div className="col-md-2">
-                        <button className="btn btn-success w-100" type="submit">
-                            Thêm mới
-                        </button>
-                    </div>
-                </form>
-
-                {/* Danh sách chi phí */}
-                {loading ? (
-                    <div className="text-secondary">Đang tải dữ liệu...</div>
-                ) : expenses.length === 0 ? (
-                    <div className="text-secondary">Không có dữ liệu chi phí.</div>
-                ) : (
-                    <div className="d-flex flex-wrap gap-4 justify-content-center">
-                        {Object.entries(grouped).map(([label, items]) => (
-                            <div
-                                key={label}
-                                className="bg-white shadow-sm rounded p-4"
-                                style={{ minWidth: 320, maxWidth: 420 }}
-                            >
-                                <h5 className="text-primary fw-bold mb-3">{label}</h5>
-                                <table className="table table-bordered table-sm mb-0">
-                                    <thead className="table-light">
-                                        <tr>
-                                            <th>Loại phí</th>
-                                            <th className="text-end">Giá</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {items.map((exp) => (
-                                            <tr key={exp._id}>
-                                                <td>{TYPE_LABELS[exp.type] || `Loại ${exp.type}`}</td>
-                                                <td className="text-end text-primary fw-bold">
-                                                    {exp.price.toLocaleString()} {exp.type === 1 ? "VND/m²" : "VND/tháng"}
-                                                </td>
-                                                <td className="text-center">
-                                                    <button
-                                                        className="btn btn-danger btn-sm"
-                                                        onClick={() => openDeleteModal(exp._id)}
-                                                    >
-                                                        Xóa
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ))}
-                    </div>
-                )}
 
                 <p className="mt-4">
                     <strong>Ghi chú:</strong> Giá quản lý căn hộ được tính tự động theo diện tích và tòa nhà.
                 </p>
+                <div className="d-flex flex-wrap gap-2 mb-3">
+  <button
+    className={`btn ${disabledRecalc ? "btn-secondary" : "btn-outline-warning"}`}
+    onClick={handleRecalculateFees}
+    disabled={disabledRecalc}
+  >
+    Tính lại phí tổng hợp
+  </button>
 
-                <button
-                    className="btn btn-outline-warning mb-3"
-                    onClick={handleRecalculateFees}
-                >
-                    Tính lại phí tổng hợp
-                </button>
+  <button
+    className="btn btn-outline-success"
+    onClick={() => handleToggleAllPayments(true)}
+  >
+    Mở thanh toán toàn bộ
+  </button>
+
+  <button
+    className="btn btn-outline-danger"
+    onClick={() => handleToggleAllPayments(false)}
+  >
+    Khóa thanh toán toàn bộ
+  </button>
+</div>
+
+
 
 
                 <hr className="my-4" />
