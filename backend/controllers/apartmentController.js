@@ -7,6 +7,7 @@ import Fee from "../models/Fee.js";
 import Notification from '../models/Notification.js';
 import ResidentVerification from "../models/ResidentVerification.js";
 import User from '../models/User.js';
+
 // Thêm mới căn hộ
 export const createApartment = async (req, res) => {
   try {
@@ -260,12 +261,13 @@ export const getUserApartment = async (req, res) => {
     const result = apartments.map(apartment => {
       const isOwner = apartment.isOwner && apartment.isOwner._id.toString() === userId;
       const isRenter = apartment.isRenter && apartment.isRenter._id.toString() === userId;
-      const canPay = isRenter || (isOwner && !apartment.isRenter);
+      // const canPay = isRenter || (isOwner && !apartment.isRenter);
 
       return {
         ...apartment,
         fee: feeMap[apartment._id.toString()] || null,
-        canPay
+        canPay: apartment.canPay, // 🔥 dùng giá trị từ DB thay vì override
+        role: isOwner ? "owner" : (isRenter ? "renter" : null) // nếu cần biết user là gì
       };
     });
 
@@ -374,4 +376,36 @@ export const getFeesByApartmentCode = async (req, res) => {
     return res.status(500).json({ message: "Lỗi server khi lấy phí", error: err?.message });
   }
 };
+
+// Toggle trạng thái thanh toán
+export const togglePaymentStatus = async (req, res) => {
+  try {
+    const { canPay } = req.body;
+
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`; 
+    // VD: "2025-09"
+
+    // Lấy danh sách fee của tháng hiện tại
+    const currentFees = await Fee.find({ month: currentMonth }).select("apartmentId");
+    const currentApartmentIds = currentFees.map(f => f.apartmentId);
+
+    // Update chỉ những căn hộ có fee tháng hiện tại
+    const currentResult = await Apartment.updateMany(
+      { _id: { $in: currentApartmentIds } },
+      { canPay }
+    );
+
+    res.json({
+      message: canPay
+        ? "Đã mở thanh toán cho các căn hộ tháng hiện tại"
+        : "Đã khóa thanh toán cho các căn hộ tháng hiện tại",
+      modifiedCount: currentResult.modifiedCount,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
 

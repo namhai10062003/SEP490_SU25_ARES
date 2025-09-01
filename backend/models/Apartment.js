@@ -67,6 +67,8 @@ const apartmentSchema = new Schema({
     type: Date,
     default: null
   },
+  canPay: { type: Boolean, default: true }, 
+  
   // userId: {
   //   type: Schema.Types.ObjectId,
   //   ref: 'User'
