@@ -11,6 +11,12 @@ import {
   FaRegHeart,
   FaRulerCombined,
   FaStar,
+  FaUmbrellaBeach,
+  FaHospital,
+  FaSchool,
+  FaFutbol,
+  FaHotel,
+  FaConciergeBell
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import Slider from "react-slick";
@@ -70,7 +76,7 @@ const PostDetail = () => {
     setLoading(true);
     if (post?.contactInfo?._id) {
       // console.log("📌 contactInfo có dữ liệu:", post.contactInfo);
-      
+
       fetch(`${import.meta.env.VITE_API_URL}/api/posts/count/${post.contactInfo.userId || post.contactInfo._id}`)
         .then((res) => res.json())
         .then((data) => setUserPostsCount(data.count))
@@ -106,7 +112,7 @@ const PostDetail = () => {
         }
       } catch (err) {
         console.error("Không lấy được hợp đồng:", err);
-      }finally{
+      } finally {
         setLoading(false);
       }
     };
@@ -212,60 +218,58 @@ const PostDetail = () => {
       currencyDisplay: "code",
     }).format(price);
 
-    const handleLike = async () => {
-      try {
-        const res = await toggleLike(id);
-    
-        if (res.data.success) {
-          setIsLiked(res.data.liked);
-          setLikeCount(res.data.likeCount);
-          toast.success(res.data.message);
-        } else {
-          toast.error(res.data.message);
-        }
-      } catch (err) {
-        const status = err.response?.status;
-        const msg = err.response?.data?.message || "❌ Like thất bại, vui lòng thử lại!";
-    
-        if (status === 401) {
-          toast.warn("⚠️ Vui lòng đăng nhập để like bài viết!");
-          // navigate("/login");
-        } else {
-          toast.error(msg);
-        }
+  const handleLike = async () => {
+    try {
+      const res = await toggleLike(id);
+
+      if (res.data.success) {
+        setIsLiked(res.data.liked);
+        setLikeCount(res.data.likeCount);
+        toast.success(res.data.message);
+      } else {
+        toast.error(res.data.message);
       }
-    };
-    
-    
-    
-    const handleAddComment = async () => {
-      // Giả sử có biến user hoặc token để check đăng nhập
-      const token = localStorage.getItem("token"); // hoặc state user
-    
-      if (!token) {
-        toast.warn("⚠️ Vui lòng đăng nhập để bình luận!");
-        return;
+    } catch (err) {
+      const status = err.response?.status;
+      const msg = err.response?.data?.message || "❌ Like thất bại, vui lòng thử lại!";
+
+      if (status === 401) {
+        toast.warn("⚠️ Vui lòng đăng nhập để like bài viết!");
+        // navigate("/login");
+      } else {
+        toast.error(msg);
       }
-    
-      if (!commentText.trim()) return;
-    
-      try {
-        await addComment(id, commentText);
-        const updated = await getComments(id);
-        setComments(updated.data.data);
-        setCommentText("");
-      } catch (error) {
-        console.error("Lỗi khi thêm bình luận:", error);
-      }
-    };
-    
+    }
+  };
+
+  const handleAddComment = async () => {
+    // Giả sử có biến user hoặc token để check đăng nhập
+    const token = localStorage.getItem("token"); // hoặc state user
+
+    if (!token) {
+      toast.warn("⚠️ Vui lòng đăng nhập để bình luận!");
+      return;
+    }
+
+    if (!commentText.trim()) return;
+
+    try {
+      await addComment(id, commentText);
+      const updated = await getComments(id);
+      setComments(updated.data.data);
+      setCommentText("");
+    } catch (error) {
+      console.error("Lỗi khi thêm bình luận:", error);
+    }
+  };
+
 
   // Placeholder for report handler
 
   const handleReport = async () => {
     // Giả sử có biến user hoặc token để check đăng nhập
     const token = localStorage.getItem("token"); // hoặc state user
-    
+
     if (!token) {
       toast.warn("⚠️ Vui lòng đăng nhập để bình luận!");
       return;
@@ -357,7 +361,6 @@ const PostDetail = () => {
               </div>
             ) : null}
 
-
           </div>
 
           {/* Right column: Info */}
@@ -385,20 +388,40 @@ const PostDetail = () => {
                   {new Date(post.createdAt).toLocaleDateString("vi-VN")}
                 </span>
               </div>
-              <div className="d-flex align-items-center">
+              <div className="d-flex align-items-center mb-2">
                 <FaStar className="text-warning me-2 fs-5" />
                 <span><strong>Gói:</strong> {post.postPackage?.type || "Standard"}</span>
               </div>
 
-              {/* <div className="d-flex align-items-center mt-2">
-                <i className="bi bi-person-fill text-primary me-2 fs-5"></i>
-                <span><strong>Người liên hệ:</strong> {post.contactInfo.name || "Không có"}</span>
-              </div>
+              {/* Tiện ích */}
+              <div className="d-flex align-items-center">
+                <FaConciergeBell className="text-secondary me-2 fs-5" />
+                <strong className="me-2">Tiện ích:</strong>
 
-              <div className="d-flex align-items-center mt-2">
-                <i className="bi bi-telephone-fill text-success me-2 fs-5"></i>
-                <span><strong>SĐT:</strong> {post.contactInfo.phone || "Không có"}</span>
-              </div> */}
+                <span className="d-flex align-items-center me-2">
+                  <FaUmbrellaBeach className="text-info fs-5" title="Bãi biển" />
+                </span>
+                <span className="me-2">||</span>
+
+                <span className="d-flex align-items-center me-2">
+                  <FaHospital className="text-danger fs-5" title="Bệnh viện" />
+                </span>
+                <span className="me-2">||</span>
+
+                <span className="d-flex align-items-center me-2">
+                  <FaSchool className="text-success fs-5" title="Trường học" />
+                </span>
+                <span className="me-2">||</span>
+
+                <span className="d-flex align-items-center me-2">
+                  <FaFutbol className="text-warning fs-5" title="Khu vui chơi" />
+                </span>
+                <span className="me-2">||</span>
+
+                <span className="d-flex align-items-center">
+                  <FaHotel className="text-primary fs-5" title="Khách sạn" />
+                </span>
+              </div>
             </div>
 
             {/* Nút hành động */}
@@ -428,42 +451,42 @@ const PostDetail = () => {
                 🚩 Báo cáo
               </button>
               <button
-  className="btn btn-success px-3"
-  onClick={() => {
-    const token = localStorage.getItem("token"); // hoặc state user
+                className="btn btn-success px-3"
+                onClick={() => {
+                  const token = localStorage.getItem("token"); // hoặc state user
 
-    if (!token) {
-      toast.info("⚠️ Vui lòng đăng nhập để đặt cọc!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-      return; // dừng ở đây, không navigate
-    }
+                  if (!token) {
+                    toast.info("⚠️ Vui lòng đăng nhập để đặt cọc!", {
+                      position: "top-right",
+                      autoClose: 3000,
+                      hideProgressBar: false,
+                      closeOnClick: true,
+                      pauseOnHover: true,
+                      draggable: true,
+                      progress: undefined,
+                    });
+                    return; // dừng ở đây, không navigate
+                  }
 
-    if (contract?.paymentStatus === "paid") {
-      toast.info("Căn hộ/bất động sản này đã được đặt cọc", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-      return;
-    }
+                  if (contract?.paymentStatus === "paid") {
+                    toast.info("Căn hộ/bất động sản này đã được đặt cọc", {
+                      position: "top-right",
+                      autoClose: 3000,
+                      hideProgressBar: false,
+                      closeOnClick: true,
+                      pauseOnHover: true,
+                      draggable: true,
+                      progress: undefined,
+                    });
+                    return;
+                  }
 
-    navigate(`/booking/${post._id}`);
-  }}
-  disabled={post.type === "dich_vu"}
->
-  📄 Đặt Cọc
-</button>
+                  navigate(`/booking/${post._id}`);
+                }}
+                disabled={post.type === "dich_vu"}
+              >
+                📄 Đặt Cọc
+              </button>
 
             </div>
           </div>
@@ -471,82 +494,81 @@ const PostDetail = () => {
           <div className="row">
             {/* Cột Mô tả */}
             <div className="col-md-8">
-  <div>
-    <h5 className="mb-3 d-flex align-items-center text-primary fw-bold">
-      <FaInfoCircle className="me-2" /> Mô tả
-    </h5>
+              <div>
+                <h5 className="mb-3 d-flex align-items-center text-primary fw-bold">
+                  <FaInfoCircle className="me-2" /> Mô tả
+                </h5>
 
-    <div
-      className="bg-white rounded-4 shadow-sm border p-4"
-      style={{
-        fontSize: "1rem",
-        lineHeight: "1.7",
-        color: "#444",
-        borderColor: "#f0f0f0",
-      }}
-    >
-      <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
-        {post.description &&
-          DOMPurify.sanitize(post.description, { ALLOWED_TAGS: [] }) // ❌ bỏ hết tag HTML, chỉ giữ text
-            .split(/\n+/) // tách theo xuống dòng
-            .map((line) => line.trim())
-            .filter(Boolean)
-            .map((line, index) => {
-              const isSectionTitle =
-                line.startsWith("✨") || /THÔNG TIN/i.test(line);
-              const isBullet = line.startsWith("•") || /^\d+\./.test(line);
-
-              return (
-                <li
-                  key={index}
-                  className={`d-flex align-items-start ${
-                    isSectionTitle
-                      ? "bg-primary bg-opacity-10 fw-bold text-primary"
-                      : "bg-light"
-                  } p-3 mb-2 rounded-3 border`}
+                <div
+                  className="bg-white rounded-4 shadow-sm border p-4"
                   style={{
-                    gap: "12px",
-                    borderColor: "#eee",
-                    transition: "all 0.25s ease",
-                    cursor: "default",
+                    fontSize: "1rem",
+                    lineHeight: "1.7",
+                    color: "#444",
+                    borderColor: "#f0f0f0",
                   }}
-                  onMouseEnter={(e) =>
-                    !isSectionTitle &&
-                    (e.currentTarget.style.backgroundColor = "#f8faff")
-                  }
-                  onMouseLeave={(e) =>
-                    !isSectionTitle &&
-                    (e.currentTarget.style.backgroundColor = "#f8f9fa")
-                  }
                 >
-                  {isSectionTitle ? (
-                    <span style={{ fontSize: "1.2rem" }}>✨</span>
-                  ) : (
-                    <FaCheckCircle
-                      style={{
-                        color: "#0d6efd",
-                        marginTop: "4px",
-                        fontSize: "1.1rem",
-                        flexShrink: 0,
-                      }}
-                    />
-                  )}
+                  <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+                    {post.description &&
+                      DOMPurify.sanitize(post.description, { ALLOWED_TAGS: [] }) // ❌ bỏ hết tag HTML, chỉ giữ text
+                        .split(/\n+/) // tách theo xuống dòng
+                        .map((line) => line.trim())
+                        .filter(Boolean)
+                        .map((line, index) => {
+                          const isSectionTitle =
+                            line.startsWith("✨") || /THÔNG TIN/i.test(line);
+                          const isBullet = line.startsWith("•") || /^\d+\./.test(line);
 
-                  <span
-                    dangerouslySetInnerHTML={{
-                      __html: line.replace(
-                        /^([^:]+):/,
-                        "<strong style='color:#0d6efd'>$1:</strong>"
-                      ),
-                    }}
-                  />
-                </li>
-              );
-            })}
-      </ul>
-    </div>
-  </div>
-</div>
+                          return (
+                            <li
+                              key={index}
+                              className={`d-flex align-items-start ${isSectionTitle
+                                ? "bg-primary bg-opacity-10 fw-bold text-primary"
+                                : "bg-light"
+                                } p-3 mb-2 rounded-3 border`}
+                              style={{
+                                gap: "12px",
+                                borderColor: "#eee",
+                                transition: "all 0.25s ease",
+                                cursor: "default",
+                              }}
+                              onMouseEnter={(e) =>
+                                !isSectionTitle &&
+                                (e.currentTarget.style.backgroundColor = "#f8faff")
+                              }
+                              onMouseLeave={(e) =>
+                                !isSectionTitle &&
+                                (e.currentTarget.style.backgroundColor = "#f8f9fa")
+                              }
+                            >
+                              {isSectionTitle ? (
+                                <span style={{ fontSize: "1.2rem" }}>✨</span>
+                              ) : (
+                                <FaCheckCircle
+                                  style={{
+                                    color: "#0d6efd",
+                                    marginTop: "4px",
+                                    fontSize: "1.1rem",
+                                    flexShrink: 0,
+                                  }}
+                                />
+                              )}
+
+                              <span
+                                dangerouslySetInnerHTML={{
+                                  __html: line.replace(
+                                    /^([^:]+):/,
+                                    "<strong style='color:#0d6efd'>$1:</strong>"
+                                  ),
+                                }}
+                              />
+                            </li>
+                          );
+                        })}
+                  </ul>
+                </div>
+              </div>
+            </div>
             {/* Cột UserInfo */}
             <div className="col-md-4">
               <div className="rounded-2xl p-3">
@@ -665,16 +687,16 @@ const PostDetail = () => {
                       <div className="card-body d-flex flex-column justify-content-between">
                         <h5 className="card-title">{truncatedTitle}</h5>
                         {truncatedDesc.split("\n").map((line, index) => (
-  <span
-    key={index}
-    dangerouslySetInnerHTML={{
-      __html: line.replace(
-        /^([^:]+):/,
-        "<strong style='color:#0d6efd'>$1:</strong>"
-      ) + "<br/>", // thêm xuống dòng nếu muốn
-    }}
-  />
-))}
+                          <span
+                            key={index}
+                            dangerouslySetInnerHTML={{
+                              __html: line.replace(
+                                /^([^:]+):/,
+                                "<strong style='color:#0d6efd'>$1:</strong>"
+                              ) + "<br/>", // thêm xuống dòng nếu muốn
+                            }}
+                          />
+                        ))}
                         <p className="card-text fw-bold fs-5 text-danger">{formatPrice(rp.price)}</p>
                       </div>
                     </div>
@@ -684,7 +706,7 @@ const PostDetail = () => {
             </div>
           </div>
         )}
-                   
+
       </div>
 
       {/* Zoom Modal */}
@@ -787,8 +809,8 @@ const PostDetail = () => {
           </button>
         </Modal.Footer>
       </Modal>
-       {/* ✅ Loading toàn màn hình */}
-{loading && <LoadingModal />}
+      {/* ✅ Loading toàn màn hình */}
+      {loading && <LoadingModal />}
     </>
   );
 };

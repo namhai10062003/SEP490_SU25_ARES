@@ -15,7 +15,7 @@ const Footer = () => {
                     <div className="col-md-4 mb-4">
                         <h4 className="fw-bold mb-3 text-warning">Liên hệ</h4>
                         <p>FPT City</p>
-                        <p>TP. Đà Nẵng</p>
+                        <p>P. Ngũ Hành Sơn, TP. Đà Nẵng</p>
                         <p>Email: SupportFPTCity@gmail.com</p>
                         <p>Phone: (+84) 833-48-2255</p>
                     </div>

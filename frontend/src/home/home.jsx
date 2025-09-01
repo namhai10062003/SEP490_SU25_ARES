@@ -89,7 +89,7 @@ const Home = () => {
       })
       .catch(err => console.error(err));
   }, []);
-  
+
 
   useEffect(() => {
     // Giả sử bạn xác định người dùng chưa cập nhật nếu thiếu identityNumber hoặc phone
@@ -168,92 +168,84 @@ const Home = () => {
 
       {/* HERO SECTION */}
       <section className="position-relative overflow-hidden" style={{ minHeight: 500 }}>
-  {/* Background Image */}
-  <img
-    src="/images/banner.jpg"
-    alt="Banner"
-    className="w-100 hero-bg"
-    style={{
-      height: 500,
-      objectFit: "cover",
-    }}
-  />
+        {/* Background Image */}
+        <img
+          src="/images/banner.jpg"
+          alt="Banner"
+          className="w-100 hero-bg"
+          style={{
+            height: 500,
+            objectFit: "cover",
+          }}
+        />
 
-  {/* Overlay gradient */}
-  <div
-    className="position-absolute top-0 start-0 w-100 h-100"
-    style={{
-      background:
-        "linear-gradient(to right, rgba(0,0,0,0.4), rgba(0,0,0,0.15))",
-    }}
-  ></div>
+        {/* Overlay gradient */}
+        <div
+          className="position-absolute top-0 start-0 w-100 h-100"
+          style={{
+            background:
+              "linear-gradient(to right, rgba(0,0,0,0.4), rgba(0,0,0,0.15))",
+          }}
+        ></div>
 
-  {/* Content */}
-  <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-center">
-    <div className="text-white px-3 hero-text">
-      <h1
-        className="fw-bold mb-3"
-        style={{
-          fontSize: "3.5rem",
-          textShadow: "0 4px 20px rgba(0,0,0,0.7)",
-          letterSpacing: 1,
-        }}
-      >
-        Căn hộ mơ ước của bạn
-      </h1>
-      <p
-        className="lead mb-4"
-        style={{
-          fontSize: "1.3rem",
-          maxWidth: 800,
-          margin: "0 auto",
-          textShadow: "0 2px 10px rgba(0,0,0,0.6)",
-        }}
-      >
-        Hệ thống cho thuê & mua bán căn hộ hiện đại, uy tín tại FPT City
-      </p>
+        {/* Content */}
+        <div className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center text-center">
+          <div className="text-white px-3 hero-text">
+            <h1
+              className="fw-bold mb-3"
+              style={{
+                fontSize: "3.5rem",
+                textShadow: "0 4px 20px rgba(0,0,0,0.7)",
+                letterSpacing: 1,
+              }}
+            >
+              Căn hộ mơ ước của bạn
+            </h1>
+            <p
+              className="lead mb-4"
+              style={{
+                fontSize: "1.3rem",
+                maxWidth: 800,
+                margin: "0 auto",
+                textShadow: "0 2px 10px rgba(0,0,0,0.6)",
+              }}
+            >
+              Hệ thống cho thuê, mua bán và quản lý căn hộ hiện đại, uy tín tại FPT City
+            </p>
 
-      {/* Call to Action Buttons */}
-      <div className="d-flex flex-wrap justify-content-center gap-3 mt-4">
-        <a
-          href="/blog"
-          className="btn btn-primary px-5 py-3 rounded-pill fw-bold shadow"
-          style={{ fontSize: "1.1rem", letterSpacing: 1 }}
-        >
-          🔍 Khám phá dự án
-        </a>
-        <a
-  href="/contact"
-  className="btn btn-white px-5 py-3 rounded-pill fw-bold hero-contact-btn"
-  style={{
-    fontSize: "1.1rem",
-    letterSpacing: 1,
-    color: "#333",
-    border: "2px solid #fff",
-    backgroundColor: "#fff",
-    transition: "all 0.3s ease",
-  }}
->
-  📞 Liên hệ tư vấn
-</a>
+            {/* Call to Action Buttons */}
+            <div className="d-flex flex-wrap justify-content-center gap-3 mt-4">
+              <a
+                href="/blog"
+                className="btn btn-primary px-5 py-3 rounded-pill fw-bold shadow"
+                style={{ fontSize: "1.1rem", letterSpacing: 1 }}
+              >
+                🔍 Khám phá bài đăng
+              </a>
+              <a
+                href="/contact"
+                className="btn btn-white px-5 py-3 rounded-pill fw-bold hero-contact-btn"
+                style={{
+                  fontSize: "1.1rem",
+                  letterSpacing: 1,
+                  color: "#333",
+                  border: "2px solid #fff",
+                  backgroundColor: "#fff",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                📞 Liên hệ tư vấn
+              </a>
 
-<style>
-{`
-  .hero-contact-btn:hover {
-    transform: scale(1.05);
-    background: linear-gradient(90deg, #f5f5f5, #e0e0e0);
-    color: #000;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-  }
-`}
-</style>
-      </div>
-    </div>
-  </div>
+              <style>
+              </style>
+            </div>
+          </div>
+        </div>
 
-  {/* CSS animation */}
-  <style>
-    {`
+        {/* CSS animation */}
+        <style>
+          {`
       .hero-bg {
         transform: scale(1.1);
         opacity: 0;
@@ -285,8 +277,8 @@ const Home = () => {
         }
       }
     `}
-  </style>
-</section>
+        </style>
+      </section>
 
 
 
@@ -409,68 +401,67 @@ const Home = () => {
                 <div className="card-body d-flex flex-column bg-white">
                   <h5 className="card-title fw-bold">{post.title}</h5>
                   <p className="card-text flex-grow-1">{post.address}</p>
-                 <div
-  className="card-text"
-  style={{
-    fontSize: "0.95rem",
-    lineHeight: "1.6",
-    color: "#555",
-    maxHeight: "3.2em", // ~2 dòng
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    display: "-webkit-box",
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: "vertical",
-  }}
->
-  <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
-    {post.description &&
-      DOMPurify.sanitize(post.description, { ALLOWED_TAGS: [] })
-        .split(/\n+/)
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .slice(0, 2) // chỉ lấy 2 dòng đầu tiên
-        .map((line, index) => {
-          const isSectionTitle =
-            line.startsWith("✨") || /THÔNG TIN/i.test(line);
-          const isBullet = line.startsWith("•") || /^\d+\./.test(line);
+                  <div
+                    className="card-text"
+                    style={{
+                      fontSize: "0.95rem",
+                      lineHeight: "1.6",
+                      color: "#555",
+                      maxHeight: "3.2em", // ~2 dòng
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                    }}
+                  >
+                    <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+                      {post.description &&
+                        DOMPurify.sanitize(post.description, { ALLOWED_TAGS: [] })
+                          .split(/\n+/)
+                          .map((line) => line.trim())
+                          .filter(Boolean)
+                          .slice(0, 2) // chỉ lấy 2 dòng đầu tiên
+                          .map((line, index) => {
+                            const isSectionTitle =
+                              line.startsWith("✨") || /THÔNG TIN/i.test(line);
+                            const isBullet = line.startsWith("•") || /^\d+\./.test(line);
 
-          return (
-            <li
-              key={index}
-              className={`d-flex align-items-start ${
-                isSectionTitle
-                  ? "fw-bold text-primary"
-                  : "text-truncate"
-              }`}
-              style={{ gap: "6px" }}
-            >
-              {isSectionTitle ? (
-                <span style={{ fontSize: "1rem" }}>✨</span>
-              ) : (
-                <FaCheckCircle
-                  style={{
-                    color: "#0d6efd",
-                    marginTop: "3px",
-                    fontSize: "0.9rem",
-                    flexShrink: 0,
-                  }}
-                />
-              )}
+                            return (
+                              <li
+                                key={index}
+                                className={`d-flex align-items-start ${isSectionTitle
+                                  ? "fw-bold text-primary"
+                                  : "text-truncate"
+                                  }`}
+                                style={{ gap: "6px" }}
+                              >
+                                {isSectionTitle ? (
+                                  <span style={{ fontSize: "1rem" }}>✨</span>
+                                ) : (
+                                  <FaCheckCircle
+                                    style={{
+                                      color: "#0d6efd",
+                                      marginTop: "3px",
+                                      fontSize: "0.9rem",
+                                      flexShrink: 0,
+                                    }}
+                                  />
+                                )}
 
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: line.replace(
-                    /^([^:]+):/,
-                    "<strong style='color:#0d6efd'>$1:</strong>"
-                  ),
-                }}
-              />
-            </li>
-          );
-        })}
-  </ul>
-</div>
+                                <span
+                                  dangerouslySetInnerHTML={{
+                                    __html: line.replace(
+                                      /^([^:]+):/,
+                                      "<strong style='color:#0d6efd'>$1:</strong>"
+                                    ),
+                                  }}
+                                />
+                              </li>
+                            );
+                          })}
+                    </ul>
+                  </div>
 
                   <div className="d-flex justify-content-center mt-2">
                     <Button
