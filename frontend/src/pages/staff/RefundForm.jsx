@@ -115,7 +115,7 @@ export default function RefundForm() {
         <div className="container" style={{ maxWidth: 900 }}>
           {/* Bảng user */}
           <div className="table-responsive mt-4">
-            <h4 className="fw-bold mb-3">Danh sách cư dân</h4>
+            <h4 className="fw-bold mb-3">Danh sách người dùng</h4>
             <form onSubmit={handleSearch} className="mb-3 row g-2">
               <div className="col-md-10">
                 <input
@@ -177,7 +177,7 @@ export default function RefundForm() {
               <div className="modal-dialog modal-lg modal-dialog-centered">
                 <div className="modal-content rounded-4 shadow-lg border-0">
                   <div className="modal-header border-0 pb-0">
-                    <h5 className="fw-bold text-primary m-0">Chuyển tiền cho cư dân</h5>
+                    <h5 className="fw-bold text-primary m-0">Chuyển tiền cho người dùng</h5>
                     <button type="button" className="btn-close" onClick={() => setUser(null)}></button>
                   </div>
                   <div className="modal-body pt-3">
@@ -259,7 +259,7 @@ export default function RefundForm() {
 
     {/* Ghi chú */}
     <div className="col-md-12">
-      <label className="form-label">Ghi chú</label>
+      <label className="form-label">Lí do yêu cầu</label>
       <textarea
         name="note"
         value={formData.note}

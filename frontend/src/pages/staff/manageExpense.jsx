@@ -41,6 +41,26 @@ const Expenses = () => {
     const [selectedId, setSelectedId] = useState(null);
     const [loadingModal, setLoadingModal] = useState(false);
     const [disabledRecalc, setDisabledRecalc] = useState(false);
+
+    useEffect(() => {
+      const fetchPaymentStatus = async () => {
+        try {
+          const res = await axios.get(`${API_URL}/api/apartments/payment-status-all`);
+          if (res.data.success) {
+            if (res.data.status === "canPay") {
+              setDisabledRecalc(true);   // Nếu đang mở thanh toán thì disable
+            } else {
+              setDisabledRecalc(false);  // Ngược lại thì cho enable
+            }
+          }
+        } catch (error) {
+          console.error("❌ Error fetching payment status:", error);
+        }
+      };
+    
+      fetchPaymentStatus();
+    }, []);
+
     const openDeleteModal = (id) => {
         setSelectedId(id);
         setShowDeleteModal(true);
@@ -81,6 +101,7 @@ const Expenses = () => {
     //         setApartmentFees(sorted);
     //     }
     // }, [apartmentFees]);
+
 
     
     const { apartmentId } = useParams(); 
@@ -187,16 +208,17 @@ const Expenses = () => {
             canPay: status,
           });
           toast.success(status ? "✅ Đã mở thanh toán toàn bộ!" : "✅ Đã khóa thanh toán toàn bộ!");
+              // cập nhật luôn frontend state
+          setDisabledRecalc(status);
           fetchApartmentFees(); // refresh lại danh sách
         } catch (error) {
           console.error("Error updating all payment statuses:", error);
           toast.error("❌ Lỗi cập nhật trạng thái thanh toán toàn bộ!");
         }
-          // Chỉ disable khi mở thanh toán
-  setDisabledRecalc(status)
       };
       
-
+    
+      
       
     const handleAdd = async (e) => {
         e.preventDefault();
@@ -380,25 +402,29 @@ const Expenses = () => {
   <button
     className={`btn ${disabledRecalc ? "btn-secondary" : "btn-outline-warning"}`}
     onClick={handleRecalculateFees}
-    disabled={disabledRecalc}
+    disabled={disabledRecalc || loading} // disable khi đang mở hoặc đang load
   >
     Tính lại phí tổng hợp
   </button>
 
   <button
-    className="btn btn-outline-success"
-    onClick={() => handleToggleAllPayments(true)}
-  >
-    Mở thanh toán toàn bộ
-  </button>
+  className="btn btn-outline-success"
+  onClick={() => handleToggleAllPayments(true)}
+  disabled={disabledRecalc} // nếu đang mở thì disable nút mở
+>
+  Mở thanh toán toàn bộ
+</button>
 
-  <button
-    className="btn btn-outline-danger"
-    onClick={() => handleToggleAllPayments(false)}
-  >
-    Khóa thanh toán toàn bộ
-  </button>
+<button
+  className="btn btn-outline-danger"
+  onClick={() => handleToggleAllPayments(false)}
+  disabled={!disabledRecalc} // nếu đang khóa thì disable nút khóa
+>
+  Khóa thanh toán toàn bộ
+</button>
+
 </div>
+
 
 
 

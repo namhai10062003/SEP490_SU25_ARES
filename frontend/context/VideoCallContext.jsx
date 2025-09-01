@@ -99,7 +99,7 @@ export const VideoCallProvider = ({ userId, children }) => {
     });
   
     peer.on("error", (err) => {
-      console.error("PeerJS error:", err);
+      // console.error("PeerJS error:", err);
     });
   
     peer.on("call", (call) => {

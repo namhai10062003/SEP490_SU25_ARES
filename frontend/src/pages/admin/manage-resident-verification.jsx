@@ -400,7 +400,7 @@ const ManageResidentVerification = () => {
                               </>
                             )}
 
-{console.log("👉 app data:", app)}
+{/* {console.log("👉 app data:", app)} */}
 
 {app.status === "Đã duyệt" 
   && app.apartment?.isOwner 
