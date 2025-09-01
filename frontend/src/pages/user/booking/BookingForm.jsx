@@ -32,13 +32,13 @@ const BookingForm = () => {
   };
 
   useEffect(() => {
-    console.log("🌀 useEffect chạy với postId:", postId); // Kiểm tra postId có tồn tại không
+    // console.log("🌀 useEffect chạy với postId:", postId); // Kiểm tra postId có tồn tại không
   
     const fetchPost = async () => {
       setLoading(true);
       try {
         const res = await getPostById(postId);
-        console.log("✅ Dữ liệu trả về từ API:", res.data);
+        // console.log("✅ Dữ liệu trả về từ API:", res.data);
         setPost(res.data.data);
         
       } catch (err) {
@@ -160,7 +160,7 @@ post.type === "cho_thue"
       );
 
       const contractId = res.data?.data?._id;
-      console.log(contractId);
+      // console.log(contractId);
       if (!contractId) {
         throw new Error("Không nhận được ID hợp đồng từ server");
       }
@@ -174,7 +174,7 @@ post.type === "cho_thue"
         formData.append("signaturePartyBUrl", file); // ✅ đúng tên key backend mong muốn
         formData.append("contractId", contractId);
 
-        console.log("⬇️ FormData đang gửi:");
+        // console.log("⬇️ FormData đang gửi:");
 for (let pair of formData.entries()) {
   if (pair[1] instanceof File) {
     console.log(`${pair[0]}:`, pair[1].name, pair[1].type, pair[1].size + " bytes");
@@ -183,10 +183,10 @@ for (let pair of formData.entries()) {
   }
 }
 
-        console.log("📤 Đang upload chữ ký với các thông tin:");
-        console.log("contractId:", contractId);
-        console.log("side:", "B");
-        console.log("file:", file);
+        // console.log("📤 Đang upload chữ ký với các thông tin:");
+        // console.log("contractId:", contractId);
+        // console.log("side:", "B");
+        // console.log("file:", file);
 
         await axios.post(
           `${import.meta.env.VITE_API_URL}/api/contracts/upload-signature`,

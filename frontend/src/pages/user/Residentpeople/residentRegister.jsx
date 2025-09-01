@@ -41,7 +41,7 @@ const ResidentRegister = () => {
         });
 
         const data = await res.json();
-        console.log('📦 API response:', data);
+        // console.log('📦 API response:', data);
 
         const apartmentsArray = data.data || [];
 
@@ -51,15 +51,15 @@ const ResidentRegister = () => {
             String(apt.isRenter?._id) === String(user._id)
         );
 
-        console.log("✅ Căn hộ của user:", filtered); // 👈 Log kết quả lọc
-        console.log("👀 Check từng căn hộ:");
+        // console.log("✅ Căn hộ của user:", filtered); // 👈 Log kết quả lọc
+        // console.log("👀 Check từng căn hộ:");
         apartmentsArray.forEach((apt) => {
-          console.log({
-            aptCode: apt.apartmentCode,
-            owner: apt.isOwner?._id,
-            renter: apt.isRenter?._id,
-            match: String(apt.isOwner?._id) === String(user._id) || String(apt.isRenter?._id) === String(user._id),
-          });
+          // console.log({
+          //   aptCode: apt.apartmentCode,
+          //   owner: apt.isOwner?._id,
+          //   renter: apt.isRenter?._id,
+          //   match: String(apt.isOwner?._id) === String(user._id) || String(apt.isRenter?._id) === String(user._id),
+          // });
         });
         setApartments(filtered);
       } catch (err) {

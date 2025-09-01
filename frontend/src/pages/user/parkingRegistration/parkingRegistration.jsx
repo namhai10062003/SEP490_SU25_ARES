@@ -516,12 +516,17 @@ const ParkingRegistrationList = () => {
               ) : (
                 <>
                   <>
-                    {Object.entries(groupByApartment(getFilteredAndSortedData(carRegistrations))).map(([apt, items]) =>
-                      renderTable(`🚗 Ô tô - ${apt}`, items)
-                    )}
-                    {Object.entries(groupByApartment(getFilteredAndSortedData(bikeRegistrations))).map(([apt, items]) =>
-                      renderTable(`🏍️ Xe máy - ${apt}`, items)
-                    )}
+                  {Object.entries(groupByApartment(getFilteredAndSortedData(carRegistrations))).map(([apt, items]) => (
+  <React.Fragment key={`car-${apt}`}>
+    {renderTable(`🚗 Ô tô - ${apt}`, items)}
+  </React.Fragment>
+))}
+{Object.entries(groupByApartment(getFilteredAndSortedData(bikeRegistrations))).map(([apt, items]) => (
+  <React.Fragment key={`bike-${apt}`}>
+    {renderTable(`🏍️ Xe máy - ${apt}`, items)}
+  </React.Fragment>
+))}
+
                   </>
 
 

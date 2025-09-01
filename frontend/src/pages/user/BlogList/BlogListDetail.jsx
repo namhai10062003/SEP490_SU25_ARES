@@ -4,19 +4,19 @@ import { Modal } from "react-bootstrap";
 import {
   FaCalendarAlt,
   FaCheckCircle,
+  FaConciergeBell,
   FaExpand,
+  FaFutbol,
   FaHeart,
+  FaHospital,
+  FaHotel,
   FaInfoCircle,
   FaMapMarkerAlt,
   FaRegHeart,
   FaRulerCombined,
-  FaStar,
-  FaUmbrellaBeach,
-  FaHospital,
   FaSchool,
-  FaFutbol,
-  FaHotel,
-  FaConciergeBell
+  FaStar,
+  FaUmbrellaBeach
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import Slider from "react-slick";
@@ -138,12 +138,12 @@ const PostDetail = () => {
           price: post.price,
         });
 
-        console.log("✅ ChatBox Props:", {
-          currentUserId: user._id,
-          receiverId: post.contactInfo.userId,
-          receiverName: post.contactInfo.name,
-          postId: post._id,
-        });
+        // console.log("✅ ChatBox Props:", {
+        //   currentUserId: user._id,
+        //   receiverId: post.contactInfo.userId,
+        //   receiverName: post.contactInfo.name,
+        //   postId: post._id,
+        // });
       } else {
         setReceiver(null);
         setPostInfo(null); // clear nếu là chủ bài

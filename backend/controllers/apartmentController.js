@@ -408,4 +408,79 @@ export const togglePaymentStatus = async (req, res) => {
   }
 };
 
+// hàm get ra dữ liệu 
+export const getPaymentStatus = async (req, res) => {
+  try {
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(
+      now.getMonth() + 1
+    ).padStart(2, "0")}`;
+
+    console.log("🔍 currentMonth:", currentMonth);
+
+    // Test log trước khi query
+    console.log("👉 Querying Fee with:", { month: currentMonth });
+
+    const currentFees = await Fee.find({ month: currentMonth })
+      .populate("apartmentId", "canPay");
+
+    console.log("✅ currentFees raw:", currentFees);
+
+    if (!currentFees || currentFees.length === 0) {
+      console.log("⚠️ No fees found for this month");
+      return res.json({
+        success: true,
+        status: "no_fee",
+        canPay: false,
+        message: "Chưa có phí nào cho tháng hiện tại",
+      });
+    }
+
+    const apartments = currentFees
+      .map(f => {
+        console.log("👉 Fee item:", f);
+        return f.apartmentId;
+      })
+      .filter(a => {
+        const ok = a && typeof a.canPay === "boolean";
+        if (!ok) console.warn("⚠️ Invalid apartment found:", a);
+        return ok;
+      });
+
+    console.log("✅ apartments after filter:", apartments);
+
+    if (apartments.length === 0) {
+      console.log("⚠️ No valid apartments after filter");
+      return res.json({
+        success: true,
+        status: "no_apartment",
+        canPay: false,
+        message: "Không tìm thấy căn hộ hợp lệ",
+      });
+    }
+
+    const allCanPay = apartments.every(a => a.canPay === true);
+    const allLocked = apartments.every(a => a.canPay === false);
+
+    let status;
+    if (allCanPay) status = "canPay";
+    else if (allLocked) status = "locked";
+    else status = "mixed";
+
+    console.log("✅ Final status:", status);
+
+    res.json({
+      success: true,
+      status,
+      count: apartments.length,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching payment status:", error);
+    console.error("❌ Stacktrace:", error.stack);
+    res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+
+
 

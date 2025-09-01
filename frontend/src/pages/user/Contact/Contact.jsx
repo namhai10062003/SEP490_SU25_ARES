@@ -63,7 +63,7 @@ const Contact = () => {
         message: "",
       });
 
-      console.log("✅ Form data đã gửi:", formData);
+      // console.log("✅ Form data đã gửi:", formData);
     } catch (error) {
       console.error("❌ Error when sending contact:", error);
       alert("❌ Gửi thất bại! Vui lòng thử lại.");

@@ -10,14 +10,14 @@ const ContractForm = ({
   signaturePartyBUrl,
   signaturePartyAUrl,
 }) => {
-  console.log("formProps signaturePartyAUrl:", signaturePartyAUrl); //
+  // console.log("formProps signaturePartyAUrl:", signaturePartyAUrl); //
 
   useEffect(() => {
-    console.log("🧾 All props in ContractForm:", {
-      signaturePartyAUrl,
-      signaturePartyBUrl,
-      contractData,
-    });
+    // console.log("🧾 All props in ContractForm:", {
+    //   signaturePartyAUrl,
+    //   signaturePartyBUrl,
+    //   contractData,
+    // });
   }, []);
 
   // Hàm format ngày Việt Nam dd/MM/yyyy

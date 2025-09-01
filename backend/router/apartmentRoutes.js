@@ -9,6 +9,7 @@ import {
   getApartmentExpense,
   getApartmentHistory,
   getFeesByApartmentCode,
+  getPaymentStatus,
   getUserApartment,
   togglePaymentStatus,
   updateApartment
@@ -17,6 +18,7 @@ const router = express.Router();
 
 router.post("/", createApartment);
 router.get("/", getAllApartments);
+router.get("/payment-status-all", getPaymentStatus);
 router.get("/:id", getApartmentById);
 router.put("/:id", updateApartment);
 router.delete("/:id", deleteApartment);
@@ -26,4 +28,5 @@ router.get("/expense/:apartmentId", getApartmentExpense);
 router.get("/history/:code", getApartmentHistory);
 router.get("/:code/fees", getFeesByApartmentCode);
 router.patch("/payment-status-all", togglePaymentStatus);
+
 export default router;

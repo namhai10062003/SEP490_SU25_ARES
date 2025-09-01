@@ -7,11 +7,6 @@ import { getIO } from '../socket.js';
 // hiện thị bãi gửi xe nhưng trạng thái là pending 
 // Hiển thị danh sách xe đã đăng ký gửi
 
-// User A chỉ thấy danh sách của A. và hàm tạo cũng vậy 
-
-// User B chỉ thấy danh sách của B.
-
-// Không ai có thể mạo danh bằng cách thay userId trong body.
 // Hiển thị danh sách xe đã đăng ký gửi cho staff là hàm list ra all 
 
 const getParkingRegistrationAll = async (req, res) => {
