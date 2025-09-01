@@ -80,7 +80,7 @@ export default function RefundForm() {
         { headers: { Authorization: `Bearer ${token}` } } // ✅ dùng token ở đây
       );
   
-      toast.success("✅ Hoàn tiền thành công!");
+      toast.success("✅ Chuyển tiền thành công!");
       setUser(null);
       setFormData({
         amount: "",
@@ -90,8 +90,8 @@ export default function RefundForm() {
         note: "",
       });
     } catch (err) {
-      console.error("❌ Lỗi khi hoàn tiền:", err);
-      toast.error("❌ Thất bại khi hoàn tiền.");
+      console.error("❌ Lỗi khi chuyển tiền:", err);
+      toast.error("❌ Thất bại khi chuyển tiền.");
     }
     setLoading(false);
   };
@@ -158,7 +158,7 @@ export default function RefundForm() {
                           className="btn btn-sm btn-outline-success"
                           onClick={() => setUser(u)}
                         >
-                          Hoàn tiền
+                          Chuyển Tiền
                         </button>
                       </td>
                     </tr>
@@ -177,7 +177,7 @@ export default function RefundForm() {
               <div className="modal-dialog modal-lg modal-dialog-centered">
                 <div className="modal-content rounded-4 shadow-lg border-0">
                   <div className="modal-header border-0 pb-0">
-                    <h5 className="fw-bold text-primary m-0">Hoàn tiền cho cư dân</h5>
+                    <h5 className="fw-bold text-primary m-0">Chuyển tiền cho cư dân</h5>
                     <button type="button" className="btn-close" onClick={() => setUser(null)}></button>
                   </div>
                   <div className="modal-body pt-3">
@@ -273,7 +273,7 @@ export default function RefundForm() {
   {/* Nút submit */}
   <div className="d-flex justify-content-end mt-4 gap-2">
     <button type="submit" className="btn btn-success px-5" disabled={loading}>
-      Xác nhận hoàn tiền
+      Xác nhận chuyển tiền
     </button>
   </div>
 </form>

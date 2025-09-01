@@ -143,7 +143,7 @@ export default function AdminDashboard({ children }) {
                       title="Cập nhật thông tin"
                     >
                       <span className="me-2">•</span>
-                      <span className="flex-grow-1" style={{ minWidth: 0 }}>Quản lí hoàn tiền</span>
+                      <span className="flex-grow-1" style={{ minWidth: 0 }}>Quản lí Chuyển Tiền</span>
                     </Link>
                   </li>
                 </ul>

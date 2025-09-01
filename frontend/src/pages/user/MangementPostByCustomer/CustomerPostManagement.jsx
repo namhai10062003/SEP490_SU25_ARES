@@ -818,7 +818,7 @@ const CustomerPostManagement = () => {
     >
       calendar_month
     </span>
-    Ngày hết hạn: {post.expiredDate ? formatDate(post.expiredDate) : "—"}
+    Ngày hết hạn: {post.expiredDate ? formatDate(post.expiredDate) : "Chưa có"}
   </div>
 
   <div>

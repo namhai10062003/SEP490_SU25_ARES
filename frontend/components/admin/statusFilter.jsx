@@ -63,7 +63,7 @@ const statusOptions = {
     refund: [
         { value: "", label: "Tất cả trạng thái" },
         { value: "pending", label: "Chờ duyệt" },
-        { value: "approved", label: "Đã hoàn tiền" },
+        { value: "approved", label: "Đã chuyển tiền" },
         { value: "rejected", label: "Đã từ chối" },
       ],
       
