@@ -338,9 +338,10 @@ const ResidenceDeclarationVerifyList = () => {
     <span className="text-success fw-bold">Đã xác minh</span>
   )}
 
-  {r.isExpired && (
-    <span className="text-secondary fw-bold">Đã hết hạn</span>
-  )}
+{(r.isExpired || r.verifiedByStaff === "expired") && (
+  <span className="text-secondary fw-bold">Đã hết hạn</span>
+)}
+
 
   {(r.verifiedByStaff === "true" || r.verifiedByStaff === "expired") &&
     r.showNotifyButton && (
