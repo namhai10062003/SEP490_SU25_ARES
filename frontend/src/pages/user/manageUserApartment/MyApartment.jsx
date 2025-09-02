@@ -279,7 +279,7 @@ const MyApartment = () => {
 <table className="table table-bordered align-middle text-center">
   <thead className="table-info">
     <tr>
-      <th className="w-25">Phí bảo trì</th>
+      <th className="w-25">Phí quản lý</th>
       <th className="w-25">Phí nước</th>
       <th>Phí gửi xe</th>
     </tr>
