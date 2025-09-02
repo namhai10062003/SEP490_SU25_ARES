@@ -49,7 +49,7 @@ const ResidenceDeclarationVerifyList = () => {
       });
 
       const data = await res.json();
-      console.log("👉 Raw API data:", data);  
+      // console.log("👉 Raw API data:", data);  
       const sorted = (data.declarations || data || []).sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
