@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { Modal } from "react-bootstrap";
 import {
   FaCalendarAlt,
-  FaCheckCircle,
   FaConciergeBell,
   FaExpand,
   FaFutbol,
@@ -509,62 +508,69 @@ const PostDetail = () => {
                   }}
                 >
                   <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
-                    {post.description &&
-                      DOMPurify.sanitize(post.description, { ALLOWED_TAGS: [] }) // ❌ bỏ hết tag HTML, chỉ giữ text
-                        .split(/\n+/) // tách theo xuống dòng
-                        .map((line) => line.trim())
-                        .filter(Boolean)
-                        .map((line, index) => {
-                          const isSectionTitle =
-                            line.startsWith("✨") || /THÔNG TIN/i.test(line);
-                          const isBullet = line.startsWith("•") || /^\d+\./.test(line);
+                  {post.description &&
+  DOMPurify.sanitize(post.description, {
+    ALLOWED_TAGS: ["ul", "li", "strong", "p", "br"],
+    ALLOWED_ATTR: [],
+  })
+    .split(/\n+/) // nếu description là text có xuống dòng
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line, index) => {
+      const isSectionTitle =
+        line.startsWith("✨") || /THÔNG TIN/i.test(line);
+      const isBullet = line.startsWith("•") || /^\d+\./.test(line);
 
-                          return (
-                            <li
-                              key={index}
-                              className={`d-flex align-items-start ${isSectionTitle
-                                ? "bg-primary bg-opacity-10 fw-bold text-primary"
-                                : "bg-light"
-                                } p-3 mb-2 rounded-3 border`}
-                              style={{
-                                gap: "12px",
-                                borderColor: "#eee",
-                                transition: "all 0.25s ease",
-                                cursor: "default",
-                              }}
-                              onMouseEnter={(e) =>
-                                !isSectionTitle &&
-                                (e.currentTarget.style.backgroundColor = "#f8faff")
-                              }
-                              onMouseLeave={(e) =>
-                                !isSectionTitle &&
-                                (e.currentTarget.style.backgroundColor = "#f8f9fa")
-                              }
-                            >
-                              {isSectionTitle ? (
-                                <span style={{ fontSize: "1.2rem" }}>✨</span>
-                              ) : (
-                                <FaCheckCircle
-                                  style={{
-                                    color: "#0d6efd",
-                                    marginTop: "4px",
-                                    fontSize: "1.1rem",
-                                    flexShrink: 0,
-                                  }}
-                                />
-                              )}
+      return (
+        <li
+          key={index}
+          className={`d-flex align-items-start ${
+            isSectionTitle
+              ? "bg-primary bg-opacity-10 fw-bold text-primary"
+              : "bg-light"
+          } p-3 mb-2 rounded-3 border`}
+          style={{
+            gap: "12px",
+            borderColor: "#eee",
+            transition: "all 0.25s ease",
+            cursor: "default",
+            textAlign: "justify", // căn đều cho đẹp
+            whiteSpace: "pre-line", // giữ xuống dòng
+          }}
+          onMouseEnter={(e) =>
+            !isSectionTitle &&
+            (e.currentTarget.style.backgroundColor = "#f8faff")
+          }
+          onMouseLeave={(e) =>
+            !isSectionTitle &&
+            (e.currentTarget.style.backgroundColor = "#f8f9fa")
+          }
+        >
+          {/* {isSectionTitle ? (
+            <span style={{ fontSize: "1.2rem" }}>✨</span>
+          ) : (
+            <FaCheckCircle
+              style={{
+                color: "#0d6efd",
+                marginTop: "4px",
+                fontSize: "1.1rem",
+                flexShrink: 0,
+              }}
+            />
+          )} */}
 
-                              <span
-                                dangerouslySetInnerHTML={{
-                                  __html: line.replace(
-                                    /^([^:]+):/,
-                                    "<strong style='color:#0d6efd'>$1:</strong>"
-                                  ),
-                                }}
-                              />
-                            </li>
-                          );
-                        })}
+          <span
+            dangerouslySetInnerHTML={{
+              __html: line.replace(
+                /^([^:]+):/,
+                "<strong style=''>$1:</strong>"
+              ),
+            }}
+          />
+        </li>
+      );
+    })}
+
                   </ul>
                 </div>
               </div>
