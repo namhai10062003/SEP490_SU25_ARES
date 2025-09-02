@@ -49,25 +49,26 @@ const ResidenceDeclarationVerifyList = () => {
       });
 
       const data = await res.json();
+      console.log("👉 Raw API data:", data);  
       const sorted = (data.declarations || data || []).sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
 
-      // ✅ Tính số ngày còn lại và thêm flag showNotifyButton
-      const withFlags = sorted.map((item) => {
-        let showNotifyButton = false;
-        if (item.endDate) {
-          const daysLeft = Math.ceil(
-            (new Date(item.endDate) - new Date()) / (1000 * 60 * 60 * 24)
-          );
-          if (daysLeft <= 3 && daysLeft >= 0) {
-            showNotifyButton = true;
-          }
-        }
-        return { ...item, showNotifyButton };
-      });
+      // // ✅ Tính số ngày còn lại và thêm flag showNotifyButton
+      // const withFlags = sorted.map((item) => {
+      //   let showNotifyButton = false;
+      //   if (item.endDate) {
+      //     const daysLeft = Math.ceil(
+      //       (new Date(item.endDate) - new Date()) / (1000 * 60 * 60 * 24)
+      //     );
+      //     if (daysLeft <= 3 && daysLeft >= 0) {
+      //       showNotifyButton = true;
+      //     }
+      //   }
+      //   return { ...item, showNotifyButton };
+      // });
 
-      setDeclarations(withFlags);
+      setDeclarations(sorted);
     } catch (err) {
       toast.error("❌ Lỗi tải danh sách hồ sơ tạm trú/tạm vắng");
     } finally {
@@ -315,7 +316,7 @@ const ResidenceDeclarationVerifyList = () => {
       )}
     </td>
                    {/* Cột hành động */}
-<td>
+                   <td>
   {r.verifiedByStaff === "pending" && (
     <>
       <button
@@ -333,15 +334,24 @@ const ResidenceDeclarationVerifyList = () => {
     </>
   )}
 
-  {(r.verifiedByStaff === "true") &&
+  {r.verifiedByStaff === "true" && !r.isExpired && (
+    <span className="text-success fw-bold">Đã xác minh</span>
+  )}
+
+  {r.isExpired && (
+    <span className="text-secondary fw-bold">Đã hết hạn</span>
+  )}
+
+  {(r.verifiedByStaff === "true" || r.verifiedByStaff === "expired") &&
     r.showNotifyButton && (
       <button
-        className="btn btn-warning d-flex align-items-center gap-2 px-3 py-1 rounded-pill shadow-sm"
+        className="btn btn-warning d-flex align-items-center gap-2 px-3 py-1 rounded-pill shadow-sm mt-2"
         onClick={() => handleNotifyUser(r._id)}
         style={{
-          fontWeight: "500",
+          fontWeight: 500,
           fontSize: "0.9rem",
           transition: "all 0.2s ease",
+          backgroundColor: "#ffc107",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.backgroundColor = "#ffca2c";
@@ -357,10 +367,6 @@ const ResidenceDeclarationVerifyList = () => {
       </button>
     )}
 
-  {r.verifiedByStaff === "true" && (
-    <span className="text-success fw-bold">Đã xác minh</span>
-  )}
-
   {r.verifiedByStaff === "false" && (
     <div>
       <span className="text-danger fw-bold">Đã từ chối</span>
@@ -369,11 +375,8 @@ const ResidenceDeclarationVerifyList = () => {
       )}
     </div>
   )}
-{r.verifiedByStaff === "expired" && (
-  <span className="text-secondary fw-bold">Đã hết hạn</span>
-)}
-
 </td>
+
 
                   </tr>
                 ))}

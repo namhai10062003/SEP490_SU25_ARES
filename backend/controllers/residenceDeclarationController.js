@@ -198,7 +198,29 @@ export const rejectDeclarationByStaff = async (req, res) => {
   }
 };
 
-// 📌 Lọc theo trạng thái
+// 📌 Helper tính thời gian hết hạn
+function calcExpiry(endDate) {
+  if (!endDate) return { isExpired: false, daysLeft: null, showNotifyButton: false };
+
+  const now = new Date();
+  const end = new Date(endDate);
+
+  // Reset giờ về 0h để tính chính xác theo ngày
+  now.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+
+  const diffMs = end - now;
+  const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+  const isExpired = daysLeft < 0;
+
+  // ✅ Hiện nút nếu: đã hết hạn HOẶC (còn <= 3 ngày nhưng chưa hết hạn)
+  const showNotifyButton = isExpired || (!isExpired && daysLeft <= 3);
+
+  return { isExpired, daysLeft, showNotifyButton };
+}
+
+// lọc
 export const getDeclarationsByStatus = async (req, res) => {
   const { status } = req.query;
   let filter = {};
@@ -211,10 +233,14 @@ export const getDeclarationsByStatus = async (req, res) => {
       .populate("apartmentId", "apartmentCode")
       .sort({ createdAt: -1 });
 
-    const formatted = docs.map(r => ({
-      ...r.toObject(),
-      idNumber: safeDecrypt(r.idNumber)
-    }));
+    const formatted = docs.map(r => {
+      const expiryInfo = calcExpiry(r.endDate);  // 👈 tính hạn ở đây
+      return {
+        ...r.toObject(),
+        idNumber: safeDecrypt(r.idNumber),
+        ...expiryInfo,  // 👈 thêm vào object trả về
+      };
+    });
 
     res.status(200).json(formatted);
   } catch (err) {
@@ -222,21 +248,6 @@ export const getDeclarationsByStatus = async (req, res) => {
   }
 };
 
-// 📌 Helper tính thời gian hết hạn
-function calcExpiry(endDate) {
-    if (!endDate) return { isExpired: false, daysLeft: null, showNotifyButton: false };
-  
-    const now = new Date();
-    const end = new Date(endDate);
-    const diffMs = end - now;
-    const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24)); // số ngày còn lại
-  
-    const isExpired = diffMs < 0;
-    const showNotifyButton = !isExpired && daysLeft <= 3; // Hiện nút nếu còn <= 3 ngày và chưa hết hạn
-  
-    return { isExpired, daysLeft, showNotifyButton };
-  }
-  
   export const getMyDeclarations = async (req, res) => {
     try {
       const declarations = await ResidenceDeclaration.find({
@@ -253,12 +264,13 @@ function calcExpiry(endDate) {
       }
   
       // ✅ Format dữ liệu
-      const formatted = declarations.map(d => {
-        const expiryInfo = calcExpiry(d.endDate);
+      const formatted = declarations.map((r) => {
+        const expiryInfo = calcExpiry(r.endDate);
+      
         return {
-          ...d,
-          idNumber: safeDecrypt(d.idNumber), // Giải mã CCCD
-          ...expiryInfo
+          ...r, // vì r đã là object
+          idNumber: safeDecrypt(r.idNumber),
+          ...expiryInfo,
         };
       });
   
