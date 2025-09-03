@@ -143,7 +143,7 @@ const Header = () => {
                         to="/my-requests"
                         onClick={() => setShowProfileDropdown(false)}
                       >
-                        Quản Lí Yêu Cầu
+                        Quản Lý Yêu Cầu
                       </Link>
                     </li>
                     <li>
@@ -152,7 +152,7 @@ const Header = () => {
                         to="/profile/quanlipostcustomer"
                         onClick={() => setShowProfileDropdown(false)}
                       >
-                        Quản lí Tin Đăng
+                        Quản lý Tin Đăng
                       </Link>
                     </li>
                     <li>

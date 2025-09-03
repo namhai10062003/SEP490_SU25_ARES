@@ -29,7 +29,7 @@ export default function AdminDashboard({ children }) {
     { to: "/admin-dashboard/manage-apartment", label: "Quản Lý Căn hộ" },
     { to: "/admin-dashboard/manage-resident-verification", label: "Quản Lý Xác Nhận Cư Dân" },
     { to: "/admin-dashboard/user-revenue", label: "Quản Lý Yêu Cầu Rút Tiền" },
-    { to: "/admin-dashboard/changePassWord", label: "Đổi mật khẩu" },
+    { to: "/admin-dashboard/changePassWord", label: "Đổi Mật Khẩu" },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -143,7 +143,7 @@ export default function AdminDashboard({ children }) {
                       title="Cập nhật thông tin"
                     >
                       <span className="me-2">•</span>
-                      <span className="flex-grow-1" style={{ minWidth: 0 }}>Quản lí Chuyển Tiền</span>
+                      <span className="flex-grow-1" style={{ minWidth: 0 }}>Quản Lý Chuyển Tiền</span>
                     </Link>
                   </li>
                 </ul>

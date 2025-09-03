@@ -283,16 +283,16 @@ const CustomerPostManagement = () => {
     if (!editForm.title) {
       toast.error("Vui lòng nhập tiêu đề");
       return;
-    } else if (editForm.title.length > 200) {
-      toast.error("Tiêu đề không được vượt quá 200 ký tự");
+    } else if (editForm.title.length > 100) {
+      toast.error("Tiêu đề không được vượt quá 100 ký tự");
       return;
     }
 
     if (!editForm.description) {
       toast.error("Vui lòng nhập mô tả");
       return;
-    } else if (editForm.description.trim().split(/\s+/).length > 200) {
-      toast.error("Mô tả không được vượt quá 200 từ");
+    } else if (editForm.description.trim().split(/\s+/).length > 1000) {
+      toast.error("Mô tả không được vượt quá 1000 từ");
       return;
     }
 

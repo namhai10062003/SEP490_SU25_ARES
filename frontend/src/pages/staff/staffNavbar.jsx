@@ -379,7 +379,7 @@ const StaffNavbar = () => {
                     : "transparent",
               }}
             >
-              Đổi mật khẩu
+              Đổi Mật Khẩu
             </Link>
           </li>
           <li className="nav-item">

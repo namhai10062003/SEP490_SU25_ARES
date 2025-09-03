@@ -1,7 +1,8 @@
 import axios from "axios";
 import "datatables.net-bs5";
 import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import Pagination from "../../../../components/Pagination.jsx";
 import UniversalFilter from "../../../../components/filter.jsx";
 import Header from "../../../../components/header.jsx";
 import LoadingModal from "../../../../components/loadingModal.jsx";
@@ -13,7 +14,12 @@ export default function PaymentHistoryTable() {
   const [filteredHistory, setFilteredHistory] = useState([]);
   const [filters, setFilters] = useState({});
   const [loading, setLoading] = useState(true);
+  // state cho phân trang
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
+
+  
   const token = localStorage.getItem("token");
   const userId = user?._id || localStorage.getItem("userId");
   const name = user?.name || "";
@@ -98,6 +104,15 @@ export default function PaymentHistoryTable() {
     setFilteredHistory(history);
   };
 
+  // Tính toán dữ liệu trang hiện tại
+  const totalPages = Math.ceil(filteredHistory.length / pageSize);
+
+  const currentData = useMemo(() => {
+    const startIndex = (page - 1) * pageSize;
+    return filteredHistory.slice(startIndex, startIndex + pageSize);
+  }, [filteredHistory, page, pageSize]);
+
+
   if (loading) return <LoadingModal />;
 
   return (
@@ -150,7 +165,7 @@ export default function PaymentHistoryTable() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredHistory.map((h, i) => (
+                {currentData.map((h, i) => (
                     <tr key={i}>
                       <td>
                         <div className="d-flex align-items-center">
@@ -216,6 +231,15 @@ export default function PaymentHistoryTable() {
             </div>
           </div>
         </div>
+            {/* 👇 Thêm Pagination component của bạn vào đây */}
+            <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            pageSize={pageSize}
+            onPageSizeChange={setPageSize}
+          />
+          
         {loading && <LoadingModal />}
       </div>
     </>
