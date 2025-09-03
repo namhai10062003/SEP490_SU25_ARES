@@ -300,7 +300,7 @@ for (let pair of formData.entries()) {
             <div className="row g-3 mb-3">
               <div className="col-md-6">
                 <div className="border p-2">
-                  <h6>Bên A (Chủ nhà)</h6>
+                  <h6>Bên A</h6>
                   <p><strong>Họ tên:</strong> {post.contactInfo.name}</p>
                   <p><strong>SĐT:</strong> {post.contactInfo.phone}</p>
                   <p><strong>Địa chỉ:</strong> {post.contactInfo.address}</p>
@@ -308,7 +308,7 @@ for (let pair of formData.entries()) {
               </div>
               <div className="col-md-6">
                 <div className="border p-2">
-                  <h6>Bên B (Bạn)</h6>
+                  <h6>Bên B</h6>
                   <p><strong>Họ tên:</strong> {user.name}</p>
                   <p><strong>SĐT:</strong> {user.phone}</p>
                   <p><strong>Địa chỉ:</strong> {user.address}</p>
