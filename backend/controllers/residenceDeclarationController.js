@@ -248,38 +248,46 @@ export const getDeclarationsByStatus = async (req, res) => {
   }
 };
 
-  export const getMyDeclarations = async (req, res) => {
-    try {
-      const declarations = await ResidenceDeclaration.find({
-        createdBy: req.user._id
+export const getMyDeclarations = async (req, res) => {
+  try {
+    const declarations = await ResidenceDeclaration.find({
+      createdBy: req.user._id,
+    })
+      .populate({
+        path: "apartmentId",
+        select: "apartmentCode ownerName",
       })
-        .populate({
-          path: "apartmentId",
-          select: "apartmentCode ownerName"
-        })
-        .lean();
-  
-      if (!declarations || declarations.length === 0) {
-        return res.json({ data: [], message: "Không có hồ sơ nào" });
-      }
-  
-      // ✅ Format dữ liệu
-      const formatted = declarations.map((r) => {
-        const expiryInfo = calcExpiry(r.endDate);
-      
-        return {
-          ...r, // vì r đã là object
-          idNumber: safeDecrypt(r.idNumber),
-          ...expiryInfo,
-        };
-      });
-  
-      res.json({ data: formatted });
-    } catch (err) {
-      console.error("❌ Lỗi khi lấy hồ sơ của tôi:", err);
-      res.status(500).json({ message: "Lỗi server" });
+      .lean();
+
+    if (!declarations || declarations.length === 0) {
+      return res.json({ data: [], message: "Không có hồ sơ nào" });
     }
-  };
+
+    // ✅ Chỉ lấy những hồ sơ có apartmentId tồn tại
+    const validDeclarations = declarations.filter((r) => r.apartmentId);
+
+    if (validDeclarations.length === 0) {
+      return res.json({ data: [], message: "Không có hồ sơ nào" });
+    }
+
+    // ✅ Format dữ liệu
+    const formatted = validDeclarations.map((r) => {
+      const expiryInfo = calcExpiry(r.endDate);
+
+      return {
+        ...r,
+        idNumber: safeDecrypt(r.idNumber),
+        ...expiryInfo,
+      };
+    });
+
+    res.json({ data: formatted });
+  } catch (err) {
+    console.error("❌ Lỗi khi lấy hồ sơ của tôi:", err);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
 // hàm thông báo 
 // 📌 Gửi thông báo cho user khi sắp hết hạn
 

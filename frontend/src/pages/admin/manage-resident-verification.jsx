@@ -402,9 +402,9 @@ const ManageResidentVerification = () => {
 
 {/* {console.log("👉 app data:", app)} */}
 
-{app.status === "Đã duyệt" 
-  && app.apartment?.isOwner 
-  && app.apartment?.isRenter && (
+{app.status === "Đã duyệt"
+  && app.documentType === "Hợp đồng cho thuê"
+  && app.user?._id === app.apartment?.isRenter?._id && (
     <button
       className="btn btn-warning"
       onClick={() => handleCancel(app._id)}
@@ -412,6 +412,8 @@ const ManageResidentVerification = () => {
       Huỷ
     </button>
 )}
+
+
                           </div>
 
                           {app.status === "Đang chỉnh sửa" && (
