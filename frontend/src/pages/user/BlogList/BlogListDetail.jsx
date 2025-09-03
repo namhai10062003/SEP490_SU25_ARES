@@ -672,7 +672,7 @@ const PostDetail = () => {
                 // Cắt title còn 1/2
                 const truncatedTitle =
                   rp.title.length > 0
-                    ? rp.title.slice(0, Math.ceil(rp.title.length / 2)) + "..."
+                    ? rp.title.slice(0,50) + "..."
                     : "";
 
                 // Cắt mô tả còn 20 ký tự
@@ -703,6 +703,13 @@ const PostDetail = () => {
                             }}
                           />
                         ))}
+                         {/* Thêm location */}
+                {rp.location && (
+                  <p className="text-muted mb-2">
+                    <i className="bi bi-geo-alt-fill me-1 text-danger"></i>
+                    {rp.location}
+                  </p>
+                )}
                         <p className="card-text fw-bold fs-5 text-danger">{formatPrice(rp.price)}</p>
                       </div>
                     </div>

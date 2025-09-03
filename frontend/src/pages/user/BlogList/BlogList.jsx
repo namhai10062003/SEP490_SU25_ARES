@@ -498,7 +498,7 @@ const BlogList = () => {
                               <span className="fw-semibold text-muted">
                                 Mã căn hộ:
                               </span>{" "}
-                              {post.apartmentCode || "—"}
+                              {!post.apartmentCode || post.apartmentCode === "undefined" ? "—" : post.apartmentCode}
                             </div>
                             <div className="col-6">
                               <span className="fw-semibold text-muted">
