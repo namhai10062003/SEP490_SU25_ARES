@@ -70,12 +70,30 @@ export const getPaymentHistory = async (req, res) => {
     // -----------------------------
     // 3. Lấy Fee payments (version debug)
     // -----------------------------
-    const apartments = await Apartment.find({ isOwner: mongoUserId })
-      .select("_id apartmentCode ownerName")
+    const apartments = await Apartment.find({
+      $or: [
+        { isOwner: mongoUserId },
+        { isRenter: mongoUserId }
+      ]
+    })
+      .select("_id apartmentCode ownerName renterName isOwner isRenter")
       .lean();
-    console.log("🔹 Apartments of user:", apartments);
+    
+      const apartmentsWithRole = apartments.map(ap => {
+        const isOwner = ap.isOwner?._id?.toString() === mongoUserId.toString();
+        const isRenter = ap.isRenter?._id?.toString() === mongoUserId.toString();
+      
+        return {
+          ...ap,
+          role: isOwner ? "owner" : (isRenter ? "renter" : null),
+          displayName: isOwner ? ap.ownerName : (isRenter ? ap.renterName : "")
+        };
+      });
+      
+    
+    
 
-    const apartmentIds = apartments.map(a => a._id);
+    const apartmentIds = apartmentsWithRole.map(a => a._id);
 
     const feePayments = await Fee.find({
       apartmentId: { $in: apartmentIds }

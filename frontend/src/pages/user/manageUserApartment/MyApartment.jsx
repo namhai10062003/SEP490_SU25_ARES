@@ -123,6 +123,7 @@ const MyApartment = () => {
       0,
       4
     )}`;
+    setLoading(true);
     try {
       const res = await createFeePayment(apartmentId, formattedMonth);
       const paymentUrl = res.data.data.paymentUrl;
@@ -130,6 +131,8 @@ const MyApartment = () => {
     } catch (err) {
       console.error("❌ Lỗi tạo thanh toán:", err);
       alert("Không thể tạo thanh toán");
+    }finally{
+      setLoading(false);
     }
   };
 

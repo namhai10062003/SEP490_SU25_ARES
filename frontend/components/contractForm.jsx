@@ -95,7 +95,7 @@ const today = new Date(); // ngày hiện tại
           <div className="col-md-6">
             <div className="card shadow-sm h-100">
               <div className="card-header bg-light fw-bold">
-                BÊN A (Chủ nhà)
+                BÊN A
               </div>
               <div className="card-body small">
                 <p>
@@ -126,7 +126,7 @@ const today = new Date(); // ngày hiện tại
           <div className="col-md-6">
             <div className="card shadow-sm h-100">
               <div className="card-header bg-light fw-bold">
-                BÊN B (Khách hàng)
+                BÊN B
               </div>
               <div className="card-body small">
                 <p>
