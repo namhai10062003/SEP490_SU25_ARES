@@ -1,15 +1,15 @@
 // src/pages/admin/manage/ManageApartment.jsx
-import React, { useEffect, useState } from "react";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 
-import AdminDashboard from "./adminDashboard.jsx";
 import ApartmentFormModal from "../../../components/ApartmentFormModal.jsx";
 import Pagination from "../../../components/Pagination.jsx";
-import LoadingModal from "../../../components/loadingModal.jsx";
 import SearchInput from "../../../components/admin/searchInput.jsx";
 import StatusFilter from "../../../components/admin/statusFilter.jsx";
+import LoadingModal from "../../../components/loadingModal.jsx";
+import AdminDashboard from "./adminDashboard.jsx";
 
 const API_BASE = import.meta.env.VITE_API_URL;
 
@@ -60,17 +60,55 @@ const ManageApartment = () => {
   const fetchApartments = async () => {
     try {
       setLoadingFetch(true);
-      const params = {
-        page,
-        pageSize,
-      };
-      if (statusFilter && statusFilter !== "all") params.status = statusFilter;
-      if (searchTerm && searchTerm.trim() !== "") params.search = searchTerm.trim();
-
+  
+      const params = {};
+      if (statusFilter && statusFilter !== "all") {
+        params.status = statusFilter;
+      }
+      if (searchTerm && searchTerm.trim() !== "") {
+        params.search = searchTerm.trim();
+      }
+  
+      // 👉 Lấy toàn bộ căn hộ (không phân trang từ API)
       const res = await axios.get(`${API_BASE}/api/apartments`, { params });
       const data = res.data || {};
-      setApartments(Array.isArray(data.data) ? data.data : []);
-      setTotalPages(data.totalPages ?? Math.max(1, Math.ceil((data.total ?? 0) / pageSize)));
+      let apartments = Array.isArray(data.data) ? data.data : [];
+  
+      // 👉 Hàm parse code
+      const parseCode = (code = "") => {
+        const parts = code.split("-");
+        if (parts.length < 2) return { block: 0, floor: 0, room: 0 };
+  
+        const block = parseInt(parts[0].replace("P", ""), 10) || 0;
+        const [floorStr, roomStr] = parts[1].split(".");
+        const floor = parseInt(floorStr, 10) || 0;
+        const room = parseInt(roomStr, 10) || 0;
+  
+        return { block, floor, room };
+      };
+  
+      // 👉 Sort toàn bộ danh sách
+      apartments.sort((a, b) => {
+        const ca = parseCode(a.apartmentCode);
+        const cb = parseCode(b.apartmentCode);
+  
+        if (ca.block !== cb.block) return ca.block - cb.block; // P1 → P2
+        if (ca.floor !== cb.floor) return ca.floor - cb.floor; // 01 → 02
+        return ca.room - cb.room; // 01 → 02
+      });
+  
+      // 👉 Tính total pages từ danh sách đã sort
+      const total = apartments.length;
+      const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  
+      // 👉 Lấy đúng "trang hiện tại"
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginated = apartments.slice(startIndex, endIndex);
+  
+      setApartments(paginated);
+      setTotalPages(totalPages);
+  
     } catch (err) {
       console.error("fetchApartments error:", err);
       toast.error("Không thể tải danh sách căn hộ");
@@ -80,6 +118,7 @@ const ManageApartment = () => {
       setLoadingFetch(false);
     }
   };
+  
 
 
   useEffect(() => {
